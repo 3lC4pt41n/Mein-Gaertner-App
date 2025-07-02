@@ -119,10 +119,11 @@ export default function AssistantScreen() {
 
   // Avatar wählen (lokal in assets oder von URL)
   const getAvatar = (sender) => {
-    if (sender === GARDENER_NAME)
+    if (sender === GARDENER_NAME) {
       return require('../assets/avatars/ben.png');
-    if (sender === "user")
-      return require('../assets/avatars/tim.png');
+    }
+    // Es existiert kein separates Nutzer-Avatar im Projekt,
+    // daher kehren wir bei "user" einfach null zurück.
     return null;
   };
 
@@ -138,10 +139,12 @@ export default function AssistantScreen() {
       flexDirection: "row",
       alignItems: "flex-end"
     }}>
-      <Image
-        source={getAvatar(item.sender)}
-        style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }}
-      />
+      {getAvatar(item.sender) && (
+        <Image
+          source={getAvatar(item.sender)}
+          style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }}
+        />
+      )}
       <View>
         {item.image_url &&
           <Image source={{ uri: item.image_url }} style={{ width: 150, height: 150, borderRadius: 10, marginBottom: 4 }} resizeMode="cover" />}
