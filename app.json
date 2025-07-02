@@ -1,31 +1,42 @@
-{
-  "expo": {
-    "name": "Digitaler Gärtner",
-    "slug": "digitaler-gaertner",
-    "version": "1.0.0",
-    "sdkVersion": "49.0.0",
-    "platforms": ["ios", "android", "web"],
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-	"jsEngine": "jsc"
-    },
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
-  }
-}
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/app.json b/app.json
+index 5873880bf04b838070f64d93429124acfdfa9cfe..e54b6e53537aef0b483ed070411ac7889600c695 100644
+--- a/app.json
++++ b/app.json
+@@ -1,31 +1,31 @@
+ {
+   "expo": {
+     "name": "Digitaler Gärtner",
+     "slug": "digitaler-gaertner",
+     "version": "1.0.0",
+     "sdkVersion": "49.0.0",
+     "platforms": ["ios", "android", "web"],
+     "orientation": "portrait",
+     "icon": "./assets/icon.png",
+     "userInterfaceStyle": "light",
+     "splash": {
+       "image": "./assets/splash.png",
+       "resizeMode": "contain",
+-      "backgroundColor": "#ffffff",
+-	"jsEngine": "jsc"
++      "backgroundColor": "#ffffff"
+     },
++    "jsEngine": "jsc",
+     "assetBundlePatterns": ["**/*"],
+     "ios": {
+       "supportsTablet": true
+     },
+     "android": {
+       "adaptiveIcon": {
+         "foregroundImage": "./assets/adaptive-icon.png",
+         "backgroundColor": "#ffffff"
+       }
+     },
+     "web": {
+       "favicon": "./assets/favicon.png"
+     }
+   }
+ }
+ 
+EOF
+)
