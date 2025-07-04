@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+
 import TodayScreen from "./screens/TodayScreen";
 import PlantListScreen from "./screens/PlantListScreen";
 import AddPlantScreen from "./screens/AddPlantScreen";
@@ -9,17 +11,26 @@ import CalendarScreen from "./screens/CalendarScreen";
 import AssistantScreen from "./screens/AssistantScreen";
 import AuthScreen from "./screens/AuthScreen";
 import ProfileCompleteScreen from "./screens/ProfileCompleteScreen";
+import PlantDetailScreen from "./screens/PlantDetailScreen";
 import { supabase } from './supabase';
 import 'react-native-url-polyfill/auto';
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 const Tab = createBottomTabNavigator();
-const HomeStack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator();
+
+function PlantStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Meine Pflanzen" component={PlantListScreen} />
+      <Stack.Screen name="PlantDetail" component={PlantDetailScreen} options={{ title: 'Details' }} />
+    </Stack.Navigator>
+  );
+}
 
 function HomeStackScreen({ user, profile, onProfileEditDone }) {
   return (
-    <HomeStack.Navigator>
-      <HomeStack.Screen
+    <Stack.Navigator>
+      <Stack.Screen
         name="Heute"
         options={({ navigation }) => ({
           headerRight: () => (
@@ -35,8 +46,8 @@ function HomeStackScreen({ user, profile, onProfileEditDone }) {
         })}
       >
         {props => <TodayScreen {...props} user={user} />}
-      </HomeStack.Screen>
-      <HomeStack.Screen
+      </Stack.Screen>
+      <Stack.Screen
         name="ProfilBearbeiten"
         options={{ title: "Profil bearbeiten" }}
       >
@@ -46,11 +57,11 @@ function HomeStackScreen({ user, profile, onProfileEditDone }) {
             user={user}
             profile={profile}
             onDone={onProfileEditDone}
-            showSkip // Falls du das Überspringen erlauben willst
+            showSkip
           />
         )}
-      </HomeStack.Screen>
-    </HomeStack.Navigator>
+      </Stack.Screen>
+    </Stack.Navigator>
   );
 }
 
@@ -59,7 +70,6 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Auth-Status überwachen
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data?.user ?? null));
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
@@ -68,7 +78,6 @@ export default function App() {
     return () => { listener?.subscription.unsubscribe(); }
   }, []);
 
-  // Profil laden
   useEffect(() => {
     if (user) {
       setLoading(true);
@@ -87,11 +96,11 @@ export default function App() {
     }
   }, [user]);
 
-  if (loading) return null; // Alternativ ein Loader
+  if (loading) return null; // Oder ein Loader
 
   if (!user) return <AuthScreen />;
 
-  // Prüfen, ob Profil vollständig
+  // Profil vollständig?
   const profileIncomplete =
     !profile?.username ||
     !profile?.first_name ||
@@ -112,12 +121,11 @@ export default function App() {
             .single()
             .then(({ data }) => setProfile(data));
         }}
-        showSkip // Optional: Überspringen ermöglichen
+        showSkip
       />
     );
   }
 
-  // Tabs wie gehabt, aber HomeStack für Heute
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -152,7 +160,7 @@ export default function App() {
             />
           )}
         </Tab.Screen>
-        <Tab.Screen name="Meine Pflanzen" component={PlantListScreen} />
+        <Tab.Screen name="Meine Pflanzen" component={PlantStack} />
         <Tab.Screen name="Pflanze hinzufügen" component={AddPlantScreen} />
         <Tab.Screen name="Kalender" component={CalendarScreen} />
         <Tab.Screen name="Mein Gärtner" component={AssistantScreen} />
