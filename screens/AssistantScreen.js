@@ -7,6 +7,7 @@ import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage } from '../services/uploadService';
 
 const GARDENER_NAME = "Ben";
+const DEBUG = false; // true = Log für dev
 
 export default function AssistantScreen() {
   const [input, setInput] = useState('');
@@ -47,10 +48,13 @@ export default function AssistantScreen() {
     if (!result.canceled) {
       setLoading(true);
       try {
+        // Upload Bild zu Supabase (unterschiedlich je Plattform handled der Service)
         const url = await uploadChatImage(result.assets[0].uri, user_id);
         const msg = { user_id, sender: "user", content: "[Bild]", image_url: url };
         await saveMessage(msg);
         setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
+        // Jetzt nach Upload auch direkt Bens Antwort triggern:
+        await getBenAnswer("", url);
       } catch (e) {
         alert("Fehler beim Hochladen: " + e.message);
       } finally {
@@ -59,38 +63,50 @@ export default function AssistantScreen() {
     }
   };
 
-  // Textnachricht senden (kein Streaming für Android-Kompatibilität)
-  const sendMessage = async () => {
-    if (!input.trim() || !user_id) return;
-
-    setLoading(true);
-
-    // User-Nachricht speichern
-    const userMessage = { user_id, sender: "user", content: input };
-    await saveMessage(userMessage);
-    setMessages((m) => [...m, { ...userMessage, created_at: new Date().toISOString() }]);
-    setInput('');
-
-    // Systemprompt für Ben
+  // GPT-Antwort (auch für Bild-URL)
+  const getBenAnswer = async (text = "", image_url = null) => {
     const contextPrompt = `
       Du bist "${GARDENER_NAME}", ein smarter, witziger, charmanter Pflanzen-Coach.
       Du bist Experte für Pflanzen & Gardening, hin und wieder etwas flirtend, machst gerne mal einen Scherz, bist immer freundlich, aufmunternd und respektvoll.
+      Wenn du ein Bild geschickt bekommst, reagiere spezifisch auf dessen Inhalt und beziehe es in deine Antwort ein.
       Sprich im Chat-Stil (wie WhatsApp), auf Deutsch. Antworte kurz, max. 5 Sätze.
     `;
 
+    // Verlauf korrekt bauen!
     const chatHistory = [
       { role: "system", content: contextPrompt },
-      ...messages.slice(-10).map(msg => ({
-        role: msg.sender === "user" ? "user" : "assistant",
-        content: msg.content
-      })),
-      { role: "user", content: input }
+      ...messages.slice(-10).map(msg => {
+        if (msg.image_url) {
+          return {
+            role: msg.sender === "user" ? "user" : "assistant",
+            content: [
+              ...(msg.content && msg.content !== "[Bild]" ? [{ type: "text", text: msg.content }] : []),
+              { type: "image_url", image_url: { url: msg.image_url } }
+            ]
+          }
+        } else {
+          return {
+            role: msg.sender === "user" ? "user" : "assistant",
+            content: msg.content
+          }
+        }
+      }),
+      ...(image_url ? [{
+        role: "user",
+        content: [
+          { type: "text", text: text || "Was ist das auf dem Bild?" },
+          { type: "image_url", image_url: { url: image_url } }
+        ]
+      }] : (text ? [{ role: "user", content: text }] : []))
     ];
+
+    if (DEBUG) {
+      console.log("Chatverlauf an OpenAI:", JSON.stringify(chatHistory, null, 2));
+    }
 
     const { data: configData } = await supabase.from('config').select('value').eq('key', 'OPENAI_API_KEY').single();
     const OPENAI_API_KEY = configData?.value;
 
-    // Ben-Nachricht holen & speichern
     try {
       const res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -106,18 +122,32 @@ export default function AssistantScreen() {
         }),
       });
       const json = await res.json();
+      if (DEBUG) console.log("Antwort von OpenAI:", json);
       const content = json.choices?.[0]?.message?.content || "🤔 Keine Antwort.";
       const msg = { user_id, sender: GARDENER_NAME, content };
       await saveMessage(msg);
       setMessages(m => [...m, { ...msg, created_at: new Date().toISOString() }]);
     } catch (e) {
       alert("Fehler beim GPT-Antwort: " + e.message);
+    }
+  };
+
+  // Textnachricht senden
+  const sendMessage = async () => {
+    if (!input.trim() || !user_id) return;
+    setLoading(true);
+    try {
+      const userMessage = { user_id, sender: "user", content: input };
+      await saveMessage(userMessage);
+      setMessages((m) => [...m, { ...userMessage, created_at: new Date().toISOString() }]);
+      setInput('');
+      await getBenAnswer(input, null);
     } finally {
       setLoading(false);
     }
   };
 
-  // Avatar wählen (lokal in assets oder von URL)
+  // Avatar wählen
   const getAvatar = (sender) => {
     if (sender === GARDENER_NAME)
       return require('../assets/avatars/ben.png');
@@ -126,7 +156,7 @@ export default function AssistantScreen() {
     return null;
   };
 
-  // Blasendesign (ganz simpel – gerne anpassen)
+  // Bubble
   const renderItem = ({ item }) => (
     <View style={{
       alignSelf: item.sender === "user" ? 'flex-end' : 'flex-start',
