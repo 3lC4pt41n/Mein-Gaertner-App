@@ -3,8 +3,11 @@
     "name": "Digitaler Gärtner",
     "slug": "digitaler-gaertner",
     "version": "1.0.0",
-    "sdkVersion": "49.0.0",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -12,9 +15,11 @@
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff",
-	"jsEngine": "jsc"
+      "jsEngine": "jsc"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
