@@ -1,11 +1,50 @@
 import { supabase } from '../supabase';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
+import { Buffer } from 'buffer'; // <- npm install buffer
 
-// *** Hilfsfunktion: Upload einer Datei in einen Supabase Bucket ***
-async function uploadImageToBucket(bucket, uri, user_id, prefix = '') {
+// Pflanzenbild hochladen (Bucket: plant-images)
+export async function uploadPlantImage(uri, user_id) {
+  const bucket = 'plant-images';
   const fileExt = uri.split('.').pop().split('?')[0];
-  const fileName = `${prefix}${user_id}_${Date.now()}.${fileExt || 'jpg'}`;
+  const fileName = `plant_${user_id}_${Date.now()}.${fileExt || 'jpg'}`;
+  let fileData, contentType = 'image/jpeg';
+
+  if (Platform.OS === 'web') {
+    // Web kann fetch(uri).blob() wie gewohnt
+    const res = await fetch(uri);
+    fileData = await res.blob();
+    contentType = fileData.type || 'image/jpeg';
+  } else {
+    // Mobile/Expo: base64 auslesen, Buffer draus machen!
+    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    fileData = Buffer.from(base64, 'base64');
+    contentType = 'image/jpeg';
+  }
+
+  const { error } = await supabase
+    .storage
+    .from(bucket)
+    .upload(fileName, fileData, { contentType, upsert: true });
+
+  if (error) throw error;
+
+  // Signierte URL holen
+  const { data: urlData, error: urlError } = await supabase
+    .storage
+    .from(bucket)
+    .createSignedUrl(fileName, 60 * 60 * 24 * 7);
+
+  if (urlError) throw urlError;
+
+  return urlData.signedUrl;
+}
+
+// Chatbild hochladen (Bucket: chat-images)
+export async function uploadChatImage(uri, user_id) {
+  const bucket = 'chat-images';
+  const fileExt = uri.split('.').pop().split('?')[0];
+  const fileName = `chat_${user_id}_${Date.now()}.${fileExt || 'jpg'}`;
   let fileData, contentType = 'image/jpeg';
 
   if (Platform.OS === 'web') {
@@ -13,36 +52,24 @@ async function uploadImageToBucket(bucket, uri, user_id, prefix = '') {
     fileData = await res.blob();
     contentType = fileData.type || 'image/jpeg';
   } else {
-    // KEIN "file://" ergänzen!
-    const fileInfo = await FileSystem.getInfoAsync(uri);
-    if (!fileInfo.exists) throw new Error('File does not exist: ' + uri);
-    fileData = await (await fetch(uri)).blob();
-    contentType = fileData.type || 'image/jpeg';
+    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    fileData = Buffer.from(base64, 'base64');
+    contentType = 'image/jpeg';
   }
 
-  // Upload
   const { error } = await supabase
     .storage
     .from(bucket)
     .upload(fileName, fileData, { contentType, upsert: true });
+
   if (error) throw error;
 
-  // Signed URL für den Zugriff (7 Tage gültig)
   const { data: urlData, error: urlError } = await supabase
     .storage
     .from(bucket)
     .createSignedUrl(fileName, 60 * 60 * 24 * 7);
+
   if (urlError) throw urlError;
 
   return urlData.signedUrl;
-}
-
-// *** Pflanze: plant-images ***
-export async function uploadPlantImage(uri, user_id) {
-  return uploadImageToBucket('plant-images', uri, user_id, 'plant_');
-}
-
-// *** Chat: chat-images ***
-export async function uploadChatImage(uri, user_id) {
-  return uploadImageToBucket('chat-images', uri, user_id, 'chat_');
 }
