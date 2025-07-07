@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Button, Text, FlatList, KeyboardAvoidingView, Platform, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, TextInput, Button, Text, FlatList, KeyboardAvoidingView, Platform, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
@@ -7,7 +7,7 @@ import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage } from '../services/uploadService';
 
 const GARDENER_NAME = "Ben";
-const DEBUG = false; // true = Log für dev
+const DEBUG = false;
 
 export default function AssistantScreen() {
   const [input, setInput] = useState('');
@@ -32,7 +32,7 @@ export default function AssistantScreen() {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
-  // Foto aufnehmen & senden
+  // Foto aufnehmen & senden (mit Upload!)
   const takeAndSendPhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
@@ -48,22 +48,23 @@ export default function AssistantScreen() {
     if (!result.canceled) {
       setLoading(true);
       try {
-        // Upload Bild zu Supabase (unterschiedlich je Plattform handled der Service)
-        const url = await uploadChatImage(result.assets[0].uri, user_id);
-        const msg = { user_id, sender: "user", content: "[Bild]", image_url: url };
+        // *** NEU: Erst BILD HOCHLADEN ***
+        const uploadedUrl = await uploadChatImage(result.assets[0].uri, user_id);
+        if (!uploadedUrl) throw new Error("Upload fehlgeschlagen");
+        // *** Nur signedUrl als image_url speichern ***
+        const msg = { user_id, sender: "user", content: "[Bild]", image_url: uploadedUrl };
         await saveMessage(msg);
         setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
-        // Jetzt nach Upload auch direkt Bens Antwort triggern:
-        await getBenAnswer("", url);
+        await getBenAnswer("", uploadedUrl);
       } catch (e) {
-        alert("Fehler beim Hochladen: " + e.message);
+        Alert.alert("Fehler beim Hochladen", e.message);
       } finally {
         setLoading(false);
       }
     }
   };
 
-  // GPT-Antwort (auch für Bild-URL)
+  // GPT-Antwort (für Text/Bild)
   const getBenAnswer = async (text = "", image_url = null) => {
     const contextPrompt = `
       Du bist "${GARDENER_NAME}", ein smarter, witziger, charmanter Pflanzen-Coach.
@@ -71,8 +72,6 @@ export default function AssistantScreen() {
       Wenn du ein Bild geschickt bekommst, reagiere spezifisch auf dessen Inhalt und beziehe es in deine Antwort ein.
       Sprich im Chat-Stil (wie WhatsApp), auf Deutsch. Antworte kurz, max. 5 Sätze.
     `;
-
-    // Verlauf korrekt bauen!
     const chatHistory = [
       { role: "system", content: contextPrompt },
       ...messages.slice(-10).map(msg => {
@@ -100,9 +99,7 @@ export default function AssistantScreen() {
       }] : (text ? [{ role: "user", content: text }] : []))
     ];
 
-    if (DEBUG) {
-      console.log("Chatverlauf an OpenAI:", JSON.stringify(chatHistory, null, 2));
-    }
+    if (DEBUG) console.log("Chat an OpenAI:", chatHistory);
 
     const { data: configData } = await supabase.from('config').select('value').eq('key', 'OPENAI_API_KEY').single();
     const OPENAI_API_KEY = configData?.value;
@@ -128,7 +125,7 @@ export default function AssistantScreen() {
       await saveMessage(msg);
       setMessages(m => [...m, { ...msg, created_at: new Date().toISOString() }]);
     } catch (e) {
-      alert("Fehler beim GPT-Antwort: " + e.message);
+      Alert.alert("Fehler beim GPT-Antwort", e.message);
     }
   };
 
