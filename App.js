@@ -12,6 +12,8 @@ import AssistantScreen from "./screens/AssistantScreen";
 import AuthScreen from "./screens/AuthScreen";
 import ProfileCompleteScreen from "./screens/ProfileCompleteScreen";
 import PlantDetailScreen from "./screens/PlantDetailScreen";
+import TaskListScreen from "./screens/TaskListScreen";
+import TaskDetailScreen from "./screens/TaskDetailScreen";
 import { supabase } from './supabase';
 import 'react-native-url-polyfill/auto';
 
@@ -23,6 +25,7 @@ function PlantStack() {
     <Stack.Navigator>
       <Stack.Screen name="Meine Pflanzen" component={PlantListScreen} />
       <Stack.Screen name="PlantDetail" component={PlantDetailScreen} options={{ title: 'Details' }} />
+	  <Stack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: "Aufgabe" }} />
     </Stack.Navigator>
   );
 }
@@ -135,7 +138,7 @@ export default function App() {
             if (route.name === "Heute") iconName = "sunny-outline";
             else if (route.name === "Meine Pflanzen") iconName = "leaf-outline";
             else if (route.name === "Pflanze hinzufügen") iconName = "add-circle-outline";
-            else if (route.name === "Kalender") iconName = "calendar-outline";
+            else if (route.name === "Aufgaben") iconName = "clipboard-outline";
             else if (route.name === "Mein Gärtner") iconName = "chatbox-ellipses-outline";
             return <Ionicons name={iconName} size={size} color={color} />;
           },
@@ -162,7 +165,7 @@ export default function App() {
         </Tab.Screen>
         <Tab.Screen name="Meine Pflanzen" component={PlantStack} />
         <Tab.Screen name="Pflanze hinzufügen" component={AddPlantScreen} />
-        <Tab.Screen name="Kalender" component={CalendarScreen} />
+        <Tab.Screen name="Aufgaben" component={TaskListScreen} />
         <Tab.Screen name="Mein Gärtner" component={AssistantScreen} />
       </Tab.Navigator>
     </NavigationContainer>
