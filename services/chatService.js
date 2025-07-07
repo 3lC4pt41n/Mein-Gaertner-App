@@ -1,10 +1,12 @@
 import { supabase } from '../supabase';
 
 // Speichert Textnachricht oder Bildnachricht (image_url optional)
-export async function saveMessage({ user_id, sender, content, image }) {
+export async function saveMessage({ user_id, sender, content, image, image_url }) {
+  // Priorisiere image_url, aber akzeptiere image (Kompatibilität)
+  const url = image_url || image || null;
   const { error } = await supabase
     .from("messages")
-    .insert([{ user_id, sender, content, image_url: image }]);
+    .insert([{ user_id, sender, content, image_url: url }]);
   if (error) throw error;
 }
 
