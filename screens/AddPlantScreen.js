@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, Image, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { savePlantToSupabase, saveHealthcheck } from "../services/plantService";
+import { uploadPlantImage } from "../services/uploadService";
 import { getConfigValue } from '../services/configService';
 import { supabase } from '../supabase';
 import { useNavigation } from '@react-navigation/native';
@@ -118,6 +119,16 @@ Sprich auf Deutsch. Wenn du unsicher bist, gib trotzdem die beste Schätzung.`,
     }
     setLoading(true);
 
+    // Erst Bild in Supabase hochladen und signed URL holen
+    let uploadedUrl = null;
+    try {
+      uploadedUrl = await uploadPlantImage(imageUri, userId);
+    } catch (e) {
+      Alert.alert("Fehler beim Hochladen", e.message);
+      setLoading(false);
+      return;
+    }
+
     // 1. GPT Details holen
     let details = null;
     try {
@@ -211,10 +222,10 @@ Bewertungsskala: 0 = kritisch, 100 = exzellent. **Nur das JSON zurückgeben, kei
         body: JSON.stringify({
           model: "gpt-4o",
           messages: [{ role: "user", content: hcPrompt },
-            ...(imageUri ? [{
+            ...(uploadedUrl ? [{
               role: "user",
               content: [
-                { type: "image_url", image_url: { url: imageUri } }
+                { type: "image_url", image_url: { url: uploadedUrl } }
               ]
             }] : [])
           ],
@@ -234,7 +245,7 @@ Bewertungsskala: 0 = kritisch, 100 = exzellent. **Nur das JSON zurückgeben, kei
       const plant = await savePlantToSupabase({
         name,
         note,
-        image: imageUri,
+        image: uploadedUrl,
         user_id: userId,
         details,
       });
