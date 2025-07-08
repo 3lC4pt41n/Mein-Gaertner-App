@@ -1,7 +1,7 @@
 import { supabase } from '../supabase';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-import { Buffer } from 'buffer'; // <- npm install buffer
+import { Buffer } from 'buffer'; // npm install buffer
 
 // Pflanzenbild hochladen (Bucket: plant-images)
 export async function uploadPlantImage(uri, user_id) {
@@ -11,12 +11,10 @@ export async function uploadPlantImage(uri, user_id) {
   let fileData, contentType = 'image/jpeg';
 
   if (Platform.OS === 'web') {
-    // Web kann fetch(uri).blob() wie gewohnt
     const res = await fetch(uri);
     fileData = await res.blob();
     contentType = fileData.type || 'image/jpeg';
   } else {
-    // Mobile/Expo: base64 auslesen, Buffer draus machen!
     const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
     fileData = Buffer.from(base64, 'base64');
     contentType = 'image/jpeg';
@@ -29,7 +27,6 @@ export async function uploadPlantImage(uri, user_id) {
 
   if (error) throw error;
 
-  // Signierte URL holen
   const { data: urlData, error: urlError } = await supabase
     .storage
     .from(bucket)
