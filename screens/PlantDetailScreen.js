@@ -1,6 +1,38 @@
+// screens/PlantDetailScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
+import {
+  View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator,
+  StyleSheet, Dimensions, Modal, SectionList, Alert
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../supabase';
 import { fetchLatestHealthcheck } from '../services/plantService';
+import { useNavigation } from '@react-navigation/native';
+
+// Helper zum Gruppieren Locations > Zonen
+async function fetchZonesWithLocationsGrouped() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Nicht eingeloggt");
+  const { data: locations, error: locError } = await supabase
+    .from("locations")
+    .select("id, name")
+    .eq("user_id", user.id);
+  if (locError) throw locError;
+  const locationIds = (locations || []).map(l => l.id);
+  if (!locationIds.length) return [];
+  const { data: zones, error: zonesError } = await supabase
+    .from("zones")
+    .select("id, name, type, location_id")
+    .in("location_id", locationIds)
+    .order("name");
+  if (zonesError) throw zonesError;
+  // Group zones by location
+  const grouped = locations.map(location => ({
+    title: location.name,
+    data: zones.filter(z => z.location_id === location.id)
+  })).filter(section => section.data.length > 0);
+  return grouped;
+}
 
 const tabNames = [
   { key: 'overview', label: 'Überblick' },
@@ -9,7 +41,6 @@ const tabNames = [
   { key: 'health', label: 'Healthcheck' }
 ];
 
-// Simple ScoreCircle
 function ScoreCircle({ score = 0 }) {
   let color = "#eee";
   if (score >= 90) color = "#4caf50";
@@ -31,10 +62,21 @@ function ScoreCircle({ score = 0 }) {
 
 export default function PlantDetailScreen({ route }) {
   const { plant } = route.params;
+  const navigation = useNavigation();
+
   const [tab, setTab] = useState('overview');
   const details = plant.details || {};
   const [healthcheck, setHealthcheck] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // --- Zone-Picker States ---
+  const [sections, setSections] = useState([]);
+  const [zonesLoading, setZonesLoading] = useState(false);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [savingZone, setSavingZone] = useState(false);
+
+  // Für Zonen-Anzeige:
+  const [assignedZone, setAssignedZone] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -42,14 +84,88 @@ export default function PlantDetailScreen({ route }) {
       try {
         const hc = await fetchLatestHealthcheck(plant.id);
         setHealthcheck(hc);
-      } catch (e) {
+      } catch {
         setHealthcheck(null);
       }
       setLoading(false);
     })();
-  }, [plant.id]);
+    // Hole ggf. Zone/Location falls zugewiesen:
+    if (plant.zone_id) {
+      fetchAssignedZone();
+    }
+  }, [plant.id, plant.zone_id]);
 
-  // für schönes Bild (Seitenverhältnis 3:2)
+  // Aktuelle Zone inkl. Location-Namen laden
+  async function fetchAssignedZone() {
+    const { data, error } = await supabase
+      .from("zones")
+      .select("id, name, type, location:locations(name)")
+      .eq("id", plant.zone_id)
+      .maybeSingle();
+    setAssignedZone(data || null);
+  }
+
+  // Zonen (gruppiert) laden beim Öffnen des Modals
+  const loadZones = async () => {
+    if (zonesLoading) return;
+    setZonesLoading(true);
+    try {
+      const data = await fetchZonesWithLocationsGrouped();
+      setSections(data);
+    } catch (err) {
+      Alert.alert("Fehler", err.message);
+      setSections([]);
+    }
+    setZonesLoading(false);
+  };
+
+  // Pflanze einer Zone zuweisen
+  const assignZone = async (zone) => {
+    setSavingZone(true);
+    try {
+      const { error } = await supabase
+        .from("plants")
+        .update({ zone_id: zone.id })
+        .eq("id", plant.id);
+      if (error) throw error;
+      Alert.alert("Erfolg", `Pflanze jetzt in Zone „${zone.name}“`);
+      setPickerVisible(false);
+      setAssignedZone(zone);
+    } catch (e) {
+      Alert.alert("Fehler", e.message);
+    } finally {
+      setSavingZone(false);
+    }
+  };
+
+  // Pflanze aus Zone entfernen (Austreten)
+  const removeZone = async () => {
+    Alert.alert(
+      "Zone entfernen?",
+      "Soll die Pflanze wirklich aus dieser Zone entfernt werden?",
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Entfernen",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from("plants")
+                .update({ zone_id: null })
+                .eq("id", plant.id);
+              if (error) throw error;
+              setAssignedZone(null);
+              Alert.alert("Erfolg", "Zone entfernt. Jetzt kannst du eine neue zuweisen.");
+            } catch (e) {
+              Alert.alert("Fehler", e.message);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const width = Math.min(Dimensions.get('window').width, 500) - 40;
 
   return (
@@ -62,6 +178,41 @@ export default function PlantDetailScreen({ route }) {
         <Text style={styles.subtitle}>{plant.note}</Text>
         {healthcheck && typeof healthcheck.healthscore === "number" &&
           <ScoreCircle score={healthcheck.healthscore} />}
+
+        {/* Zugewiesene Zone */}
+        {assignedZone ? (
+          <View style={{ alignItems: "center", marginVertical: 8 }}>
+            <Ionicons name="home-outline" size={18} color="#4caf50" />
+            <Text style={{ color: "#333", fontWeight: "bold", fontSize: 16 }}>
+              Zugewiesen: {assignedZone.name}
+              {assignedZone.location?.name ? ` (${assignedZone.location.name})` : ""}
+            </Text>
+            <View style={{ flexDirection: "row", marginTop: 8 }}>
+              <TouchableOpacity
+                style={[styles.zoneBtn, { backgroundColor: "#999", marginRight: 8 }]}
+                onPress={() => { setPickerVisible(true); loadZones(); }}
+              >
+                <Ionicons name="swap-horizontal" size={18} color="#fff" style={{ marginRight: 6 }} />
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>Zone wechseln</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.zoneBtn, { backgroundColor: "#e53935" }]}
+                onPress={removeZone}
+              >
+                <Ionicons name="close" size={18} color="#fff" style={{ marginRight: 6 }} />
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>Zone entfernen</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.zoneBtn}
+            onPress={() => { setPickerVisible(true); loadZones(); }}
+          >
+            <Ionicons name="home-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>Zone zuweisen</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Tabs */}
@@ -123,6 +274,45 @@ export default function PlantDetailScreen({ route }) {
           <Text style={{ color: "#AAA" }}>Keine Details verfügbar.</Text>
         )}
       </View>
+
+      {/* --------- Zone Picker Modal: SectionList mit Locations als Header --------- */}
+      <Modal
+        visible={pickerVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setPickerVisible(false)}
+      >
+        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPressOut={() => setPickerVisible(false)}>
+          <TouchableOpacity style={styles.sheet} activeOpacity={1}>
+            <Text style={styles.sheetTitle}>Zone auswählen</Text>
+            {zonesLoading ? (
+              <ActivityIndicator size="large" color="#4CAF50" />
+            ) : sections.length ? (
+              <SectionList
+                sections={sections}
+                keyExtractor={item => item.id}
+                renderSectionHeader={({ section: { title } }) => (
+                  <Text style={styles.sectionHeader}>{title}</Text>
+                )}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.zoneRow}
+                    onPress={() => assignZone(item)}
+                    disabled={savingZone}
+                  >
+                    <Ionicons name="home-outline" size={22} color="#4CAF50" style={{ marginRight: 8 }} />
+                    <Text style={styles.zoneName}>{item.name} <Text style={styles.zoneType}>({item.type})</Text></Text>
+                  </TouchableOpacity>
+                )}
+                ListEmptyComponent={<Text style={{ textAlign: "center", color: "#666" }}>Keine Zonen angelegt.</Text>}
+              />
+            ) : (
+              <Text style={{ textAlign: "center", color: "#666" }}>Keine Zonen angelegt.</Text>
+            )}
+            {savingZone && <ActivityIndicator size="large" color="#4CAF50" style={{ marginTop: 12 }} />}
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -153,5 +343,51 @@ const styles = StyleSheet.create({
     color: "#888",
     marginBottom: 7,
     textAlign: "center"
-  }
+  },
+  zoneBtn: {
+    flexDirection: "row",
+    alignSelf: "center",
+    backgroundColor: "#4CAF50",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginTop: 6,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    justifyContent: "flex-end",
+  },
+  sheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: "60%",
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  sectionHeader: {
+    fontWeight: "bold",
+    fontSize: 15,
+    backgroundColor: "#F5F5F5",
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    marginTop: 14,
+    color: "#6b6b6b"
+  },
+  zoneRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: "#ddd",
+  },
+  zoneName: { fontSize: 16 },
+  zoneType: { color: "gray", fontSize: 13 },
+  locationTxt: { color: "gray", fontSize: 12 },
 });

@@ -1,42 +1,52 @@
-// HomeManager.jsx – React Native friendly (no shadcn/ui)
-// -------------------------------------------------------------------
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput, Alert } from "react-native";
 import { Modal, Portal, Provider as PaperProvider, Button, Card, IconButton } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 
-/**
- * NOTE: react-native-paper gives us ready‑made Card & Button components, so
- * we drop the web‑only shadcn/ui imports that caused the Metro bundler error.
- */
-
 export default function HomeManager() {
-  const [homes, setHomes] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [editing, setEditing] = useState(null); // { type: 'home'|'zone', homeId, zone }
+  const [editing, setEditing] = useState(null); // { type: 'location'|'zone', locationId, zone }
   const [form, setForm] = useState({ name: "", address: "", type: "room" });
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const { data, error } = await supabase
-        .from("homes")
-        .select("id, name, address, zones:id(zones(id, name, type))")
-        .order("created_at");
-      if (error) console.error(error);
-      else setHomes(data || []);
-    })();
-  }, []);
+  useEffect(() => { reload(); }, []);
 
-  const openHomeModal = (home) => {
-    setEditing({ type: "home", homeId: home?.id });
-    setForm({ name: home?.name || "", address: home?.address || "" });
+  // Helper: getUserId
+  const getUserId = async () => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      Alert.alert("Nicht eingeloggt", "Bitte logge dich ein!");
+      throw new Error("Not authenticated");
+    }
+    return user.id;
+  };
+
+  // Lade Locations + Zonen
+  const reload = async () => {
+    setLoading(true);
+    const user_id = await getUserId();
+    const { data, error } = await supabase
+      .from("locations")
+      .select("id, name, address, zones(id, name, type)")
+      .eq("user_id", user_id)
+      .order("created_at");
+    if (error) Alert.alert("Fehler beim Laden", error.message);
+    setLocations(data || []);
+    setLoading(false);
+  };
+
+  // Modals
+  const openLocationModal = (loc) => {
+    setEditing({ type: "location", locationId: loc?.id });
+    setForm({ name: loc?.name || "", address: loc?.address || "" });
     setDialogVisible(true);
   };
 
-  const openZoneModal = (homeId, zone) => {
-    setEditing({ type: "zone", homeId, zone });
+  const openZoneModal = (locationId, zone) => {
+    setEditing({ type: "zone", locationId, zone });
     setForm({ name: zone?.name || "", type: zone?.type || "room" });
     setDialogVisible(true);
   };
@@ -47,28 +57,95 @@ export default function HomeManager() {
     setForm({ name: "", address: "", type: "room" });
   };
 
-  const saveHome = async () => {
-    if (!form.name.trim()) return;
-    if (editing?.homeId) {
-      await supabase.from("homes").update({ name: form.name, address: form.address }).eq("id", editing.homeId);
-    } else {
-      await supabase.from("homes").insert({ name: form.name, address: form.address });
+  // CRUD – Locations
+  const saveLocation = async () => {
+    const user_id = await getUserId();
+    if (!form.name.trim()) {
+      Alert.alert("Fehler", "Name darf nicht leer sein.");
+      return;
     }
-    closeModal();
-    reload();
+    try {
+      if (editing?.locationId) {
+        // Update
+        const { error } = await supabase
+          .from("locations")
+          .update({ name: form.name, address: form.address })
+          .eq("id", editing.locationId)
+          .eq("user_id", user_id);
+        if (error) throw error;
+      } else {
+        // Insert (user_id setzen!)
+        const { error } = await supabase
+          .from("locations")
+          .insert([{ name: form.name, address: form.address, user_id }]);
+        if (error) throw error;
+      }
+      closeModal();
+      reload();
+    } catch (err) {
+      Alert.alert("Fehler", err.message);
+    }
   };
 
+  // CRUD – Zones
   const saveZone = async () => {
-    if (!form.name.trim()) return;
-    if (editing?.zone) {
-      await supabase.from("zones").update({ name: form.name, type: form.type }).eq("id", editing.zone.id);
-    } else {
-      await supabase.from("zones").insert({ home_id: editing.homeId, name: form.name, type: form.type });
+    if (!form.name.trim()) {
+      Alert.alert("Fehler", "Name darf nicht leer sein.");
+      return;
     }
-    closeModal();
-    reload();
+    try {
+      if (editing?.zone) {
+        // Update
+        const { error } = await supabase
+          .from("zones")
+          .update({ name: form.name, type: form.type })
+          .eq("id", editing.zone.id)
+          .eq("location_id", editing.locationId);
+        if (error) throw error;
+      } else {
+        // Insert
+        const { error } = await supabase
+          .from("zones")
+          .insert([{ location_id: editing.locationId, name: form.name, type: form.type }]);
+        if (error) throw error;
+      }
+      closeModal();
+      reload();
+    } catch (err) {
+      Alert.alert("Fehler", err.message);
+    }
   };
 
+  // Delete – Locations
+  const deleteLocation = async (locationId) => {
+    Alert.alert(
+      "Zuhause löschen?",
+      "Alle zugehörigen Zonen und Pflanzen werden entfernt. Sicher?",
+      [
+        { text: "Abbrechen" },
+        {
+          text: "Löschen",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const user_id = await getUserId();
+              const { error } = await supabase
+                .from("locations")
+                .delete()
+                .eq("id", locationId)
+                .eq("user_id", user_id);
+              if (error) throw error;
+              reload();
+            } catch (err) {
+              Alert.alert("Fehler", err.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Delete – Zones
   const deleteZone = async (zoneId) => {
     Alert.alert("Zone löschen?", "Alle zugehörigen Pflanzen verlieren ihren Standort.", [
       { text: "Abbrechen" },
@@ -76,27 +153,44 @@ export default function HomeManager() {
         text: "Löschen",
         style: "destructive",
         onPress: async () => {
-          await supabase.from("zones").delete().eq("id", zoneId);
-          reload();
+          try {
+            const { error } = await supabase.from("zones").delete().eq("id", zoneId);
+            if (error) throw error;
+            reload();
+          } catch (err) {
+            Alert.alert("Fehler", err.message);
+          }
         },
       },
     ]);
   };
 
-  const reload = async () => {
-    const { data } = await supabase
-      .from("homes")
-      .select("id, name, address, zones:id(zones(id, name, type))")
-      .order("created_at");
-    setHomes(data || []);
-  };
-
-  const renderZone = ({ item, homeId }) => (
-    <View style={styles.zoneRow}>
+  // Zonen-Row
+  const ZoneRow = ({ item, locationId }) => (
+    <View style={styles.zoneRow} key={item.id}>
       <Text style={styles.zoneText}>{item.name} <Text style={styles.zoneType}>({item.type})</Text></Text>
       <View style={{ flexDirection: "row" }}>
-        <IconButton icon="pencil" size={18} onPress={() => openZoneModal(homeId, item)} />
+        <IconButton icon="pencil" size={18} onPress={() => openZoneModal(locationId, item)} />
         <IconButton icon="delete" size={18} onPress={() => deleteZone(item.id)} />
+      </View>
+    </View>
+  );
+
+  // Picker für Zone-Type
+  const renderZoneTypeInput = () => (
+    <View style={{ marginBottom: 12 }}>
+      <Text style={{ marginBottom: 4 }}>Typ:</Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+        {["room", "balcony", "garden", "greenhouse"].map((type) => (
+          <Button
+            key={type}
+            mode={form.type === type ? "contained" : "outlined"}
+            onPress={() => setForm({ ...form, type })}
+            style={{ marginRight: 6, marginBottom: 6 }}
+          >
+            {type}
+          </Button>
+        ))}
       </View>
     </View>
   );
@@ -105,10 +199,14 @@ export default function HomeManager() {
     <PaperProvider>
       <FlatList
         contentContainerStyle={{ padding: 16 }}
-        data={homes}
-        keyExtractor={(h) => h.id}
+        data={locations}
+        refreshing={loading}
+        onRefresh={reload}
+        keyExtractor={(l) => l.id}
         ListHeaderComponent={() => (
-          <Button mode="contained" icon="home-plus" onPress={() => openHomeModal()}>Neues Zuhause</Button>
+          <Button mode="contained" icon="home-plus" onPress={() => openLocationModal()}>
+            Neues Zuhause
+          </Button>
         )}
         renderItem={({ item }) => (
           <Card style={{ marginTop: 16 }}>
@@ -129,7 +227,9 @@ export default function HomeManager() {
             {expandedId === item.id && (
               <Card.Content>
                 {item.zones?.length ? (
-                  item.zones.map((z) => renderZone({ item: z, homeId: item.id }))
+                  item.zones.map((z) =>
+                    <ZoneRow key={z.id} item={z} locationId={item.id} />
+                  )
                 ) : (
                   <Text style={styles.emptyTxt}>Keine Zonen angelegt.</Text>
                 )}
@@ -141,6 +241,23 @@ export default function HomeManager() {
                 >
                   Zone hinzufügen
                 </Button>
+                <Button
+                  icon="pencil"
+                  mode="outlined"
+                  onPress={() => openLocationModal(item)}
+                  style={{ marginTop: 8 }}
+                >
+                  Zuhause bearbeiten
+                </Button>
+                <Button
+                  icon="delete"
+                  mode="outlined"
+                  onPress={() => deleteLocation(item.id)}
+                  color="red"
+                  style={{ marginTop: 8 }}
+                >
+                  Zuhause löschen
+                </Button>
               </Card.Content>
             )}
           </Card>
@@ -151,8 +268,8 @@ export default function HomeManager() {
       <Portal>
         <Modal visible={dialogVisible} onDismiss={closeModal} contentContainerStyle={styles.modalBox}>
           <Text style={styles.modalTitle}>
-            {editing?.type === "home"
-              ? editing.homeId
+            {editing?.type === "location"
+              ? editing.locationId
                 ? "Zuhause bearbeiten"
                 : "Neues Zuhause"
               : editing?.zone
@@ -165,7 +282,7 @@ export default function HomeManager() {
             value={form.name}
             onChangeText={(t) => setForm({ ...form, name: t })}
           />
-          {editing?.type === "home" && (
+          {editing?.type === "location" && (
             <TextInput
               style={styles.input}
               placeholder="Adresse (optional)"
@@ -173,15 +290,12 @@ export default function HomeManager() {
               onChangeText={(t) => setForm({ ...form, address: t })}
             />
           )}
-          {editing?.type === "zone" && (
-            <TextInput
-              style={styles.input}
-              placeholder="Typ (room, balcony, garden, greenhouse)"
-              value={form.type}
-              onChangeText={(t) => setForm({ ...form, type: t })}
-            />
-          )}
-          <Button mode="contained" onPress={editing?.type === "home" ? saveHome : saveZone}>
+          {editing?.type === "zone" && renderZoneTypeInput()}
+          <Button
+            mode="contained"
+            onPress={editing?.type === "location" ? saveLocation : saveZone}
+            style={{ marginTop: 12 }}
+          >
             Speichern
           </Button>
         </Modal>

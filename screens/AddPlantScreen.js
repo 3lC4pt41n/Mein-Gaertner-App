@@ -264,7 +264,10 @@ Bewertungsskala: 0 = kritisch, 100 = exzellent. **Nur das JSON zurückgeben, kei
       setName(""); setNote(""); setImageUri(null);
 
       // 5. Direkt zum Detail
-      navigation.navigate('PlantDetail', { plant });
+      navigation.navigate('MeinePflanzenTab', {
+		screen: 'PlantDetail',
+		params: { plant }
+		});
     } catch (err) {
       Alert.alert("Fehler", "Speichern fehlgeschlagen: " + err.message);
     } finally {
