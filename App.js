@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import HeaderButtons from "./components/HeaderButtons";
 
 import TodayScreen from "./screens/TodayScreen";
 import PlantListScreen from "./screens/PlantListScreen";
@@ -18,53 +19,104 @@ import { supabase } from './supabase';
 import 'react-native-url-polyfill/auto';
 
 const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const RootStack = createNativeStackNavigator();
+const HomeStack = createNativeStackNavigator();
+const PlantStack = createNativeStackNavigator();
+const AddStack = createNativeStackNavigator();
+const TaskStack = createNativeStackNavigator();
+const AssistantStack = createNativeStackNavigator();
 
-function PlantStack() {
+
+function HomeStackScreen({ user }) {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Meine Pflanzen" component={PlantListScreen} />
-      <Stack.Screen name="PlantDetail" component={PlantDetailScreen} options={{ title: 'Details' }} />
-	  <Stack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: "Aufgabe" }} />
-    </Stack.Navigator>
+    <HomeStack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerRight: () => <HeaderButtons navigation={navigation} />
+      })}
+    >
+      <HomeStack.Screen name="Heute">
+        {props => <TodayScreen {...props} user={user} />}
+      </HomeStack.Screen>
+    </HomeStack.Navigator>
   );
 }
 
-function HomeStackScreen({ user, profile, onProfileEditDone }) {
+function PlantStackScreen() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Heute"
-        options={({ navigation }) => ({
-          headerRight: () => (
-            <Ionicons
-              name="person-circle-outline"
-              size={28}
-              color="#4CAF50"
-              style={{ marginRight: 16 }}
-              onPress={() => navigation.navigate("ProfilBearbeiten")}
-            />
-          ),
-          title: "Heute",
-        })}
-      >
-        {props => <TodayScreen {...props} user={user} />}
-      </Stack.Screen>
-      <Stack.Screen
-        name="ProfilBearbeiten"
-        options={{ title: "Profil bearbeiten" }}
-      >
-        {props => (
-          <ProfileCompleteScreen
-            {...props}
-            user={user}
-            profile={profile}
-            onDone={onProfileEditDone}
-            showSkip
-          />
-        )}
-      </Stack.Screen>
-    </Stack.Navigator>
+    <PlantStack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerRight: () => <HeaderButtons navigation={navigation} />
+      })}
+    >
+      <PlantStack.Screen name="Meine Pflanzen" component={PlantListScreen} />
+      <PlantStack.Screen name="PlantDetail" component={PlantDetailScreen} options={{ title: 'Details' }} />
+      <PlantStack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: 'Aufgabe' }} />
+    </PlantStack.Navigator>
+  );
+}
+
+function AddPlantStackScreen() {
+  return (
+    <AddStack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerRight: () => <HeaderButtons navigation={navigation} />
+      })}
+    >
+      <AddStack.Screen name="Pflanze hinzufügen" component={AddPlantScreen} />
+    </AddStack.Navigator>
+  );
+}
+
+function TaskStackScreen() {
+  return (
+    <TaskStack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerRight: () => <HeaderButtons navigation={navigation} />
+      })}
+    >
+      <TaskStack.Screen name="Aufgaben" component={TaskListScreen} />
+      <TaskStack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: 'Aufgabe' }} />
+    </TaskStack.Navigator>
+  );
+}
+
+function AssistantStackScreen() {
+  return (
+    <AssistantStack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerRight: () => <HeaderButtons navigation={navigation} />
+      })}
+    >
+      <AssistantStack.Screen name="Mein Gärtner" component={AssistantScreen} />
+    </AssistantStack.Navigator>
+  );
+}
+
+function MainTabs({ user }) {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+          if (route.name === 'Heute') iconName = 'sunny-outline';
+          else if (route.name === 'Meine Pflanzen') iconName = 'leaf-outline';
+          else if (route.name === 'Pflanze hinzufügen') iconName = 'add-circle-outline';
+          else if (route.name === 'Aufgaben') iconName = 'clipboard-outline';
+          else if (route.name === 'Mein Gärtner') iconName = 'chatbox-ellipses-outline';
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#4CAF50',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen name="Heute">
+        {props => <HomeStackScreen {...props} user={user} />}
+      </Tab.Screen>
+      <Tab.Screen name="Meine Pflanzen" component={PlantStackScreen} />
+      <Tab.Screen name="Pflanze hinzufügen" component={AddPlantStackScreen} />
+      <Tab.Screen name="Aufgaben" component={TaskStackScreen} />
+      <Tab.Screen name="Mein Gärtner" component={AssistantStackScreen} />
+    </Tab.Navigator>
   );
 }
 
@@ -78,7 +130,7 @@ export default function App() {
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
     });
-    return () => { listener?.subscription.unsubscribe(); }
+    return () => { listener?.subscription.unsubscribe(); };
   }, []);
 
   useEffect(() => {
@@ -99,11 +151,19 @@ export default function App() {
     }
   }, [user]);
 
+  const refreshProfile = () => {
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => setProfile(data));
+  };
+
   if (loading) return null; // Oder ein Loader
 
   if (!user) return <AuthScreen />;
 
-  // Profil vollständig?
   const profileIncomplete =
     !profile?.username ||
     !profile?.first_name ||
@@ -116,14 +176,7 @@ export default function App() {
       <ProfileCompleteScreen
         user={user}
         profile={profile}
-        onDone={() => {
-          supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single()
-            .then(({ data }) => setProfile(data));
-        }}
+        onDone={refreshProfile}
         showSkip
       />
     );
@@ -131,43 +184,22 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ color, size }) => {
-            let iconName;
-            if (route.name === "Heute") iconName = "sunny-outline";
-            else if (route.name === "Meine Pflanzen") iconName = "leaf-outline";
-            else if (route.name === "Pflanze hinzufügen") iconName = "add-circle-outline";
-            else if (route.name === "Aufgaben") iconName = "clipboard-outline";
-            else if (route.name === "Mein Gärtner") iconName = "chatbox-ellipses-outline";
-            return <Ionicons name={iconName} size={size} color={color} />;
-          },
-          tabBarActiveTintColor: "#4CAF50",
-          tabBarInactiveTintColor: "gray",
-        })}
-      >
-        <Tab.Screen name="Heute">
+      <RootStack.Navigator>
+        <RootStack.Screen name="MainTabs" options={{ headerShown: false }}>
+          {props => <MainTabs {...props} user={user} />}
+        </RootStack.Screen>
+        <RootStack.Screen name="ProfilBearbeiten" options={{ title: 'Profil bearbeiten' }}>
           {props => (
-            <HomeStackScreen
+            <ProfileCompleteScreen
               {...props}
               user={user}
               profile={profile}
-              onProfileEditDone={() => {
-                supabase
-                  .from('profiles')
-                  .select('*')
-                  .eq('id', user.id)
-                  .single()
-                  .then(({ data }) => setProfile(data));
-              }}
+              onDone={refreshProfile}
+              showSkip
             />
           )}
-        </Tab.Screen>
-        <Tab.Screen name="Meine Pflanzen" component={PlantStack} />
-        <Tab.Screen name="Pflanze hinzufügen" component={AddPlantScreen} />
-        <Tab.Screen name="Aufgaben" component={TaskListScreen} />
-        <Tab.Screen name="Mein Gärtner" component={AssistantScreen} />
-      </Tab.Navigator>
+        </RootStack.Screen>
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 }
