@@ -15,7 +15,7 @@ export async function uploadPlantImage(uri, user_id) {
     fileData = await res.blob();
     contentType = fileData.type || 'image/jpeg';
   } else {
-    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
     fileData = Buffer.from(base64, 'base64');
     contentType = 'image/jpeg';
   }
@@ -49,7 +49,7 @@ export async function uploadChatImage(uri, user_id) {
     fileData = await res.blob();
     contentType = fileData.type || 'image/jpeg';
   } else {
-    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
     fileData = Buffer.from(base64, 'base64');
     contentType = 'image/jpeg';
   }

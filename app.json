@@ -3,6 +3,9 @@
     "name": "Digitaler Gärtner",
     "slug": "digitaler-gaertner",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "platforms": [
       "ios",
       "android",
@@ -14,23 +17,40 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "jsEngine": "jsc"
+      "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "de.esanum.digitaler-gaertner",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "de.esanum.digitalergaertner",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e2da4aab-3bb5-491b-b009-e3fb2b557bdc"
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      "expo-updates"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e2da4aab-3bb5-491b-b009-e3fb2b557bdc"
+      }
+    },
+    "owner": "timergenthaler"
   }
 }

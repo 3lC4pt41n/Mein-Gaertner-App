@@ -3,3 +3,8 @@ node_modules/
 .DS_Store
 npm-debug.log
 .env
+google-service-account.json
+*.p8
+*.jks
+credentials.json
+digitaler-gaertner-app-*.json

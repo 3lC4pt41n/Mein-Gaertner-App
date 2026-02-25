@@ -3,37 +3,47 @@ import { View, Text, TextInput, Button, Image, ActivityIndicator, Alert, ScrollV
 import * as ImagePicker from 'expo-image-picker';
 import { savePlantToSupabase, saveHealthcheck } from "../services/plantService";
 import { uploadPlantImage } from "../services/uploadService";
-import { getConfigValue } from '../services/configService';
+import { recognizePlant, generatePlantDetails, performHealthcheck } from '../services/aiService';
+import { fetchBalance } from '../services/creditService';
 import { supabase } from '../supabase';
 import { useNavigation } from '@react-navigation/native';
-
-let OPENAI_API_KEY;
 
 export default function AddPlantScreen() {
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
   const [imageUri, setImageUri] = useState(null);
+  const [base64Image, setBase64Image] = useState(null);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [balance, setBalance] = useState(null);
   const navigation = useNavigation();
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getUser();
       setUserId(data?.user?.id ?? null);
+      try {
+        const bal = await fetchBalance();
+        setBalance(bal);
+      } catch {}
     })();
   }, []);
 
+  // Insufficent Credits Error Handler
+  const handleCreditError = (e) => {
+    if (e.code === 'INSUFFICIENT_CREDITS') {
+      Alert.alert(
+        "Nicht genügend Credits",
+        `Du hast ${e.balance} Credits, brauchst aber ${e.required}.\n\nGehe zum Shop, um Credits nachzuladen.`,
+        [{ text: "OK" }]
+      );
+      return true;
+    }
+    return false;
+  };
+
   // Foto aufnehmen & Pflanze erkennen
   const takePhotoAndRecognize = async () => {
-    if (!OPENAI_API_KEY) {
-      try {
-        OPENAI_API_KEY = await getConfigValue("OPENAI_API_KEY");
-      } catch (e) {
-        Alert.alert("Fehler beim Laden des API-Keys", e.message);
-        return;
-      }
-    }
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
       alert("Kamerazugriff wird benötigt.");
@@ -49,63 +59,21 @@ export default function AddPlantScreen() {
       const base64 = result.assets[0].base64;
       const uri = result.assets[0].uri;
       setImageUri(uri);
+      setBase64Image(base64);
       setLoading(true);
 
       try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o",
-            messages: [
-              {
-                role: "user",
-                content: [
-                  {
-                    type: "text",
-                    text: `Erkenne die Pflanze auf diesem Foto und gib die Antwort im folgenden JSON-Format zurück:
-{
-  "name": "Botanischer Name",
-  "note": "Pflegehinweis in einem Satz"
-}
-Sprich auf Deutsch. Wenn du unsicher bist, gib trotzdem die beste Schätzung.`,
-                  },
-                  {
-                    type: "image_url",
-                    image_url: {
-                      url: `data:image/jpeg;base64,${base64}`,
-                    },
-                  },
-                ],
-              },
-            ],
-            max_tokens: 600,
-          }),
-        });
-        const data = await response.json();
-        if (data.error) {
-          Alert.alert("Fehler bei GPT", data.error.message || "Unbekannter Fehler");
-          setNote("Fehler: " + data.error.message);
-          setName("");
-        } else {
-          const content = data.choices?.[0]?.message?.content || "";
-          try {
-            const cleaned = content.replace(/```json/g, '').replace(/```/g, '').trim();
-            const parsed = JSON.parse(cleaned);
-            setName(parsed.name || "Kein Name erkannt");
-            setNote(parsed.note || "Kein Hinweis vorhanden");
-          } catch {
-            setName("Antwort nicht im JSON-Format");
-            setNote(content);
-          }
-        }
+        // Edge Function aufrufen statt direkt OpenAI
+        const data = await recognizePlant(base64);
+        setName(data.name || "Kein Name erkannt");
+        setNote(data.note || "Kein Hinweis vorhanden");
+        if (typeof data.balance === 'number') setBalance(data.balance);
       } catch (e) {
-        Alert.alert("Verbindungsfehler", e.message || "Unbekannter Fehler");
-        setNote("Fehler: Verbindung fehlgeschlagen");
-        setName("");
+        if (!handleCreditError(e)) {
+          Alert.alert("Fehler", e.message || "Unbekannter Fehler");
+          setNote("Fehler: " + (e.message || "Verbindung fehlgeschlagen"));
+          setName("");
+        }
       }
       setLoading(false);
     }
@@ -129,115 +97,28 @@ Sprich auf Deutsch. Wenn du unsicher bist, gib trotzdem die beste Schätzung.`,
       return;
     }
 
-    // 1. GPT Details holen
+    // 1. Details über Edge Function holen
     let details = null;
     try {
-      const prompt = `
-Gib für die Pflanze "${name}" (Hinweis: "${note}") eine verschachtelte JSON-Antwort im exakten Format unten zurück – alle Felder bitte möglichst vollständig befüllen (auf Deutsch):
-
-{
-  "overview": {
-    "Deutscher Name": "...",
-    "Botanischer Name": "...",
-    "Familie": "...",
-    "Herkunft": "...",
-    "Lebensform": "...",
-    "Größe": "...",
-    "Blütezeit": "...",
-    "Lebensdauer": "...",
-    "Highlight": "..."
-  },
-  "care": {
-    "Licht": "...",
-    "Temperaturbereich": "...",
-    "Luftfeuchte": "...",
-    "Substrat / Boden": "...",
-    "Gießen": "...",
-    "Düngen": "...",
-    "Schnitt": "...",
-    "Umtopfen": "...",
-    "Rankhilfe": "...",
-    "Besondere Hinweise": "..."
-  },
-  "extras": {
-    "Zier- & Nutzwert": "...",
-    "Giftigkeit": "...",
-    "Vermehrung": "...",
-    "Typische Schädlinge": "...",
-    "Krankheiten": "...",
-    "Fun Fact / Kultur": "..."
-  }
-}
-KEINE Kommentare, keine Erklärungen, KEIN sonstiger Text – nur das pure JSON-Objekt!`;
-
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 1500,
-        }),
-      });
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content || "";
-      details = JSON.parse(content.replace(/```json/g, '').replace(/```/g, '').trim());
+      const detailsData = await generatePlantDetails(name, note);
+      details = detailsData.details;
+      if (typeof detailsData.balance === 'number') setBalance(detailsData.balance);
     } catch (e) {
+      if (handleCreditError(e)) { setLoading(false); return; }
       details = null;
-      Alert.alert("Warnung", "Konnte Detaildaten nicht sauber parsen.");
+      Alert.alert("Warnung", "Konnte Detaildaten nicht laden.");
     }
 
-    // 2. GPT Healthcheck holen (ALLE Kriterien im Prompt, alle Felder als Zahl 0-100)
+    // 2. Healthcheck über Edge Function holen
     let healthcheck = null;
     try {
-      const hcPrompt = `
-Analysiere das bereitgestellte Pflanzenfoto und führe einen **Pflanzengesundheits-Check** durch. Gib AUSSCHLIESSLICH das folgende JSON zurück:
-
-{
-  "healthscore": <Ganzzahl 0-100, gewichtetes Mittel der Bewertungen>,
-  "table": [
-    { "Kriterium": "Blattfarbe & -struktur",   "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Schädlingsbefall",         "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Blattintegrität",          "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Wuchsform & Standfestigkeit", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Topf- zu Pflanzengröße",   "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Substrat & Oberfläche",    "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Gesamtpflege-Anzeichen",   "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" }
-  ],
-  "summary": "<2-3 Sätze zur Gesamteinschätzung>",
-  "recommendation": "<max. 2 Sätze mit konkreten Pflegetipps>"
-}
-
-Bewertungsskala: 0 = kritisch, 100 = exzellent. **Nur das JSON zurückgeben, keine Kommentare, keine Erklärung, keine Formatierung.**`;
-
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: [{ role: "user", content: hcPrompt },
-            ...(uploadedUrl ? [{
-              role: "user",
-              content: [
-                { type: "image_url", image_url: { url: uploadedUrl } }
-              ]
-            }] : [])
-          ],
-          max_tokens: 1200,
-        }),
-      });
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content || "";
-      healthcheck = JSON.parse(content.replace(/```json/g, '').replace(/```/g, '').trim());
+      const hcData = await performHealthcheck(uploadedUrl, name);
+      healthcheck = hcData.healthcheck;
+      if (typeof hcData.balance === 'number') setBalance(hcData.balance);
     } catch (e) {
+      if (handleCreditError(e)) { setLoading(false); return; }
       healthcheck = null;
-      Alert.alert("Warnung", "Healthcheck konnte nicht sauber erzeugt werden.");
+      Alert.alert("Warnung", "Healthcheck konnte nicht erzeugt werden.");
     }
 
     // 3. Pflanze speichern
@@ -261,13 +142,13 @@ Bewertungsskala: 0 = kritisch, 100 = exzellent. **Nur das JSON zurückgeben, kei
           recommendation: healthcheck.recommendation,
         });
       }
-      setName(""); setNote(""); setImageUri(null);
+      setName(""); setNote(""); setImageUri(null); setBase64Image(null);
 
       // 5. Direkt zum Detail
       navigation.navigate('MeinePflanzenTab', {
-		screen: 'PlantDetail',
-		params: { plant }
-		});
+        screen: 'PlantDetail',
+        params: { plant }
+      });
     } catch (err) {
       Alert.alert("Fehler", "Speichern fehlgeschlagen: " + err.message);
     } finally {
@@ -277,6 +158,23 @@ Bewertungsskala: 0 = kritisch, 100 = exzellent. **Nur das JSON zurückgeben, kei
 
   return (
     <ScrollView style={{ padding: 20 }}>
+      {/* Credit-Anzeige */}
+      {balance !== null && (
+        <View style={{
+          backgroundColor: balance > 20 ? "#E8F5E9" : "#FFF3E0",
+          padding: 10, borderRadius: 8, marginBottom: 12,
+          flexDirection: "row", justifyContent: "space-between", alignItems: "center"
+        }}>
+          <Text style={{ fontWeight: "bold", color: "#333" }}>Credits</Text>
+          <Text style={{
+            fontWeight: "bold", fontSize: 16,
+            color: balance > 20 ? "#4CAF50" : "#FF9800"
+          }}>
+            {balance}
+          </Text>
+        </View>
+      )}
+
       <Button title="📷 Foto aufnehmen & erkennen" onPress={takePhotoAndRecognize} />
       {imageUri && (
         <Image
@@ -285,7 +183,7 @@ Bewertungsskala: 0 = kritisch, 100 = exzellent. **Nur das JSON zurückgeben, kei
         />
       )}
       <Text style={{ fontWeight: "bold", marginTop: 10 }}>Name:</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="z. B. Monstera deliciosa" style={{ borderWidth: 1, padding: 8, marginBottom: 10 }} />
+      <TextInput value={name} onChangeText={setName} placeholder="z. B. Monstera deliciosa" style={{ borderWidth: 1, padding: 8, marginBottom: 10 }} />
       <Text style={{ fontWeight: "bold" }}>Hinweis:</Text>
       <TextInput multiline value={note} onChangeText={setNote} placeholder="Pflegehinweis von GPT" style={{ borderWidth: 1, padding: 8, minHeight: 80 }} />
       <Button title="✅ Pflanze speichern & Details anzeigen" onPress={handleSaveAndDetails} disabled={!name || loading} />

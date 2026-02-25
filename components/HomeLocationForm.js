@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextInput, Button, Card, Title } from 'react-native-paper';
-import { createLocation } from '../lib/api/location'; // Passe ggf. den Pfad an
+import { createLocation } from '../lib/api/locations';
 
 export default function HomeLocationForm({ afterSave }) {
   const [name, setName] = useState('');

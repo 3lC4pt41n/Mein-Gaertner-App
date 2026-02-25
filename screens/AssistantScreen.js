@@ -5,21 +5,27 @@ import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
 import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage } from '../services/uploadService';
+import { chatWithBen } from '../services/aiService';
+import { fetchBalance } from '../services/creditService';
 
 const GARDENER_NAME = "Ben";
-const DEBUG = false;
 
 export default function AssistantScreen() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [user_id, setUserId] = useState(null);
+  const [balance, setBalance] = useState(null);
   const flatListRef = useRef();
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getUser();
       setUserId(data?.user?.id ?? null);
+      try {
+        const bal = await fetchBalance();
+        setBalance(bal);
+      } catch {}
     })();
   }, []);
 
@@ -32,7 +38,20 @@ export default function AssistantScreen() {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
-  // Foto aufnehmen & senden (mit Upload!)
+  // Credit-Error Handler
+  const handleCreditError = (e) => {
+    if (e.code === 'INSUFFICIENT_CREDITS') {
+      Alert.alert(
+        "Nicht genügend Credits",
+        `Du hast ${e.balance} Credits, brauchst aber ${e.required}.\n\nGehe zum Shop, um Credits nachzuladen.`,
+        [{ text: "OK" }]
+      );
+      return true;
+    }
+    return false;
+  };
+
+  // Foto aufnehmen & senden
   const takeAndSendPhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
@@ -48,84 +67,36 @@ export default function AssistantScreen() {
     if (!result.canceled) {
       setLoading(true);
       try {
-        // *** NEU: Erst BILD HOCHLADEN ***
         const uploadedUrl = await uploadChatImage(result.assets[0].uri, user_id);
         if (!uploadedUrl) throw new Error("Upload fehlgeschlagen");
-        // *** Nur signedUrl als image_url speichern ***
         const msg = { user_id, sender: "user", content: "[Bild]", image_url: uploadedUrl };
         await saveMessage(msg);
         setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
         await getBenAnswer("", uploadedUrl);
       } catch (e) {
-        Alert.alert("Fehler beim Hochladen", e.message);
+        if (!handleCreditError(e)) {
+          Alert.alert("Fehler", e.message);
+        }
       } finally {
         setLoading(false);
       }
     }
   };
 
-  // GPT-Antwort (für Text/Bild)
+  // GPT-Antwort über Edge Function
   const getBenAnswer = async (text = "", image_url = null) => {
-    const contextPrompt = `
-      Du bist "${GARDENER_NAME}", ein smarter, witziger, charmanter Pflanzen-Coach.
-      Du bist Experte für Pflanzen & Gardening, hin und wieder etwas flirtend, machst gerne mal einen Scherz, bist immer freundlich, aufmunternd und respektvoll.
-      Wenn du ein Bild geschickt bekommst, reagiere spezifisch auf dessen Inhalt und beziehe es in deine Antwort ein.
-      Sprich im Chat-Stil (wie WhatsApp), auf Deutsch. Antworte kurz, max. 5 Sätze.
-    `;
-    const chatHistory = [
-      { role: "system", content: contextPrompt },
-      ...messages.slice(-10).map(msg => {
-        if (msg.image_url) {
-          return {
-            role: msg.sender === "user" ? "user" : "assistant",
-            content: [
-              ...(msg.content && msg.content !== "[Bild]" ? [{ type: "text", text: msg.content }] : []),
-              { type: "image_url", image_url: { url: msg.image_url } }
-            ]
-          }
-        } else {
-          return {
-            role: msg.sender === "user" ? "user" : "assistant",
-            content: msg.content
-          }
-        }
-      }),
-      ...(image_url ? [{
-        role: "user",
-        content: [
-          { type: "text", text: text || "Was ist das auf dem Bild?" },
-          { type: "image_url", image_url: { url: image_url } }
-        ]
-      }] : (text ? [{ role: "user", content: text }] : []))
-    ];
-
-    if (DEBUG) console.log("Chat an OpenAI:", chatHistory);
-
-    const { data: configData } = await supabase.from('config').select('value').eq('key', 'OPENAI_API_KEY').single();
-    const OPENAI_API_KEY = configData?.value;
-
     try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: chatHistory,
-          temperature: 0.7,
-          stream: false
-        }),
-      });
-      const json = await res.json();
-      if (DEBUG) console.log("Antwort von OpenAI:", json);
-      const content = json.choices?.[0]?.message?.content || "🤔 Keine Antwort.";
+      const data = await chatWithBen(messages.slice(-10), text, image_url);
+      const content = data.content || "🤔 Keine Antwort.";
+      if (typeof data.balance === 'number') setBalance(data.balance);
+
       const msg = { user_id, sender: GARDENER_NAME, content };
       await saveMessage(msg);
       setMessages(m => [...m, { ...msg, created_at: new Date().toISOString() }]);
     } catch (e) {
-      Alert.alert("Fehler beim GPT-Antwort", e.message);
+      if (!handleCreditError(e)) {
+        Alert.alert("Fehler", e.message);
+      }
     }
   };
 
@@ -180,6 +151,23 @@ export default function AssistantScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      {/* Credit-Leiste */}
+      {balance !== null && (
+        <View style={{
+          backgroundColor: balance > 10 ? "#E8F5E9" : "#FFF3E0",
+          padding: 8, flexDirection: "row", justifyContent: "space-between",
+          alignItems: "center", paddingHorizontal: 16,
+        }}>
+          <Text style={{ color: "#666", fontSize: 13 }}>Credits</Text>
+          <Text style={{
+            fontWeight: "bold",
+            color: balance > 10 ? "#4CAF50" : "#FF9800"
+          }}>
+            {balance}
+          </Text>
+        </View>
+      )}
+
       <FlatList
         data={messages}
         ref={flatListRef}
