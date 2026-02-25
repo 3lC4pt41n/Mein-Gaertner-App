@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
+import { getLanguageLabel } from "../services/languageService";
 
 export default function DrawerProfileScreen() {
   const [profile, setProfile] = useState(null);
@@ -38,7 +39,7 @@ export default function DrawerProfileScreen() {
       <Text>Vorname: <Text style={styles.value}>{profile.first_name || "–"}</Text></Text>
       <Text>Nachname: <Text style={styles.value}>{profile.last_name || "–"}</Text></Text>
       <Text>Land: <Text style={styles.value}>{profile.country || "–"}</Text></Text>
-      <Text>Sprache: <Text style={styles.value}>{profile.language || "–"}</Text></Text>
+      <Text>Sprache: <Text style={styles.value}>{getLanguageLabel(profile.language) || "–"}</Text></Text>
       {/* ... ggf. mehr Felder */}
     </View>
   );

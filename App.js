@@ -1,6 +1,6 @@
 // App.js – Hauptnavigation mit RevenueCat + Credit Store
 // -----------------------------------------------------------
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -21,42 +21,47 @@ import BetaWelcomeScreen from "./screens/BetaWelcomeScreen";
 import { supabase } from "./supabase";
 import { initPurchases } from "./services/purchaseService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getUiText, normalizeLanguage } from "./services/languageService";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 // ---------- Plant Stack ---------------------------
-function PlantStack() {
+function PlantStack({ menuLabels }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Meine Pflanzen" component={PlantListScreen} />
+      <Stack.Screen
+        name="Meine Pflanzen"
+        component={PlantListScreen}
+        options={{ title: menuLabels.plantStackTitle }}
+      />
       <Stack.Screen
         name="PlantDetail"
         component={PlantDetailScreen}
-        options={{ title: "Details" }}
+        options={{ title: menuLabels.plantDetailsTitle }}
       />
       <Stack.Screen
         name="TaskDetail"
         component={TaskDetailScreen}
-        options={{ title: "Aufgabe" }}
+        options={{ title: menuLabels.taskTitle }}
       />
     </Stack.Navigator>
   );
 }
 
 // ---------- Shop Stack (Store + Admin Dashboard) ---
-function ShopStack() {
+function ShopStack({ menuLabels }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="StoreMain"
         component={StoreScreen}
-        options={{ title: "Shop" }}
+        options={{ title: menuLabels.shop }}
       />
       <Stack.Screen
         name="AdminDashboard"
         component={AdminDashboardScreen}
-        options={{ title: "Admin Dashboard" }}
+        options={{ title: menuLabels.adminTitle }}
       />
     </Stack.Navigator>
   );
@@ -68,13 +73,25 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false);
+  const handlePasswordRecoveryDetected = useCallback(
+    () => setPasswordRecoveryMode(true),
+    []
+  );
+  const handlePasswordRecoveryComplete = useCallback(
+    () => setPasswordRecoveryMode(false),
+    []
+  );
 
   // --- Auth State -----------------------------------------
   useEffect(() => {
     supabase.auth.getUser()
       .then(({ data }) => setUser(data?.user ?? null))
       .catch(() => setUser(null));
-    const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setPasswordRecoveryMode(true);
+      }
       setUser(session?.user ?? null);
     });
     return () => listener?.subscription.unsubscribe();
@@ -120,7 +137,23 @@ export default function App() {
   }, [user]);
 
   if (loading) return null; // TODO: Fancy Loader
-  if (!user) return <AuthScreen />;
+  if (passwordRecoveryMode) {
+    return (
+      <AuthScreen
+        forcePasswordReset
+        onPasswordRecoveryDetected={handlePasswordRecoveryDetected}
+        onPasswordResetComplete={handlePasswordRecoveryComplete}
+      />
+    );
+  }
+  if (!user) {
+    return (
+      <AuthScreen onPasswordRecoveryDetected={handlePasswordRecoveryDetected} />
+    );
+  }
+
+  const languageCode = normalizeLanguage(profile?.language);
+  const menuLabels = getUiText(languageCode).menu;
 
   const profileIncomplete =
     !profile?.username ||
@@ -179,16 +212,38 @@ export default function App() {
           headerShown: false,
         })}
       >
-        <Tab.Screen name="Zuhause" component={HomeManager} />
+        <Tab.Screen
+          name="Zuhause"
+          component={HomeManager}
+          options={{ title: menuLabels.home, tabBarLabel: menuLabels.home }}
+        />
         <Tab.Screen
           name="MeinePflanzenTab"
-          component={PlantStack}
-          options={{ title: "Pflanzen" }}
+          options={{ title: menuLabels.plants, tabBarLabel: menuLabels.plants }}
+        >
+          {() => <PlantStack menuLabels={menuLabels} />}
+        </Tab.Screen>
+        <Tab.Screen
+          name="Pflanze hinzufügen"
+          component={AddPlantScreen}
+          options={{ title: menuLabels.addPlant, tabBarLabel: menuLabels.addPlant }}
         />
-        <Tab.Screen name="Pflanze hinzufügen" component={AddPlantScreen} />
-        <Tab.Screen name="Aufgaben" component={TaskListScreen} />
-        <Tab.Screen name="Mein Gärtner" component={AssistantScreen} />
-        <Tab.Screen name="Shop" component={ShopStack} />
+        <Tab.Screen
+          name="Aufgaben"
+          component={TaskListScreen}
+          options={{ title: menuLabels.tasks, tabBarLabel: menuLabels.tasks }}
+        />
+        <Tab.Screen
+          name="Mein Gärtner"
+          component={AssistantScreen}
+          options={{ title: menuLabels.assistant, tabBarLabel: menuLabels.assistant }}
+        />
+        <Tab.Screen
+          name="Shop"
+          options={{ title: menuLabels.shop, tabBarLabel: menuLabels.shop }}
+        >
+          {() => <ShopStack menuLabels={menuLabels} />}
+        </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
   );

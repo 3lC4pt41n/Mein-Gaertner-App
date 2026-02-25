@@ -11,6 +11,10 @@ import {
   corsHeaders,
   getUserIdFromAuth,
 } from "../_shared/credits.ts";
+import {
+  getLanguagePromptName,
+  getUserLanguage,
+} from "../_shared/language.ts";
 
 serve(async (req) => {
   // CORS Preflight
@@ -49,13 +53,16 @@ serve(async (req) => {
     }
 
     // Body parsen
-    const { base64 } = await req.json();
+    const { base64, language: requestedLanguage } = await req.json();
     if (!base64) {
       return new Response(JSON.stringify({ error: "base64 Bild fehlt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const language = await getUserLanguage(serviceClient, userId, requestedLanguage);
+    const languagePromptName = getLanguagePromptName(language);
 
     // OpenAI Call: Pflanze erkennen
     const result = await callOpenAI({
@@ -65,12 +72,15 @@ serve(async (req) => {
           content: [
             {
               type: "text",
-              text: `Erkenne die Pflanze auf diesem Foto und gib die Antwort im folgenden JSON-Format zurück:
+              text: `Identify the plant in this photo and return JSON in exactly this format:
 {
-  "name": "Botanischer Name",
-  "note": "Pflegehinweis in einem Satz"
+  "name": "Botanical name",
+  "note": "One concise care tip sentence"
 }
-Sprich auf Deutsch. Wenn du unsicher bist, gib trotzdem die beste Schätzung.`,
+Rules:
+- Write the note in ${languagePromptName}.
+- Output one language only, no extra text.
+- If uncertain, still provide your best estimate.`,
             },
             {
               type: "image_url",
@@ -95,6 +105,7 @@ Sprich auf Deutsch. Wenn du unsicher bist, gib trotzdem die beste Schätzung.`,
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
+      metadata: { language },
     });
 
     // Antwort parsen

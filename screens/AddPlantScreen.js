@@ -7,6 +7,7 @@ import { recognizePlant, generatePlantDetails, performHealthcheck } from '../ser
 import { fetchBalance } from '../services/creditService';
 import { supabase } from '../supabase';
 import { useNavigation } from '@react-navigation/native';
+import { fetchCurrentUserLanguage } from '../services/languageService';
 
 export default function AddPlantScreen() {
   const [name, setName] = useState("");
@@ -16,6 +17,7 @@ export default function AddPlantScreen() {
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
   const [balance, setBalance] = useState(null);
+  const [language, setLanguage] = useState('de');
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -25,6 +27,10 @@ export default function AddPlantScreen() {
       try {
         const bal = await fetchBalance();
         setBalance(bal);
+      } catch {}
+      try {
+        const userLanguage = await fetchCurrentUserLanguage();
+        setLanguage(userLanguage);
       } catch {}
     })();
   }, []);
@@ -64,7 +70,7 @@ export default function AddPlantScreen() {
 
       try {
         // Edge Function aufrufen statt direkt OpenAI
-        const data = await recognizePlant(base64);
+        const data = await recognizePlant(base64, language);
         setName(data.name || "Kein Name erkannt");
         setNote(data.note || "Kein Hinweis vorhanden");
         if (typeof data.balance === 'number') setBalance(data.balance);
@@ -100,7 +106,7 @@ export default function AddPlantScreen() {
     // 1. Details über Edge Function holen
     let details = null;
     try {
-      const detailsData = await generatePlantDetails(name, note);
+      const detailsData = await generatePlantDetails(name, note, language);
       details = detailsData.details;
       if (typeof detailsData.balance === 'number') setBalance(detailsData.balance);
     } catch (e) {
@@ -112,7 +118,7 @@ export default function AddPlantScreen() {
     // 2. Healthcheck über Edge Function holen
     let healthcheck = null;
     try {
-      const hcData = await performHealthcheck(uploadedUrl, name);
+      const hcData = await performHealthcheck(uploadedUrl, name, language);
       healthcheck = hcData.healthcheck;
       if (typeof hcData.balance === 'number') setBalance(hcData.balance);
     } catch (e) {

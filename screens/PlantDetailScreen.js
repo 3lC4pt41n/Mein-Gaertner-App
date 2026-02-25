@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { fetchLatestHealthcheck } from '../services/plantService';
 import { useNavigation } from '@react-navigation/native';
+import { fetchCurrentUserLanguage, getUiText } from '../services/languageService';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -34,14 +35,7 @@ async function fetchZonesWithLocationsGrouped() {
   return grouped;
 }
 
-const tabNames = [
-  { key: 'overview', label: 'Überblick' },
-  { key: 'care', label: 'Pflege & Standort' },
-  { key: 'extras', label: 'Extras' },
-  { key: 'health', label: 'Healthcheck' }
-];
-
-function ScoreCircle({ score = 0 }) {
+function ScoreCircle({ score = 0, label = "Health" }) {
   let color = "#eee";
   if (score >= 90) color = "#4caf50";
   else if (score >= 75) color = "#8bc34a";
@@ -55,7 +49,7 @@ function ScoreCircle({ score = 0 }) {
       borderWidth: 4, borderColor: color, shadowColor: color, shadowOpacity: 0.25, shadowRadius: 10
     }}>
       <Text style={{ fontSize: 28, fontWeight: "bold", color }}>{score}</Text>
-      <Text style={{ fontSize: 14, color: "#888", marginTop: -2 }}>Health</Text>
+      <Text style={{ fontSize: 14, color: "#888", marginTop: -2 }}>{label}</Text>
     </View>
   );
 }
@@ -68,6 +62,7 @@ export default function PlantDetailScreen({ route }) {
   const details = plant.details || {};
   const [healthcheck, setHealthcheck] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState('de');
 
   // --- Zone-Picker States ---
   const [sections, setSections] = useState([]);
@@ -94,6 +89,20 @@ export default function PlantDetailScreen({ route }) {
       fetchAssignedZone();
     }
   }, [plant.id, plant.zone_id]);
+
+  useEffect(() => {
+    fetchCurrentUserLanguage()
+      .then(setLanguage)
+      .catch(() => setLanguage('de'));
+  }, []);
+
+  const plantDetailsText = getUiText(language).plantDetails;
+  const tabNames = [
+    { key: 'overview', label: plantDetailsText.tabOverview },
+    { key: 'care', label: plantDetailsText.tabCare },
+    { key: 'extras', label: plantDetailsText.tabExtras },
+    { key: 'health', label: plantDetailsText.tabHealth },
+  ];
 
   // Aktuelle Zone inkl. Location-Namen laden
   async function fetchAssignedZone() {
@@ -177,7 +186,7 @@ export default function PlantDetailScreen({ route }) {
         <Text style={styles.title}>{plant.name}</Text>
         <Text style={styles.subtitle}>{plant.note}</Text>
         {healthcheck && typeof healthcheck.healthscore === "number" &&
-          <ScoreCircle score={healthcheck.healthscore} />}
+          <ScoreCircle score={healthcheck.healthscore} label={plantDetailsText.healthLabel} />}
 
         {/* Zugewiesene Zone */}
         {assignedZone ? (
@@ -238,7 +247,7 @@ export default function PlantDetailScreen({ route }) {
         {tab === 'health' ? (
           loading ? <ActivityIndicator color="#4CAF50" /> : healthcheck ? (
             <View>
-              <ScoreCircle score={healthcheck.healthscore} />
+              <ScoreCircle score={healthcheck.healthscore} label={plantDetailsText.healthLabel} />
               <Text style={{ textAlign: "center", fontSize: 17, marginBottom: 8, color: "#444" }}>
                 {healthcheck.summary}
               </Text>
@@ -260,7 +269,7 @@ export default function PlantDetailScreen({ route }) {
                 fontSize: 15, textAlign: "center"
               }}>{healthcheck.recommendation}</Text>
             </View>
-          ) : <Text style={{ color: "#AAA", textAlign: "center" }}>Kein Healthcheck vorhanden.</Text>
+          ) : <Text style={{ color: "#AAA", textAlign: "center" }}>{plantDetailsText.noHealthcheck}</Text>
         ) : details[tab] ? (
           <View>
             {Object.entries(details[tab]).map(([k, v]) => (
@@ -271,7 +280,7 @@ export default function PlantDetailScreen({ route }) {
             ))}
           </View>
         ) : (
-          <Text style={{ color: "#AAA" }}>Keine Details verfügbar.</Text>
+          <Text style={{ color: "#AAA" }}>{plantDetailsText.noDetails}</Text>
         )}
       </View>
 

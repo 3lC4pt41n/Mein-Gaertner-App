@@ -11,25 +11,89 @@ import {
   corsHeaders,
   getUserIdFromAuth,
 } from "../_shared/credits.ts";
+import {
+  getLanguagePromptName,
+  getUserLanguage,
+  type SupportedLanguage,
+} from "../_shared/language.ts";
 
-const HC_PROMPT = `Analysiere das bereitgestellte Pflanzenfoto und führe einen **Pflanzengesundheits-Check** durch. Gib AUSSCHLIESSLICH das folgende JSON zurück:
+const HEALTHCHECK_CRITERIA: Record<SupportedLanguage, string[]> = {
+  de: [
+    "Blattfarbe & -struktur",
+    "Schädlingsbefall",
+    "Blattintegrität",
+    "Wuchsform & Standfestigkeit",
+    "Topf- zu Pflanzengröße",
+    "Substrat & Oberfläche",
+    "Gesamtpflege-Anzeichen",
+  ],
+  en: [
+    "Leaf color & texture",
+    "Pest infestation",
+    "Leaf integrity",
+    "Growth form & stability",
+    "Pot size vs plant size",
+    "Substrate & surface",
+    "Overall care indicators",
+  ],
+  fr: [
+    "Couleur et texture des feuilles",
+    "Infestation de ravageurs",
+    "Intégrité des feuilles",
+    "Port de la plante et stabilité",
+    "Taille du pot vs taille de la plante",
+    "Substrat et surface",
+    "Signes globaux d'entretien",
+  ],
+  it: [
+    "Colore e struttura delle foglie",
+    "Infestazione da parassiti",
+    "Integrità delle foglie",
+    "Portamento e stabilità",
+    "Dimensione vaso vs dimensione pianta",
+    "Substrato e superficie",
+    "Indicatori generali di cura",
+  ],
+  es: [
+    "Color y textura de las hojas",
+    "Plagas",
+    "Integridad de las hojas",
+    "Forma de crecimiento y estabilidad",
+    "Tamaño de maceta vs tamaño de planta",
+    "Sustrato y superficie",
+    "Indicadores generales de cuidado",
+  ],
+};
+
+function buildHealthcheckPrompt(
+  language: SupportedLanguage,
+  languagePromptName: string
+) {
+  const c = HEALTHCHECK_CRITERIA[language];
+  return `Analyze the provided plant photo and run a plant health check. Return ONLY this JSON:
 
 {
   "healthscore": <Ganzzahl 0-100, gewichtetes Mittel der Bewertungen>,
   "table": [
-    { "Kriterium": "Blattfarbe & -struktur",   "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Schädlingsbefall",         "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Blattintegrität",          "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Wuchsform & Standfestigkeit", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Topf- zu Pflanzengröße",   "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Substrat & Oberfläche",    "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
-    { "Kriterium": "Gesamtpflege-Anzeichen",   "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" }
+    { "Kriterium": "${c[0]}", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
+    { "Kriterium": "${c[1]}", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
+    { "Kriterium": "${c[2]}", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
+    { "Kriterium": "${c[3]}", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
+    { "Kriterium": "${c[4]}", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
+    { "Kriterium": "${c[5]}", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" },
+    { "Kriterium": "${c[6]}", "Beobachtung": "", "Bewertung": <0-100>, "Begründung": "" }
   ],
-  "summary": "<2-3 Sätze zur Gesamteinschätzung>",
-  "recommendation": "<max. 2 Sätze mit konkreten Pflegetipps>"
+  "summary": "<2-3 sentences total assessment>",
+  "recommendation": "<max 2 sentences with specific care tips>"
 }
 
-Bewertungsskala: 0 = kritisch, 100 = exzellent. **Nur das JSON zurückgeben, keine Kommentare, keine Erklärung, keine Formatierung.**`;
+Rules:
+- Write all user-facing text values in ${languagePromptName}.
+- Use only one language.
+- Keep all JSON keys exactly as shown.
+- Rating scale: 0 = critical, 100 = excellent.
+- Return only valid JSON (no markdown, comments or explanation).`;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -62,7 +126,7 @@ serve(async (req) => {
       );
     }
 
-    const { image_url, plant_name } = await req.json();
+    const { image_url, plant_name, language: requestedLanguage } = await req.json();
     if (!image_url) {
       return new Response(JSON.stringify({ error: "image_url fehlt" }), {
         status: 400,
@@ -70,9 +134,13 @@ serve(async (req) => {
       });
     }
 
+    const language = await getUserLanguage(serviceClient, userId, requestedLanguage);
+    const languagePromptName = getLanguagePromptName(language);
+    const healthcheckPrompt = buildHealthcheckPrompt(language, languagePromptName);
+
     // OpenAI Call
     const messages: any[] = [
-      { role: "user", content: HC_PROMPT },
+      { role: "user", content: healthcheckPrompt },
       {
         role: "user",
         content: [
@@ -102,7 +170,7 @@ serve(async (req) => {
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { plant_name },
+      metadata: { plant_name, language },
     });
 
     // Antwort parsen

@@ -11,48 +11,14 @@ import {
   corsHeaders,
   getUserIdFromAuth,
 } from "../_shared/credits.ts";
+import {
+  getLanguagePromptName,
+  getUserLanguage,
+  type SupportedLanguage,
+} from "../_shared/language.ts";
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Nicht authentifiziert" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const serviceClient = getServiceClient();
-    const userId = await getUserIdFromAuth(serviceClient, authHeader);
-
-    const cost = CREDIT_COSTS.plant_details;
-    const { balance, sufficient } = await checkBalance(serviceClient, userId, cost);
-
-    if (!sufficient) {
-      return new Response(
-        JSON.stringify({ error: "Nicht genügend Credits", balance, required: cost }),
-        {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const { name, note } = await req.json();
-    if (!name) {
-      return new Response(JSON.stringify({ error: "Pflanzenname fehlt" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const prompt = `Gib für die Pflanze "${name}" (Hinweis: "${note || ""}") eine verschachtelte JSON-Antwort im exakten Format unten zurück – alle Felder bitte möglichst vollständig befüllen (auf Deutsch):
-
-{
+const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
+  de: `{
   "overview": {
     "Deutscher Name": "...",
     "Botanischer Name": "...",
@@ -84,8 +50,192 @@ serve(async (req) => {
     "Krankheiten": "...",
     "Fun Fact / Kultur": "..."
   }
-}
-KEINE Kommentare, keine Erklärungen, KEIN sonstiger Text – nur das pure JSON-Objekt!`;
+}`,
+  en: `{
+  "overview": {
+    "Common Name": "...",
+    "Botanical Name": "...",
+    "Family": "...",
+    "Origin": "...",
+    "Growth Type": "...",
+    "Size": "...",
+    "Blooming Season": "...",
+    "Lifespan": "...",
+    "Highlight": "..."
+  },
+  "care": {
+    "Light": "...",
+    "Temperature Range": "...",
+    "Humidity": "...",
+    "Soil / Substrate": "...",
+    "Watering": "...",
+    "Fertilizing": "...",
+    "Pruning": "...",
+    "Repotting": "...",
+    "Support / Trellis": "...",
+    "Special Notes": "..."
+  },
+  "extras": {
+    "Ornamental / Practical Value": "...",
+    "Toxicity": "...",
+    "Propagation": "...",
+    "Common Pests": "...",
+    "Diseases": "...",
+    "Fun Fact / Culture": "..."
+  }
+}`,
+  fr: `{
+  "overview": {
+    "Nom commun": "...",
+    "Nom botanique": "...",
+    "Famille": "...",
+    "Origine": "...",
+    "Type de croissance": "...",
+    "Taille": "...",
+    "Période de floraison": "...",
+    "Durée de vie": "...",
+    "Atout principal": "..."
+  },
+  "care": {
+    "Lumière": "...",
+    "Plage de température": "...",
+    "Humidité": "...",
+    "Substrat / Sol": "...",
+    "Arrosage": "...",
+    "Fertilisation": "...",
+    "Taille": "...",
+    "Rempotage": "...",
+    "Tuteur / Support": "...",
+    "Remarques spéciales": "..."
+  },
+  "extras": {
+    "Valeur ornementale / utilitaire": "...",
+    "Toxicité": "...",
+    "Multiplication": "...",
+    "Ravageurs fréquents": "...",
+    "Maladies": "...",
+    "Info intéressante / culture": "..."
+  }
+}`,
+  it: `{
+  "overview": {
+    "Nome comune": "...",
+    "Nome botanico": "...",
+    "Famiglia": "...",
+    "Origine": "...",
+    "Tipo di crescita": "...",
+    "Dimensioni": "...",
+    "Periodo di fioritura": "...",
+    "Durata di vita": "...",
+    "Punto forte": "..."
+  },
+  "care": {
+    "Luce": "...",
+    "Intervallo di temperatura": "...",
+    "Umidità": "...",
+    "Substrato / Terreno": "...",
+    "Irrigazione": "...",
+    "Concimazione": "...",
+    "Potatura": "...",
+    "Rinvaso": "...",
+    "Sostegno / Tutore": "...",
+    "Note speciali": "..."
+  },
+  "extras": {
+    "Valore ornamentale / pratico": "...",
+    "Tossicità": "...",
+    "Propagazione": "...",
+    "Parassiti comuni": "...",
+    "Malattie": "...",
+    "Curiosità / cultura": "..."
+  }
+}`,
+  es: `{
+  "overview": {
+    "Nombre común": "...",
+    "Nombre botánico": "...",
+    "Familia": "...",
+    "Origen": "...",
+    "Tipo de crecimiento": "...",
+    "Tamaño": "...",
+    "Época de floración": "...",
+    "Vida útil": "...",
+    "Punto destacado": "..."
+  },
+  "care": {
+    "Luz": "...",
+    "Rango de temperatura": "...",
+    "Humedad": "...",
+    "Sustrato / Suelo": "...",
+    "Riego": "...",
+    "Fertilización": "...",
+    "Poda": "...",
+    "Trasplante": "...",
+    "Soporte / Tutor": "...",
+    "Notas especiales": "..."
+  },
+  "extras": {
+    "Valor ornamental / práctico": "...",
+    "Toxicidad": "...",
+    "Propagación": "...",
+    "Plagas comunes": "...",
+    "Enfermedades": "...",
+    "Dato curioso / cultura": "..."
+  }
+}`,
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Nicht authentifiziert" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const serviceClient = getServiceClient();
+    const userId = await getUserIdFromAuth(serviceClient, authHeader);
+
+    const cost = CREDIT_COSTS.plant_details;
+    const { balance, sufficient } = await checkBalance(serviceClient, userId, cost);
+
+    if (!sufficient) {
+      return new Response(
+        JSON.stringify({ error: "Nicht genügend Credits", balance, required: cost }),
+        {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { name, note, language: requestedLanguage } = await req.json();
+    if (!name) {
+      return new Response(JSON.stringify({ error: "Pflanzenname fehlt" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const language = await getUserLanguage(serviceClient, userId, requestedLanguage);
+    const languagePromptName = getLanguagePromptName(language);
+    const schema = DETAILS_SCHEMA_BY_LANGUAGE[language];
+
+    const prompt = `Create plant details for "${name}" (hint: "${note || ""}") and return ONLY one JSON object in EXACTLY this schema:
+
+${schema}
+
+Rules:
+- Write all content strictly in ${languagePromptName}.
+- Output one language only (no bilingual text, no translations).
+- Keep top-level keys exactly: overview, care, extras.
+- No markdown, no comments, no explanations.`;
 
     const result = await callOpenAI({
       messages: [{ role: "user", content: prompt }],
@@ -103,7 +253,7 @@ KEINE Kommentare, keine Erklärungen, KEIN sonstiger Text – nur das pure JSON-
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { plant_name: name },
+      metadata: { plant_name: name, language },
     });
 
     let details;

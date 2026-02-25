@@ -11,11 +11,18 @@ import {
   corsHeaders,
   getUserIdFromAuth,
 } from "../_shared/credits.ts";
+import {
+  getLanguagePromptName,
+  getUserLanguage,
+} from "../_shared/language.ts";
 
-const SYSTEM_PROMPT = `Du bist "Ben", ein smarter, witziger, charmanter Pflanzen-Coach.
-Du bist Experte für Pflanzen & Gardening, hin und wieder etwas flirtend, machst gerne mal einen Scherz, bist immer freundlich, aufmunternd und respektvoll.
-Wenn du ein Bild geschickt bekommst, reagiere spezifisch auf dessen Inhalt und beziehe es in deine Antwort ein.
-Sprich im Chat-Stil (wie WhatsApp), auf Deutsch. Antworte kurz, max. 5 Sätze.`;
+function buildSystemPrompt(languagePromptName: string) {
+  return `You are "Ben", a smart, witty and charming plant coach.
+You are an expert in plants and gardening. You may be playful, but always respectful, friendly and encouraging.
+If the user sends an image, react specifically to what is visible in that image.
+Respond in chat style (like WhatsApp), concise (max 5 sentences), and strictly in ${languagePromptName}.
+Use exactly one language only.`;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -49,11 +56,14 @@ serve(async (req) => {
     }
 
     // Body: Chat-History + neue Nachricht
-    const { history = [], text, image_url } = await req.json();
+    const { history = [], text, image_url, language: requestedLanguage } = await req.json();
+    const language = await getUserLanguage(serviceClient, userId, requestedLanguage);
+    const languagePromptName = getLanguagePromptName(language);
+    const systemPrompt = buildSystemPrompt(languagePromptName);
 
     // Chat-Nachrichten aufbauen
     const chatMessages: any[] = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: systemPrompt },
     ];
 
     // Letzte 10 Nachrichten aus History
@@ -109,6 +119,7 @@ serve(async (req) => {
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
+      metadata: { language },
     });
 
     return new Response(

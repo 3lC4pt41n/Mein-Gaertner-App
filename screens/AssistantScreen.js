@@ -7,6 +7,7 @@ import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage } from '../services/uploadService';
 import { chatWithBen } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
+import { fetchCurrentUserLanguage } from '../services/languageService';
 
 const GARDENER_NAME = "Ben";
 
@@ -16,6 +17,8 @@ export default function AssistantScreen() {
   const [loading, setLoading] = useState(false);
   const [user_id, setUserId] = useState(null);
   const [balance, setBalance] = useState(null);
+  const [language, setLanguage] = useState('de');
+  const [userAvatarUrl, setUserAvatarUrl] = useState(null);
   const flatListRef = useRef();
 
   useEffect(() => {
@@ -26,6 +29,24 @@ export default function AssistantScreen() {
         const bal = await fetchBalance();
         setBalance(bal);
       } catch {}
+      try {
+        const userLanguage = await fetchCurrentUserLanguage();
+        setLanguage(userLanguage);
+      } catch {}
+
+      const avatarPath = data?.user?.user_metadata?.gardener_avatar_path;
+      if (avatarPath) {
+        try {
+          const { data: signedData, error: signedError } = await supabase
+            .storage
+            .from('chat-images')
+            .createSignedUrl(avatarPath, 60 * 60 * 24 * 7);
+
+          if (!signedError && signedData?.signedUrl) {
+            setUserAvatarUrl(signedData.signedUrl);
+          }
+        } catch {}
+      }
     })();
   }, []);
 
@@ -86,7 +107,7 @@ export default function AssistantScreen() {
   // GPT-Antwort über Edge Function
   const getBenAnswer = async (text = "", image_url = null) => {
     try {
-      const data = await chatWithBen(messages.slice(-10), text, image_url);
+      const data = await chatWithBen(messages.slice(-10), text, image_url, language);
       const content = data.content || "🤔 Keine Antwort.";
       if (typeof data.balance === 'number') setBalance(data.balance);
 
@@ -119,6 +140,8 @@ export default function AssistantScreen() {
   const getAvatar = (sender) => {
     if (sender === GARDENER_NAME)
       return require('../assets/avatars/ben.png');
+    if (sender === "user" && userAvatarUrl)
+      return { uri: userAvatarUrl };
     if (sender === "user")
       return require('../assets/avatars/tim.png');
     return null;

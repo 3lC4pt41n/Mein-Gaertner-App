@@ -34,28 +34,41 @@ async function callEdgeFunction(functionName, body) {
 }
 
 // Pflanze erkennen (Foto → Name + Note)
-export async function recognizePlant(base64Image) {
-  return callEdgeFunction('ai-plant-scan', { base64: base64Image });
+export async function recognizePlant(base64Image, language) {
+  return callEdgeFunction('ai-plant-scan', {
+    base64: base64Image,
+    language,
+  });
 }
 
 // Pflanzen-Details generieren (Name → Details JSON)
-export async function generatePlantDetails(name, note) {
-  return callEdgeFunction('ai-plant-details', { name, note });
+export async function generatePlantDetails(name, note, language) {
+  return callEdgeFunction('ai-plant-details', { name, note, language });
 }
 
 // Healthcheck durchführen (Bild-URL → Healthcheck JSON)
-export async function performHealthcheck(imageUrl, plantName) {
+export async function performHealthcheck(imageUrl, plantName, language) {
   return callEdgeFunction('ai-healthcheck', {
     image_url: imageUrl,
     plant_name: plantName,
+    language,
   });
 }
 
 // Chat-Nachricht an Ben senden
-export async function chatWithBen(history, text, imageUrl) {
+export async function chatWithBen(history, text, imageUrl, language) {
   return callEdgeFunction('ai-chat', {
     history,
     text: text || undefined,
     image_url: imageUrl || undefined,
+    language,
+  });
+}
+
+// User-Foto -> personalisierter Gaertner-Avatar
+export async function generateGardenerAvatar(base64Image, language) {
+  return callEdgeFunction('ai-gardener-avatar', {
+    base64: base64Image,
+    language,
   });
 }

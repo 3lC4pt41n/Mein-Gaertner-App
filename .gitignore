@@ -8,3 +8,6 @@ google-service-account.json
 *.jks
 credentials.json
 digitaler-gaertner-app-*.json
+dist/
+.claude/
+supabase/.temp/
