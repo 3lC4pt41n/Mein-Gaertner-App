@@ -50,6 +50,24 @@ function PlantStack({ menuLabels }) {
   );
 }
 
+// ---------- Task Stack (Aufgaben + Detail) --------
+function TaskStack({ menuLabels }) {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="TaskList"
+        component={TaskListScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="TaskDetail"
+        component={TaskDetailScreen}
+        options={{ title: menuLabels.taskTitle || 'Aufgabe' }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 // ---------- Shop Stack (Store + Admin Dashboard) ---
 function ShopStack({ menuLabels }) {
   return (
@@ -232,9 +250,10 @@ export default function App() {
         />
         <Tab.Screen
           name="Aufgaben"
-          component={TaskListScreen}
           options={{ title: menuLabels.tasks, tabBarLabel: menuLabels.tasks }}
-        />
+        >
+          {() => <TaskStack menuLabels={menuLabels} />}
+        </Tab.Screen>
         <Tab.Screen
           name="Rangliste"
           component={LeaderboardScreen}

@@ -25,10 +25,13 @@
     },
     "production": {
       "autoIncrement": true,
-      "credentialsSource": "local",
       "channel": "production",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "credentialsSource": "local"
+      },
+      "ios": {
+        "credentialsSource": "remote"
       }
     }
   },
@@ -37,7 +40,7 @@
       "ios": {
         "appleId": "tim.mergenthaler@esanum.de",
         "ascAppId": "DEINE_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "DEIN_APPLE_TEAM_ID"
+        "appleTeamId": "28BN8BX5M8"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, Alert, Platform } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { fetchTasks, completeTask, skipTask } from '../services/taskService';
-import { useNavigation } from '@react-navigation/native';
+import { fetchTasks, completeTask, skipTask, createTask, createRecurringTask, catchUpMissedTasks } from '../services/taskService';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AddTaskDialog from '../components/AddTaskDialog';
 
 function getTaskColor(state, due_at) {
   if (state === "COMPLETED") return "#B2DFDB";
@@ -21,6 +22,7 @@ export default function TaskScreen() {
   const [tasks, setTasks] = useState([]);
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -31,9 +33,18 @@ export default function TaskScreen() {
     })();
   }, []);
 
+  // Beim Fokussieren der Tab: Tasks neu laden + CatchUp
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        // CatchUp überfälliger Recurring-Tasks im Hintergrund
+        catchUpMissedTasks(userId).then(() => loadTasks());
+      }
+    }, [userId])
+  );
+
   useEffect(() => {
     if (userId) loadTasks();
-    // eslint-disable-next-line
   }, [userId]);
 
   const loadTasks = async () => {
@@ -66,44 +77,81 @@ export default function TaskScreen() {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('TaskDetail', { task: item })}
-      activeOpacity={0.9}
-      style={[
-        styles.card,
-        { backgroundColor: getTaskColor(item.state, item.due_at) },
-        item.state === "COMPLETED" && { opacity: 0.6 }
-      ]}
-    >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Ionicons name={
-          item.type === "Gießen" ? "water-outline" :
-          item.type === "Düngen" ? "leaf-outline" :
-          item.type === "Umtopfen" ? "flower-outline" :
-          item.type === "Healthcheck" ? "pulse-outline" :
-          "calendar-outline"
-        } size={32} color="#4CAF50" style={{ marginRight: 12 }} />
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.type} • <Text style={{ color: "#2196f3" }}>{item.plant?.name || "?"}</Text></Text>
-          <Text style={{ color: "#777", marginTop: 2 }}>{formatDateTime(item.due_at)}</Text>
-          {!!item.note && <Text style={{ color: "#444", fontSize: 13, marginTop: 3 }}>{item.note}</Text>}
+  const handleAddTask = async ({ type, due_at, note, plant_id, recurring, interval_days }) => {
+    try {
+      if (recurring && interval_days) {
+        await createRecurringTask({
+          plant_id,
+          user_id: userId,
+          type,
+          due_at,
+          note,
+          interval_days,
+        });
+      } else {
+        await createTask({
+          plant_id,
+          user_id: userId,
+          type,
+          due_at,
+          note,
+        });
+      }
+      setShowAddDialog(false);
+      loadTasks();
+    } catch (e) {
+      Alert.alert("Fehler", "Aufgabe erstellen fehlgeschlagen: " + e.message);
+    }
+  };
+
+  const renderItem = ({ item }) => {
+    const isRecurring = !!item.template_id;
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.navigate('TaskDetail', { task: item })}
+        activeOpacity={0.9}
+        style={[
+          styles.card,
+          { backgroundColor: getTaskColor(item.state, item.due_at) },
+          item.state === "COMPLETED" && { opacity: 0.6 }
+        ]}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Ionicons name={
+            item.type === "Gießen" ? "water-outline" :
+            item.type === "Düngen" ? "leaf-outline" :
+            item.type === "Umtopfen" ? "flower-outline" :
+            item.type === "Healthcheck" ? "pulse-outline" :
+            "calendar-outline"
+          } size={32} color="#4CAF50" style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                {item.type} {isRecurring ? "" : ""} <Text style={{ color: "#2196f3" }}>{item.plant?.name || "?"}</Text>
+              </Text>
+              {isRecurring && (
+                <Ionicons name="repeat" size={14} color="#4CAF50" style={{ marginLeft: 6 }} />
+              )}
+            </View>
+            <Text style={{ color: "#777", marginTop: 2 }}>{formatDateTime(item.due_at)}</Text>
+            {!!item.note && <Text style={{ color: "#444", fontSize: 13, marginTop: 3 }}>{item.note}</Text>}
+          </View>
+          {item.state === "DUE" &&
+            <TouchableOpacity onPress={() => handleDone(item)} style={styles.actionBtn}>
+              <Ionicons name="checkmark-circle-outline" size={30} color="#43A047" />
+            </TouchableOpacity>}
+          {item.state === "DUE" &&
+            <TouchableOpacity onPress={() => handleSkip(item)} style={styles.actionBtn}>
+              <MaterialIcons name="not-interested" size={28} color="#FFA726" />
+            </TouchableOpacity>}
+          {item.state === "COMPLETED" &&
+            <Ionicons name="checkmark-done" size={28} color="#43A047" style={{ marginLeft: 10 }} />}
+          {item.state === "SKIPPED" &&
+            <Ionicons name="remove-circle-outline" size={28} color="#FFA726" style={{ marginLeft: 10 }} />}
         </View>
-        {item.state === "DUE" &&
-          <TouchableOpacity onPress={() => handleDone(item)} style={styles.actionBtn}>
-            <Ionicons name="checkmark-circle-outline" size={30} color="#43A047" />
-          </TouchableOpacity>}
-        {item.state === "DUE" &&
-          <TouchableOpacity onPress={() => handleSkip(item)} style={styles.actionBtn}>
-            <MaterialIcons name="not-interested" size={28} color="#FFA726" />
-          </TouchableOpacity>}
-        {item.state === "COMPLETED" &&
-          <Ionicons name="checkmark-done" size={28} color="#43A047" style={{ marginLeft: 10 }} />}
-        {item.state === "SKIPPED" &&
-          <Ionicons name="remove-circle-outline" size={28} color="#FFA726" style={{ marginLeft: 10 }} />}
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f8f8f8" }}>
@@ -117,20 +165,23 @@ export default function TaskScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         ListEmptyComponent={!loading && (
-          <Text style={{ textAlign: "center", color: "#888", marginTop: 80 }}>Keine Aufgaben für dich offen 🎉</Text>
+          <Text style={{ textAlign: "center", color: "#888", marginTop: 80 }}>Keine Aufgaben offen</Text>
         )}
       />
-      {/* FAB zum neuen Task */}
+      {/* FAB: AddTask-Dialog öffnen */}
       <TouchableOpacity
-        style={{
-          position: "absolute", right: 28, bottom: 30, backgroundColor: "#4CAF50",
-          borderRadius: 35, width: 60, height: 60, alignItems: "center", justifyContent: "center",
-          shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 12, elevation: 8
-        }}
-        onPress={() => navigation.navigate('AddTask')}
+        style={styles.fab}
+        onPress={() => setShowAddDialog(true)}
       >
         <Ionicons name="add" size={36} color="#FFF" />
       </TouchableOpacity>
+
+      {/* AddTask Modal */}
+      <AddTaskDialog
+        visible={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        onSave={handleAddTask}
+      />
     </View>
   );
 }
@@ -149,5 +200,10 @@ const styles = StyleSheet.create({
   actionBtn: {
     marginLeft: 8,
     padding: 4
-  }
+  },
+  fab: {
+    position: "absolute", right: 28, bottom: 30, backgroundColor: "#4CAF50",
+    borderRadius: 35, width: 60, height: 60, alignItems: "center", justifyContent: "center",
+    shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 12, elevation: 8
+  },
 });
