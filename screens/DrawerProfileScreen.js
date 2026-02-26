@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet, Switch, TextInput, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { getLanguageLabel } from "../services/languageService";
@@ -7,21 +7,55 @@ import { getLanguageLabel } from "../services/languageService";
 export default function DrawerProfileScreen() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Leaderboard-Felder
+  const [optIn, setOptIn] = useState(false);
+  const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
           .single();
         setProfile(data);
+        setOptIn(data?.leaderboard_opt_in ?? false);
+        setDisplayName(data?.public_display_name ?? "");
       }
       setLoading(false);
     })();
   }, []);
+
+  const saveLeaderboardSettings = async (newOptIn, newDisplayName) => {
+    if (!profile) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        leaderboard_opt_in: newOptIn,
+        public_display_name: newDisplayName || null,
+        leaderboard_visibility: newOptIn ? 'global' : 'private',
+      })
+      .eq("id", profile.id);
+
+    if (error) {
+      Alert.alert("Fehler", "Einstellung konnte nicht gespeichert werden.");
+    }
+    setSaving(false);
+  };
+
+  const handleOptInToggle = (value) => {
+    setOptIn(value);
+    saveLeaderboardSettings(value, displayName);
+  };
+
+  const handleDisplayNameSave = () => {
+    saveLeaderboardSettings(optIn, displayName);
+  };
 
   if (loading) return <ActivityIndicator style={{ marginTop: 40 }} />;
 
@@ -32,21 +66,110 @@ export default function DrawerProfileScreen() {
   );
 
   return (
-    <View style={styles.center}>
-      <Ionicons name="person" size={80} />
-      <Text style={styles.title}>Profil</Text>
-      <Text>Benutzername: <Text style={styles.value}>{profile.username || "–"}</Text></Text>
-      <Text>Vorname: <Text style={styles.value}>{profile.first_name || "–"}</Text></Text>
-      <Text>Nachname: <Text style={styles.value}>{profile.last_name || "–"}</Text></Text>
-      <Text>Land: <Text style={styles.value}>{profile.country || "–"}</Text></Text>
-      <Text>Sprache: <Text style={styles.value}>{getLanguageLabel(profile.language) || "–"}</Text></Text>
-      {/* ... ggf. mehr Felder */}
+    <View style={styles.container}>
+      {/* Profil-Header */}
+      <View style={styles.header}>
+        <Ionicons name="person" size={60} color="#4CAF50" />
+        <Text style={styles.title}>Profil</Text>
+      </View>
+
+      {/* Profil-Infos */}
+      <View style={styles.section}>
+        <ProfileRow label="Benutzername" value={profile.username} />
+        <ProfileRow label="Vorname" value={profile.first_name} />
+        <ProfileRow label="Nachname" value={profile.last_name} />
+        <ProfileRow label="Land" value={profile.country} />
+        <ProfileRow label="Sprache" value={getLanguageLabel(profile.language)} />
+      </View>
+
+      {/* Leaderboard-Settings */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Rangliste</Text>
+
+        <View style={styles.optInRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Im Ranking anzeigen</Text>
+            <Text style={styles.hint}>
+              Dein Score wird anderen Nutzern angezeigt.
+            </Text>
+          </View>
+          <Switch
+            value={optIn}
+            onValueChange={handleOptInToggle}
+            trackColor={{ true: "#4CAF50" }}
+            disabled={saving}
+          />
+        </View>
+
+        {optIn && (
+          <View style={styles.displayNameRow}>
+            <Text style={styles.label}>Anzeigename (optional)</Text>
+            <Text style={styles.hint}>
+              Wird statt deinem Benutzernamen im Ranking angezeigt.
+            </Text>
+            <TextInput
+              style={styles.input}
+              value={displayName}
+              onChangeText={setDisplayName}
+              onBlur={handleDisplayNameSave}
+              placeholder={profile.username || "Anzeigename"}
+              maxLength={30}
+            />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function ProfileRow({ label, value }) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value || "\u2013"}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontWeight: "bold", fontSize: 22, marginBottom: 10 },
-  value: { fontWeight: "600" },
+  container: { flex: 1, backgroundColor: "#fff" },
+  header: { alignItems: "center", paddingTop: 30, paddingBottom: 10 },
+  title: { fontWeight: "bold", fontSize: 22, marginTop: 8 },
+  section: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  sectionTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    color: "#4CAF50",
+    marginBottom: 12,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 6,
+  },
+  optInRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  displayNameRow: {
+    paddingTop: 8,
+  },
+  label: { fontSize: 14, color: "#555" },
+  value: { fontSize: 14, fontWeight: "600" },
+  hint: { fontSize: 12, color: "#999", marginTop: 2 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 8,
+    fontSize: 14,
+  },
 });

@@ -18,6 +18,7 @@ import TaskDetailScreen from "./screens/TaskDetailScreen";
 import StoreScreen from "./screens/StoreScreen";
 import AdminDashboardScreen from "./screens/AdminDashboardScreen";
 import BetaWelcomeScreen from "./screens/BetaWelcomeScreen";
+import LeaderboardScreen from "./screens/LeaderboardScreen";
 import { supabase } from "./supabase";
 import { initPurchases } from "./services/purchaseService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -203,6 +204,7 @@ export default function App() {
             else if (route.name === "MeinePflanzenTab") iconName = "leaf-outline";
             else if (route.name === "Pflanze hinzufügen") iconName = "add-circle-outline";
             else if (route.name === "Aufgaben") iconName = "clipboard-outline";
+            else if (route.name === "Rangliste") iconName = "trophy-outline";
             else if (route.name === "Mein Gärtner") iconName = "chatbox-ellipses-outline";
             else if (route.name === "Shop") iconName = "flash-outline";
             return <Ionicons name={iconName} size={size} color={color} />;
@@ -232,6 +234,11 @@ export default function App() {
           name="Aufgaben"
           component={TaskListScreen}
           options={{ title: menuLabels.tasks, tabBarLabel: menuLabels.tasks }}
+        />
+        <Tab.Screen
+          name="Rangliste"
+          component={LeaderboardScreen}
+          options={{ title: menuLabels.leaderboard || 'Rangliste', tabBarLabel: menuLabels.leaderboard || 'Rangliste' }}
         />
         <Tab.Screen
           name="Mein Gärtner"

@@ -25,7 +25,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "de.esanum.digitaler-gaertner",
+      "bundleIdentifier": "com.elcaptain.digitalergaertner",
       "buildNumber": "1"
     },
     "android": {
@@ -33,7 +33,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "de.esanum.digitalergaertner",
+      "package": "com.elcaptain.digitalergaertner",
       "versionCode": 1
     },
     "web": {

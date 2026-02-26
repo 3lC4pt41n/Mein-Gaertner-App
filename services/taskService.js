@@ -1,5 +1,33 @@
 import { supabase } from '../supabase';
 
+// Task-Gewichte für Punkteberechnung
+const TASK_WEIGHTS = {
+  watering: 1,    // gießen
+  fertilizing: 2, // düngen
+  repotting: 3,   // umtopfen
+};
+
+function getTaskWeight(taskType) {
+  return TASK_WEIGHTS[taskType] || 1;
+}
+
+/**
+ * Gardening-Event loggen (intern).
+ */
+async function logGardeningEvent({ userId, eventType, plantId, taskId, points, meta = {} }) {
+  const { error } = await supabase
+    .from('gardening_events')
+    .insert({
+      user_id: userId,
+      event_type: eventType,
+      plant_id: plantId,
+      task_id: taskId,
+      points,
+      meta,
+    });
+  if (error) console.warn('gardening_event log error:', error.message);
+}
+
 // Tasks für eingeloggten User abrufen (inkl. Pflanzendaten)
 export async function fetchTasks(user_id) {
   const { data, error } = await supabase
@@ -25,6 +53,21 @@ export async function completeTask(task, user_id) {
     .from('task_run')
     .insert([{ task_id: task.id, action: 'completed', user_id }]);
   if (runError) throw runError;
+
+  // Gardening-Event loggen (Score-Tracking)
+  const weight = getTaskWeight(task.type);
+  const isLate = task.due_at && new Date(task.due_at) < new Date();
+  const eventType = isLate ? 'task_completed_late' : 'task_completed_on_time';
+  const points = isLate ? 0.4 * weight : 1.0 * weight;
+
+  await logGardeningEvent({
+    userId: user_id,
+    eventType,
+    plantId: task.plant_id,
+    taskId: task.id,
+    points,
+    meta: { task_type: task.type, weight, late: isLate },
+  });
 }
 
 // Task als skipped markieren (mit Grund)
@@ -39,6 +82,19 @@ export async function skipTask(task, user_id, reason = "") {
     .from('task_run')
     .insert([{ task_id: task.id, action: 'skipped', details: { reason }, user_id }]);
   if (runError) throw runError;
+
+  // Gardening-Event loggen (negative Punkte)
+  const weight = getTaskWeight(task.type);
+  const points = -0.6 * weight;
+
+  await logGardeningEvent({
+    userId: user_id,
+    eventType: 'task_skipped',
+    plantId: task.plant_id,
+    taskId: task.id,
+    points,
+    meta: { task_type: task.type, weight, reason },
+  });
 }
 
 // Einzelnen Task (mit Pflanzendetails) laden

@@ -5,6 +5,7 @@ import { savePlantToSupabase, saveHealthcheck } from "../services/plantService";
 import { uploadPlantImage } from "../services/uploadService";
 import { recognizePlant, generatePlantDetails, performHealthcheck } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
+import { logDiscovery } from '../services/discoveryService';
 import { supabase } from '../supabase';
 import { useNavigation } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
@@ -148,9 +149,30 @@ export default function AddPlantScreen() {
           recommendation: healthcheck.recommendation,
         });
       }
+
+      // 5. Discovery-Event loggen (Score-Tracking)
+      try {
+        await logDiscovery(userId, name, plant?.id);
+      } catch (e) {
+        console.warn('Discovery log error:', e.message);
+      }
+
+      // 6. plant_added Gardening-Event loggen
+      try {
+        await supabase.from('gardening_events').insert({
+          user_id: userId,
+          event_type: 'plant_added',
+          plant_id: plant?.id,
+          points: 1.0,
+          meta: { plant_name: name },
+        });
+      } catch (e) {
+        console.warn('plant_added event error:', e.message);
+      }
+
       setName(""); setNote(""); setImageUri(null); setBase64Image(null);
 
-      // 5. Direkt zum Detail
+      // 7. Direkt zum Detail
       navigation.navigate('MeinePflanzenTab', {
         screen: 'PlantDetail',
         params: { plant }

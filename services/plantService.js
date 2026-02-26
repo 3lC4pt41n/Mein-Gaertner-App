@@ -28,14 +28,43 @@ export async function deletePlant(id) {
   if (error) throw error;
 }
 
-// Healthcheck speichern
+// Healthcheck speichern + Gardening-Event loggen
 export async function saveHealthcheck({ plant_id, user_id, healthscore, summary, table_json, recommendation }) {
+  // Vorherigen Healthscore laden für Delta-Berechnung
+  let prevScore = null;
+  try {
+    const { data: prev } = await supabase
+      .from('plant_healthchecks')
+      .select('healthscore')
+      .eq('plant_id', plant_id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    prevScore = prev?.healthscore ?? null;
+  } catch {}
+
   const { data, error } = await supabase
     .from('plant_healthchecks')
     .insert([{ plant_id, user_id, healthscore, summary, table_json, recommendation }])
     .select()
     .single();
   if (error) throw new Error(error.message);
+
+  // Gardening-Event: +0.2 Basis + 0.05 × max(0, deltaHealthscore)
+  const delta = prevScore !== null ? healthscore - prevScore : 0;
+  const points = 0.2 + 0.05 * Math.max(0, delta);
+
+  const { error: eventError } = await supabase
+    .from('gardening_events')
+    .insert({
+      user_id,
+      event_type: 'healthcheck_logged',
+      plant_id,
+      points,
+      meta: { healthscore, prev_score: prevScore, delta },
+    });
+  if (eventError) console.warn('gardening_event log error:', eventError.message);
+
   return data;
 }
 
