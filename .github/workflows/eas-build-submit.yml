@@ -29,8 +29,14 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Build iOS & Android
-        run: eas build --platform all --profile production --non-interactive
+      - name: Build iOS
+        run: eas build --platform ios --profile production --non-interactive
+
+      # Android build requires a keystore to exist on EAS first.
+      # Run `eas build --platform android --profile production` locally once,
+      # then uncomment the line below for future CI builds.
+      # - name: Build Android
+      #   run: eas build --platform android --profile production --non-interactive
 
       - name: Submit to App Store (TestFlight)
         run: eas submit --platform ios --profile production --latest --non-interactive
