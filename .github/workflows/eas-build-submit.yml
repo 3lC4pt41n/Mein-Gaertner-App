@@ -1,0 +1,36 @@
+name: EAS Build & Submit
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build iOS & Android
+        run: eas build --platform all --profile production --non-interactive
+
+      - name: Submit to App Store (TestFlight) & Play Store (Internal)
+        run: eas submit --platform all --profile production --latest --non-interactive

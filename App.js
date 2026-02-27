@@ -69,19 +69,22 @@ function TaskStack({ menuLabels }) {
 }
 
 // ---------- Shop Stack (Store + Admin Dashboard) ---
-function ShopStack({ menuLabels }) {
+function ShopStack({ menuLabels, isAdmin }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="StoreMain"
-        component={StoreScreen}
         options={{ title: menuLabels.shop }}
-      />
-      <Stack.Screen
-        name="AdminDashboard"
-        component={AdminDashboardScreen}
-        options={{ title: menuLabels.adminTitle }}
-      />
+      >
+        {(props) => <StoreScreen {...props} isAdmin={isAdmin} />}
+      </Stack.Screen>
+      {isAdmin && (
+        <Stack.Screen
+          name="AdminDashboard"
+          component={AdminDashboardScreen}
+          options={{ title: menuLabels.adminTitle }}
+        />
+      )}
     </Stack.Navigator>
   );
 }
@@ -268,7 +271,7 @@ export default function App() {
           name="Shop"
           options={{ title: menuLabels.shop, tabBarLabel: menuLabels.shop }}
         >
-          {() => <ShopStack menuLabels={menuLabels} />}
+          {() => <ShopStack menuLabels={menuLabels} isAdmin={!!profile?.is_admin} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>

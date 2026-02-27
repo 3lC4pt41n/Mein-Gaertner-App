@@ -3,11 +3,9 @@ import Purchases from 'react-native-purchases';
 import { supabase } from '../supabase';
 
 // ─── RevenueCat API Keys ────────────────────────────────────────
-// Test Store Key für Entwicklung/Sandbox — wird später durch echte
-// iOS (appl_...) und Android (goog_...) Keys ersetzt, sobald die
-// Store-Apps in RevenueCat konfiguriert sind.
-const REVENUECAT_IOS_KEY = 'test_cZnOluDantELREzdeXYCTvxIZNn';
-const REVENUECAT_ANDROID_KEY = 'test_cZnOluDantELREzdeXYCTvxIZNn';
+// Echte Store Keys (aus RevenueCat Dashboard, konfiguriert 27.02.2026)
+const REVENUECAT_IOS_KEY = 'appl_iYDKIehHAjYNRfXLvMSuQwsjxXd';
+const REVENUECAT_ANDROID_KEY = 'goog_dhZDpcPamDGUtdzIgdwwLCjRuEq';
 
 // ─── Paket-Definitionen (für UI) ────────────────────────────────
 export const ONE_TIME_PACKAGES = [

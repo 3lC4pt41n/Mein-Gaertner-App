@@ -6,10 +6,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 
-// HINWEIS: Dieser Screen ist nur für dich (Admin) gedacht.
-// Er liest die daily_stats und user_economics Views.
-// Zugriff einschränken: Entweder über eine admin-Flag im Profil
-// oder nur in Development-Builds einblenden.
+// Admin Dashboard – nur für User mit is_admin = true.
+// Doppelte Absicherung: Frontend-Check + DB-Views geben nur
+// Daten zurück wenn is_admin() = true (siehe Migration).
 
 export default function AdminDashboardScreen() {
   const [dailyStats, setDailyStats] = useState([]);
@@ -17,7 +16,21 @@ export default function AdminDashboardScreen() {
   const [totals, setTotals] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [authorized, setAuthorized] = useState(null);
   const [tab, setTab] = useState('overview'); // 'overview' | 'users' | 'daily'
+
+  // Admin-Check beim Mount
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data?.user?.id) { setAuthorized(false); return; }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', data.user.id)
+        .single();
+      setAuthorized(!!profile?.is_admin);
+    });
+  }, []);
 
   const loadData = useCallback(async () => {
     try {
@@ -48,14 +61,23 @@ export default function AdminDashboardScreen() {
     }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { if (authorized) loadData(); }, [authorized, loadData]);
 
   const onRefresh = () => { setRefreshing(true); loadData(); };
 
-  if (loading) {
+  if (authorized === null || loading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
+  }
+
+  if (!authorized) {
+    return (
+      <View style={styles.center}>
+        <Ionicons name="lock-closed" size={48} color="#ccc" />
+        <Text style={{ color: '#999', marginTop: 12, fontSize: 16 }}>Kein Zugriff</Text>
       </View>
     );
   }

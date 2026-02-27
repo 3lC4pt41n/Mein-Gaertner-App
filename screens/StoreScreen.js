@@ -11,7 +11,7 @@ import {
 } from '../services/purchaseService';
 import { useNavigation } from '@react-navigation/native';
 
-export default function StoreScreen() {
+export default function StoreScreen({ isAdmin }) {
   const navigation = useNavigation();
   const [balance, setBalance] = useState(null);
   const [subscription, setSubscription] = useState(null);
@@ -286,14 +286,16 @@ export default function StoreScreen() {
         </>
       )}
 
-      {/* ─── Admin Dashboard (nur für dich) ─────────────── */}
-      <TouchableOpacity
-        style={styles.adminBtn}
-        onPress={() => navigation.navigate('AdminDashboard')}
-      >
-        <Ionicons name="stats-chart" size={16} color="#aaa" />
-        <Text style={styles.adminBtnText}>Admin Dashboard</Text>
-      </TouchableOpacity>
+      {/* ─── Admin Dashboard (nur für Admins) ─────────────── */}
+      {isAdmin && (
+        <TouchableOpacity
+          style={styles.adminBtn}
+          onPress={() => navigation.navigate('AdminDashboard')}
+        >
+          <Ionicons name="stats-chart" size={16} color="#aaa" />
+          <Text style={styles.adminBtnText}>Admin Dashboard</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={{ height: 40 }} />
     </ScrollView>
