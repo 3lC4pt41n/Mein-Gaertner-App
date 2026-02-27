@@ -1,2 +1,4 @@
-[project]
-id = "tsllrwaixvhuadrfsskt"
+project_id = "tsllrwaixvhuadrfsskt"
+
+[api]
+enabled = true
