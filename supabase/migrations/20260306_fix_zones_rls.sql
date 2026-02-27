@@ -1,5 +1,5 @@
 -- ============================================================
--- Fix: Zones RLS Policy reparieren
+-- Fix: Zones RLS Policy reparieren (v2)
 -- Problem: INSERT wird durch fehlende/fehlerhafte Policy blockiert
 -- ============================================================
 
