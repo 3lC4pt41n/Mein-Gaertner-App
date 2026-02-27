@@ -32,5 +32,10 @@ jobs:
       - name: Build iOS & Android
         run: eas build --platform all --profile production --non-interactive
 
-      - name: Submit to App Store (TestFlight) & Play Store (Internal)
-        run: eas submit --platform all --profile production --latest --non-interactive
+      - name: Submit to App Store (TestFlight)
+        run: eas submit --platform ios --profile production --latest --non-interactive
+
+      # Android submit requires google-service-account.json
+      # Uncomment when Play Store service account is configured
+      # - name: Submit to Play Store (Internal)
+      #   run: eas submit --platform android --profile production --latest --non-interactive
