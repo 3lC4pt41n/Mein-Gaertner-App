@@ -1,5 +1,5 @@
 // Edge Function: Chat mit Ben (Pflanzen-Coach)
-// POST Body: { messages: ChatMessage[], text?: string, image_url?: string }
+// POST Body: { history: ChatMessage[], text?: string, image_url?: string, language?: string }
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getServiceClient } from "../_shared/supabase-client.ts";
 import { callOpenAI } from "../_shared/openai.ts";
