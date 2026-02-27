@@ -4,17 +4,32 @@ export async function fetchZonesWithLocations() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Nicht eingeloggt");
 
-  const { data, error } = await supabase
+  // Eigene Locations holen
+  const { data: locs, error: locErr } = await supabase
+    .from("locations")
+    .select("id, name, user_id")
+    .eq("user_id", user.id);
+  if (locErr) throw locErr;
+
+  const locIds = (locs || []).map(l => l.id);
+  if (locIds.length === 0) return [];
+
+  // Zonen für eigene Locations laden
+  const { data: zones, error: zoneErr } = await supabase
     .from("zones")
-    .select("id,name,type,location:locations(id,name,user_id)")
+    .select("id, name, type, location_id")
+    .in("location_id", locIds)
     .order("name");
+  if (zoneErr) throw zoneErr;
 
-  if (error) throw error;
+  // Location-Objekt an jede Zone anhängen
+  const locMap = {};
+  locs.forEach(l => { locMap[l.id] = l; });
 
-  // Nur eigene Locations filtern (falls du das nicht schon im Query machst)
-  const userZones = data.filter(z => z.location?.user_id === user.id);
-
-  return userZones;
+  return (zones || []).map(z => ({
+    ...z,
+    location: locMap[z.location_id] || null,
+  }));
 }
 
 export function groupZonesByLocation(zonesList) {

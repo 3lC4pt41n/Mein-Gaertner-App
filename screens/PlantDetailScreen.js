@@ -104,14 +104,22 @@ export default function PlantDetailScreen({ route }) {
     { key: 'health', label: plantDetailsText.tabHealth },
   ];
 
-  // Aktuelle Zone inkl. Location-Namen laden
+  // Aktuelle Zone inkl. Location-Namen laden (ohne PostgREST-Join)
   async function fetchAssignedZone() {
-    const { data, error } = await supabase
+    const { data: zone, error } = await supabase
       .from("zones")
-      .select("id, name, type, location:locations(name)")
+      .select("id, name, type, location_id")
       .eq("id", plant.zone_id)
       .maybeSingle();
-    setAssignedZone(data || null);
+    if (zone && zone.location_id) {
+      const { data: loc } = await supabase
+        .from("locations")
+        .select("name")
+        .eq("id", zone.location_id)
+        .maybeSingle();
+      zone.location = loc || null;
+    }
+    setAssignedZone(zone || null);
   }
 
   // Zonen (gruppiert) laden beim Öffnen des Modals

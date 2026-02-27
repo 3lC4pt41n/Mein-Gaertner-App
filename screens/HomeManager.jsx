@@ -24,17 +24,42 @@ export default function HomeManager() {
     return user.id;
   };
 
-  // Lade Locations + Zonen
+  // Lade Locations + Zonen (separate Queries für PostgREST-Kompatibilität)
   const reload = async () => {
     setLoading(true);
-    const user_id = await getUserId();
-    const { data, error } = await supabase
-      .from("locations")
-      .select("id, name, address, zones(id, name, type)")
-      .eq("user_id", user_id)
-      .order("created_at");
-    if (error) Alert.alert("Fehler beim Laden", error.message);
-    setLocations(data || []);
+    try {
+      const user_id = await getUserId();
+      const { data: locs, error: locErr } = await supabase
+        .from("locations")
+        .select("id, name, address")
+        .eq("user_id", user_id)
+        .order("created_at");
+      if (locErr) throw locErr;
+
+      // Zonen separat laden und an Locations anhängen
+      const locIds = (locs || []).map((l) => l.id);
+      let zonesMap = {};
+      if (locIds.length > 0) {
+        const { data: allZones, error: zoneErr } = await supabase
+          .from("zones")
+          .select("id, name, type, location_id")
+          .in("location_id", locIds);
+        if (!zoneErr && allZones) {
+          allZones.forEach((z) => {
+            if (!zonesMap[z.location_id]) zonesMap[z.location_id] = [];
+            zonesMap[z.location_id].push(z);
+          });
+        }
+      }
+
+      const merged = (locs || []).map((l) => ({
+        ...l,
+        zones: zonesMap[l.id] || [],
+      }));
+      setLocations(merged);
+    } catch (err) {
+      Alert.alert("Fehler beim Laden", err.message);
+    }
     setLoading(false);
   };
 
