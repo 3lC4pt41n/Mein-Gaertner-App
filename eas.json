@@ -39,7 +39,7 @@
     "production": {
       "ios": {
         "appleId": "tim.mergenthaler@esanum.de",
-        "ascAppId": "DEINE_APP_STORE_CONNECT_APP_ID",
+        "ascAppId": "6759793273",
         "appleTeamId": "28BN8BX5M8"
       },
       "android": {
