@@ -15,7 +15,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
-import { t } from '../i18n';
+import i18n, { t } from '../i18n';
 
 const APP_SCHEME = 'digitalergaertner';
 const OAUTH_REDIRECT_PATH = 'auth/callback';
@@ -215,7 +215,11 @@ export default function AuthScreen({
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { language: i18n.locale } },
+      });
       if (error) {
         const msg = isNetworkError(error) ? t('common.networkError') : error.message;
         Alert.alert(t('common.error'), msg);
