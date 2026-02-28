@@ -16,6 +16,12 @@ import {
   getUserLanguage,
   type SupportedLanguage,
 } from "../_shared/language.ts";
+import {
+  validateImageUrl,
+  validateText,
+  validateLanguage,
+  validationErrorResponse,
+} from "../_shared/validate.ts";
 
 const HEALTHCHECK_CRITERIA: Record<SupportedLanguage, string[]> = {
   de: [
@@ -114,6 +120,22 @@ serve(async (req) => {
 
     const { image_url, plant_name, language: requestedLanguage } = await req.json();
 
+    // Input-Validierung (VOR Credit-Abzug)
+    const vErr = validationErrorResponse([
+      validateImageUrl(image_url),
+      validateText(plant_name, 200, "plant_name"),
+    ]);
+    if (vErr) return vErr;
+
+    if (!image_url) {
+      return new Response(JSON.stringify({ error: "image_url fehlt" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const language = validateLanguage(requestedLanguage);
+
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
     const cost = CREDIT_COSTS.healthcheck;
     let newBalance: number;
@@ -131,16 +153,10 @@ serve(async (req) => {
       }
       throw e;
     }
-    if (!image_url) {
-      return new Response(JSON.stringify({ error: "image_url fehlt" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
-    const language = await getUserLanguage(serviceClient, userId, requestedLanguage);
-    const languagePromptName = getLanguagePromptName(language);
-    const healthcheckPrompt = buildHealthcheckPrompt(language, languagePromptName);
+    const resolvedLanguage = await getUserLanguage(serviceClient, userId, language);
+    const languagePromptName = getLanguagePromptName(resolvedLanguage);
+    const healthcheckPrompt = buildHealthcheckPrompt(resolvedLanguage, languagePromptName);
 
     // OpenAI Call
     const messages: any[] = [
@@ -177,7 +193,7 @@ serve(async (req) => {
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { plant_name, language },
+      metadata: { plant_name, language: resolvedLanguage },
     });
 
     // Antwort parsen

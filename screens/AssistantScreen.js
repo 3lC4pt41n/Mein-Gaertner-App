@@ -1,5 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Button, Text, FlatList, KeyboardAvoidingView, Platform, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  TextInput,
+  Button,
+  Text,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
@@ -12,7 +24,7 @@ import { colors, spacing, radius } from '../theme';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
-const GARDENER_NAME = "Ben";
+const GARDENER_NAME = 'Ben';
 
 export default function AssistantScreen() {
   const { userId: user_id, user } = useAuth();
@@ -32,24 +44,29 @@ export default function AssistantScreen() {
       try {
         const bal = await fetchBalance();
         setBalance(bal);
-      } catch {}
+      } catch (_e) {
+        /* Balance-Fehler ignorieren — UI zeigt null */
+      }
       try {
         const userLanguage = await fetchCurrentUserLanguage();
         setLanguage(userLanguage);
-      } catch {}
+      } catch (_e) {
+        /* Fallback: Deutsch */
+      }
 
       const avatarPath = user?.user_metadata?.gardener_avatar_path;
       if (avatarPath) {
         try {
-          const { data: signedData, error: signedError } = await supabase
-            .storage
+          const { data: signedData, error: signedError } = await supabase.storage
             .from('chat-images')
             .createSignedUrl(avatarPath, 60 * 60 * 24 * 7);
 
           if (!signedError && signedData?.signedUrl) {
             setUserAvatarUrl(signedData.signedUrl);
           }
-        } catch {}
+        } catch (_e) {
+          /* Avatar optional */
+        }
       }
     })();
   }, [user_id]);
@@ -57,10 +74,12 @@ export default function AssistantScreen() {
   // Initial: letzte 30 Messages laden
   useEffect(() => {
     if (!user_id) return;
-    fetchMessages(user_id).then(({ messages: msgs, hasMore: more }) => {
-      setMessages(msgs);
-      setHasMore(more);
-    }).catch(console.error);
+    fetchMessages(user_id)
+      .then(({ messages: msgs, hasMore: more }) => {
+        setMessages(msgs);
+        setHasMore(more);
+      })
+      .catch(console.error);
   }, [user_id]);
 
   useEffect(() => {
@@ -73,8 +92,10 @@ export default function AssistantScreen() {
     setLoadingMore(true);
     try {
       const oldestTimestamp = messages[0]?.created_at;
-      const { messages: older, hasMore: more } = await fetchMessages(user_id, { before: oldestTimestamp });
-      setMessages(prev => [...older, ...prev]);
+      const { messages: older, hasMore: more } = await fetchMessages(user_id, {
+        before: oldestTimestamp,
+      });
+      setMessages((prev) => [...older, ...prev]);
       setHasMore(more);
     } catch (e) {
       console.error('Load older messages error:', e);
@@ -89,7 +110,7 @@ export default function AssistantScreen() {
       Alert.alert(
         t('common.insufficientCredits'),
         t('common.insufficientCreditsMessage', { balance: e.balance, required: e.required }),
-        [{ text: "OK" }]
+        [{ text: 'OK' }]
       );
       return true;
     }
@@ -117,10 +138,16 @@ export default function AssistantScreen() {
         if (!imagePath) throw new Error(t('assistant.uploadFailed'));
         // Signed URL fuer Anzeige generieren
         const displayUrl = await getChatImageUrl(imagePath);
-        const msg = { user_id, sender: "user", content: t('assistant.imageMessage'), image_path: imagePath, image_url: displayUrl };
+        const msg = {
+          user_id,
+          sender: 'user',
+          content: t('assistant.imageMessage'),
+          image_path: imagePath,
+          image_url: displayUrl,
+        };
         await saveMessage(msg);
         setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
-        await getBenAnswer("", displayUrl);
+        await getBenAnswer('', displayUrl);
       } catch (e) {
         if (!handleCreditError(e)) {
           Alert.alert(t('common.error'), e.message);
@@ -132,17 +159,15 @@ export default function AssistantScreen() {
   };
 
   // GPT-Antwort über Edge Function (History wird server-seitig geladen)
-  const getBenAnswer = async (text = "", image_url = null) => {
+  const getBenAnswer = async (text = '', image_url = null) => {
     try {
-      console.log('[Ben] Calling chatWithBen...', { text, image_url, language });
       const data = await chatWithBen(text, image_url, language);
-      console.log('[Ben] Response:', JSON.stringify(data));
       const content = data?.content || t('assistant.noAnswer');
       if (typeof data?.balance === 'number') setBalance(data.balance);
 
       const msg = { user_id, sender: GARDENER_NAME, content };
       await saveMessage(msg);
-      setMessages(m => [...m, { ...msg, created_at: new Date().toISOString() }]);
+      setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
     } catch (e) {
       console.error('[Ben] Error:', e.message, e);
       if (!handleCreditError(e)) {
@@ -156,7 +181,7 @@ export default function AssistantScreen() {
     if (!input.trim() || !user_id) return;
     setLoading(true);
     try {
-      const userMessage = { user_id, sender: "user", content: input };
+      const userMessage = { user_id, sender: 'user', content: input };
       await saveMessage(userMessage);
       setMessages((m) => [...m, { ...userMessage, created_at: new Date().toISOString() }]);
       setInput('');
@@ -168,54 +193,75 @@ export default function AssistantScreen() {
 
   // Avatar wählen
   const getAvatar = (sender) => {
-    if (sender === GARDENER_NAME)
-      return require('../assets/avatars/ben.png');
-    if (sender === "user" && userAvatarUrl)
-      return { uri: userAvatarUrl };
-    if (sender === "user")
-      return require('../assets/avatars/tim.png');
+    if (sender === GARDENER_NAME) return require('../assets/avatars/ben.png');
+    if (sender === 'user' && userAvatarUrl) return { uri: userAvatarUrl };
+    if (sender === 'user') return require('../assets/avatars/tim.png');
     return null;
   };
 
   // Bubble
   const renderItem = ({ item }) => (
-    <View style={{
-      alignSelf: item.sender === "user" ? 'flex-end' : 'flex-start',
-      backgroundColor: item.sender === "user" ? colors.chatUserBubble : colors.chatBotBubble,
-      margin: spacing.xs,
-      padding: spacing.md,
-      borderRadius: radius.lg,
-      maxWidth: "80%",
-      flexDirection: "row",
-      alignItems: "flex-end"
-    }}>
+    <View
+      style={{
+        alignSelf: item.sender === 'user' ? 'flex-end' : 'flex-start',
+        backgroundColor: item.sender === 'user' ? colors.chatUserBubble : colors.chatBotBubble,
+        margin: spacing.xs,
+        padding: spacing.md,
+        borderRadius: radius.lg,
+        maxWidth: '80%',
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+      }}
+    >
       <Image
         source={getAvatar(item.sender)}
-        style={{ width: spacing.xxxl, height: spacing.xxxl, borderRadius: radius.lg, marginRight: spacing.sm }}
+        style={{
+          width: spacing.xxxl,
+          height: spacing.xxxl,
+          borderRadius: radius.lg,
+          marginRight: spacing.sm,
+        }}
       />
       <View>
-        {item.image_url &&
-          <Image source={{ uri: item.image_url }} style={{ width: 150, height: 150, borderRadius: 10, marginBottom: spacing.xs }} resizeMode="cover" />}
+        {item.image_url && (
+          <Image
+            source={{ uri: item.image_url }}
+            style={{ width: 150, height: 150, borderRadius: 10, marginBottom: spacing.xs }}
+            resizeMode="cover"
+          />
+        )}
         <Text>{item.content}</Text>
-        <Text style={{ fontSize: 10, color: colors.textTertiary }}>{item.sender === "user" ? t('assistant.you') : GARDENER_NAME}</Text>
+        <Text style={{ fontSize: 10, color: colors.textTertiary }}>
+          {item.sender === 'user' ? t('assistant.you') : GARDENER_NAME}
+        </Text>
       </View>
     </View>
   );
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       {/* Credit-Leiste */}
       {balance !== null && (
-        <View style={{
-          backgroundColor: balance > 10 ? colors.primarySurface : colors.warningSurface,
-          padding: spacing.sm, flexDirection: "row", justifyContent: "space-between",
-          alignItems: "center", paddingHorizontal: spacing.lg,
-        }}>
+        <View
+          style={{
+            backgroundColor: balance > 10 ? colors.primarySurface : colors.warningSurface,
+            padding: spacing.sm,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: spacing.lg,
+          }}
+        >
           <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.credits')}</Text>
-          <Text style={{
-            fontWeight: "bold",
-            color: balance > 10 ? colors.primary : colors.warning
-          }}>
+          <Text
+            style={{
+              fontWeight: 'bold',
+              color: balance > 10 ? colors.primary : colors.warning,
+            }}
+          >
             {balance}
           </Text>
         </View>
@@ -244,18 +290,40 @@ export default function AssistantScreen() {
           ) : null
         }
       />
-      {loading && <ActivityIndicator size="large" color={colors.primaryLight} style={{ margin: spacing.md }} />}
-      <View style={{ flexDirection: "row", alignItems: "center", padding: spacing.sm }}>
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color={colors.primaryLight}
+          style={{ margin: spacing.md }}
+        />
+      )}
+      <View style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.sm }}>
         <TouchableOpacity onPress={takeAndSendPhoto}>
-          <Ionicons name="camera" size={28} color={colors.primary} style={{ marginRight: spacing.md }} />
+          <Ionicons
+            name="camera"
+            size={28}
+            color={colors.primary}
+            style={{ marginRight: spacing.md }}
+          />
         </TouchableOpacity>
         <TextInput
           value={input}
           onChangeText={setInput}
           placeholder={t('assistant.placeholder')}
-          style={{ flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, padding: spacing.sm, backgroundColor: colors.surface }}
+          style={{
+            flex: 1,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: radius.pill,
+            padding: spacing.sm,
+            backgroundColor: colors.surface,
+          }}
         />
-        <Button title={t('common.send')} onPress={sendMessage} disabled={loading || !input.trim()} />
+        <Button
+          title={t('common.send')}
+          onPress={sendMessage}
+          disabled={loading || !input.trim()}
+        />
       </View>
     </KeyboardAvoidingView>
   );

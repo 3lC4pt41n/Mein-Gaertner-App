@@ -15,6 +15,11 @@ import {
   getLanguagePromptName,
   getUserLanguage,
 } from "../_shared/language.ts";
+import {
+  validateBase64,
+  validateLanguage,
+  validationErrorResponse,
+} from "../_shared/validate.ts";
 
 serve(async (req) => {
   // CORS Preflight
@@ -37,6 +42,21 @@ serve(async (req) => {
     // Body parsen
     const { base64, language: requestedLanguage } = await req.json();
 
+    // Input-Validierung (VOR Credit-Abzug)
+    const vErr = validationErrorResponse([
+      validateBase64(base64, 10_000_000),
+    ]);
+    if (vErr) return vErr;
+
+    if (!base64) {
+      return new Response(JSON.stringify({ error: "base64 Bild fehlt" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const language = validateLanguage(requestedLanguage);
+
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
     const cost = CREDIT_COSTS.plant_scan;
     let newBalance: number;
@@ -54,15 +74,9 @@ serve(async (req) => {
       }
       throw e;
     }
-    if (!base64) {
-      return new Response(JSON.stringify({ error: "base64 Bild fehlt" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
-    const language = await getUserLanguage(serviceClient, userId, requestedLanguage);
-    const languagePromptName = getLanguagePromptName(language);
+    const resolvedLanguage = await getUserLanguage(serviceClient, userId, language);
+    const languagePromptName = getLanguagePromptName(resolvedLanguage);
 
     // OpenAI Call: Pflanze erkennen
     let result;
@@ -108,7 +122,7 @@ Rules:
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { language },
+      metadata: { language: resolvedLanguage },
     });
 
     // Antwort parsen

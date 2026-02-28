@@ -69,9 +69,7 @@ export async function initPurchases(userId) {
   if (isInitialized) return;
 
   try {
-    const apiKey = Platform.OS === 'ios'
-      ? REVENUECAT_IOS_KEY
-      : REVENUECAT_ANDROID_KEY;
+    const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
 
     await Purchases.configure({ apiKey });
 
@@ -81,7 +79,7 @@ export async function initPurchases(userId) {
     }
 
     isInitialized = true;
-    console.log('RevenueCat initialisiert');
+    // RevenueCat erfolgreich initialisiert
   } catch (e) {
     console.warn('RevenueCat Init fehlgeschlagen:', e.message);
   }

@@ -12,6 +12,11 @@ import {
   getUserLanguage,
 } from "../_shared/language.ts";
 import { callOpenAIImageEdit } from "../_shared/openai.ts";
+import {
+  validateBase64,
+  validateLanguage,
+  validationErrorResponse,
+} from "../_shared/validate.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -31,6 +36,12 @@ serve(async (req) => {
     const userId = await getUserIdFromAuth(serviceClient, authHeader);
     const { base64, language: requestedLanguage } = await req.json();
 
+    // Input-Validierung
+    const vErr = validationErrorResponse([
+      validateBase64(base64, 10_000_000),
+    ]);
+    if (vErr) return vErr;
+
     if (!base64) {
       return new Response(JSON.stringify({ error: "base64 Bild fehlt" }), {
         status: 400,
@@ -38,8 +49,9 @@ serve(async (req) => {
       });
     }
 
-    const language = await getUserLanguage(serviceClient, userId, requestedLanguage);
-    const languagePromptName = getLanguagePromptName(language);
+    const language = validateLanguage(requestedLanguage);
+    const resolvedLanguage = await getUserLanguage(serviceClient, userId, language);
+    const languagePromptName = getLanguagePromptName(resolvedLanguage);
 
     const imageResult = await callOpenAIImageEdit({
       image_base64: base64,
@@ -81,7 +93,7 @@ Style rules:
       cost_credits: 0,
       openai_cost_usd: 0,
       model: imageResult.model,
-      metadata: { language },
+      metadata: { language: resolvedLanguage },
     });
 
     return new Response(

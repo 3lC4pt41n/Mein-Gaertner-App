@@ -21,6 +21,12 @@ import {
   estimateTokens,
   selectMessagesWithinBudget,
 } from "../_shared/tokens.ts";
+import {
+  validateText,
+  validateImageUrl,
+  validateLanguage,
+  validationErrorResponse,
+} from "../_shared/validate.ts";
 
 // ─── Garden Context: Pflanzen, Healthchecks, Tasks laden ────────────
 
@@ -296,6 +302,14 @@ serve(async (req) => {
     // Body parsen (history wird NICHT mehr vom Client gesendet)
     const { text, image_url, language: requestedLanguage } = await req.json();
 
+    // Input-Validierung
+    const validationErr = validationErrorResponse([
+      validateText(text, 2000, "text"),
+      validateImageUrl(image_url),
+    ]);
+    if (validationErr) return validationErr;
+    const language = validateLanguage(requestedLanguage);
+
     // Credits atomar abziehen
     const cost = CREDIT_COSTS.chat;
     let newBalance: number;
@@ -314,9 +328,9 @@ serve(async (req) => {
       throw e;
     }
 
-    // Sprache + Garden Context + Memory parallel laden
-    const [language, gardenContext, memoryData] = await Promise.all([
-      getUserLanguage(serviceClient, userId, requestedLanguage),
+    // Sprache (DB-Profil) + Garden Context + Memory parallel laden
+    const [userLang, gardenContext, memoryData] = await Promise.all([
+      getUserLanguage(serviceClient, userId, language),
       loadGardenContext(serviceClient, userId),
       serviceClient
         .from("chat_memory")
@@ -325,7 +339,8 @@ serve(async (req) => {
         .maybeSingle(),
     ]);
 
-    const languagePromptName = getLanguagePromptName(language);
+    const finalLanguage = userLang;
+    const languagePromptName = getLanguagePromptName(finalLanguage);
     const memorySummary = memoryData?.data?.summary || null;
     const systemPrompt = buildSystemPrompt(languagePromptName, gardenContext, memorySummary);
 
@@ -383,7 +398,7 @@ serve(async (req) => {
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { language },
+      metadata: { language: finalLanguage },
     });
 
     // Summary Memory im Hintergrund aktualisieren (blockiert Response nicht)

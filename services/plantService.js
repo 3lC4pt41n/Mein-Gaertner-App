@@ -1,10 +1,23 @@
 import { supabase } from '../supabase';
 
-// Pflanze speichern, inkl. Details
+// Slug aus Pflanzenname generieren: "Monstera Deliciosa" → "monstera-deliciosa-a3f2"
+function generateSlug(name) {
+  const base = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Umlaute → Basis
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  const shortId = Math.random().toString(36).substring(2, 6);
+  return `${base}-${shortId}`;
+}
+
+// Pflanze speichern, inkl. Details + eindeutigem Slug
 export async function savePlantToSupabase({ name, note, image, user_id, details }) {
+  const slug = generateSlug(name);
   const { data, error } = await supabase
-    .from("plants")
-    .insert([{ name, note, image_url: image, user_id, details }])
+    .from('plants')
+    .insert([{ name, note, image_url: image, user_id, details, slug }])
     .select()
     .single();
   if (error) throw new Error(error.message);
@@ -29,7 +42,14 @@ export async function deletePlant(id) {
 }
 
 // Healthcheck speichern + Gardening-Event loggen
-export async function saveHealthcheck({ plant_id, user_id, healthscore, summary, table_json, recommendation }) {
+export async function saveHealthcheck({
+  plant_id,
+  user_id,
+  healthscore,
+  summary,
+  table_json,
+  recommendation,
+}) {
   // Vorherigen Healthscore laden für Delta-Berechnung
   let prevScore = null;
   try {
@@ -41,7 +61,9 @@ export async function saveHealthcheck({ plant_id, user_id, healthscore, summary,
       .limit(1)
       .maybeSingle();
     prevScore = prev?.healthscore ?? null;
-  } catch {}
+  } catch (_e) {
+    /* Kein vorheriger Healthcheck — Delta bleibt 0 */
+  }
 
   const { data, error } = await supabase
     .from('plant_healthchecks')
@@ -54,15 +76,13 @@ export async function saveHealthcheck({ plant_id, user_id, healthscore, summary,
   const delta = prevScore !== null ? healthscore - prevScore : 0;
   const points = 0.2 + 0.05 * Math.max(0, delta);
 
-  const { error: eventError } = await supabase
-    .from('gardening_events')
-    .insert({
-      user_id,
-      event_type: 'healthcheck_logged',
-      plant_id,
-      points,
-      meta: { healthscore, prev_score: prevScore, delta },
-    });
+  const { error: eventError } = await supabase.from('gardening_events').insert({
+    user_id,
+    event_type: 'healthcheck_logged',
+    plant_id,
+    points,
+    meta: { healthscore, prev_score: prevScore, delta },
+  });
   if (eventError) console.warn('gardening_event log error:', eventError.message);
 
   return data;

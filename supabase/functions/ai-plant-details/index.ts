@@ -16,6 +16,11 @@ import {
   getUserLanguage,
   type SupportedLanguage,
 } from "../_shared/language.ts";
+import {
+  validateText,
+  validateLanguage,
+  validationErrorResponse,
+} from "../_shared/validate.ts";
 
 const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
   de: `{
@@ -204,6 +209,22 @@ serve(async (req) => {
 
     const { name, note, language: requestedLanguage } = await req.json();
 
+    // Input-Validierung (VOR Credit-Abzug)
+    const vErr = validationErrorResponse([
+      validateText(name, 200, "name"),
+      validateText(note, 500, "note"),
+    ]);
+    if (vErr) return vErr;
+
+    if (!name) {
+      return new Response(JSON.stringify({ error: "Pflanzenname fehlt" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const language = validateLanguage(requestedLanguage);
+
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
     const cost = CREDIT_COSTS.plant_details;
     let newBalance: number;
@@ -221,16 +242,10 @@ serve(async (req) => {
       }
       throw e;
     }
-    if (!name) {
-      return new Response(JSON.stringify({ error: "Pflanzenname fehlt" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
-    const language = await getUserLanguage(serviceClient, userId, requestedLanguage);
-    const languagePromptName = getLanguagePromptName(language);
-    const schema = DETAILS_SCHEMA_BY_LANGUAGE[language];
+    const resolvedLanguage = await getUserLanguage(serviceClient, userId, language);
+    const languagePromptName = getLanguagePromptName(resolvedLanguage);
+    const schema = DETAILS_SCHEMA_BY_LANGUAGE[resolvedLanguage];
 
     const prompt = `Create plant details for "${name}" (hint: "${note || ""}") and return ONLY one JSON object in EXACTLY this schema:
 
@@ -262,7 +277,7 @@ Rules:
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { plant_name: name, language },
+      metadata: { plant_name: name, language: resolvedLanguage },
     });
 
     let details;
