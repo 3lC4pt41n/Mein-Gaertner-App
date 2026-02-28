@@ -177,12 +177,17 @@ async function loadAndPrepareHistory(
   // Signed URLs fuer Bilder generieren
   const prepared: any[] = [];
   for (const msg of selected) {
-    let imageUrl = msg.image_url;
-    if (msg.image_path) {
+    let imageUrl: string | null = null;
+
+    // Nur echte Storage-Pfade verarbeiten (keine data: URIs oder base64)
+    if (msg.image_path && !msg.image_path.startsWith("data:")) {
       const { data: signedData } = await serviceClient.storage
         .from("chat-images")
         .createSignedUrl(msg.image_path, 60 * 60);
       if (signedData?.signedUrl) imageUrl = signedData.signedUrl;
+    } else if (msg.image_url && !msg.image_url.startsWith("data:") && msg.image_url.startsWith("http")) {
+      // Nur echte HTTP-URLs verwenden, keine base64 data-URIs
+      imageUrl = msg.image_url;
     }
 
     const role = msg.sender === "user" ? "user" : "assistant";
@@ -197,7 +202,9 @@ async function loadAndPrepareHistory(
         ],
       });
     } else {
-      prepared.push({ role, content: msg.content });
+      // Kein Bild (oder base64) — nur Text senden
+      const text = msg.content || "[Bild]";
+      prepared.push({ role, content: text });
     }
   }
 
