@@ -5,8 +5,8 @@ import { getServiceClient } from "../_shared/supabase-client.ts";
 import { callOpenAI } from "../_shared/openai.ts";
 import {
   CREDIT_COSTS,
-  checkBalance,
-  deductCredits,
+  deductCreditsAtomic,
+  refundCredits,
   logUsage,
   corsHeaders,
   getUserIdFromAuth,
@@ -112,21 +112,25 @@ serve(async (req) => {
     const serviceClient = getServiceClient();
     const userId = await getUserIdFromAuth(serviceClient, authHeader);
 
-    // Credits prüfen
-    const cost = CREDIT_COSTS.healthcheck;
-    const { balance, sufficient } = await checkBalance(serviceClient, userId, cost);
-
-    if (!sufficient) {
-      return new Response(
-        JSON.stringify({ error: "Nicht genügend Credits", balance, required: cost }),
-        {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
     const { image_url, plant_name, language: requestedLanguage } = await req.json();
+
+    // Credits atomar abziehen (check + deduct in einem DB-Statement)
+    const cost = CREDIT_COSTS.healthcheck;
+    let newBalance: number;
+    try {
+      newBalance = await deductCreditsAtomic(serviceClient, userId, cost);
+    } catch (e: any) {
+      if (e.code === "INSUFFICIENT_CREDITS") {
+        return new Response(
+          JSON.stringify({ error: "Nicht genügend Credits", balance: e.balance, required: e.required }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      throw e;
+    }
     if (!image_url) {
       return new Response(JSON.stringify({ error: "image_url fehlt" }), {
         status: 400,
@@ -152,13 +156,16 @@ serve(async (req) => {
       },
     ];
 
-    const result = await callOpenAI({
-      messages,
-      max_tokens: 1200,
-    });
-
-    // Credits abziehen
-    const newBalance = await deductCredits(serviceClient, userId, cost);
+    let result;
+    try {
+      result = await callOpenAI({
+        messages,
+        max_tokens: 1200,
+      });
+    } catch (e) {
+      await refundCredits(serviceClient, userId, cost);
+      throw e;
+    }
 
     // Usage loggen
     await logUsage(serviceClient, {

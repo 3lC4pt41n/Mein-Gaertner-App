@@ -5,8 +5,8 @@ import { getServiceClient } from "../_shared/supabase-client.ts";
 import { callOpenAI } from "../_shared/openai.ts";
 import {
   CREDIT_COSTS,
-  checkBalance,
-  deductCredits,
+  deductCreditsAtomic,
+  refundCredits,
   logUsage,
   corsHeaders,
   getUserIdFromAuth,
@@ -34,26 +34,26 @@ serve(async (req) => {
     const serviceClient = getServiceClient();
     const userId = await getUserIdFromAuth(serviceClient, authHeader);
 
-    // Credits prüfen
-    const cost = CREDIT_COSTS.plant_scan;
-    const { balance, sufficient } = await checkBalance(serviceClient, userId, cost);
-
-    if (!sufficient) {
-      return new Response(
-        JSON.stringify({
-          error: "Nicht genügend Credits",
-          balance,
-          required: cost,
-        }),
-        {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
     // Body parsen
     const { base64, language: requestedLanguage } = await req.json();
+
+    // Credits atomar abziehen (check + deduct in einem DB-Statement)
+    const cost = CREDIT_COSTS.plant_scan;
+    let newBalance: number;
+    try {
+      newBalance = await deductCreditsAtomic(serviceClient, userId, cost);
+    } catch (e: any) {
+      if (e.code === "INSUFFICIENT_CREDITS") {
+        return new Response(
+          JSON.stringify({ error: "Nicht genügend Credits", balance: e.balance, required: e.required }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      throw e;
+    }
     if (!base64) {
       return new Response(JSON.stringify({ error: "base64 Bild fehlt" }), {
         status: 400,
@@ -65,14 +65,16 @@ serve(async (req) => {
     const languagePromptName = getLanguagePromptName(language);
 
     // OpenAI Call: Pflanze erkennen
-    const result = await callOpenAI({
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `Identify the plant in this photo and return JSON in exactly this format:
+    let result;
+    try {
+      result = await callOpenAI({
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Identify the plant in this photo and return JSON in exactly this format:
 {
   "name": "Botanical name",
   "note": "One concise care tip sentence"
@@ -81,19 +83,20 @@ Rules:
 - Write the note in ${languagePromptName}.
 - Output one language only, no extra text.
 - If uncertain, still provide your best estimate.`,
-            },
-            {
-              type: "image_url",
-              image_url: { url: `data:image/jpeg;base64,${base64}` },
-            },
-          ],
-        },
-      ],
-      max_tokens: 600,
-    });
-
-    // Credits abziehen
-    const newBalance = await deductCredits(serviceClient, userId, cost);
+              },
+              {
+                type: "image_url",
+                image_url: { url: `data:image/jpeg;base64,${base64}` },
+              },
+            ],
+          },
+        ],
+        max_tokens: 600,
+      });
+    } catch (e) {
+      await refundCredits(serviceClient, userId, cost);
+      throw e;
+    }
 
     // Usage loggen
     await logUsage(serviceClient, {

@@ -54,9 +54,9 @@ export async function performHealthcheck(imageUrl, plantName, language) {
 }
 
 // Chat-Nachricht an Ben senden
-export async function chatWithBen(history, text, imageUrl, language) {
+// History wird server-seitig geladen, nicht mehr vom Client gesendet
+export async function chatWithBen(text, imageUrl, language) {
   return callEdgeFunction('ai-chat', {
-    history,
     text: text || undefined,
     image_url: imageUrl || undefined,
     language,

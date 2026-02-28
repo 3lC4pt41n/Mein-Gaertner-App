@@ -8,54 +8,48 @@ export const CREDIT_COSTS: Record<string, number> = {
   chat: 3,            // Chat-Nachricht (~$0.01-0.03)
 };
 
-// Balance prüfen
-export async function checkBalance(
-  serviceClient: SupabaseClient,
-  userId: string,
-  requiredCredits: number
-): Promise<{ balance: number; sufficient: boolean }> {
-  const { data, error } = await serviceClient
-    .from("credit_balances")
-    .select("balance")
-    .eq("user_id", userId)
-    .single();
-
-  if (error || !data) {
-    return { balance: 0, sufficient: false };
-  }
-
-  return {
-    balance: data.balance,
-    sufficient: data.balance >= requiredCredits,
-  };
-}
-
-// Credits abziehen
-export async function deductCredits(
+// Atomare Credit-Lastschrift: check + deduct in einem DB-Statement
+// Verhindert Race Conditions bei parallelen Requests
+export async function deductCreditsAtomic(
   serviceClient: SupabaseClient,
   userId: string,
   amount: number
 ): Promise<number> {
-  // Atomar abziehen mit RPC wäre ideal, aber für Beta reicht das
-  const { data, error } = await serviceClient
-    .from("credit_balances")
-    .select("balance")
-    .eq("user_id", userId)
-    .single();
+  const { data, error } = await serviceClient.rpc("deduct_credits", {
+    p_user_id: userId,
+    p_amount: amount,
+  });
 
-  if (error || !data) throw new Error("Credit-Balance nicht gefunden");
+  if (error) {
+    if (error.message?.includes("INSUFFICIENT_CREDITS")) {
+      // Balance aus Fehlermeldung extrahieren
+      const match = error.message.match(/INSUFFICIENT_CREDITS:(\d+)/);
+      const currentBalance = match ? parseInt(match[1]) : 0;
+      const err: any = new Error("Nicht genügend Credits");
+      err.code = "INSUFFICIENT_CREDITS";
+      err.balance = currentBalance;
+      err.required = amount;
+      throw err;
+    }
+    throw error;
+  }
 
-  const newBalance = data.balance - amount;
-  if (newBalance < 0) throw new Error("Nicht genügend Credits");
+  return data as number; // neuer Balance-Wert
+}
 
-  const { error: updateError } = await serviceClient
-    .from("credit_balances")
-    .update({ balance: newBalance })
-    .eq("user_id", userId);
-
-  if (updateError) throw new Error("Credits konnten nicht abgezogen werden");
-
-  return newBalance;
+// Credits zurueckgeben (Refund bei fehlgeschlagenem API-Call)
+export async function refundCredits(
+  serviceClient: SupabaseClient,
+  userId: string,
+  amount: number
+): Promise<void> {
+  const { error } = await serviceClient.rpc("refund_credits", {
+    p_user_id: userId,
+    p_amount: amount,
+  });
+  if (error) {
+    console.error("Refund fehlgeschlagen fuer User:", userId, "Amount:", amount, error);
+  }
 }
 
 // Usage loggen

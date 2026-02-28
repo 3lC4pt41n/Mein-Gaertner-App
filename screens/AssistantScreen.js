@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
 import { fetchMessages, saveMessage } from '../services/chatService';
-import { uploadChatImage } from '../services/uploadService';
+import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
 import { chatWithBen } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
@@ -19,6 +19,8 @@ export default function AssistantScreen() {
   const [balance, setBalance] = useState(null);
   const [language, setLanguage] = useState('de');
   const [userAvatarUrl, setUserAvatarUrl] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const flatListRef = useRef();
 
   useEffect(() => {
@@ -50,14 +52,34 @@ export default function AssistantScreen() {
     })();
   }, []);
 
+  // Initial: letzte 30 Messages laden
   useEffect(() => {
     if (!user_id) return;
-    fetchMessages(user_id).then(setMessages).catch(console.error);
+    fetchMessages(user_id).then(({ messages: msgs, hasMore: more }) => {
+      setMessages(msgs);
+      setHasMore(more);
+    }).catch(console.error);
   }, [user_id]);
 
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
+
+  // Aeltere Nachrichten nachladen
+  const loadOlderMessages = async () => {
+    if (loadingMore || !hasMore || messages.length === 0) return;
+    setLoadingMore(true);
+    try {
+      const oldestTimestamp = messages[0]?.created_at;
+      const { messages: older, hasMore: more } = await fetchMessages(user_id, { before: oldestTimestamp });
+      setMessages(prev => [...older, ...prev]);
+      setHasMore(more);
+    } catch (e) {
+      console.error('Load older messages error:', e);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Credit-Error Handler
   const handleCreditError = (e) => {
@@ -88,12 +110,15 @@ export default function AssistantScreen() {
     if (!result.canceled) {
       setLoading(true);
       try {
-        const uploadedUrl = await uploadChatImage(result.assets[0].uri, user_id);
-        if (!uploadedUrl) throw new Error("Upload fehlgeschlagen");
-        const msg = { user_id, sender: "user", content: "[Bild]", image_url: uploadedUrl };
+        // Upload gibt jetzt Dateinamen zurueck (nicht Signed URL)
+        const imagePath = await uploadChatImage(result.assets[0].uri, user_id);
+        if (!imagePath) throw new Error("Upload fehlgeschlagen");
+        // Signed URL fuer Anzeige generieren
+        const displayUrl = await getChatImageUrl(imagePath);
+        const msg = { user_id, sender: "user", content: "[Bild]", image_path: imagePath, image_url: displayUrl };
         await saveMessage(msg);
         setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
-        await getBenAnswer("", uploadedUrl);
+        await getBenAnswer("", displayUrl);
       } catch (e) {
         if (!handleCreditError(e)) {
           Alert.alert("Fehler", e.message);
@@ -104,17 +129,20 @@ export default function AssistantScreen() {
     }
   };
 
-  // GPT-Antwort über Edge Function
+  // GPT-Antwort über Edge Function (History wird server-seitig geladen)
   const getBenAnswer = async (text = "", image_url = null) => {
     try {
-      const data = await chatWithBen(messages.slice(-10), text, image_url, language);
-      const content = data.content || "🤔 Keine Antwort.";
-      if (typeof data.balance === 'number') setBalance(data.balance);
+      console.log('[Ben] Calling chatWithBen...', { text, image_url, language });
+      const data = await chatWithBen(text, image_url, language);
+      console.log('[Ben] Response:', JSON.stringify(data));
+      const content = data?.content || "\u{1F914} Keine Antwort.";
+      if (typeof data?.balance === 'number') setBalance(data.balance);
 
       const msg = { user_id, sender: GARDENER_NAME, content };
       await saveMessage(msg);
       setMessages(m => [...m, { ...msg, created_at: new Date().toISOString() }]);
     } catch (e) {
+      console.error('[Ben] Error:', e.message, e);
       if (!handleCreditError(e)) {
         Alert.alert("Fehler", e.message);
       }
@@ -197,6 +225,22 @@ export default function AssistantScreen() {
         keyExtractor={(_, i) => i.toString()}
         renderItem={renderItem}
         contentContainerStyle={{ padding: 10 }}
+        ListHeaderComponent={
+          hasMore ? (
+            <TouchableOpacity
+              onPress={loadOlderMessages}
+              style={{ padding: 12, alignItems: 'center' }}
+            >
+              {loadingMore ? (
+                <ActivityIndicator size="small" color="#4CAF50" />
+              ) : (
+                <Text style={{ color: '#4CAF50', fontSize: 13 }}>
+                  Ältere Nachrichten laden...
+                </Text>
+              )}
+            </TouchableOpacity>
+          ) : null
+        }
       />
       {loading && <ActivityIndicator size="large" color="#4CAF50" style={{ margin: 10 }} />}
       <View style={{ flexDirection: "row", alignItems: "center", padding: 8 }}>

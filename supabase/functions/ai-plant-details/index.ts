@@ -5,8 +5,8 @@ import { getServiceClient } from "../_shared/supabase-client.ts";
 import { callOpenAI } from "../_shared/openai.ts";
 import {
   CREDIT_COSTS,
-  checkBalance,
-  deductCredits,
+  deductCreditsAtomic,
+  refundCredits,
   logUsage,
   corsHeaders,
   getUserIdFromAuth,
@@ -202,20 +202,25 @@ serve(async (req) => {
     const serviceClient = getServiceClient();
     const userId = await getUserIdFromAuth(serviceClient, authHeader);
 
-    const cost = CREDIT_COSTS.plant_details;
-    const { balance, sufficient } = await checkBalance(serviceClient, userId, cost);
-
-    if (!sufficient) {
-      return new Response(
-        JSON.stringify({ error: "Nicht genügend Credits", balance, required: cost }),
-        {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
     const { name, note, language: requestedLanguage } = await req.json();
+
+    // Credits atomar abziehen (check + deduct in einem DB-Statement)
+    const cost = CREDIT_COSTS.plant_details;
+    let newBalance: number;
+    try {
+      newBalance = await deductCreditsAtomic(serviceClient, userId, cost);
+    } catch (e: any) {
+      if (e.code === "INSUFFICIENT_CREDITS") {
+        return new Response(
+          JSON.stringify({ error: "Nicht genügend Credits", balance: e.balance, required: e.required }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      throw e;
+    }
     if (!name) {
       return new Response(JSON.stringify({ error: "Pflanzenname fehlt" }), {
         status: 400,
@@ -237,12 +242,16 @@ Rules:
 - Keep top-level keys exactly: overview, care, extras.
 - No markdown, no comments, no explanations.`;
 
-    const result = await callOpenAI({
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 1500,
-    });
-
-    const newBalance = await deductCredits(serviceClient, userId, cost);
+    let result;
+    try {
+      result = await callOpenAI({
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 1500,
+      });
+    } catch (e) {
+      await refundCredits(serviceClient, userId, cost);
+      throw e;
+    }
 
     await logUsage(serviceClient, {
       user_id: userId,

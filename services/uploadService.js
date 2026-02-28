@@ -38,6 +38,7 @@ export async function uploadPlantImage(uri, user_id) {
 }
 
 // Chatbild hochladen (Bucket: chat-images)
+// Gibt den Dateinamen (Pfad) zurueck, NICHT eine Signed URL
 export async function uploadChatImage(uri, user_id) {
   const bucket = 'chat-images';
   const fileExt = uri.split('.').pop().split('?')[0];
@@ -61,12 +62,16 @@ export async function uploadChatImage(uri, user_id) {
 
   if (error) throw error;
 
-  const { data: urlData, error: urlError } = await supabase
+  return fileName; // Stabiler Pfad, Signed URL wird on-demand generiert
+}
+
+// Signed URL fuer ein Chat-Bild generieren (1 Stunde gueltig)
+export async function getChatImageUrl(imagePath) {
+  if (!imagePath) return null;
+  const { data, error } = await supabase
     .storage
-    .from(bucket)
-    .createSignedUrl(fileName, 60 * 60 * 24 * 7);
-
-  if (urlError) throw urlError;
-
-  return urlData.signedUrl;
+    .from('chat-images')
+    .createSignedUrl(imagePath, 60 * 60);
+  if (error) return null;
+  return data?.signedUrl || null;
 }
