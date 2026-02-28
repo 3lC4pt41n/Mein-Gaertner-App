@@ -9,6 +9,7 @@ import { logDiscovery } from '../services/discoveryService';
 import { supabase } from '../supabase';
 import { useNavigation } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
+import { colors, spacing, radius } from '../theme';
 
 export default function AddPlantScreen() {
   const [name, setName] = useState("");
@@ -185,18 +186,18 @@ export default function AddPlantScreen() {
   };
 
   return (
-    <ScrollView style={{ padding: 20 }}>
+    <ScrollView style={{ padding: spacing.xl }}>
       {/* Credit-Anzeige */}
       {balance !== null && (
         <View style={{
-          backgroundColor: balance > 20 ? "#E8F5E9" : "#FFF3E0",
-          padding: 10, borderRadius: 8, marginBottom: 12,
+          backgroundColor: balance > 20 ? colors.primarySurface : colors.warningSurface,
+          padding: spacing.md, borderRadius: radius.sm, marginBottom: spacing.md,
           flexDirection: "row", justifyContent: "space-between", alignItems: "center"
         }}>
-          <Text style={{ fontWeight: "bold", color: "#333" }}>Credits</Text>
+          <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>Credits</Text>
           <Text style={{
             fontWeight: "bold", fontSize: 16,
-            color: balance > 20 ? "#4CAF50" : "#FF9800"
+            color: balance > 20 ? colors.primaryLight : colors.warning
           }}>
             {balance}
           </Text>
@@ -207,15 +208,15 @@ export default function AddPlantScreen() {
       {imageUri && (
         <Image
           source={{ uri: imageUri }}
-          style={{ width: "100%", height: 200, marginVertical: 10, borderRadius: 8 }}
+          style={{ width: "100%", height: 200, marginVertical: spacing.md, borderRadius: radius.sm }}
         />
       )}
-      <Text style={{ fontWeight: "bold", marginTop: 10 }}>Name:</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="z. B. Monstera deliciosa" style={{ borderWidth: 1, padding: 8, marginBottom: 10 }} />
+      <Text style={{ fontWeight: "bold", marginTop: spacing.md }}>Name:</Text>
+      <TextInput value={name} onChangeText={setName} placeholder="z. B. Monstera deliciosa" style={{ borderWidth: 1, padding: spacing.sm, marginBottom: spacing.md }} />
       <Text style={{ fontWeight: "bold" }}>Hinweis:</Text>
-      <TextInput multiline value={note} onChangeText={setNote} placeholder="Pflegehinweis von GPT" style={{ borderWidth: 1, padding: 8, minHeight: 80 }} />
+      <TextInput multiline value={note} onChangeText={setNote} placeholder="Pflegehinweis von GPT" style={{ borderWidth: 1, padding: spacing.sm, minHeight: 80 }} />
       <Button title="✅ Pflanze speichern & Details anzeigen" onPress={handleSaveAndDetails} disabled={!name || loading} />
-      {loading && <ActivityIndicator size="large" color="#4CAF50" style={{ marginVertical: 20 }} />}
+      {loading && <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginVertical: spacing.xl }} />}
     </ScrollView>
   );
 }

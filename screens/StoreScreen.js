@@ -10,6 +10,7 @@ import {
   getOfferings, purchasePackage, openManageSubscriptions, restorePurchases
 } from '../services/purchaseService';
 import { useNavigation } from '@react-navigation/native';
+import { colors, spacing, radius, shadows } from '../theme';
 
 export default function StoreScreen({ isAdmin }) {
   const navigation = useNavigation();
@@ -110,7 +111,7 @@ export default function StoreScreen({ isAdmin }) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <ActivityIndicator size="large" color={colors.primaryLight} />
       </View>
     );
   }
@@ -118,12 +119,12 @@ export default function StoreScreen({ isAdmin }) {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryLight} />}
     >
       {/* ─── Balance Header ─────────────────────────────────── */}
       <View style={styles.balanceCard}>
-        <Ionicons name="flash" size={32} color="#4CAF50" />
-        <View style={{ marginLeft: 12, flex: 1 }}>
+        <Ionicons name="flash" size={32} color={colors.primaryLight} />
+        <View style={{ marginLeft: spacing.md, flex: 1 }}>
           <Text style={styles.balanceLabel}>Dein Guthaben</Text>
           <Text style={styles.balanceValue}>{balance ?? 0} Credits</Text>
         </View>
@@ -140,7 +141,7 @@ export default function StoreScreen({ isAdmin }) {
       {subscription?.status === 'active' && subscription?.plan !== 'none' && (
         <View style={styles.activeSubCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={20} color={colors.primaryLight} />
             <Text style={styles.activeSubText}>
               Abo aktiv: <Text style={{ fontWeight: 'bold' }}>
                 {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
@@ -159,7 +160,7 @@ export default function StoreScreen({ isAdmin }) {
           style={[styles.tabBtn, tab === 'packages' && styles.tabBtnActive]}
           onPress={() => setTab('packages')}
         >
-          <Ionicons name="cart-outline" size={18} color={tab === 'packages' ? '#fff' : '#666'} />
+          <Ionicons name="cart-outline" size={18} color={tab === 'packages' ? colors.surface : colors.textSecondary} />
           <Text style={[styles.tabText, tab === 'packages' && styles.tabTextActive]}>
             Shop
           </Text>
@@ -168,7 +169,7 @@ export default function StoreScreen({ isAdmin }) {
           style={[styles.tabBtn, tab === 'usage' && styles.tabBtnActive]}
           onPress={() => setTab('usage')}
         >
-          <Ionicons name="bar-chart-outline" size={18} color={tab === 'usage' ? '#fff' : '#666'} />
+          <Ionicons name="bar-chart-outline" size={18} color={tab === 'usage' ? colors.surface : colors.textSecondary} />
           <Text style={[styles.tabText, tab === 'usage' && styles.tabTextActive]}>
             Verbrauch
           </Text>
@@ -200,18 +201,18 @@ export default function StoreScreen({ isAdmin }) {
               </View>
               <View style={styles.packageDetails}>
                 <Text style={styles.packageCredits}>
-                  <Ionicons name="flash" size={14} color="#4CAF50" /> {pkg.credits} Credits/Monat
+                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits} Credits/Monat
                 </Text>
                 <Text style={styles.packageDesc}>{pkg.description}</Text>
               </View>
               {purchasing === pkg.id && (
-                <ActivityIndicator size="small" color="#4CAF50" style={{ marginTop: 8 }} />
+                <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginTop: spacing.sm }} />
               )}
             </TouchableOpacity>
           ))}
 
           {/* ─── Einmalkauf-Pakete ────────────────────────────── */}
-          <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Einmalkauf</Text>
+          <Text style={[styles.sectionTitle, { marginTop: spacing.xxl }]}>Einmalkauf</Text>
           <Text style={styles.sectionSubtitle}>
             Credits ohne Abo – nie ablaufend
           </Text>
@@ -233,12 +234,12 @@ export default function StoreScreen({ isAdmin }) {
               </View>
               <View style={styles.packageDetails}>
                 <Text style={styles.packageCredits}>
-                  <Ionicons name="flash" size={14} color="#4CAF50" /> {pkg.credits} Credits
+                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits} Credits
                 </Text>
                 <Text style={styles.packageDesc}>{pkg.description}</Text>
               </View>
               {purchasing === pkg.id && (
-                <ActivityIndicator size="small" color="#4CAF50" style={{ marginTop: 8 }} />
+                <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginTop: spacing.sm }} />
               )}
             </TouchableOpacity>
           ))}
@@ -249,7 +250,7 @@ export default function StoreScreen({ isAdmin }) {
           </TouchableOpacity>
 
           <View style={styles.infoBox}>
-            <Ionicons name="information-circle-outline" size={18} color="#888" />
+            <Ionicons name="information-circle-outline" size={18} color={colors.textTertiary} />
             <Text style={styles.infoText}>
               Credits werden für KI-Funktionen verbraucht: Pflanzen-Erkennung, Healthchecks und Chat mit Ben.
               Abo-Credits sind 33% günstiger und werden monatlich aufgefüllt.
@@ -262,7 +263,7 @@ export default function StoreScreen({ isAdmin }) {
           <Text style={styles.sectionTitle}>Letzter Verbrauch</Text>
           {recentUsage.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="leaf-outline" size={48} color="#ccc" />
+              <Ionicons name="leaf-outline" size={48} color={colors.textDisabled} />
               <Text style={styles.emptyText}>Noch keine KI-Nutzung</Text>
             </View>
           ) : (
@@ -292,7 +293,7 @@ export default function StoreScreen({ isAdmin }) {
           style={styles.adminBtn}
           onPress={() => navigation.navigate('AdminDashboard')}
         >
-          <Ionicons name="stats-chart" size={16} color="#aaa" />
+          <Ionicons name="stats-chart" size={16} color={colors.textTertiary} />
           <Text style={styles.adminBtnText}>Admin Dashboard</Text>
         </TouchableOpacity>
       )}
@@ -304,106 +305,106 @@ export default function StoreScreen({ isAdmin }) {
 
 // ─── Styles ─────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   // Balance
   balanceCard: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#fff', margin: 16, marginBottom: 8,
-    padding: 20, borderRadius: 16,
-    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+    backgroundColor: colors.surface, margin: spacing.lg, marginBottom: spacing.sm,
+    padding: spacing.xl, borderRadius: radius.lg,
+    ...shadows.md,
   },
-  balanceLabel: { color: '#888', fontSize: 13 },
-  balanceValue: { fontSize: 28, fontWeight: 'bold', color: '#222' },
+  balanceLabel: { color: colors.textTertiary, fontSize: 13 },
+  balanceValue: { fontSize: 28, fontWeight: 'bold', color: colors.textPrimary },
   subBadge: {
-    backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
+    backgroundColor: colors.primarySurface, paddingHorizontal: 10, paddingVertical: spacing.xs, borderRadius: radius.md,
   },
-  subBadgeText: { color: '#4CAF50', fontWeight: 'bold', fontSize: 12 },
+  subBadgeText: { color: colors.primary, fontWeight: 'bold', fontSize: 12 },
 
   // Active Sub
   activeSubCard: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: '#E8F5E9', marginHorizontal: 16, marginBottom: 8,
-    padding: 12, borderRadius: 10,
+    backgroundColor: colors.primarySurface, marginHorizontal: spacing.lg, marginBottom: spacing.sm,
+    padding: spacing.md, borderRadius: radius.md,
   },
-  activeSubText: { color: '#333', marginLeft: 6, fontSize: 14 },
-  manageLink: { color: '#4CAF50', fontWeight: 'bold', fontSize: 13 },
+  activeSubText: { color: colors.textPrimary, marginLeft: 6, fontSize: 14 },
+  manageLink: { color: colors.primary, fontWeight: 'bold', fontSize: 13 },
 
   // Tabs
   tabRow: {
-    flexDirection: 'row', marginHorizontal: 16, marginVertical: 8,
-    backgroundColor: '#eee', borderRadius: 12, padding: 3,
+    flexDirection: 'row', marginHorizontal: spacing.lg, marginVertical: spacing.sm,
+    backgroundColor: colors.borderLight, borderRadius: radius.md, padding: 3,
   },
   tabBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 10, borderRadius: 10, gap: 6,
+    paddingVertical: 10, borderRadius: radius.md, gap: 6,
   },
-  tabBtnActive: { backgroundColor: '#4CAF50' },
-  tabText: { color: '#666', fontWeight: '600', fontSize: 14 },
-  tabTextActive: { color: '#fff' },
+  tabBtnActive: { backgroundColor: colors.primary },
+  tabText: { color: colors.textSecondary, fontWeight: '600', fontSize: 14 },
+  tabTextActive: { color: colors.surface },
 
   // Section
   sectionTitle: {
-    fontSize: 18, fontWeight: 'bold', color: '#333',
-    marginHorizontal: 16, marginTop: 12, marginBottom: 2,
+    fontSize: 18, fontWeight: 'bold', color: colors.textPrimary,
+    marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: 2,
   },
   sectionSubtitle: {
-    fontSize: 13, color: '#888', marginHorizontal: 16, marginBottom: 10,
+    fontSize: 13, color: colors.textTertiary, marginHorizontal: spacing.lg, marginBottom: 10,
   },
 
   // Packages
   packageCard: {
-    backgroundColor: '#fff', marginHorizontal: 16, marginBottom: 10,
-    padding: 16, borderRadius: 14, borderWidth: 1.5, borderColor: '#eee',
-    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginBottom: 10,
+    padding: spacing.lg, borderRadius: radius.lg, borderWidth: 1.5, borderColor: colors.borderLight,
+    ...shadows.sm,
   },
-  packageCardPopular: { borderColor: '#4CAF50', borderWidth: 2 },
+  packageCardPopular: { borderColor: colors.primary, borderWidth: 2 },
   popularBadge: {
-    position: 'absolute', top: -10, right: 16,
-    backgroundColor: '#4CAF50', paddingHorizontal: 10, paddingVertical: 3,
-    borderRadius: 8,
+    position: 'absolute', top: -10, right: spacing.lg,
+    backgroundColor: colors.primary, paddingHorizontal: 10, paddingVertical: 3,
+    borderRadius: radius.sm,
   },
-  popularText: { color: '#fff', fontSize: 11, fontWeight: 'bold' },
+  popularText: { color: colors.surface, fontSize: 11, fontWeight: 'bold' },
   packageHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     marginBottom: 6,
   },
-  packageName: { fontSize: 18, fontWeight: 'bold', color: '#222' },
-  packagePrice: { fontSize: 17, fontWeight: 'bold', color: '#4CAF50' },
+  packageName: { fontSize: 18, fontWeight: 'bold', color: colors.textPrimary },
+  packagePrice: { fontSize: 17, fontWeight: 'bold', color: colors.primary },
   packageDetails: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  packageCredits: { fontSize: 14, color: '#555' },
-  packageDesc: { fontSize: 13, color: '#999' },
+  packageCredits: { fontSize: 14, color: colors.textSecondary },
+  packageDesc: { fontSize: 13, color: colors.textTertiary },
 
   // Restore
-  restoreBtn: { alignSelf: 'center', marginTop: 20, padding: 10 },
-  restoreText: { color: '#888', fontSize: 13, textDecorationLine: 'underline' },
+  restoreBtn: { alignSelf: 'center', marginTop: spacing.xl, padding: 10 },
+  restoreText: { color: colors.textTertiary, fontSize: 13, textDecorationLine: 'underline' },
 
   // Info Box
   infoBox: {
-    flexDirection: 'row', backgroundColor: '#f0f0f0', margin: 16,
-    padding: 12, borderRadius: 10, gap: 8,
+    flexDirection: 'row', backgroundColor: colors.background, margin: spacing.lg,
+    padding: spacing.md, borderRadius: radius.md, gap: spacing.sm,
   },
-  infoText: { flex: 1, color: '#888', fontSize: 12, lineHeight: 18 },
+  infoText: { flex: 1, color: colors.textTertiary, fontSize: 12, lineHeight: 18 },
 
   // Usage
   usageRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#fff', marginHorizontal: 16, marginBottom: 6,
-    padding: 14, borderRadius: 10,
+    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginBottom: 6,
+    padding: 14, borderRadius: radius.md,
   },
-  usageAction: { fontSize: 15, color: '#333', fontWeight: '500' },
-  usageDate: { fontSize: 12, color: '#999', marginTop: 2 },
-  usageCredits: { fontSize: 16, fontWeight: 'bold', color: '#e53935' },
+  usageAction: { fontSize: 15, color: colors.textPrimary, fontWeight: '500' },
+  usageDate: { fontSize: 12, color: colors.textTertiary, marginTop: 2 },
+  usageCredits: { fontSize: 16, fontWeight: 'bold', color: colors.danger },
 
   // Empty State
   emptyState: { alignItems: 'center', padding: 40 },
-  emptyText: { color: '#bbb', marginTop: 10, fontSize: 15 },
+  emptyText: { color: colors.textDisabled, marginTop: 10, fontSize: 15 },
 
   // Admin
   adminBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, marginTop: 20, padding: 10,
+    gap: 6, marginTop: spacing.xl, padding: 10,
   },
-  adminBtnText: { color: '#bbb', fontSize: 12 },
+  adminBtnText: { color: colors.textDisabled, fontSize: 12 },
 });

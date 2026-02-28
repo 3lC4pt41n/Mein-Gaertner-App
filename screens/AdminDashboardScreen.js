@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
+import { colors, spacing, radius, shadows } from '../theme';
 
 // Admin Dashboard – nur für User mit is_admin = true.
 // Doppelte Absicherung: Frontend-Check + DB-Views geben nur
@@ -68,7 +69,7 @@ export default function AdminDashboardScreen() {
   if (authorized === null || loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <ActivityIndicator size="large" color={colors.primaryLight} />
       </View>
     );
   }
@@ -76,8 +77,8 @@ export default function AdminDashboardScreen() {
   if (!authorized) {
     return (
       <View style={styles.center}>
-        <Ionicons name="lock-closed" size={48} color="#ccc" />
-        <Text style={{ color: '#999', marginTop: 12, fontSize: 16 }}>Kein Zugriff</Text>
+        <Ionicons name="lock-closed" size={48} color={colors.textDisabled} />
+        <Text style={{ color: colors.textTertiary, marginTop: spacing.md, fontSize: 16 }}>Kein Zugriff</Text>
       </View>
     );
   }
@@ -85,7 +86,7 @@ export default function AdminDashboardScreen() {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryLight} />}
     >
       <Text style={styles.pageTitle}>Admin Dashboard</Text>
 
@@ -93,19 +94,19 @@ export default function AdminDashboardScreen() {
       {totals && (
         <View style={styles.kpiRow}>
           <KPICard
-            icon="people" color="#2196F3"
+            icon="people" color={colors.info}
             label="User" value={totals.totalUsers}
           />
           <KPICard
-            icon="card" color="#4CAF50"
+            icon="card" color={colors.primary}
             label="Revenue" value={`${totals.totalRevenue.toFixed(2)} €`}
           />
           <KPICard
-            icon="trending-down" color="#e53935"
+            icon="trending-down" color={colors.danger}
             label="OpenAI Cost" value={`$${totals.totalCost.toFixed(2)}`}
           />
           <KPICard
-            icon="flash" color="#FF9800"
+            icon="flash" color={colors.warning}
             label="Credits used" value={totals.totalCreditsUsed}
           />
         </View>
@@ -114,11 +115,11 @@ export default function AdminDashboardScreen() {
       {/* Margin */}
       {totals && (
         <View style={[styles.marginCard, {
-          backgroundColor: totals.totalRevenue - totals.totalCost > 0 ? '#E8F5E9' : '#FFEBEE'
+          backgroundColor: totals.totalRevenue - totals.totalCost > 0 ? colors.primarySurface : colors.dangerSurface
         }]}>
           <Text style={styles.marginLabel}>Netto-Margin</Text>
           <Text style={[styles.marginValue, {
-            color: totals.totalRevenue - totals.totalCost > 0 ? '#4CAF50' : '#e53935'
+            color: totals.totalRevenue - totals.totalCost > 0 ? colors.primary : colors.danger
           }]}>
             {(totals.totalRevenue - totals.totalCost).toFixed(2)} €
           </Text>
@@ -196,20 +197,20 @@ export default function AdminDashboardScreen() {
                     </View>
                     <View style={styles.userStat}>
                       <Text style={styles.userStatLabel}>Revenue</Text>
-                      <Text style={[styles.userStatValue, { color: '#4CAF50' }]}>
+                      <Text style={[styles.userStatValue, { color: colors.primary }]}>
                         {parseFloat(u.total_revenue_eur || 0).toFixed(2)} €
                       </Text>
                     </View>
                     <View style={styles.userStat}>
                       <Text style={styles.userStatLabel}>Cost</Text>
-                      <Text style={[styles.userStatValue, { color: '#e53935' }]}>
+                      <Text style={[styles.userStatValue, { color: colors.danger }]}>
                         ${parseFloat(u.total_openai_cost_usd || 0).toFixed(3)}
                       </Text>
                     </View>
                     <View style={styles.userStat}>
                       <Text style={styles.userStatLabel}>Margin</Text>
                       <Text style={[styles.userStatValue, {
-                        color: margin >= 0 ? '#4CAF50' : '#e53935'
+                        color: margin >= 0 ? colors.primary : colors.danger
                       }]}>
                         {margin.toFixed(2)} €
                       </Text>
@@ -241,7 +242,7 @@ function KPICard({ icon, color, label, value }) {
 function StatPill({ icon, value, label }) {
   return (
     <View style={styles.statPill}>
-      <Ionicons name={icon} size={14} color="#666" />
+      <Ionicons name={icon} size={14} color={colors.textSecondary} />
       <Text style={styles.statPillValue}>{value || 0}</Text>
       <Text style={styles.statPillLabel}>{label}</Text>
     </View>
@@ -250,76 +251,76 @@ function StatPill({ icon, value, label }) {
 
 // ─── Styles ─────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f0f0' },
+  container: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   pageTitle: {
-    fontSize: 22, fontWeight: 'bold', color: '#333',
-    margin: 16, marginBottom: 8,
+    fontSize: 22, fontWeight: 'bold', color: colors.textPrimary,
+    margin: spacing.lg, marginBottom: spacing.sm,
   },
 
   // KPI
   kpiRow: {
     flexDirection: 'row', flexWrap: 'wrap',
-    marginHorizontal: 12, gap: 8,
+    marginHorizontal: spacing.md, gap: spacing.sm,
   },
   kpiCard: {
-    flex: 1, minWidth: '45%', backgroundColor: '#fff',
-    padding: 14, borderRadius: 12, alignItems: 'center',
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
+    flex: 1, minWidth: '45%', backgroundColor: colors.surface,
+    padding: 14, borderRadius: radius.md, alignItems: 'center',
+    ...shadows.sm,
   },
-  kpiValue: { fontSize: 20, fontWeight: 'bold', color: '#222', marginTop: 4 },
-  kpiLabel: { fontSize: 12, color: '#888', marginTop: 2 },
+  kpiValue: { fontSize: 20, fontWeight: 'bold', color: colors.textPrimary, marginTop: spacing.xs },
+  kpiLabel: { fontSize: 12, color: colors.textTertiary, marginTop: 2 },
 
   // Margin
   marginCard: {
-    marginHorizontal: 16, marginTop: 12, padding: 16,
-    borderRadius: 12, alignItems: 'center',
+    marginHorizontal: spacing.lg, marginTop: spacing.md, padding: spacing.lg,
+    borderRadius: radius.md, alignItems: 'center',
   },
-  marginLabel: { fontSize: 13, color: '#666' },
-  marginValue: { fontSize: 28, fontWeight: 'bold', marginVertical: 4 },
-  marginSub: { fontSize: 12, color: '#888' },
+  marginLabel: { fontSize: 13, color: colors.textSecondary },
+  marginValue: { fontSize: 28, fontWeight: 'bold', marginVertical: spacing.xs },
+  marginSub: { fontSize: 12, color: colors.textTertiary },
 
   // Tabs
   tabRow: {
-    flexDirection: 'row', marginHorizontal: 16, marginTop: 16,
-    backgroundColor: '#ddd', borderRadius: 10, padding: 3,
+    flexDirection: 'row', marginHorizontal: spacing.lg, marginTop: spacing.lg,
+    backgroundColor: colors.border, borderRadius: radius.md, padding: 3,
   },
   tabBtn: {
-    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8,
+    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: radius.sm,
   },
-  tabBtnActive: { backgroundColor: '#4CAF50' },
-  tabText: { color: '#666', fontWeight: '600', fontSize: 14 },
-  tabTextActive: { color: '#fff' },
+  tabBtnActive: { backgroundColor: colors.primary },
+  tabText: { color: colors.textSecondary, fontWeight: '600', fontSize: 14 },
+  tabTextActive: { color: colors.surface },
 
   // Daily
   dayCard: {
-    backgroundColor: '#fff', marginHorizontal: 16, marginTop: 8,
-    padding: 14, borderRadius: 10,
+    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginTop: spacing.sm,
+    padding: 14, borderRadius: radius.md,
   },
-  dayDate: { fontWeight: 'bold', fontSize: 15, color: '#333', marginBottom: 8 },
-  dayStats: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  dayBottom: { marginTop: 8, borderTopWidth: StyleSheet.hairlineWidth, borderColor: '#eee', paddingTop: 6 },
-  dayCost: { fontSize: 12, color: '#999' },
+  dayDate: { fontWeight: 'bold', fontSize: 15, color: colors.textPrimary, marginBottom: spacing.sm },
+  dayStats: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
+  dayBottom: { marginTop: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, borderColor: colors.borderLight, paddingTop: 6 },
+  dayCost: { fontSize: 12, color: colors.textTertiary },
   statPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#f5f5f5', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    backgroundColor: colors.background, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.sm,
   },
-  statPillValue: { fontWeight: 'bold', fontSize: 14, color: '#333' },
-  statPillLabel: { fontSize: 11, color: '#888' },
+  statPillValue: { fontWeight: 'bold', fontSize: 14, color: colors.textPrimary },
+  statPillLabel: { fontSize: 11, color: colors.textTertiary },
 
   // Users
   userCard: {
-    backgroundColor: '#fff', marginHorizontal: 16, marginTop: 8,
-    padding: 14, borderRadius: 10,
+    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginTop: spacing.sm,
+    padding: 14, borderRadius: radius.md,
   },
-  userHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 },
-  userId: { fontSize: 14, color: '#666', fontFamily: 'monospace' },
-  planBadge: { backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  planText: { color: '#4CAF50', fontSize: 12, fontWeight: 'bold' },
+  userHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm },
+  userId: { fontSize: 14, color: colors.textSecondary, fontFamily: 'monospace' },
+  planBadge: { backgroundColor: colors.primarySurface, paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.sm },
+  planText: { color: colors.primary, fontSize: 12, fontWeight: 'bold' },
   userStats: { flexDirection: 'row', justifyContent: 'space-between' },
   userStat: { alignItems: 'center' },
-  userStatLabel: { fontSize: 11, color: '#999' },
-  userStatValue: { fontSize: 15, fontWeight: 'bold', color: '#333' },
+  userStatLabel: { fontSize: 11, color: colors.textTertiary },
+  userStatValue: { fontSize: 15, fontWeight: 'bold', color: colors.textPrimary },
 
-  emptyText: { textAlign: 'center', color: '#bbb', padding: 30, fontSize: 15 },
+  emptyText: { textAlign: 'center', color: colors.textDisabled, padding: 30, fontSize: 15 },
 });

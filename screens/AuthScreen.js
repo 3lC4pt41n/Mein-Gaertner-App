@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase } from '../supabase';
+import { colors, spacing, radius } from '../theme';
 
 const NETWORK_ERROR_MSG =
   "Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung und versuche es erneut.";
@@ -355,7 +356,7 @@ export default function AuthScreen({
 
   const renderRecoveryForm = () => (
     <>
-      <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 12, textAlign: 'center' }}>
+      <Text style={styles.recoveryTitle}>
         Neues Passwort setzen
       </Text>
       <Text>Neues Passwort</Text>
@@ -363,7 +364,7 @@ export default function AuthScreen({
         secureTextEntry
         value={newPassword}
         onChangeText={setNewPassword}
-        style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 6, marginBottom: 12, padding: 10 }}
+        style={styles.input}
         editable={!loading}
       />
       <Text>Passwort wiederholen</Text>
@@ -371,10 +372,10 @@ export default function AuthScreen({
         secureTextEntry
         value={confirmNewPassword}
         onChangeText={setConfirmNewPassword}
-        style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 6, marginBottom: 16, padding: 10 }}
+        style={[styles.input, { marginBottom: spacing.lg }]}
         editable={!loading}
       />
-      <Button title="Neues Passwort speichern" onPress={handleUpdatePassword} color="#4CAF50" disabled={loading} />
+      <Button title="Neues Passwort speichern" onPress={handleUpdatePassword} color={colors.primary} disabled={loading} />
     </>
   );
 
@@ -386,7 +387,7 @@ export default function AuthScreen({
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
-        style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 6, marginBottom: 12, padding: 10 }}
+        style={styles.input}
         editable={!loading}
       />
       <Text>Passwort</Text>
@@ -394,12 +395,12 @@ export default function AuthScreen({
         secureTextEntry
         value={password}
         onChangeText={setPassword}
-        style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 6, marginBottom: 16, padding: 10 }}
+        style={[styles.input, { marginBottom: spacing.lg }]}
         editable={!loading}
       />
 
-      <Button title="Einloggen" onPress={handleLogin} color="#4CAF50" disabled={loading} />
-      <View style={{ height: 10 }} />
+      <Button title="Einloggen" onPress={handleLogin} color={colors.primary} disabled={loading} />
+      <View style={{ height: spacing.sm }} />
       <TouchableOpacity
         onPress={handleGoogleLogin}
         disabled={loading}
@@ -411,34 +412,58 @@ export default function AuthScreen({
         </View>
         <Text style={styles.googleButtonText}>Sign in with Google</Text>
       </TouchableOpacity>
-      <View style={{ height: 10 }} />
+      <View style={{ height: spacing.sm }} />
       <Button title="Registrieren" onPress={handleSignup} disabled={loading} />
-      <View style={{ height: 10 }} />
+      <View style={{ height: spacing.sm }} />
       <Button title="Passwort vergessen" onPress={handleForgotPassword} disabled={loading} />
     </>
   );
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 24, textAlign: 'center' }}>
+    <View style={styles.container}>
+      <Text style={styles.title}>
         Digitaler Gärtner
       </Text>
 
       {recoveryMode ? renderRecoveryForm() : renderAuthForm()}
 
-      {loading || authLoading ? <ActivityIndicator size="large" color="#4CAF50" style={{ marginTop: 16 }} /> : null}
+      {loading || authLoading ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: spacing.lg }} /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: spacing.xxl,
+    textAlign: 'center',
+  },
+  recoveryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+  },
   googleButton: {
     minHeight: 44,
     borderWidth: 1,
-    borderColor: '#DADCE0',
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -447,10 +472,10 @@ const styles = StyleSheet.create({
     width: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: spacing.sm,
   },
   googleButtonText: {
-    color: '#3C4043',
+    color: colors.textPrimary,
     fontSize: 14,
     fontWeight: '600',
   },

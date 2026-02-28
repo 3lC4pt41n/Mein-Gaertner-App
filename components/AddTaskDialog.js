@@ -5,6 +5,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
+import { colors, spacing, radius, shadows } from '../theme';
+import DSButton from '../theme/DSButton';
 
 let NativeDateTimePicker = null;
 try {
@@ -44,13 +46,11 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
   const [intervalDays, setIntervalDays] = useState(5);
   const [customInterval, setCustomInterval] = useState('');
 
-  // Pflanzenwahl (nur wenn keine Pflanze vorgegeben)
   const [plants, setPlants] = useState([]);
   const [selectedPlant, setSelectedPlant] = useState(null);
   const [showPlantPicker, setShowPlantPicker] = useState(false);
   const [loadingPlants, setLoadingPlants] = useState(false);
 
-  // Pflanzen laden wenn Dialog öffnet und keine Pflanze vorgegeben
   useEffect(() => {
     if (visible && !initialPlantId) {
       loadPlants();
@@ -60,7 +60,6 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
     }
   }, [visible, initialPlantId]);
 
-  // Reset bei Schließen
   useEffect(() => {
     if (!visible) {
       setType(TASK_TYPES[0].key);
@@ -106,7 +105,6 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
       return;
     }
 
-    // Timezone-Fix: toISOString() konvertiert die lokale Date korrekt nach UTC
     const dueAtIso = date.toISOString();
     const effectiveInterval = customInterval ? parseInt(customInterval, 10) : intervalDays;
 
@@ -130,49 +128,49 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
     <Modal visible={visible} transparent animationType="fade">
       <View style={{
         flex: 1, justifyContent: "center", alignItems: "center",
-        backgroundColor: "rgba(0,0,0,0.2)"
+        backgroundColor: colors.overlay,
       }}>
         <View style={{
-          backgroundColor: "#fff", width: '90%', maxWidth: 380, maxHeight: '85%',
-          borderRadius: 18, padding: 20,
-          shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 12, elevation: 5
+          backgroundColor: colors.surface, width: '90%', maxWidth: 380, maxHeight: '85%',
+          borderRadius: radius.lg + 2, padding: spacing.xl,
+          ...shadows.lg,
         }}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: 14, color: "#222" }}>
+            <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: spacing.lg, color: colors.textPrimary }}>
               Neue Aufgabe
             </Text>
 
-            {/* ── Pflanzenwahl ──────────────────────── */}
-            <Text style={{ fontWeight: "600", marginBottom: 6 }}>Pflanze:</Text>
+            {/* Pflanzenwahl */}
+            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>Pflanze:</Text>
             {initialPlantId ? (
-              <Text style={{ fontWeight: "bold", color: "#2196f3", marginBottom: 12, fontSize: 15 }}>
+              <Text style={{ fontWeight: "bold", color: colors.info, marginBottom: spacing.md, fontSize: 15 }}>
                 {initialPlantName || '?'}
               </Text>
             ) : (
               <TouchableOpacity
                 style={{
-                  borderWidth: 1, borderColor: "#ccc", borderRadius: 10, padding: 10,
-                  marginBottom: 12, backgroundColor: "#fafafa",
+                  borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: spacing.md,
+                  marginBottom: spacing.md, backgroundColor: colors.surfaceSecondary,
                   flexDirection: "row", alignItems: "center", justifyContent: "space-between"
                 }}
                 onPress={() => setShowPlantPicker(!showPlantPicker)}
               >
-                <Text style={{ color: selectedPlant ? "#222" : "#999", fontSize: 15 }}>
+                <Text style={{ color: selectedPlant ? colors.textPrimary : colors.textDisabled, fontSize: 15 }}>
                   {selectedPlant ? selectedPlant.name : "Pflanze auswählen..."}
                 </Text>
-                <Ionicons name={showPlantPicker ? "chevron-up" : "chevron-down"} size={18} color="#888" />
+                <Ionicons name={showPlantPicker ? "chevron-up" : "chevron-down"} size={18} color={colors.textTertiary} />
               </TouchableOpacity>
             )}
 
             {showPlantPicker && !initialPlantId && (
               <View style={{
-                borderWidth: 1, borderColor: "#e0e0e0", borderRadius: 8,
-                maxHeight: 150, marginBottom: 10, backgroundColor: "#fff"
+                borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+                maxHeight: 150, marginBottom: spacing.md, backgroundColor: colors.surface,
               }}>
                 {loadingPlants ? (
-                  <ActivityIndicator style={{ padding: 16 }} color="#4CAF50" />
+                  <ActivityIndicator style={{ padding: spacing.lg }} color={colors.primaryLight} />
                 ) : plants.length === 0 ? (
-                  <Text style={{ padding: 12, color: "#999", textAlign: "center" }}>
+                  <Text style={{ padding: spacing.md, color: colors.textDisabled, textAlign: "center" }}>
                     Keine Pflanzen vorhanden
                   </Text>
                 ) : (
@@ -185,13 +183,13 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                           setShowPlantPicker(false);
                         }}
                         style={{
-                          padding: 10, borderBottomWidth: 1, borderBottomColor: "#f0f0f0",
-                          backgroundColor: selectedPlant?.id === p.id ? "#E8F5E9" : "transparent"
+                          padding: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.divider,
+                          backgroundColor: selectedPlant?.id === p.id ? colors.primarySurface : "transparent"
                         }}
                       >
                         <Text style={{
                           fontWeight: selectedPlant?.id === p.id ? "bold" : "normal",
-                          color: "#333"
+                          color: colors.textPrimary,
                         }}>
                           {p.name}
                         </Text>
@@ -202,9 +200,9 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
               </View>
             )}
 
-            {/* ── Aufgabentyp ──────────────────────── */}
-            <Text style={{ fontWeight: "600", marginBottom: 6 }}>Typ:</Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 14 }}>
+            {/* Aufgabentyp */}
+            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>Typ:</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: spacing.lg }}>
               {TASK_TYPES.map(t => (
                 <TouchableOpacity
                   key={t.key}
@@ -212,23 +210,23 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                   style={{
                     flexDirection: "row", alignItems: "center",
                     paddingVertical: 6, paddingHorizontal: 10, marginRight: 6, marginBottom: 6,
-                    borderRadius: 20, borderWidth: 1.5,
-                    borderColor: t.key === type ? t.color : "#ddd",
+                    borderRadius: radius.pill, borderWidth: 1.5,
+                    borderColor: t.key === type ? t.color : colors.border,
                     backgroundColor: t.key === type ? t.color + '15' : "transparent",
                   }}
                 >
-                  <Ionicons name={t.icon} size={16} color={t.key === type ? t.color : "#999"} />
+                  <Ionicons name={t.icon} size={16} color={t.key === type ? t.color : colors.textDisabled} />
                   <Text style={{
-                    marginLeft: 4, fontSize: 13,
+                    marginLeft: spacing.xs, fontSize: 13,
                     fontWeight: t.key === type ? "bold" : "normal",
-                    color: t.key === type ? t.color : "#555"
+                    color: t.key === type ? t.color : colors.textSecondary,
                   }}>{t.key}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            {/* ── Datum & Zeit ──────────────────────── */}
-            <Text style={{ fontWeight: "600", marginBottom: 6 }}>Datum & Zeit:</Text>
+            {/* Datum & Zeit */}
+            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>Datum & Zeit:</Text>
             {Platform.OS === "web" || !NativeDateTimePicker ? (
               <TextInput
                 value={`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${formatLocalTime(date)}`}
@@ -240,17 +238,20 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                   if (!year || !month || !day || hour === undefined || minute === undefined) return;
                   setDate(new Date(year, month - 1, day, hour, minute));
                 }}
-                style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 8, marginBottom: 12 }}
+                style={{
+                  borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+                  padding: spacing.sm, marginBottom: spacing.md,
+                }}
                 placeholder="JJJJ-MM-TT HH:MM"
               />
             ) : (
-              <View style={{ marginBottom: 12 }}>
+              <View style={{ marginBottom: spacing.md }}>
                 <View style={{ flexDirection: "row" }}>
                   <TouchableOpacity
                     onPress={() => setShowDate(true)}
                     style={{
-                      flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8,
-                      padding: 10, backgroundColor: "#fafafa", marginRight: 8
+                      flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+                      padding: spacing.md, backgroundColor: colors.surfaceSecondary, marginRight: spacing.sm,
                     }}
                   >
                     <Text>{formatLocalDate(date)}</Text>
@@ -258,8 +259,8 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                   <TouchableOpacity
                     onPress={() => setShowTime(true)}
                     style={{
-                      flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8,
-                      padding: 10, backgroundColor: "#fafafa"
+                      flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+                      padding: spacing.md, backgroundColor: colors.surfaceSecondary,
                     }}
                   >
                     <Text>{formatLocalTime(date)}</Text>
@@ -267,9 +268,7 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                 </View>
                 {showDate && NativeDateTimePicker && (
                   <NativeDateTimePicker
-                    value={date}
-                    mode="date"
-                    display="default"
+                    value={date} mode="date" display="default"
                     onChange={(event, selectedDate) => {
                       setShowDate(false);
                       if (selectedDate) {
@@ -282,10 +281,7 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                 )}
                 {showTime && NativeDateTimePicker && (
                   <NativeDateTimePicker
-                    value={date}
-                    mode="time"
-                    is24Hour={true}
-                    display="default"
+                    value={date} mode="time" is24Hour={true} display="default"
                     onChange={(event, selectedDate) => {
                       setShowTime(false);
                       if (selectedDate) {
@@ -299,103 +295,91 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
               </View>
             )}
 
-            {/* ── Wiederholen ──────────────────────── */}
+            {/* Wiederholen */}
             <View style={{
               flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-              marginBottom: recurring ? 8 : 14,
-              padding: 10, borderRadius: 10, backgroundColor: recurring ? "#E8F5E9" : "#f5f5f5"
+              marginBottom: recurring ? spacing.sm : spacing.lg,
+              padding: spacing.md, borderRadius: radius.md,
+              backgroundColor: recurring ? colors.primarySurface : colors.background,
             }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Ionicons name="repeat" size={20} color={recurring ? "#4CAF50" : "#999"} />
-                <Text style={{ marginLeft: 8, fontWeight: "600", color: recurring ? "#2E7D32" : "#555" }}>
+                <Ionicons name="repeat" size={20} color={recurring ? colors.primaryLight : colors.textDisabled} />
+                <Text style={{ marginLeft: spacing.sm, fontWeight: "600", color: recurring ? colors.primary : colors.textSecondary }}>
                   Wiederholen
                 </Text>
               </View>
               <Switch
                 value={recurring}
                 onValueChange={setRecurring}
-                trackColor={{ true: "#4CAF50" }}
+                trackColor={{ true: colors.primaryLight }}
                 thumbColor={recurring ? "#fff" : "#f4f3f4"}
               />
             </View>
 
             {recurring && (
-              <View style={{ marginBottom: 14 }}>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
-                  {INTERVAL_PRESETS.map(p => (
-                    <TouchableOpacity
-                      key={p.days}
-                      onPress={() => { setIntervalDays(p.days); setCustomInterval(''); }}
-                      style={{
-                        paddingVertical: 6, paddingHorizontal: 10,
-                        marginRight: 6, marginBottom: 6,
-                        borderRadius: 16, borderWidth: 1,
-                        borderColor: intervalDays === p.days && !customInterval ? "#4CAF50" : "#ddd",
-                        backgroundColor: intervalDays === p.days && !customInterval ? "#E8F5E9" : "transparent",
-                      }}
-                    >
-                      <Text style={{
-                        fontSize: 12,
-                        fontWeight: intervalDays === p.days && !customInterval ? "bold" : "normal",
-                        color: intervalDays === p.days && !customInterval ? "#2E7D32" : "#555"
-                      }}>{p.label}</Text>
-                    </TouchableOpacity>
-                  ))}
+              <View style={{ marginBottom: spacing.lg }}>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: spacing.sm }}>
+                  {INTERVAL_PRESETS.map(p => {
+                    const active = intervalDays === p.days && !customInterval;
+                    return (
+                      <TouchableOpacity
+                        key={p.days}
+                        onPress={() => { setIntervalDays(p.days); setCustomInterval(''); }}
+                        style={{
+                          paddingVertical: 6, paddingHorizontal: 10,
+                          marginRight: 6, marginBottom: 6,
+                          borderRadius: radius.lg, borderWidth: 1,
+                          borderColor: active ? colors.primary : colors.border,
+                          backgroundColor: active ? colors.primarySurface : "transparent",
+                        }}
+                      >
+                        <Text style={{
+                          fontSize: 12,
+                          fontWeight: active ? "bold" : "normal",
+                          color: active ? colors.primary : colors.textSecondary,
+                        }}>{p.label}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ color: "#555", marginRight: 6 }}>Oder alle</Text>
+                  <Text style={{ color: colors.textSecondary, marginRight: 6 }}>Oder alle</Text>
                   <TextInput
                     value={customInterval}
-                    onChangeText={val => {
-                      setCustomInterval(val.replace(/[^0-9]/g, ''));
-                    }}
+                    onChangeText={val => setCustomInterval(val.replace(/[^0-9]/g, ''))}
                     placeholder={String(intervalDays)}
                     keyboardType="number-pad"
                     style={{
-                      borderWidth: 1, borderColor: "#ccc", borderRadius: 6,
-                      padding: 4, width: 50, textAlign: "center"
+                      borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+                      padding: spacing.xs, width: 50, textAlign: "center",
                     }}
                   />
-                  <Text style={{ color: "#555", marginLeft: 6 }}>Tage</Text>
+                  <Text style={{ color: colors.textSecondary, marginLeft: 6 }}>Tage</Text>
                 </View>
               </View>
             )}
 
-            {/* ── Notiz ────────────────────────────── */}
-            <Text style={{ fontWeight: "600", marginBottom: 4 }}>Notiz (optional):</Text>
+            {/* Notiz */}
+            <Text style={{ fontWeight: "600", marginBottom: spacing.xs }}>Notiz (optional):</Text>
             <TextInput
               value={note}
               onChangeText={setNote}
               placeholder="z.B. 'Mit lauwarmem Wasser gießen'"
               style={{
-                borderWidth: 1, borderColor: "#ccc", borderRadius: 8,
-                padding: 8, minHeight: 40, marginBottom: 14
+                borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+                padding: spacing.sm, minHeight: 40, marginBottom: spacing.lg,
               }}
               multiline
             />
 
-            {/* ── Buttons ──────────────────────────── */}
-            <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
-              <TouchableOpacity
-                onPress={onClose}
-                style={{
-                  paddingVertical: 10, paddingHorizontal: 18,
-                  borderRadius: 8, backgroundColor: "#f0f0f0", marginRight: 8
-                }}
-              >
-                <Text style={{ color: "#888", fontWeight: "600" }}>Abbrechen</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSave}
-                style={{
-                  paddingVertical: 10, paddingHorizontal: 18,
-                  borderRadius: 8, backgroundColor: "#4CAF50"
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                  {recurring ? "Serie anlegen" : "Speichern"}
-                </Text>
-              </TouchableOpacity>
+            {/* Buttons */}
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: spacing.sm }}>
+              <DSButton variant="ghost" size="sm" onPress={onClose}>
+                Abbrechen
+              </DSButton>
+              <DSButton variant="primary" size="sm" onPress={handleSave}>
+                {recurring ? "Serie anlegen" : "Speichern"}
+              </DSButton>
             </View>
           </ScrollView>
         </View>

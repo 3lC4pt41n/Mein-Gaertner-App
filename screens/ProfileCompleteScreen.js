@@ -18,6 +18,7 @@ import {
   normalizeLanguage,
 } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
+import { colors, spacing, radius } from '../theme';
 
 async function createAvatarSignedUrl(path) {
   const { data, error } = await supabase
@@ -134,36 +135,36 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20 }}>
+    <ScrollView contentContainerStyle={{ padding: spacing.xl }}>
       <Text>Benutzername</Text>
-      <TextInput value={username} onChangeText={setUsername} style={{ borderWidth: 1, marginBottom: 10 }} />
+      <TextInput value={username} onChangeText={setUsername} style={{ borderWidth: 1, marginBottom: spacing.md }} />
 
       <Text>Vorname</Text>
-      <TextInput value={firstName} onChangeText={setFirstName} style={{ borderWidth: 1, marginBottom: 10 }} />
+      <TextInput value={firstName} onChangeText={setFirstName} style={{ borderWidth: 1, marginBottom: spacing.md }} />
 
       <Text>Nachname</Text>
-      <TextInput value={lastName} onChangeText={setLastName} style={{ borderWidth: 1, marginBottom: 10 }} />
+      <TextInput value={lastName} onChangeText={setLastName} style={{ borderWidth: 1, marginBottom: spacing.md }} />
 
       <Text>Land</Text>
-      <TextInput value={country} onChangeText={setCountry} style={{ borderWidth: 1, marginBottom: 10 }} />
+      <TextInput value={country} onChangeText={setCountry} style={{ borderWidth: 1, marginBottom: spacing.md }} />
 
       <Text>Sprache</Text>
       <TouchableOpacity
         onPress={() => setLanguageOpen((prev) => !prev)}
         style={{
           borderWidth: 1,
-          borderColor: '#aaa',
-          marginBottom: 8,
-          padding: 10,
-          borderRadius: 6,
-          backgroundColor: '#fff',
+          borderColor: colors.border,
+          marginBottom: spacing.sm,
+          padding: spacing.md,
+          borderRadius: radius.sm,
+          backgroundColor: colors.surface,
         }}
       >
         <Text>{getLanguageLabel(language)}</Text>
       </TouchableOpacity>
 
       {languageOpen && (
-        <View style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 6, marginBottom: 10 }}>
+        <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, marginBottom: spacing.md }}>
           {LANGUAGE_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.code}
@@ -172,11 +173,11 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
                 setLanguageOpen(false);
               }}
               style={{
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                backgroundColor: language === option.code ? '#E8F5E9' : '#fff',
+                paddingVertical: spacing.md,
+                paddingHorizontal: spacing.md,
+                backgroundColor: language === option.code ? colors.primarySurface : colors.surface,
                 borderBottomWidth: option.code === LANGUAGE_OPTIONS[LANGUAGE_OPTIONS.length - 1].code ? 0 : 1,
-                borderBottomColor: '#eee',
+                borderBottomColor: colors.borderLight,
               }}
             >
               <Text>{option.label}</Text>
@@ -185,7 +186,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
         </View>
       )}
 
-      <Text style={{ fontWeight: 'bold', marginTop: 6, marginBottom: 8 }}>
+      <Text style={{ fontWeight: 'bold', marginTop: spacing.sm, marginBottom: spacing.sm }}>
         Letzter Schritt: Foto aufnehmen & Avatar erstellen
       </Text>
       <Button
@@ -195,7 +196,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       />
 
       {generatingAvatar ? (
-        <ActivityIndicator size="small" color="#4CAF50" style={{ marginTop: 12 }} />
+        <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginTop: spacing.md }} />
       ) : null}
 
       {avatarPreviewUrl ? (
@@ -206,13 +207,13 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
             height: 120,
             borderRadius: 60,
             alignSelf: 'center',
-            marginVertical: 14,
+            marginVertical: spacing.lg,
             borderWidth: 2,
-            borderColor: '#4CAF50',
+            borderColor: colors.primaryLight,
           }}
         />
       ) : (
-        <Text style={{ textAlign: 'center', color: '#666', marginTop: 10, marginBottom: 12 }}>
+        <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: spacing.md, marginBottom: spacing.md }}>
           Noch kein Avatar erstellt.
         </Text>
       )}
@@ -220,7 +221,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       <Button title="Profil speichern" onPress={handleSave} disabled={saving || generatingAvatar} />
 
       {showSkip && (
-        <View style={{ marginTop: 16 }}>
+        <View style={{ marginTop: spacing.lg }}>
           <Button title="Überspringen" color="gray" onPress={onDone} disabled={saving || generatingAvatar} />
         </View>
       )}

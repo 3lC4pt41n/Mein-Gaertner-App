@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, radius, shadows } from '../theme';
 
 const { width } = Dimensions.get('window');
 
@@ -10,7 +11,7 @@ export default function BetaWelcomeScreen({ onDone }) {
       {/* Hero */}
       <View style={styles.hero}>
         <View style={styles.iconCircle}>
-          <Ionicons name="leaf" size={48} color="#fff" />
+          <Ionicons name="leaf" size={48} color={colors.surface} />
         </View>
         <Text style={styles.title}>Willkommen beim Beta-Test!</Text>
         <Text style={styles.subtitle}>
@@ -21,7 +22,7 @@ export default function BetaWelcomeScreen({ onDone }) {
       {/* Credits erklären */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <Ionicons name="flash" size={24} color="#4CAF50" />
+          <Ionicons name="flash" size={24} color={colors.primaryLight} />
           <Text style={styles.cardTitle}>So funktionieren Credits</Text>
         </View>
         <Text style={styles.cardText}>
@@ -70,7 +71,7 @@ export default function BetaWelcomeScreen({ onDone }) {
 
       {/* CTA */}
       <TouchableOpacity style={styles.ctaButton} onPress={onDone}>
-        <Ionicons name="leaf" size={20} color="#fff" style={{ marginRight: 8 }} />
+        <Ionicons name="leaf" size={20} color={colors.surface} style={{ marginRight: spacing.sm }} />
         <Text style={styles.ctaText}>Los geht's!</Text>
       </TouchableOpacity>
 
@@ -83,11 +84,11 @@ function CreditRow({ icon, label, credits }) {
   return (
     <View style={styles.creditRow}>
       <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-        <Ionicons name={icon} size={18} color="#666" style={{ marginRight: 8 }} />
+        <Ionicons name={icon} size={18} color={colors.textSecondary} style={{ marginRight: spacing.sm }} />
         <Text style={styles.creditLabel}>{label}</Text>
       </View>
       <View style={styles.creditBadge}>
-        <Ionicons name="flash" size={12} color="#4CAF50" />
+        <Ionicons name="flash" size={12} color={colors.primaryLight} />
         <Text style={styles.creditValue}>{credits}</Text>
       </View>
     </View>
@@ -96,54 +97,54 @@ function CreditRow({ icon, label, credits }) {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1, backgroundColor: '#f5f5f5', paddingBottom: 20,
+    flexGrow: 1, backgroundColor: colors.background, paddingBottom: spacing.xl,
   },
   hero: {
-    backgroundColor: '#4CAF50', paddingTop: 60, paddingBottom: 30,
+    backgroundColor: colors.primary, paddingTop: 60, paddingBottom: 30,
     alignItems: 'center', paddingHorizontal: 30,
     borderBottomLeftRadius: 30, borderBottomRightRadius: 30,
   },
   iconCircle: {
     width: 80, height: 80, borderRadius: 40,
     backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+    alignItems: 'center', justifyContent: 'center', marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 26, fontWeight: 'bold', color: '#fff', textAlign: 'center', marginBottom: 8,
+    fontSize: 26, fontWeight: 'bold', color: colors.surface, textAlign: 'center', marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: 16, color: 'rgba(255,255,255,0.9)', textAlign: 'center', lineHeight: 22,
   },
 
   card: {
-    backgroundColor: '#fff', marginHorizontal: 16, marginTop: 16,
-    padding: 18, borderRadius: 14,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginTop: spacing.lg,
+    padding: 18, borderRadius: radius.lg,
+    ...shadows.sm,
   },
   giftCard: { borderWidth: 2, borderColor: '#FF9800' },
   cardHeader: {
-    flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 8,
+    flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: spacing.sm,
   },
-  cardTitle: { fontSize: 17, fontWeight: 'bold', color: '#222' },
-  cardText: { fontSize: 14, color: '#555', lineHeight: 21 },
+  cardTitle: { fontSize: 17, fontWeight: 'bold', color: colors.textPrimary },
+  cardText: { fontSize: 14, color: colors.textSecondary, lineHeight: 21 },
 
-  creditTable: { marginTop: 12 },
+  creditTable: { marginTop: spacing.md },
   creditRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: '#eee',
+    paddingVertical: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.borderLight,
   },
-  creditLabel: { fontSize: 14, color: '#444' },
+  creditLabel: { fontSize: 14, color: colors.textSecondary },
   creditBadge: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10,
+    backgroundColor: colors.primarySurface, paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: 10,
   },
-  creditValue: { fontSize: 14, fontWeight: 'bold', color: '#4CAF50', marginLeft: 3 },
+  creditValue: { fontSize: 14, fontWeight: 'bold', color: colors.primaryLight, marginLeft: 3 },
 
   ctaButton: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#4CAF50', marginHorizontal: 16, marginTop: 24,
-    paddingVertical: 16, borderRadius: 14,
-    shadowColor: '#4CAF50', shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+    backgroundColor: colors.primary, marginHorizontal: spacing.lg, marginTop: spacing.xxl,
+    paddingVertical: spacing.lg, borderRadius: radius.lg,
+    shadowColor: colors.primary, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
-  ctaText: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
+  ctaText: { fontSize: 18, fontWeight: 'bold', color: colors.surface },
 });

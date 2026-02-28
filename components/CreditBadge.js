@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchBalance } from '../services/creditService';
+import { colors, spacing, radius } from '../theme';
 
-// Zeigt das aktuelle Credit-Guthaben an
-// Kann in Header oder als Tab-Icon Badge genutzt werden
 export default function CreditBadge({ onPress, style }) {
   const [balance, setBalance] = useState(null);
 
@@ -19,7 +18,6 @@ export default function CreditBadge({ onPress, style }) {
 
   useEffect(() => {
     loadBalance();
-    // Alle 30 Sekunden aktualisieren
     const interval = setInterval(loadBalance, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -34,22 +32,22 @@ export default function CreditBadge({ onPress, style }) {
       style={[{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: isLow ? "#FFF3E0" : "#E8F5E9",
+        backgroundColor: isLow ? colors.warningSurface : colors.primarySurface,
         paddingHorizontal: 10,
         paddingVertical: 5,
-        borderRadius: 16,
+        borderRadius: radius.lg,
       }, style]}
     >
       <Ionicons
         name="flash"
         size={16}
-        color={isLow ? "#FF9800" : "#4CAF50"}
-        style={{ marginRight: 4 }}
+        color={isLow ? colors.warning : colors.primaryLight}
+        style={{ marginRight: spacing.xs }}
       />
       <Text style={{
         fontWeight: "bold",
         fontSize: 14,
-        color: isLow ? "#FF9800" : "#4CAF50",
+        color: isLow ? colors.warning : colors.primary,
       }}>
         {balance}
       </Text>

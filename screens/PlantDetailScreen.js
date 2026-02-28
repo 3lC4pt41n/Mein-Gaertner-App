@@ -9,6 +9,7 @@ import { supabase } from '../supabase';
 import { fetchLatestHealthcheck } from '../services/plantService';
 import { useNavigation } from '@react-navigation/native';
 import { fetchCurrentUserLanguage, getUiText } from '../services/languageService';
+import { colors, spacing, radius, shadows } from '../theme';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -36,20 +37,20 @@ async function fetchZonesWithLocationsGrouped() {
 }
 
 function ScoreCircle({ score = 0, label = "Health" }) {
-  let color = "#eee";
-  if (score >= 90) color = "#4caf50";
+  let color = colors.borderLight;
+  if (score >= 90) color = colors.primaryLight;
   else if (score >= 75) color = "#8bc34a";
   else if (score >= 60) color = "#ffeb3b";
-  else if (score >= 40) color = "#ff9800";
-  else color = "#e53935";
+  else if (score >= 40) color = colors.warning;
+  else color = colors.danger;
   return (
     <View style={{
       width: 76, height: 76, borderRadius: 38, backgroundColor: color + '22',
-      alignItems: "center", justifyContent: "center", marginVertical: 8, alignSelf: "center",
+      alignItems: "center", justifyContent: "center", marginVertical: spacing.sm, alignSelf: "center",
       borderWidth: 4, borderColor: color, shadowColor: color, shadowOpacity: 0.25, shadowRadius: 10
     }}>
       <Text style={{ fontSize: 28, fontWeight: "bold", color }}>{score}</Text>
-      <Text style={{ fontSize: 14, color: "#888", marginTop: -2 }}>{label}</Text>
+      <Text style={{ fontSize: 14, color: colors.textTertiary, marginTop: -2 }}>{label}</Text>
     </View>
   );
 }
@@ -145,7 +146,7 @@ export default function PlantDetailScreen({ route }) {
         .update({ zone_id: zone.id })
         .eq("id", plant.id);
       if (error) throw error;
-      Alert.alert("Erfolg", `Pflanze jetzt in Zone „${zone.name}“`);
+      Alert.alert("Erfolg", `Pflanze jetzt in Zone „${zone.name}"`);
       setPickerVisible(false);
       setAssignedZone(zone);
     } catch (e) {
@@ -186,11 +187,11 @@ export default function PlantDetailScreen({ route }) {
   const width = Math.min(Dimensions.get('window').width, 500) - 40;
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, backgroundColor: "#f8f8f8", flexGrow: 1 }}>
+    <ScrollView contentContainerStyle={{ padding: spacing.xl, backgroundColor: colors.background, flexGrow: 1 }}>
       {/* Bild + Name */}
       <View style={styles.card}>
         {plant.image_url &&
-          <Image source={{ uri: plant.image_url }} style={{ width: width, height: width * 2 / 3, borderRadius: 14, alignSelf: "center", marginBottom: 10, backgroundColor: "#ddd" }} resizeMode="cover" />}
+          <Image source={{ uri: plant.image_url }} style={{ width: width, height: width * 2 / 3, borderRadius: radius.lg, alignSelf: "center", marginBottom: 10, backgroundColor: "#ddd" }} resizeMode="cover" />}
         <Text style={styles.title}>{plant.name}</Text>
         <Text style={styles.subtitle}>{plant.note}</Text>
         {healthcheck && typeof healthcheck.healthscore === "number" &&
@@ -198,26 +199,26 @@ export default function PlantDetailScreen({ route }) {
 
         {/* Zugewiesene Zone */}
         {assignedZone ? (
-          <View style={{ alignItems: "center", marginVertical: 8 }}>
-            <Ionicons name="home-outline" size={18} color="#4caf50" />
-            <Text style={{ color: "#333", fontWeight: "bold", fontSize: 16 }}>
+          <View style={{ alignItems: "center", marginVertical: spacing.sm }}>
+            <Ionicons name="home-outline" size={18} color={colors.primaryLight} />
+            <Text style={{ color: colors.textPrimary, fontWeight: "bold", fontSize: 16 }}>
               Zugewiesen: {assignedZone.name}
               {assignedZone.location?.name ? ` (${assignedZone.location.name})` : ""}
             </Text>
-            <View style={{ flexDirection: "row", marginTop: 8 }}>
+            <View style={{ flexDirection: "row", marginTop: spacing.sm }}>
               <TouchableOpacity
-                style={[styles.zoneBtn, { backgroundColor: "#999", marginRight: 8 }]}
+                style={[styles.zoneBtn, { backgroundColor: colors.textTertiary, marginRight: spacing.sm }]}
                 onPress={() => { setPickerVisible(true); loadZones(); }}
               >
-                <Ionicons name="swap-horizontal" size={18} color="#fff" style={{ marginRight: 6 }} />
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>Zone wechseln</Text>
+                <Ionicons name="swap-horizontal" size={18} color={colors.surface} style={{ marginRight: spacing.sm }} />
+                <Text style={{ color: colors.surface, fontWeight: "bold" }}>Zone wechseln</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.zoneBtn, { backgroundColor: "#e53935" }]}
+                style={[styles.zoneBtn, { backgroundColor: colors.danger }]}
                 onPress={removeZone}
               >
-                <Ionicons name="close" size={18} color="#fff" style={{ marginRight: 6 }} />
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>Zone entfernen</Text>
+                <Ionicons name="close" size={18} color={colors.surface} style={{ marginRight: spacing.sm }} />
+                <Text style={{ color: colors.surface, fontWeight: "bold" }}>Zone entfernen</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -226,23 +227,23 @@ export default function PlantDetailScreen({ route }) {
             style={styles.zoneBtn}
             onPress={() => { setPickerVisible(true); loadZones(); }}
           >
-            <Ionicons name="home-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>Zone zuweisen</Text>
+            <Ionicons name="home-outline" size={18} color={colors.surface} style={{ marginRight: spacing.sm }} />
+            <Text style={{ color: colors.surface, fontWeight: "bold" }}>Zone zuweisen</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* Tabs */}
-      <View style={{ flexDirection: "row", marginVertical: 16, justifyContent: "center" }}>
+      <View style={{ flexDirection: "row", marginVertical: spacing.lg, justifyContent: "center" }}>
         {tabNames.map(t => (
           <TouchableOpacity key={t.key} onPress={() => setTab(t.key)}
             style={{
-              backgroundColor: tab === t.key ? "#4CAF50" : "#EEE",
-              borderRadius: 20, paddingVertical: 6, paddingHorizontal: 18,
+              backgroundColor: tab === t.key ? colors.primary : colors.borderLight,
+              borderRadius: radius.pill, paddingVertical: spacing.sm, paddingHorizontal: 18,
               marginHorizontal: 2, elevation: tab === t.key ? 2 : 0
             }}>
             <Text style={{
-              color: tab === t.key ? "#FFF" : "#222",
+              color: tab === t.key ? colors.surface : colors.textPrimary,
               fontWeight: "bold",
               fontSize: 16
             }}>{t.label}</Text>
@@ -253,42 +254,42 @@ export default function PlantDetailScreen({ route }) {
       {/* Tab Content */}
       <View style={styles.card}>
         {tab === 'health' ? (
-          loading ? <ActivityIndicator color="#4CAF50" /> : healthcheck ? (
+          loading ? <ActivityIndicator color={colors.primaryLight} /> : healthcheck ? (
             <View>
               <ScoreCircle score={healthcheck.healthscore} label={plantDetailsText.healthLabel} />
-              <Text style={{ textAlign: "center", fontSize: 17, marginBottom: 8, color: "#444" }}>
+              <Text style={{ textAlign: "center", fontSize: 17, marginBottom: spacing.sm, color: colors.textSecondary }}>
                 {healthcheck.summary}
               </Text>
-              <View style={{ marginBottom: 14 }}>
+              <View style={{ marginBottom: spacing.lg }}>
                 {Array.isArray(healthcheck.table_json) && healthcheck.table_json.map((row, idx) => (
                   <View key={idx} style={{
                     borderBottomWidth: idx === healthcheck.table_json.length - 1 ? 0 : 1,
-                    borderBottomColor: "#e0e0e0",
-                    paddingVertical: 8
+                    borderBottomColor: colors.border,
+                    paddingVertical: spacing.sm
                   }}>
-                    <Text style={{ fontWeight: "bold", color: "#333" }}>{row.Kriterium} <Text style={{ color: "#4caf50" }}>{row.Bewertung}/100</Text></Text>
-                    <Text style={{ fontSize: 14, color: "#555" }}>Beobachtung: <Text style={{ color: "#333" }}>{row.Beobachtung}</Text></Text>
-                    {row.Begründung && <Text style={{ fontSize: 13, color: "#888" }}>Grund: {row.Begründung}</Text>}
+                    <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>{row.Kriterium} <Text style={{ color: colors.primaryLight }}>{row.Bewertung}/100</Text></Text>
+                    <Text style={{ fontSize: 14, color: colors.textSecondary }}>Beobachtung: <Text style={{ color: colors.textPrimary }}>{row.Beobachtung}</Text></Text>
+                    {row.Begründung && <Text style={{ fontSize: 13, color: colors.textTertiary }}>Grund: {row.Begründung}</Text>}
                   </View>
                 ))}
               </View>
               <Text style={{
-                fontStyle: "italic", color: "#2196f3", fontWeight: "bold",
+                fontStyle: "italic", color: colors.info, fontWeight: "bold",
                 fontSize: 15, textAlign: "center"
               }}>{healthcheck.recommendation}</Text>
             </View>
-          ) : <Text style={{ color: "#AAA", textAlign: "center" }}>{plantDetailsText.noHealthcheck}</Text>
+          ) : <Text style={{ color: colors.textDisabled, textAlign: "center" }}>{plantDetailsText.noHealthcheck}</Text>
         ) : details[tab] ? (
           <View>
             {Object.entries(details[tab]).map(([k, v]) => (
-              <View key={k} style={{ marginBottom: 12 }}>
-                <Text style={{ fontWeight: "bold", color: "#333", fontSize: 15 }}>{k}</Text>
-                <Text style={{ marginLeft: 4, color: "#555" }}>{v}</Text>
+              <View key={k} style={{ marginBottom: spacing.md }}>
+                <Text style={{ fontWeight: "bold", color: colors.textPrimary, fontSize: 15 }}>{k}</Text>
+                <Text style={{ marginLeft: spacing.xs, color: colors.textSecondary }}>{v}</Text>
               </View>
             ))}
           </View>
         ) : (
-          <Text style={{ color: "#AAA" }}>{plantDetailsText.noDetails}</Text>
+          <Text style={{ color: colors.textDisabled }}>{plantDetailsText.noDetails}</Text>
         )}
       </View>
 
@@ -303,7 +304,7 @@ export default function PlantDetailScreen({ route }) {
           <TouchableOpacity style={styles.sheet} activeOpacity={1}>
             <Text style={styles.sheetTitle}>Zone auswählen</Text>
             {zonesLoading ? (
-              <ActivityIndicator size="large" color="#4CAF50" />
+              <ActivityIndicator size="large" color={colors.primaryLight} />
             ) : sections.length ? (
               <SectionList
                 sections={sections}
@@ -317,16 +318,16 @@ export default function PlantDetailScreen({ route }) {
                     onPress={() => assignZone(item)}
                     disabled={savingZone}
                   >
-                    <Ionicons name="home-outline" size={22} color="#4CAF50" style={{ marginRight: 8 }} />
+                    <Ionicons name="home-outline" size={22} color={colors.primaryLight} style={{ marginRight: spacing.sm }} />
                     <Text style={styles.zoneName}>{item.name} <Text style={styles.zoneType}>({item.type})</Text></Text>
                   </TouchableOpacity>
                 )}
-                ListEmptyComponent={<Text style={{ textAlign: "center", color: "#666" }}>Keine Zonen angelegt.</Text>}
+                ListEmptyComponent={<Text style={{ textAlign: "center", color: colors.textSecondary }}>Keine Zonen angelegt.</Text>}
               />
             ) : (
-              <Text style={{ textAlign: "center", color: "#666" }}>Keine Zonen angelegt.</Text>
+              <Text style={{ textAlign: "center", color: colors.textSecondary }}>Keine Zonen angelegt.</Text>
             )}
-            {savingZone && <ActivityIndicator size="large" color="#4CAF50" style={{ marginTop: 12 }} />}
+            {savingZone && <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.md }} />}
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -336,14 +337,11 @@ export default function PlantDetailScreen({ route }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    marginBottom: 14,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    marginBottom: spacing.lg,
     padding: 18,
-    shadowColor: "#000",
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 2,
+    ...shadows.sm,
     alignSelf: "center",
     width: "100%",
     maxWidth: 500,
@@ -353,58 +351,58 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 2,
     textAlign: "center",
-    color: "#222",
+    color: colors.textPrimary,
     letterSpacing: 0.2
   },
   subtitle: {
-    color: "#888",
+    color: colors.textTertiary,
     marginBottom: 7,
     textAlign: "center"
   },
   zoneBtn: {
     flexDirection: "row",
     alignSelf: "center",
-    backgroundColor: "#4CAF50",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginTop: 6,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    marginTop: spacing.sm,
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.25)",
+    backgroundColor: colors.overlay,
     justifyContent: "flex-end",
   },
   sheet: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: colors.surface,
+    padding: spacing.xl,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
     maxHeight: "60%",
   },
   sheetTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 12,
+    marginBottom: spacing.md,
     textAlign: "center",
   },
   sectionHeader: {
     fontWeight: "bold",
     fontSize: 15,
-    backgroundColor: "#F5F5F5",
-    paddingVertical: 4,
+    backgroundColor: colors.background,
+    paddingVertical: spacing.xs,
     paddingHorizontal: 2,
-    marginTop: 14,
-    color: "#6b6b6b"
+    marginTop: spacing.lg,
+    color: colors.textSecondary
   },
   zoneRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: "#ddd",
+    borderColor: colors.border,
   },
   zoneName: { fontSize: 16 },
-  zoneType: { color: "gray", fontSize: 13 },
-  locationTxt: { color: "gray", fontSize: 12 },
+  zoneType: { color: colors.textTertiary, fontSize: 13 },
+  locationTxt: { color: colors.textTertiary, fontSize: 12 },
 });

@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
 import { fetchPlants, fetchHealthchecks } from '../services/plantService';
+import { colors, spacing, radius, shadows } from '../theme';
 
 // Native animation auf Android aktivieren
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -93,29 +94,29 @@ export default function PlantListScreen() {
   const renderPlantItem = ({ item }) => (
     <TouchableOpacity onPress={() => navigation.navigate('PlantDetail', { plant: item })}>
       <View style={{
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        margin: 10,
-        padding: 16,
+        backgroundColor: colors.surface,
+        borderRadius: radius.lg,
+        margin: spacing.md,
+        padding: spacing.lg,
         flexDirection: "row",
         alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.07,
-        shadowRadius: 6,
-        elevation: 1,
+        shadowColor: shadows.sm.shadowColor,
+        shadowOpacity: shadows.sm.shadowOpacity,
+        shadowRadius: shadows.sm.shadowRadius,
+        elevation: shadows.sm.elevation,
       }}>
         {item.image_url ? (
-          <Image source={{ uri: item.image_url }} style={{ width: 80, height: 80, borderRadius: 10, marginRight: 18, backgroundColor: "#ddd" }} />
+          <Image source={{ uri: item.image_url }} style={{ width: 80, height: 80, borderRadius: radius.md, marginRight: spacing.lg + 2, backgroundColor: colors.border }} />
         ) : (
-          <View style={{ width: 80, height: 80, borderRadius: 10, marginRight: 18, backgroundColor: "#ccc", alignItems: "center", justifyContent: "center" }}>
+          <View style={{ width: 80, height: 80, borderRadius: radius.md, marginRight: spacing.lg + 2, backgroundColor: colors.textDisabled, alignItems: "center", justifyContent: "center" }}>
             <Text>🌱</Text>
           </View>
         )}
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.name || "?"}</Text>
-          <Text style={{ fontSize: 14, color: "#666", marginTop: 4 }}>{item.note}</Text>
+          <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.textPrimary }}>{item.name || "?"}</Text>
+          <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: spacing.xs }}>{item.note}</Text>
           {item.healthscore !== null &&
-            <Text style={{ fontSize: 13, color: "#2e7d32", marginTop: 2 }}>Healthscore: {item.healthscore} / 100</Text>
+            <Text style={{ fontSize: 13, color: colors.primary, marginTop: 2 }}>Healthscore: {item.healthscore} / 100</Text>
           }
         </View>
       </View>
@@ -124,7 +125,7 @@ export default function PlantListScreen() {
 
   // "Alle"-Tab
   const AllRoute = () => (
-    loading ? <ActivityIndicator size="large" color="#4CAF50" style={{ marginTop: 30 }} /> :
+    loading ? <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: 30 }} /> :
     <FlatList
       data={allPlants}
       keyExtractor={item => item.id?.toString()}
@@ -136,7 +137,7 @@ export default function PlantListScreen() {
         }} />
       }
       ListEmptyComponent={!loading && (
-        <Text style={{ textAlign: "center", color: "#888", marginTop: 100 }}>Noch keine Pflanzen gespeichert.</Text>
+        <Text style={{ textAlign: "center", color: colors.textTertiary, marginTop: 100 }}>Noch keine Pflanzen gespeichert.</Text>
       )}
     />
   );
@@ -148,48 +149,48 @@ export default function PlantListScreen() {
   };
 
   const HomesRoute = () => (
-    loading ? <ActivityIndicator size="large" color="#4CAF50" style={{ marginTop: 30 }} /> :
+    loading ? <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: 30 }} /> :
     <ScrollView style={{ flex: 1 }}>
       {grouped.length === 0 &&
-        <Text style={{ textAlign: "center", color: "#888", marginTop: 100 }}>Noch keine Standorte/Zonen/Pflanzen.</Text>
+        <Text style={{ textAlign: "center", color: colors.textTertiary, marginTop: 100 }}>Noch keine Standorte/Zonen/Pflanzen.</Text>
       }
       {grouped.map(location => (
-        <View key={location.id} style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 20, fontWeight: "bold", marginLeft: 16, marginBottom: 4 }}>{location.name}</Text>
+        <View key={location.id} style={{ marginBottom: spacing.xxl }}>
+          <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.textPrimary, marginLeft: spacing.lg, marginBottom: spacing.xs }}>{location.name}</Text>
           {location.zones.map(zone => (
-            <View key={zone.id} style={{ marginLeft: 12, marginBottom: 6, backgroundColor: "#F5F5F5", borderRadius: 8 }}>
-              <TouchableOpacity onPress={() => toggleZone(zone.id)} style={{ flexDirection: "row", alignItems: "center", padding: 10 }}>
-                <Text style={{ fontSize: 16, fontWeight: "600", flex: 1 }}>{zone.name}</Text>
-                <Text style={{ color: "#888" }}>{zone.plants.length} Pflanzen</Text>
-                <Text style={{ marginLeft: 8, color: "#4CAF50" }}>{expandedZones[zone.id] ? "▲" : "▼"}</Text>
+            <View key={zone.id} style={{ marginLeft: spacing.md, marginBottom: 6, backgroundColor: colors.background, borderRadius: radius.sm }}>
+              <TouchableOpacity onPress={() => toggleZone(zone.id)} style={{ flexDirection: "row", alignItems: "center", padding: spacing.md }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", flex: 1, color: colors.textPrimary }}>{zone.name}</Text>
+                <Text style={{ color: colors.textTertiary }}>{zone.plants.length} Pflanzen</Text>
+                <Text style={{ marginLeft: spacing.sm, color: colors.primary }}>{expandedZones[zone.id] ? "▲" : "▼"}</Text>
               </TouchableOpacity>
               {expandedZones[zone.id] && zone.plants.length > 0 && (
-                <View style={{ marginLeft: 10 }}>
+                <View style={{ marginLeft: spacing.md }}>
                   {zone.plants.map(plant => (
                     <TouchableOpacity key={plant.id} onPress={() => navigation.navigate('PlantDetail', { plant })}>
                       <View style={{
-                        flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 1,
-                        borderColor: "#eee"
+                        flexDirection: "row", alignItems: "center", paddingVertical: spacing.sm, borderBottomWidth: 1,
+                        borderColor: colors.borderLight
                       }}>
                         {plant.image_url ? (
-                          <Image source={{ uri: plant.image_url }} style={{ width: 50, height: 50, borderRadius: 8, marginRight: 10, backgroundColor: "#ddd" }} />
+                          <Image source={{ uri: plant.image_url }} style={{ width: 50, height: 50, borderRadius: radius.sm, marginRight: spacing.md, backgroundColor: colors.border }} />
                         ) : (
-                          <View style={{ width: 50, height: 50, borderRadius: 8, marginRight: 10, backgroundColor: "#ccc", alignItems: "center", justifyContent: "center" }}>
+                          <View style={{ width: 50, height: 50, borderRadius: radius.sm, marginRight: spacing.md, backgroundColor: colors.textDisabled, alignItems: "center", justifyContent: "center" }}>
                             <Text>🌱</Text>
                           </View>
                         )}
                         <View>
-                          <Text style={{ fontSize: 15, fontWeight: "bold" }}>{plant.name}</Text>
-                          <Text style={{ fontSize: 13, color: "#666" }}>{plant.note}</Text>
+                          <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.textPrimary }}>{plant.name}</Text>
+                          <Text style={{ fontSize: 13, color: colors.textSecondary }}>{plant.note}</Text>
                           {plant.healthscore !== null &&
-                            <Text style={{ fontSize: 12, color: "#2e7d32" }}>Healthscore: {plant.healthscore} / 100</Text>
+                            <Text style={{ fontSize: 12, color: colors.primary }}>Healthscore: {plant.healthscore} / 100</Text>
                           }
                         </View>
                       </View>
                     </TouchableOpacity>
                   ))}
                   {zone.plants.length === 0 &&
-                    <Text style={{ color: "#aaa", marginLeft: 8, marginBottom: 10 }}>Keine Pflanzen in dieser Zone.</Text>
+                    <Text style={{ color: colors.textTertiary, marginLeft: spacing.sm, marginBottom: spacing.md }}>Keine Pflanzen in dieser Zone.</Text>
                   }
                 </View>
               )}
@@ -212,11 +213,11 @@ export default function PlantListScreen() {
       renderTabBar={props =>
         <TabBar
           {...props}
-          indicatorStyle={{ backgroundColor: '#4CAF50' }}
-          style={{ backgroundColor: '#fff' }}
-          labelStyle={{ color: '#222', fontWeight: 'bold' }}
-          activeColor="#4CAF50"
-          inactiveColor="#888"
+          indicatorStyle={{ backgroundColor: colors.primary }}
+          style={{ backgroundColor: colors.surface }}
+          labelStyle={{ color: colors.textPrimary, fontWeight: 'bold' }}
+          activeColor={colors.primary}
+          inactiveColor={colors.textTertiary}
         />
       }
     />

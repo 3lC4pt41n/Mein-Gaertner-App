@@ -23,6 +23,7 @@ import { supabase } from "./supabase";
 import { initPurchases } from "./services/purchaseService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUiText, normalizeLanguage } from "./services/languageService";
+import { colors } from "./theme";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -230,7 +231,7 @@ export default function App() {
             else if (route.name === "Shop") iconName = "flash-outline";
             return <Ionicons name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: "#4CAF50",
+          tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: "gray",
           headerShown: false,
         })}

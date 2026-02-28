@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { fetchTask, completeTask, skipTask } from '../services/taskService';
+import { colors, spacing, radius, shadows } from '../theme';
 
 export default function TaskDetailScreen({ route, navigation }) {
   const { task: initialTask } = route.params;
@@ -42,12 +43,12 @@ export default function TaskDetailScreen({ route, navigation }) {
     }
   };
 
-  if (loading) return <ActivityIndicator style={{ marginTop: 50 }} color="#4CAF50" />;
+  if (loading) return <ActivityIndicator style={{ marginTop: 50 }} color={colors.primaryLight} />;
 
   return (
-    <ScrollView style={{ padding: 22, backgroundColor: "#fff" }}>
+    <ScrollView style={{ padding: 22, backgroundColor: colors.surface }}>
       <View style={{
-        backgroundColor: "#f8f8f8", borderRadius: 18, padding: 18, alignItems: "center", marginBottom: 22
+        backgroundColor: colors.background, borderRadius: 18, padding: 18, alignItems: "center", marginBottom: 22
       }}>
         <Ionicons
           name={
@@ -57,54 +58,54 @@ export default function TaskDetailScreen({ route, navigation }) {
                   task.type === "Healthcheck" ? "pulse-outline" : "calendar-outline"
           }
           size={52}
-          color="#4CAF50"
-          style={{ marginBottom: 12 }}
+          color={colors.primaryLight}
+          style={{ marginBottom: spacing.md }}
         />
-        <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: 2 }}>{task.type}</Text>
-        <Text style={{ color: "#2196f3", fontWeight: "bold", fontSize: 16 }}>
+        <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: 2, color: colors.textPrimary }}>{task.type}</Text>
+        <Text style={{ color: colors.info, fontWeight: "bold", fontSize: 16 }}>
           {task.plant?.name || "Pflanze unbekannt"}
         </Text>
-        <Text style={{ color: "#888", marginTop: 8, fontSize: 14 }}>
+        <Text style={{ color: colors.textTertiary, marginTop: spacing.sm, fontSize: 14 }}>
           {new Date(task.due_at).toLocaleString()}
         </Text>
       </View>
 
       {task.note &&
-        <View style={{ marginBottom: 22, padding: 14, backgroundColor: "#F1F8E9", borderRadius: 10 }}>
-          <Text style={{ fontWeight: "bold" }}>Notiz:</Text>
-          <Text style={{ marginTop: 4 }}>{task.note}</Text>
+        <View style={{ marginBottom: 22, padding: 14, backgroundColor: colors.primarySurface, borderRadius: radius.md }}>
+          <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>Notiz:</Text>
+          <Text style={{ marginTop: spacing.xs, color: colors.textPrimary }}>{task.note}</Text>
         </View>
       }
 
       {/* Status Info */}
-      <View style={{ marginBottom: 16, flexDirection: "row", alignItems: "center" }}>
+      <View style={{ marginBottom: spacing.lg, flexDirection: "row", alignItems: "center" }}>
         <Ionicons
           name={task.state === "COMPLETED" ? "checkmark-done" :
             task.state === "DUE" ? "hourglass-outline" :
               task.state === "SKIPPED" ? "remove-circle-outline" :
                 "help-circle-outline"}
           size={22}
-          color={task.state === "COMPLETED" ? "#388E3C" :
-            task.state === "SKIPPED" ? "#FFA726" : "#757575"}
+          color={task.state === "COMPLETED" ? colors.success :
+            task.state === "SKIPPED" ? colors.warning : colors.textSecondary}
           style={{ marginRight: 6 }}
         />
-        <Text style={{ fontWeight: "bold" }}>Status: {task.state}</Text>
+        <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>Status: {task.state}</Text>
       </View>
 
       {/* Action Buttons */}
       {task.state === "DUE" && (
-        <View style={{ flexDirection: "row", justifyContent: "space-evenly", marginTop: 16 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-evenly", marginTop: spacing.lg }}>
           <TouchableOpacity style={{
-            backgroundColor: "#4CAF50", borderRadius: 8, padding: 14, minWidth: 120, alignItems: "center"
+            backgroundColor: colors.primary, borderRadius: radius.sm, padding: 14, minWidth: 120, alignItems: "center"
           }} onPress={handleDone}>
-            <Ionicons name="checkmark-circle-outline" size={28} color="#fff" />
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>Erledigt</Text>
+            <Ionicons name="checkmark-circle-outline" size={28} color={colors.surface} />
+            <Text style={{ color: colors.surface, fontWeight: "bold" }}>Erledigt</Text>
           </TouchableOpacity>
           <TouchableOpacity style={{
-            backgroundColor: "#FFA726", borderRadius: 8, padding: 14, minWidth: 120, alignItems: "center"
+            backgroundColor: colors.warning, borderRadius: radius.sm, padding: 14, minWidth: 120, alignItems: "center"
           }} onPress={handleSkip}>
-            <MaterialIcons name="not-interested" size={28} color="#fff" />
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>Überspringen</Text>
+            <MaterialIcons name="not-interested" size={28} color={colors.surface} />
+            <Text style={{ color: colors.surface, fontWeight: "bold" }}>Überspringen</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -115,15 +116,15 @@ export default function TaskDetailScreen({ route, navigation }) {
           style={{
             marginTop: 30,
             alignSelf: "center",
-            backgroundColor: "#1976d2",
-            borderRadius: 20,
-            paddingVertical: 12,
+            backgroundColor: colors.info,
+            borderRadius: radius.lg,
+            paddingVertical: spacing.md,
             paddingHorizontal: 30
           }}
           onPress={() => navigation.navigate('PlantDetail', { plant: task.plant })}
         >
-          <Ionicons name="pulse" size={20} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={{ color: "#fff", fontWeight: "bold" }}>Healthcheck & Details</Text>
+          <Ionicons name="pulse" size={20} color={colors.surface} style={{ marginRight: spacing.sm }} />
+          <Text style={{ color: colors.surface, fontWeight: "bold" }}>Healthcheck & Details</Text>
         </TouchableOpacity>
       )}
     </ScrollView>

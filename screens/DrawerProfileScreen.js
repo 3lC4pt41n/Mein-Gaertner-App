@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, StyleSheet, Switch, TextInput, Alert } f
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { getLanguageLabel } from "../services/languageService";
+import { colors, spacing, radius } from '../theme';
 
 export default function DrawerProfileScreen() {
   const [profile, setProfile] = useState(null);
@@ -69,7 +70,7 @@ export default function DrawerProfileScreen() {
     <View style={styles.container}>
       {/* Profil-Header */}
       <View style={styles.header}>
-        <Ionicons name="person" size={60} color="#4CAF50" />
+        <Ionicons name="person" size={60} color={colors.primaryLight} />
         <Text style={styles.title}>Profil</Text>
       </View>
 
@@ -96,7 +97,7 @@ export default function DrawerProfileScreen() {
           <Switch
             value={optIn}
             onValueChange={handleOptInToggle}
-            trackColor={{ true: "#4CAF50" }}
+            trackColor={{ true: colors.primaryLight }}
             disabled={saving}
           />
         </View>
@@ -132,21 +133,21 @@ function ProfileRow({ label, value }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: colors.surface },
   header: { alignItems: "center", paddingTop: 30, paddingBottom: 10 },
-  title: { fontWeight: "bold", fontSize: 22, marginTop: 8 },
+  title: { fontWeight: "bold", fontSize: 22, marginTop: spacing.sm },
   section: {
-    marginHorizontal: 20,
-    marginTop: 20,
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.xl,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: colors.borderLight,
   },
   sectionTitle: {
     fontWeight: "bold",
     fontSize: 16,
-    color: "#4CAF50",
-    marginBottom: 12,
+    color: colors.primary,
+    marginBottom: spacing.md,
   },
   row: {
     flexDirection: "row",
@@ -156,20 +157,20 @@ const styles = StyleSheet.create({
   optInRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   displayNameRow: {
-    paddingTop: 8,
+    paddingTop: spacing.sm,
   },
-  label: { fontSize: 14, color: "#555" },
+  label: { fontSize: 14, color: colors.textSecondary },
   value: { fontSize: 14, fontWeight: "600" },
-  hint: { fontSize: 12, color: "#999", marginTop: 2 },
+  hint: { fontSize: 12, color: colors.textTertiary, marginTop: 2 },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
     padding: 10,
-    marginTop: 8,
+    marginTop: spacing.sm,
     fontSize: 14,
   },
 });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, Platform } from 'react-native';
+import { colors, spacing, radius } from '../theme';
 
 const TASK_TYPES = ["Gießen", "Düngen", "Healthcheck", "Sonstiges"];
 
@@ -8,49 +9,48 @@ export default function AddTaskDialog({ onClose, onSave }) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
 
-  // Einfache ISO-Date + Zeit Handling (ohne Picker für Basic-Start)
   const today = new Date().toISOString().slice(0, 10);
 
   return (
     <View style={{
-      backgroundColor: "#fff", margin: 30, borderRadius: 16,
+      backgroundColor: colors.surface, margin: 30, borderRadius: radius.lg,
       padding: 18, shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 10
     }}>
-      <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}>Neue Aufgabe anlegen</Text>
-      <Text style={{ marginTop: 6 }}>Typ:</Text>
+      <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: spacing.md }}>Neue Aufgabe anlegen</Text>
+      <Text style={{ marginTop: spacing.sm }}>Typ:</Text>
       {TASK_TYPES.map(t => (
         <TouchableOpacity key={t} onPress={() => setType(t)}>
           <Text style={{
-            color: t === type ? "#4CAF50" : "#333",
+            color: t === type ? colors.primary : colors.textPrimary,
             fontWeight: t === type ? "bold" : "normal",
-            paddingVertical: 4
+            paddingVertical: spacing.xs,
           }}>{t}</Text>
         </TouchableOpacity>
       ))}
-      <Text style={{ marginTop: 8 }}>Datum (YYYY-MM-DD):</Text>
+      <Text style={{ marginTop: spacing.sm }}>Datum (YYYY-MM-DD):</Text>
       <TextInput
         value={date}
         onChangeText={setDate}
         placeholder={today}
-        style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 6 }}
+        style={{ borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, padding: 6 }}
       />
-      <Text style={{ marginTop: 8 }}>Zeit (HH:MM):</Text>
+      <Text style={{ marginTop: spacing.sm }}>Zeit (HH:MM):</Text>
       <TextInput
         value={time}
         onChangeText={setTime}
         placeholder="08:00"
-        style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 6 }}
+        style={{ borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, padding: 6 }}
       />
-      <View style={{ flexDirection: "row", marginTop: 12, justifyContent: "flex-end" }}>
-        <Button title="Abbrechen" onPress={onClose} color="#888" />
-        <View style={{ width: 8 }} />
+      <View style={{ flexDirection: "row", marginTop: spacing.md, justifyContent: "flex-end" }}>
+        <Button title="Abbrechen" onPress={onClose} color={colors.textTertiary} />
+        <View style={{ width: spacing.sm }} />
         <Button
           title="Speichern"
           onPress={() => {
             if (!date || !time) return alert("Bitte Datum und Zeit angeben!");
             onSave(type, `${date}T${time}:00`);
           }}
-          color="#4CAF50"
+          color={colors.primary}
         />
       </View>
     </View>

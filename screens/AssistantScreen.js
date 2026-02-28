@@ -8,6 +8,7 @@ import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
 import { chatWithBen } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
+import { colors, spacing, radius } from '../theme';
 
 const GARDENER_NAME = "Ben";
 
@@ -179,23 +180,23 @@ export default function AssistantScreen() {
   const renderItem = ({ item }) => (
     <View style={{
       alignSelf: item.sender === "user" ? 'flex-end' : 'flex-start',
-      backgroundColor: item.sender === "user" ? "#DCF8C6" : "#F1F0F0",
-      margin: 4,
-      padding: 10,
-      borderRadius: 14,
+      backgroundColor: item.sender === "user" ? colors.chatUserBubble : colors.chatBotBubble,
+      margin: spacing.xs,
+      padding: spacing.md,
+      borderRadius: radius.lg,
       maxWidth: "80%",
       flexDirection: "row",
       alignItems: "flex-end"
     }}>
       <Image
         source={getAvatar(item.sender)}
-        style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }}
+        style={{ width: spacing.xxxl, height: spacing.xxxl, borderRadius: radius.lg, marginRight: spacing.sm }}
       />
       <View>
         {item.image_url &&
-          <Image source={{ uri: item.image_url }} style={{ width: 150, height: 150, borderRadius: 10, marginBottom: 4 }} resizeMode="cover" />}
+          <Image source={{ uri: item.image_url }} style={{ width: 150, height: 150, borderRadius: 10, marginBottom: spacing.xs }} resizeMode="cover" />}
         <Text>{item.content}</Text>
-        <Text style={{ fontSize: 10, color: "#888" }}>{item.sender === "user" ? "Du" : GARDENER_NAME}</Text>
+        <Text style={{ fontSize: 10, color: colors.textTertiary }}>{item.sender === "user" ? "Du" : GARDENER_NAME}</Text>
       </View>
     </View>
   );
@@ -205,14 +206,14 @@ export default function AssistantScreen() {
       {/* Credit-Leiste */}
       {balance !== null && (
         <View style={{
-          backgroundColor: balance > 10 ? "#E8F5E9" : "#FFF3E0",
-          padding: 8, flexDirection: "row", justifyContent: "space-between",
-          alignItems: "center", paddingHorizontal: 16,
+          backgroundColor: balance > 10 ? colors.primarySurface : colors.warningSurface,
+          padding: spacing.sm, flexDirection: "row", justifyContent: "space-between",
+          alignItems: "center", paddingHorizontal: spacing.lg,
         }}>
-          <Text style={{ color: "#666", fontSize: 13 }}>Credits</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>Credits</Text>
           <Text style={{
             fontWeight: "bold",
-            color: balance > 10 ? "#4CAF50" : "#FF9800"
+            color: balance > 10 ? colors.primary : colors.warning
           }}>
             {balance}
           </Text>
@@ -224,17 +225,17 @@ export default function AssistantScreen() {
         ref={flatListRef}
         keyExtractor={(_, i) => i.toString()}
         renderItem={renderItem}
-        contentContainerStyle={{ padding: 10 }}
+        contentContainerStyle={{ padding: spacing.md }}
         ListHeaderComponent={
           hasMore ? (
             <TouchableOpacity
               onPress={loadOlderMessages}
-              style={{ padding: 12, alignItems: 'center' }}
+              style={{ padding: spacing.md, alignItems: 'center' }}
             >
               {loadingMore ? (
-                <ActivityIndicator size="small" color="#4CAF50" />
+                <ActivityIndicator size="small" color={colors.primaryLight} />
               ) : (
-                <Text style={{ color: '#4CAF50', fontSize: 13 }}>
+                <Text style={{ color: colors.primary, fontSize: 13 }}>
                   Ältere Nachrichten laden...
                 </Text>
               )}
@@ -242,16 +243,16 @@ export default function AssistantScreen() {
           ) : null
         }
       />
-      {loading && <ActivityIndicator size="large" color="#4CAF50" style={{ margin: 10 }} />}
-      <View style={{ flexDirection: "row", alignItems: "center", padding: 8 }}>
+      {loading && <ActivityIndicator size="large" color={colors.primaryLight} style={{ margin: spacing.md }} />}
+      <View style={{ flexDirection: "row", alignItems: "center", padding: spacing.sm }}>
         <TouchableOpacity onPress={takeAndSendPhoto}>
-          <Ionicons name="camera" size={28} color="#4CAF50" style={{ marginRight: 10 }} />
+          <Ionicons name="camera" size={28} color={colors.primary} style={{ marginRight: spacing.md }} />
         </TouchableOpacity>
         <TextInput
           value={input}
           onChangeText={setInput}
           placeholder="Schreib Ben eine Nachricht …"
-          style={{ flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 20, padding: 8, backgroundColor: "#fff" }}
+          style={{ flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, padding: spacing.sm, backgroundColor: colors.surface }}
         />
         <Button title="Senden" onPress={sendMessage} disabled={loading || !input.trim()} />
       </View>
