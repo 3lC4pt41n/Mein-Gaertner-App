@@ -8,6 +8,7 @@ import { supabase } from '../supabase';
 import { getLeaderboard, getMyRank, getMyStats } from '../services/leaderboardService';
 import { colors, spacing, radius } from '../theme';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 
 const RANK_ICONS = ['trophy', 'medal', 'ribbon'];
 const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
@@ -24,7 +25,7 @@ export default function LeaderboardScreen() {
     { key: 'discovery', label: t('leaderboard.scoreTypes.discovery') },
   ];
 
-  const [userId, setUserId] = useState(null);
+  const { userId, profile: authProfile } = useAuth();
   const [timeWindow, setTimeWindow] = useState('week');
   const [scoreType, setScoreType] = useState('gardener');
   const [leaderboard, setLeaderboard] = useState([]);
@@ -35,20 +36,8 @@ export default function LeaderboardScreen() {
   const [optedIn, setOptedIn] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        // Check Opt-in Status
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('leaderboard_opt_in')
-          .eq('id', user.id)
-          .single();
-        setOptedIn(profile?.leaderboard_opt_in ?? false);
-      }
-    })();
-  }, []);
+    setOptedIn(authProfile?.leaderboard_opt_in ?? false);
+  }, [authProfile]);
 
   const loadData = useCallback(async () => {
     if (!userId) return;

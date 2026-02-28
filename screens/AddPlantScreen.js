@@ -10,6 +10,7 @@ import { supabase } from '../supabase';
 import { useNavigation } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius } from '../theme';
 
 export default function AddPlantScreen() {
@@ -18,15 +19,13 @@ export default function AddPlantScreen() {
   const [imageUri, setImageUri] = useState(null);
   const [base64Image, setBase64Image] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState(null);
   const [balance, setBalance] = useState(null);
   const [language, setLanguage] = useState('de');
   const navigation = useNavigation();
+  const { userId } = useAuth();
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.auth.getUser();
-      setUserId(data?.user?.id ?? null);
       try {
         const bal = await fetchBalance();
         setBalance(bal);

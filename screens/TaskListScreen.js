@@ -6,6 +6,8 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AddTaskDialog from '../components/AddTaskDialog';
 import { colors, spacing, radius, shadows, typography } from '../theme';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
+import { rescheduleAllTaskReminders, cancelTaskReminder } from '../services/notificationService';
 
 function getTaskColor(state, due_at) {
   if (state === "COMPLETED") return "#B2DFDB";
@@ -22,18 +24,10 @@ function formatDateTime(due_at) {
 
 export default function TaskScreen() {
   const [tasks, setTasks] = useState([]);
-  const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const navigation = useNavigation();
-
-  useEffect(() => {
-    (async () => {
-      const supabase = require('../supabase').supabase;
-      const { data } = await supabase.auth.getUser();
-      setUserId(data?.user?.id ?? null);
-    })();
-  }, []);
+  const { userId } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -52,6 +46,8 @@ export default function TaskScreen() {
     try {
       const data = await fetchTasks(userId);
       setTasks(data ?? []);
+      // Reschedule all local notification reminders for DUE tasks
+      rescheduleAllTaskReminders(data ?? []).catch(console.warn);
     } catch (e) {
       Alert.alert(t('common.error'), e.message);
     } finally {
@@ -62,6 +58,7 @@ export default function TaskScreen() {
   const handleDone = async (task) => {
     try {
       await completeTask(task, userId);
+      cancelTaskReminder(task.id).catch(console.warn);
       loadTasks();
     } catch (e) {
       Alert.alert(t('common.error'), t('tasks.completeFailed') + ": " + e.message);
@@ -71,6 +68,7 @@ export default function TaskScreen() {
   const handleSkip = async (task) => {
     try {
       await skipTask(task, userId, t('tasks.manualSkipReason'));
+      cancelTaskReminder(task.id).catch(console.warn);
       loadTasks();
     } catch (e) {
       Alert.alert(t('common.error'), t('tasks.skipFailed') + ": " + e.message);

@@ -5,8 +5,10 @@ import { supabase } from "../supabase";
 import { getLanguageLabel } from "../services/languageService";
 import { colors, spacing, radius } from '../theme';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function DrawerProfileScreen() {
+  const { userId, profile: authProfile } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -16,21 +18,13 @@ export default function DrawerProfileScreen() {
   const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-        setProfile(data);
-        setOptIn(data?.leaderboard_opt_in ?? false);
-        setDisplayName(data?.public_display_name ?? "");
-      }
-      setLoading(false);
-    })();
-  }, []);
+    if (authProfile) {
+      setProfile(authProfile);
+      setOptIn(authProfile?.leaderboard_opt_in ?? false);
+      setDisplayName(authProfile?.public_display_name ?? "");
+    }
+    setLoading(false);
+  }, [authProfile]);
 
   const saveLeaderboardSettings = async (newOptIn, newDisplayName) => {
     if (!profile) return;

@@ -9,6 +9,7 @@ import { supabase } from '../supabase';
 import { fetchPlants, fetchHealthchecks } from '../services/plantService';
 import { colors, spacing, radius, shadows } from '../theme';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 
 // Native animation auf Android aktivieren
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -59,18 +60,11 @@ export default function PlantListScreen() {
   ];
   const [allPlants, setAllPlants] = useState([]);
   const [grouped, setGrouped] = useState([]);
-  const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const { userId } = useAuth();
   const [expandedZones, setExpandedZones] = useState({}); // { [zoneId]: true }
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      setUserId(data?.user?.id ?? null);
-    })();
-  }, []);
 
   useEffect(() => {
     if (userId) {

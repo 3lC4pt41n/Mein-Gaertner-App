@@ -4,6 +4,7 @@ import { Modal, Portal, Provider as PaperProvider, Button, Card, IconButton } fr
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function HomeManager() {
   const [locations, setLocations] = useState([]);
@@ -13,23 +14,16 @@ export default function HomeManager() {
   const [form, setForm] = useState({ name: "", address: "", type: "room" });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { reload(); }, []);
+  const { userId } = useAuth();
 
-  // Helper: getUserId
-  const getUserId = async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) {
-      Alert.alert(t('common.notLoggedIn'), t('common.notLoggedInMessage'));
-      throw new Error("Not authenticated");
-    }
-    return user.id;
-  };
+  useEffect(() => { reload(); }, []);
 
   // Lade Locations + Zonen (separate Queries für PostgREST-Kompatibilität)
   const reload = async () => {
+    if (!userId) { Alert.alert(t('common.notLoggedIn'), t('common.notLoggedInMessage')); return; }
     setLoading(true);
     try {
-      const user_id = await getUserId();
+      const user_id = userId;
       const { data: locs, error: locErr } = await supabase
         .from("locations")
         .select("id, name, address")
@@ -85,7 +79,8 @@ export default function HomeManager() {
 
   // CRUD – Locations
   const saveLocation = async () => {
-    const user_id = await getUserId();
+    if (!userId) { Alert.alert(t('common.notLoggedIn'), t('common.notLoggedInMessage')); return; }
+    const user_id = userId;
     if (!form.name.trim()) {
       Alert.alert(t('common.error'), t('common.nameRequired'));
       return;
@@ -153,8 +148,9 @@ export default function HomeManager() {
           text: t('common.delete'),
           style: "destructive",
           onPress: async () => {
+            if (!userId) { Alert.alert(t('common.notLoggedIn'), t('common.notLoggedInMessage')); return; }
             try {
-              const user_id = await getUserId();
+              const user_id = userId;
               const { error } = await supabase
                 .from("locations")
                 .delete()

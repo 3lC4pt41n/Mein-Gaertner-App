@@ -29,7 +29,11 @@
     "networkError": "Impossible de se connecter au serveur. Veuillez vérifier votre connexion internet et réessayer.",
     "insufficientCredits": "Credits insuffisants",
     "insufficientCreditsMessage": "Vous avez {{balance}} Credits mais il en faut {{required}}.\n\nRendez-vous dans la Boutique pour recharger vos Credits.",
-    "cameraRequired": "L'accès à la caméra est nécessaire."
+    "cameraRequired": "L'accès à la caméra est nécessaire.",
+    "errorBoundaryTitle": "Un problème est survenu",
+    "errorBoundaryMessage": "L'application a rencontré une erreur inattendue. Veuillez réessayer.",
+    "errorBoundaryRetry": "Réessayer",
+    "errorBoundaryDetails": "Détails de l'erreur"
   },
 
   "nav": {
@@ -315,6 +319,13 @@
     "noUserData": "Aucune donnée utilisateur pour le moment.",
     "netMargin": "Marge nette",
     "activeSubscriptions": "Abos actifs : {{active}} / {{total}}"
+  },
+
+  "notifications": {
+    "taskDueTitle": "Tâche à faire !",
+    "taskDueBody": "{{type}} pour {{plant}} est prévu aujourd'hui.",
+    "permissionTitle": "Notifications",
+    "permissionMessage": "Autorisez les notifications pour recevoir des rappels pour vos tâches d'entretien."
   },
 
   "minor": {

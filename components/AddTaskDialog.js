@@ -8,6 +8,7 @@ import { supabase } from '../supabase';
 import { colors, spacing, radius, shadows } from '../theme';
 import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 
 let NativeDateTimePicker = null;
 try {
@@ -34,6 +35,7 @@ const INTERVAL_PRESETS = [
 ];
 
 export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId, initialPlantName }) {
+  const { userId } = useAuth();
   const [type, setType] = useState(TASK_TYPES[0].key);
   const [date, setDate] = useState(() => {
     const d = new Date();
@@ -79,12 +81,11 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
   const loadPlants = async () => {
     setLoadingPlants(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!userId) return;
       const { data, error } = await supabase
         .from('plants')
         .select('id, name')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('name');
       if (!error && data) setPlants(data);
     } catch (e) {

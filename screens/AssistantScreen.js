@@ -10,14 +10,15 @@ import { fetchBalance } from '../services/creditService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { colors, spacing, radius } from '../theme';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 
 const GARDENER_NAME = "Ben";
 
 export default function AssistantScreen() {
+  const { userId: user_id, user } = useAuth();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [user_id, setUserId] = useState(null);
   const [balance, setBalance] = useState(null);
   const [language, setLanguage] = useState('de');
   const [userAvatarUrl, setUserAvatarUrl] = useState(null);
@@ -26,9 +27,8 @@ export default function AssistantScreen() {
   const flatListRef = useRef();
 
   useEffect(() => {
+    if (!user_id) return;
     (async () => {
-      const { data } = await supabase.auth.getUser();
-      setUserId(data?.user?.id ?? null);
       try {
         const bal = await fetchBalance();
         setBalance(bal);
@@ -38,7 +38,7 @@ export default function AssistantScreen() {
         setLanguage(userLanguage);
       } catch {}
 
-      const avatarPath = data?.user?.user_metadata?.gardener_avatar_path;
+      const avatarPath = user?.user_metadata?.gardener_avatar_path;
       if (avatarPath) {
         try {
           const { data: signedData, error: signedError } = await supabase
@@ -52,7 +52,7 @@ export default function AssistantScreen() {
         } catch {}
       }
     })();
-  }, []);
+  }, [user_id]);
 
   // Initial: letzte 30 Messages laden
   useEffect(() => {

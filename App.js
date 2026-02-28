@@ -1,6 +1,6 @@
 // App.js – Hauptnavigation mit RevenueCat + Credit Store
 // -----------------------------------------------------------
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -19,12 +19,17 @@ import StoreScreen from "./screens/StoreScreen";
 import AdminDashboardScreen from "./screens/AdminDashboardScreen";
 import BetaWelcomeScreen from "./screens/BetaWelcomeScreen";
 import LeaderboardScreen from "./screens/LeaderboardScreen";
-import { supabase } from "./supabase";
-import { initPurchases } from "./services/purchaseService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { normalizeLanguage } from "./services/languageService";
-import i18n, { t } from "./i18n";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import ErrorBoundary from "./components/ErrorBoundary";
+import AppLoadingScreen from "./components/AppLoadingScreen";
+import OfflineBanner from "./components/OfflineBanner";
+import { t } from "./i18n";
 import { colors } from "./theme";
+import { supabase } from "./supabase";
+import {
+  registerForPushNotifications,
+  addNotificationResponseListener,
+} from "./services/notificationService";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -91,76 +96,41 @@ function ShopStack({ isAdmin }) {
   );
 }
 
-// ---------- Main App Component -----------------------------
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false);
-  const handlePasswordRecoveryDetected = useCallback(
-    () => setPasswordRecoveryMode(true),
-    []
-  );
-  const handlePasswordRecoveryComplete = useCallback(
-    () => setPasswordRecoveryMode(false),
-    []
-  );
+// ---------- App Content (uses AuthContext) ---------
+function AppContent() {
+  const {
+    user,
+    profile,
+    isAdmin,
+    loading,
+    showWelcome,
+    passwordRecoveryMode,
+    handlePasswordRecoveryDetected,
+    handlePasswordRecoveryComplete,
+    refreshProfile,
+    dismissWelcome,
+  } = useAuth();
+  const navigationRef = useRef(null);
 
-  // --- Auth State -----------------------------------------
+  // --- Push Notification Registration (after login) ---
   useEffect(() => {
-    supabase.auth.getUser()
-      .then(({ data }) => setUser(data?.user ?? null))
-      .catch(() => setUser(null));
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setPasswordRecoveryMode(true);
+    if (!user?.id) return;
+    registerForPushNotifications(user.id, supabase).catch(console.warn);
+  }, [user?.id]);
+
+  // --- Handle notification tap → navigate to Tasks tab ---
+  useEffect(() => {
+    const subscription = addNotificationResponseListener(() => {
+      // Navigate to the Tasks tab when a task reminder is tapped
+      if (navigationRef.current) {
+        navigationRef.current.navigate('Aufgaben');
       }
-      setUser(session?.user ?? null);
     });
-    return () => listener?.subscription.unsubscribe();
+    return () => subscription.remove();
   }, []);
 
-  // --- RevenueCat Init (nach Login) -----------------------
-  useEffect(() => {
-    if (user?.id) {
-      initPurchases(user.id).catch(console.warn);
-    }
-  }, [user?.id]);
+  if (loading) return <AppLoadingScreen />;
 
-  // --- Beta Welcome Check (einmalig pro User) -------------
-  useEffect(() => {
-    if (user?.id) {
-      AsyncStorage.getItem(`beta_welcome_shown_${user.id}`).then(val => {
-        if (!val) setShowWelcome(true);
-      });
-    }
-  }, [user?.id]);
-
-  // --- Profil Fetch ---------------------------------------
-  useEffect(() => {
-    if (user) {
-      setLoading(true);
-      supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single()
-        .then(({ data }) => {
-          setProfile(data);
-          setLoading(false);
-        })
-        .catch(() => {
-          setProfile(null);
-          setLoading(false);
-        });
-    } else {
-      setProfile(null);
-      setLoading(false);
-    }
-  }, [user]);
-
-  if (loading) return null; // TODO: Fancy Loader
   if (passwordRecoveryMode) {
     return (
       <AuthScreen
@@ -170,14 +140,12 @@ export default function App() {
       />
     );
   }
+
   if (!user) {
     return (
       <AuthScreen onPasswordRecoveryDetected={handlePasswordRecoveryDetected} />
     );
   }
-
-  // Set i18n locale from user profile language
-  i18n.locale = normalizeLanguage(profile?.language);
 
   const profileIncomplete =
     !profile?.username ||
@@ -191,34 +159,20 @@ export default function App() {
       <ProfileCompleteScreen
         user={user}
         profile={profile}
-        onDone={() =>
-          supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", user.id)
-            .single()
-            .then(({ data }) => setProfile(data))
-        }
+        onDone={refreshProfile}
         showSkip
       />
     );
   }
 
-  // --- Beta Welcome Screen (einmalig) ---------------------
   if (showWelcome) {
-    return (
-      <BetaWelcomeScreen
-        onDone={async () => {
-          await AsyncStorage.setItem(`beta_welcome_shown_${user.id}`, "true");
-          setShowWelcome(false);
-        }}
-      />
-    );
+    return <BetaWelcomeScreen onDone={dismissWelcome} />;
   }
 
   // ---------- Navigation Container ------------------------
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
+      <OfflineBanner />
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
@@ -273,9 +227,20 @@ export default function App() {
           name="Shop"
           options={{ title: t('nav.shop'), tabBarLabel: t('nav.shop') }}
         >
-          {() => <ShopStack isAdmin={!!profile?.is_admin} />}
+          {() => <ShopStack isAdmin={isAdmin} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
+  );
+}
+
+// ---------- Root App Component ----------------------------
+export default function App() {
+  return (
+    <AuthProvider>
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
+    </AuthProvider>
   );
 }

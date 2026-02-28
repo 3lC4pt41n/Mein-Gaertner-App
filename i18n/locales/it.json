@@ -29,7 +29,11 @@
     "networkError": "Nessuna connessione al server. Controlla la tua connessione Internet e riprova.",
     "insufficientCredits": "Credits insufficienti",
     "insufficientCreditsMessage": "Hai {{balance}} Credits, ma ne servono {{required}}.\n\nVai al Negozio per ricaricare i tuoi Credits.",
-    "cameraRequired": "È necessario l'accesso alla fotocamera."
+    "cameraRequired": "È necessario l'accesso alla fotocamera.",
+    "errorBoundaryTitle": "Qualcosa è andato storto",
+    "errorBoundaryMessage": "L'app ha riscontrato un errore imprevisto. Riprova.",
+    "errorBoundaryRetry": "Riprova",
+    "errorBoundaryDetails": "Dettagli errore"
   },
 
   "nav": {
@@ -315,6 +319,13 @@
     "noUserData": "Nessun dato utente disponibile.",
     "netMargin": "Margine netto",
     "activeSubscriptions": "Abbonamenti attivi: {{active}} / {{total}}"
+  },
+
+  "notifications": {
+    "taskDueTitle": "Attività in scadenza!",
+    "taskDueBody": "{{type}} per {{plant}} è prevista per oggi.",
+    "permissionTitle": "Notifiche",
+    "permissionMessage": "Consenti le notifiche per ricevere promemoria sulle tue attività di cura."
   },
 
   "minor": {

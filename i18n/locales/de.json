@@ -29,7 +29,11 @@
     "networkError": "Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung und versuche es erneut.",
     "insufficientCredits": "Nicht genügend Credits",
     "insufficientCreditsMessage": "Du hast {{balance}} Credits, brauchst aber {{required}}.\n\nGehe zum Shop, um Credits nachzuladen.",
-    "cameraRequired": "Kamerazugriff wird benötigt."
+    "cameraRequired": "Kamerazugriff wird benötigt.",
+    "errorBoundaryTitle": "Etwas ist schiefgelaufen",
+    "errorBoundaryMessage": "Die App hat einen unerwarteten Fehler festgestellt. Bitte versuche es erneut.",
+    "errorBoundaryRetry": "Nochmal versuchen",
+    "errorBoundaryDetails": "Fehlerdetails"
   },
 
   "nav": {
@@ -118,7 +122,7 @@
     "removeZoneTitle": "Zone entfernen?",
     "removeZoneMessage": "Soll die Pflanze wirklich aus dieser Zone entfernt werden?",
     "removeZoneSuccess": "Zone entfernt. Jetzt kannst du eine neue zuweisen.",
-    "zoneAssigned": "Pflanze jetzt in Zone „{{zone}}"",
+    "zoneAssigned": "Pflanze jetzt in Zone \u201E{{zone}}\u201C",
     "scanButton": "📷 Foto aufnehmen & erkennen",
     "nameLabel": "Name:",
     "namePlaceholder": "z. B. Monstera deliciosa",
@@ -315,6 +319,13 @@
     "noUserData": "Noch keine User-Daten.",
     "netMargin": "Netto-Margin",
     "activeSubscriptions": "Abos aktiv: {{active}} / {{total}}"
+  },
+
+  "notifications": {
+    "taskDueTitle": "Aufgabe fällig!",
+    "taskDueBody": "{{type}} für {{plant}} steht heute an.",
+    "permissionTitle": "Benachrichtigungen",
+    "permissionMessage": "Erlaube Benachrichtigungen, um Erinnerungen für deine Pflegeaufgaben zu erhalten."
   },
 
   "minor": {

@@ -7,32 +7,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { colors, spacing, radius, shadows } from '../theme';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 
 // Admin Dashboard – nur für User mit is_admin = true.
 // Doppelte Absicherung: Frontend-Check + DB-Views geben nur
 // Daten zurück wenn is_admin() = true (siehe Migration).
 
 export default function AdminDashboardScreen() {
+  const { isAdmin: authorized, loading: authLoading } = useAuth();
   const [dailyStats, setDailyStats] = useState([]);
   const [userEconomics, setUserEconomics] = useState([]);
   const [totals, setTotals] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [authorized, setAuthorized] = useState(null);
   const [tab, setTab] = useState('overview'); // 'overview' | 'users' | 'daily'
-
-  // Admin-Check beim Mount
-  useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!data?.user?.id) { setAuthorized(false); return; }
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', data.user.id)
-        .single();
-      setAuthorized(!!profile?.is_admin);
-    });
-  }, []);
 
   const loadData = useCallback(async () => {
     try {
@@ -67,7 +55,7 @@ export default function AdminDashboardScreen() {
 
   const onRefresh = () => { setRefreshing(true); loadData(); };
 
-  if (authorized === null || loading) {
+  if (authLoading || loading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={colors.primaryLight} />

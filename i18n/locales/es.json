@@ -29,7 +29,11 @@
     "networkError": "Sin conexión al servidor. Comprueba tu conexión a Internet e inténtalo de nuevo.",
     "insufficientCredits": "Credits insuficientes",
     "insufficientCreditsMessage": "Tienes {{balance}} Credits, pero necesitas {{required}}.\n\nVe a la Tienda para recargar tus Credits.",
-    "cameraRequired": "Se necesita acceso a la cámara."
+    "cameraRequired": "Se necesita acceso a la cámara.",
+    "errorBoundaryTitle": "Algo salió mal",
+    "errorBoundaryMessage": "La app encontró un error inesperado. Por favor, inténtalo de nuevo.",
+    "errorBoundaryRetry": "Reintentar",
+    "errorBoundaryDetails": "Detalles del error"
   },
 
   "nav": {
@@ -315,6 +319,13 @@
     "noUserData": "Aún no hay datos de usuarios.",
     "netMargin": "Margen neto",
     "activeSubscriptions": "Suscripciones activas: {{active}} / {{total}}"
+  },
+
+  "notifications": {
+    "taskDueTitle": "¡Tarea pendiente!",
+    "taskDueBody": "{{type}} para {{plant}} es para hoy.",
+    "permissionTitle": "Notificaciones",
+    "permissionMessage": "Permite las notificaciones para recibir recordatorios de tus tareas de cuidado."
   },
 
   "minor": {
