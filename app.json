@@ -28,7 +28,8 @@
       "bundleIdentifier": "com.elcaptain.digitalergaertner",
       "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Wird benötigt, um Pflanzen zu fotografieren und per KI zu erkennen."
       }
     },
     "android": {
