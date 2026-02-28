@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing } from '../theme';
+import { colors, spacing } from '../theme/tokens';
 import { t } from '../i18n';
 import useNetworkStatus from '../hooks/useNetworkStatus';
 
@@ -16,7 +16,7 @@ export default function OfflineBanner() {
 
   return (
     <View style={styles.banner}>
-      <Ionicons name="cloud-offline-outline" size={18} color="#fff" />
+      <Ionicons name="cloud-offline-outline" size={18} color={colors.surface} />
       <Text style={styles.text}>{t('common.networkError')}</Text>
     </View>
   );
@@ -27,14 +27,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors?.error || '#D32F2F',
-    paddingVertical: spacing?.sm || 8,
-    paddingHorizontal: spacing?.md || 16,
-    gap: 8,
+    backgroundColor: colors.danger,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
   },
   text: {
-    color: '#fff',
-    fontSize: 13,
+    color: colors.surface,
+    fontSize: 12,
     fontWeight: '600',
     flex: 1,
   },

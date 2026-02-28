@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View,
   TextInput,
-  Button,
   Text,
   Alert,
   Platform,
@@ -14,7 +13,8 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase } from '../supabase';
-import { colors, spacing, radius } from '../theme';
+import { colors, spacing, radius } from '../theme/tokens';
+import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 
 const APP_SCHEME = 'digitalergaertner';
@@ -56,9 +56,7 @@ function parseAuthCallbackUrl(url) {
     const isHttp = parsed.protocol === 'http:' || parsed.protocol === 'https:';
     const combinedPath = isHttp
       ? normalizePath(parsed.pathname)
-      : [normalizePath(parsed.host), normalizePath(parsed.pathname)]
-          .filter(Boolean)
-          .join('/');
+      : [normalizePath(parsed.host), normalizePath(parsed.pathname)].filter(Boolean).join('/');
 
     return {
       path: combinedPath,
@@ -223,7 +221,7 @@ export default function AuthScreen({
         Alert.alert(t('common.error'), msg);
       } else {
         Alert.alert(t('auth.confirmSent'), t('auth.confirmSentMessage'));
-        if (Platform.OS === "web") {
+        if (Platform.OS === 'web') {
           alert(t('auth.confirmSentAlert'));
         }
       }
@@ -303,10 +301,7 @@ export default function AuthScreen({
         return;
       }
 
-      Alert.alert(
-        t('auth.emailSent'),
-        t('auth.emailSentMessage')
-      );
+      Alert.alert(t('auth.emailSent'), t('auth.emailSentMessage'));
     } catch (err) {
       const msg = isNetworkError(err) ? t('common.networkError') : err?.message;
       Alert.alert(t('common.error'), msg || t('auth.resetFailed'));
@@ -355,9 +350,7 @@ export default function AuthScreen({
 
   const renderRecoveryForm = () => (
     <>
-      <Text style={styles.recoveryTitle}>
-        {t('auth.newPasswordLabel')}
-      </Text>
+      <Text style={styles.recoveryTitle}>{t('auth.newPasswordLabel')}</Text>
       <Text>{t('auth.newPassword')}</Text>
       <TextInput
         secureTextEntry
@@ -374,7 +367,9 @@ export default function AuthScreen({
         style={[styles.input, { marginBottom: spacing.lg }]}
         editable={!loading}
       />
-      <Button title={t('auth.saveNewPassword')} onPress={handleUpdatePassword} color={colors.primary} disabled={loading} />
+      <DSButton onPress={handleUpdatePassword} disabled={loading} fullWidth>
+        {t('auth.saveNewPassword')}
+      </DSButton>
     </>
   );
 
@@ -398,7 +393,9 @@ export default function AuthScreen({
         editable={!loading}
       />
 
-      <Button title={t('auth.login')} onPress={handleLogin} color={colors.primary} disabled={loading} />
+      <DSButton onPress={handleLogin} disabled={loading} fullWidth>
+        {t('auth.login')}
+      </DSButton>
       <View style={{ height: spacing.sm }} />
       <TouchableOpacity
         onPress={handleGoogleLogin}
@@ -407,26 +404,30 @@ export default function AuthScreen({
         style={[styles.googleButton, loading && styles.googleButtonDisabled]}
       >
         <View style={styles.googleIconWrap}>
-          <FontAwesome name="google" size={18} color="#DB4437" />
+          <FontAwesome name="google" size={18} color={colors.google} />
         </View>
         <Text style={styles.googleButtonText}>{t('auth.googleSignIn')}</Text>
       </TouchableOpacity>
       <View style={{ height: spacing.sm }} />
-      <Button title={t('auth.signup')} onPress={handleSignup} disabled={loading} />
+      <DSButton variant="secondary" onPress={handleSignup} disabled={loading} fullWidth>
+        {t('auth.signup')}
+      </DSButton>
       <View style={{ height: spacing.sm }} />
-      <Button title={t('auth.forgotPassword')} onPress={handleForgotPassword} disabled={loading} />
+      <DSButton variant="ghost" onPress={handleForgotPassword} disabled={loading} fullWidth>
+        {t('auth.forgotPassword')}
+      </DSButton>
     </>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        {t('auth.appTitle')}
-      </Text>
+      <Text style={styles.title}>{t('auth.appTitle')}</Text>
 
       {recoveryMode ? renderRecoveryForm() : renderAuthForm()}
 
-      {loading || authLoading ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: spacing.lg }} /> : null}
+      {loading || authLoading ? (
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: spacing.lg }} />
+      ) : null}
     </View>
   );
 }
@@ -435,19 +436,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: spacing.xl,
+    padding: spacing.lg,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     marginBottom: spacing.xxl,
     textAlign: 'center',
+    color: colors.textPrimary,
   },
   recoveryTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: spacing.md,
     textAlign: 'center',
+    color: colors.textPrimary,
   },
   input: {
     borderWidth: 1,
@@ -455,6 +458,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     marginBottom: spacing.md,
     padding: spacing.md,
+    fontSize: 14,
+    color: colors.textPrimary,
+    backgroundColor: colors.surface,
   },
   googleButton: {
     minHeight: 44,
@@ -463,6 +469,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     backgroundColor: colors.surface,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

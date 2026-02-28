@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius } from '../theme';
+import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 
 export default class ErrorBoundary extends React.Component {
@@ -32,7 +32,7 @@ export default class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <Ionicons name="warning-outline" size={64} color={colors.error || '#D32F2F'} />
+          <Ionicons name="warning-outline" size={64} color={colors.danger} />
           <Text style={styles.title}>{t('common.errorBoundaryTitle')}</Text>
           <Text style={styles.message}>{t('common.errorBoundaryMessage')}</Text>
 
@@ -72,57 +72,57 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing?.lg || 24,
-    backgroundColor: colors?.background || '#fff',
+    padding: spacing.lg,
+    backgroundColor: colors.background,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    color: colors?.text || '#1B1B1B',
-    marginTop: spacing?.md || 16,
+    color: colors.textPrimary,
+    marginTop: spacing.md,
     textAlign: 'center',
   },
   message: {
-    fontSize: 15,
-    color: colors?.textSecondary || '#666',
-    marginTop: spacing?.sm || 8,
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
     textAlign: 'center',
     lineHeight: 22,
   },
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors?.primary || '#2E7D32',
-    paddingHorizontal: spacing?.lg || 24,
-    paddingVertical: spacing?.sm || 12,
-    borderRadius: radius?.md || 8,
-    marginTop: spacing?.xl || 24,
-    gap: 8,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    marginTop: spacing.xl,
+    gap: spacing.sm,
   },
   retryText: {
-    color: '#fff',
+    color: colors.surface,
     fontSize: 16,
     fontWeight: '600',
   },
   detailsToggle: {
-    marginTop: spacing?.md || 16,
-    padding: spacing?.sm || 8,
+    marginTop: spacing.md,
+    padding: spacing.sm,
   },
   detailsToggleText: {
-    fontSize: 13,
-    color: colors?.textSecondary || '#888',
+    fontSize: 12,
+    color: colors.textTertiary,
   },
   detailsContainer: {
-    marginTop: spacing?.sm || 8,
+    marginTop: spacing.sm,
     maxHeight: 200,
     width: '100%',
-    backgroundColor: '#f5f5f5',
-    borderRadius: radius?.sm || 4,
-    padding: spacing?.sm || 8,
+    backgroundColor: colors.background,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
   },
   detailsText: {
     fontSize: 11,
     fontFamily: Platform?.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: '#333',
+    color: colors.textPrimary,
   },
 });

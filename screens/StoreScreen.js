@@ -1,16 +1,31 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, ActivityIndicator,
-  Alert, StyleSheet, RefreshControl
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchBalance, fetchSubscription, fetchUsageHistory, fetchTransactions } from '../services/creditService';
 import {
-  ONE_TIME_PACKAGES, SUBSCRIPTION_PACKAGES,
-  getOfferings, purchasePackage, openManageSubscriptions, restorePurchases
+  fetchBalance,
+  fetchSubscription,
+  fetchUsageHistory,
+  fetchTransactions,
+} from '../services/creditService';
+import {
+  ONE_TIME_PACKAGES,
+  SUBSCRIPTION_PACKAGES,
+  getOfferings,
+  purchasePackage,
+  openManageSubscriptions,
+  restorePurchases,
 } from '../services/purchaseService';
 import { useNavigation } from '@react-navigation/native';
-import { colors, spacing, radius, shadows } from '../theme';
+import { colors, spacing, radius, shadows } from '../theme/tokens';
 import i18n, { t } from '../i18n';
 
 export default function StoreScreen({ isAdmin }) {
@@ -41,9 +56,14 @@ export default function StoreScreen({ isAdmin }) {
     }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  const onRefresh = () => { setRefreshing(true); loadData(); };
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
 
   // ─── Kauf-Handler ───────────────────────────────────────────
   const handlePurchase = async (pkg) => {
@@ -53,16 +73,14 @@ export default function StoreScreen({ isAdmin }) {
       const offerings = await getOfferings();
       if (!offerings?.current?.availablePackages) {
         // Fallback: Direkt über Product ID (für Development)
-        Alert.alert(
-          t('store.storeUnavailable'),
-          t('store.storeUnavailableMessage'),
-          [{ text: "OK" }]
-        );
+        Alert.alert(t('store.storeUnavailable'), t('store.storeUnavailableMessage'), [
+          { text: 'OK' },
+        ]);
         return;
       }
 
       const rcPackage = offerings.current.availablePackages.find(
-        p => p.product.identifier === pkg.id
+        (p) => p.product.identifier === pkg.id
       );
 
       if (!rcPackage) {
@@ -120,14 +138,22 @@ export default function StoreScreen({ isAdmin }) {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryLight} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.primaryLight}
+        />
+      }
     >
       {/* ─── Balance Header ─────────────────────────────────── */}
       <View style={styles.balanceCard}>
         <Ionicons name="flash" size={32} color={colors.primaryLight} />
         <View style={{ marginLeft: spacing.md, flex: 1 }}>
           <Text style={styles.balanceLabel}>{t('store.balance')}</Text>
-          <Text style={styles.balanceValue}>{balance ?? 0} {t('store.creditsUnit')}</Text>
+          <Text style={styles.balanceValue}>
+            {balance ?? 0} {t('store.creditsUnit')}
+          </Text>
         </View>
         {subscription?.plan && subscription.plan !== 'none' && (
           <View style={styles.subBadge}>
@@ -144,7 +170,8 @@ export default function StoreScreen({ isAdmin }) {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="checkmark-circle" size={20} color={colors.primaryLight} />
             <Text style={styles.activeSubText}>
-              {t('store.subscriptionActive')}: <Text style={{ fontWeight: 'bold' }}>
+              {t('store.subscriptionActive')}:{' '}
+              <Text style={{ fontWeight: 'bold' }}>
                 {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
               </Text>
             </Text>
@@ -161,7 +188,11 @@ export default function StoreScreen({ isAdmin }) {
           style={[styles.tabBtn, tab === 'packages' && styles.tabBtnActive]}
           onPress={() => setTab('packages')}
         >
-          <Ionicons name="cart-outline" size={18} color={tab === 'packages' ? colors.surface : colors.textSecondary} />
+          <Ionicons
+            name="cart-outline"
+            size={18}
+            color={tab === 'packages' ? colors.surface : colors.textSecondary}
+          />
           <Text style={[styles.tabText, tab === 'packages' && styles.tabTextActive]}>
             {t('store.shopTab')}
           </Text>
@@ -170,7 +201,11 @@ export default function StoreScreen({ isAdmin }) {
           style={[styles.tabBtn, tab === 'usage' && styles.tabBtnActive]}
           onPress={() => setTab('usage')}
         >
-          <Ionicons name="bar-chart-outline" size={18} color={tab === 'usage' ? colors.surface : colors.textSecondary} />
+          <Ionicons
+            name="bar-chart-outline"
+            size={18}
+            color={tab === 'usage' ? colors.surface : colors.textSecondary}
+          />
           <Text style={[styles.tabText, tab === 'usage' && styles.tabTextActive]}>
             {t('store.usageTab')}
           </Text>
@@ -181,10 +216,8 @@ export default function StoreScreen({ isAdmin }) {
         <>
           {/* ─── Abo-Pakete ──────────────────────────────────── */}
           <Text style={styles.sectionTitle}>{t('store.subscriptionTitle')}</Text>
-          <Text style={styles.sectionSubtitle}>
-            {t('store.subscriptionSubtitle')}
-          </Text>
-          {SUBSCRIPTION_PACKAGES.map(pkg => (
+          <Text style={styles.sectionSubtitle}>{t('store.subscriptionSubtitle')}</Text>
+          {SUBSCRIPTION_PACKAGES.map((pkg) => (
             <TouchableOpacity
               key={pkg.id}
               style={[styles.packageCard, pkg.popular && styles.packageCardPopular]}
@@ -202,22 +235,27 @@ export default function StoreScreen({ isAdmin }) {
               </View>
               <View style={styles.packageDetails}>
                 <Text style={styles.packageCredits}>
-                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits} {t('store.creditsPerMonth')}
+                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits}{' '}
+                  {t('store.creditsPerMonth')}
                 </Text>
                 <Text style={styles.packageDesc}>{pkg.description}</Text>
               </View>
               {purchasing === pkg.id && (
-                <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginTop: spacing.sm }} />
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primaryLight}
+                  style={{ marginTop: spacing.sm }}
+                />
               )}
             </TouchableOpacity>
           ))}
 
           {/* ─── Einmalkauf-Pakete ────────────────────────────── */}
-          <Text style={[styles.sectionTitle, { marginTop: spacing.xxl }]}>{t('store.oneTimeTitle')}</Text>
-          <Text style={styles.sectionSubtitle}>
-            {t('store.oneTimeSubtitle')}
+          <Text style={[styles.sectionTitle, { marginTop: spacing.xxl }]}>
+            {t('store.oneTimeTitle')}
           </Text>
-          {ONE_TIME_PACKAGES.map(pkg => (
+          <Text style={styles.sectionSubtitle}>{t('store.oneTimeSubtitle')}</Text>
+          {ONE_TIME_PACKAGES.map((pkg) => (
             <TouchableOpacity
               key={pkg.id}
               style={[styles.packageCard, pkg.popular && styles.packageCardPopular]}
@@ -235,12 +273,17 @@ export default function StoreScreen({ isAdmin }) {
               </View>
               <View style={styles.packageDetails}>
                 <Text style={styles.packageCredits}>
-                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits} {t('store.creditsUnit')}
+                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits}{' '}
+                  {t('store.creditsUnit')}
                 </Text>
                 <Text style={styles.packageDesc}>{pkg.description}</Text>
               </View>
               {purchasing === pkg.id && (
-                <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginTop: spacing.sm }} />
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primaryLight}
+                  style={{ marginTop: spacing.sm }}
+                />
               )}
             </TouchableOpacity>
           ))}
@@ -252,9 +295,7 @@ export default function StoreScreen({ isAdmin }) {
 
           <View style={styles.infoBox}>
             <Ionicons name="information-circle-outline" size={18} color={colors.textTertiary} />
-            <Text style={styles.infoText}>
-              {t('store.infoText')}
-            </Text>
+            <Text style={styles.infoText}>{t('store.infoText')}</Text>
           </View>
         </>
       ) : (
@@ -270,13 +311,14 @@ export default function StoreScreen({ isAdmin }) {
             recentUsage.map((item, idx) => (
               <View key={item.id || idx} style={styles.usageRow}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.usageAction}>
-                    {actionLabels[item.action] || item.action}
-                  </Text>
+                  <Text style={styles.usageAction}>{actionLabels[item.action] || item.action}</Text>
                   <Text style={styles.usageDate}>
                     {new Date(item.created_at).toLocaleDateString(i18n.locale, {
-                      day: '2-digit', month: '2-digit', year: 'numeric',
-                      hour: '2-digit', minute: '2-digit'
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
                     })}
                   </Text>
                 </View>
@@ -310,35 +352,56 @@ const styles = StyleSheet.create({
 
   // Balance
   balanceCard: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.surface, margin: spacing.lg, marginBottom: spacing.sm,
-    padding: spacing.xl, borderRadius: radius.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    margin: spacing.lg,
+    marginBottom: spacing.sm,
+    padding: spacing.xl,
+    borderRadius: radius.lg,
     ...shadows.md,
   },
-  balanceLabel: { color: colors.textTertiary, fontSize: 13 },
+  balanceLabel: { color: colors.textTertiary, fontSize: 14 },
   balanceValue: { fontSize: 28, fontWeight: 'bold', color: colors.textPrimary },
   subBadge: {
-    backgroundColor: colors.primarySurface, paddingHorizontal: 10, paddingVertical: spacing.xs, borderRadius: radius.md,
+    backgroundColor: colors.primarySurface,
+    paddingHorizontal: 10,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.md,
   },
   subBadgeText: { color: colors.primary, fontWeight: 'bold', fontSize: 12 },
 
   // Active Sub
   activeSubCard: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: colors.primarySurface, marginHorizontal: spacing.lg, marginBottom: spacing.sm,
-    padding: spacing.md, borderRadius: radius.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.primarySurface,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
   },
-  activeSubText: { color: colors.textPrimary, marginLeft: 6, fontSize: 14 },
-  manageLink: { color: colors.primary, fontWeight: 'bold', fontSize: 13 },
+  activeSubText: { color: colors.textPrimary, marginLeft: spacing.xs, fontSize: 14 },
+  manageLink: { color: colors.primary, fontWeight: 'bold', fontSize: 14 },
 
   // Tabs
   tabRow: {
-    flexDirection: 'row', marginHorizontal: spacing.lg, marginVertical: spacing.sm,
-    backgroundColor: colors.borderLight, borderRadius: radius.md, padding: 3,
+    flexDirection: 'row',
+    marginHorizontal: spacing.lg,
+    marginVertical: spacing.sm,
+    backgroundColor: colors.borderLight,
+    borderRadius: radius.md,
+    padding: spacing.xs,
   },
   tabBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 10, borderRadius: radius.md, gap: 6,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    gap: spacing.sm,
   },
   tabBtnActive: { backgroundColor: colors.primary },
   tabText: { color: colors.textSecondary, fontWeight: '600', fontSize: 14 },
@@ -346,65 +409,95 @@ const styles = StyleSheet.create({
 
   // Section
   sectionTitle: {
-    fontSize: 18, fontWeight: 'bold', color: colors.textPrimary,
-    marginHorizontal: spacing.lg, marginTop: spacing.md, marginBottom: 2,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.xs,
   },
   sectionSubtitle: {
-    fontSize: 13, color: colors.textTertiary, marginHorizontal: spacing.lg, marginBottom: 10,
+    fontSize: 14,
+    color: colors.textTertiary,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
   },
 
   // Packages
   packageCard: {
-    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginBottom: 10,
-    padding: spacing.lg, borderRadius: radius.lg, borderWidth: 1.5, borderColor: colors.borderLight,
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.borderLight,
     ...shadows.sm,
   },
   packageCardPopular: { borderColor: colors.primary, borderWidth: 2 },
   popularBadge: {
-    position: 'absolute', top: -10, right: spacing.lg,
-    backgroundColor: colors.primary, paddingHorizontal: 10, paddingVertical: 3,
+    position: 'absolute',
+    top: -10,
+    right: spacing.lg,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: spacing.xs,
     borderRadius: radius.sm,
   },
-  popularText: { color: colors.surface, fontSize: 11, fontWeight: 'bold' },
+  popularText: { color: colors.surface, fontSize: 12, fontWeight: 'bold' },
   packageHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    marginBottom: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
   },
   packageName: { fontSize: 18, fontWeight: 'bold', color: colors.textPrimary },
-  packagePrice: { fontSize: 17, fontWeight: 'bold', color: colors.primary },
+  packagePrice: { fontSize: 18, fontWeight: 'bold', color: colors.primary },
   packageDetails: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   packageCredits: { fontSize: 14, color: colors.textSecondary },
-  packageDesc: { fontSize: 13, color: colors.textTertiary },
+  packageDesc: { fontSize: 14, color: colors.textTertiary },
 
   // Restore
-  restoreBtn: { alignSelf: 'center', marginTop: spacing.xl, padding: 10 },
-  restoreText: { color: colors.textTertiary, fontSize: 13, textDecorationLine: 'underline' },
+  restoreBtn: { alignSelf: 'center', marginTop: spacing.xl, padding: spacing.md },
+  restoreText: { color: colors.textTertiary, fontSize: 14, textDecorationLine: 'underline' },
 
   // Info Box
   infoBox: {
-    flexDirection: 'row', backgroundColor: colors.background, margin: spacing.lg,
-    padding: spacing.md, borderRadius: radius.md, gap: spacing.sm,
+    flexDirection: 'row',
+    backgroundColor: colors.background,
+    margin: spacing.lg,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    gap: spacing.sm,
   },
   infoText: { flex: 1, color: colors.textTertiary, fontSize: 12, lineHeight: 18 },
 
   // Usage
   usageRow: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginBottom: 6,
-    padding: 14, borderRadius: radius.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
   },
-  usageAction: { fontSize: 15, color: colors.textPrimary, fontWeight: '500' },
-  usageDate: { fontSize: 12, color: colors.textTertiary, marginTop: 2 },
+  usageAction: { fontSize: 14, color: colors.textPrimary, fontWeight: '500' },
+  usageDate: { fontSize: 12, color: colors.textTertiary, marginTop: spacing.xs },
   usageCredits: { fontSize: 16, fontWeight: 'bold', color: colors.danger },
 
   // Empty State
-  emptyState: { alignItems: 'center', padding: 40 },
-  emptyText: { color: colors.textDisabled, marginTop: 10, fontSize: 15 },
+  emptyState: { alignItems: 'center', padding: spacing.xxxl },
+  emptyText: { color: colors.textDisabled, marginTop: spacing.md, fontSize: 14 },
 
   // Admin
   adminBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, marginTop: spacing.xl, padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+    padding: spacing.md,
   },
   adminBtnText: { color: colors.textDisabled, fontSize: 12 },
 });

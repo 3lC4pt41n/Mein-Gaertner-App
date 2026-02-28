@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { fetchTask, completeTask, skipTask } from '../services/taskService';
-import { colors, spacing, radius, shadows } from '../theme';
+import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 
 export default function TaskDetailScreen({ route, navigation }) {
@@ -47,23 +47,43 @@ export default function TaskDetailScreen({ route, navigation }) {
   if (loading) return <ActivityIndicator style={{ marginTop: 50 }} color={colors.primaryLight} />;
 
   return (
-    <ScrollView style={{ padding: 22, backgroundColor: colors.surface }}>
-      <View style={{
-        backgroundColor: colors.background, borderRadius: 18, padding: 18, alignItems: "center", marginBottom: 22
-      }}>
+    <ScrollView style={{ padding: spacing.lg + 6, backgroundColor: colors.surface }}>
+      <View
+        style={{
+          backgroundColor: colors.background,
+          borderRadius: radius.lg,
+          padding: spacing.lg + 2,
+          alignItems: 'center',
+          marginBottom: spacing.lg + 6,
+        }}
+      >
         <Ionicons
           name={
-            task.type === "Gießen" ? "water-outline" :
-              task.type === "Düngen" ? "leaf-outline" :
-                task.type === "Umtopfen" ? "flower-outline" :
-                  task.type === "Healthcheck" ? "pulse-outline" : "calendar-outline"
+            task.type === 'Gießen'
+              ? 'water-outline'
+              : task.type === 'Düngen'
+                ? 'leaf-outline'
+                : task.type === 'Umtopfen'
+                  ? 'flower-outline'
+                  : task.type === 'Healthcheck'
+                    ? 'pulse-outline'
+                    : 'calendar-outline'
           }
           size={52}
           color={colors.primaryLight}
           style={{ marginBottom: spacing.md }}
         />
-        <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: 2, color: colors.textPrimary }}>{task.type}</Text>
-        <Text style={{ color: colors.info, fontWeight: "bold", fontSize: 16 }}>
+        <Text
+          style={{
+            fontWeight: 'bold',
+            fontSize: 22,
+            marginBottom: spacing.xs,
+            color: colors.textPrimary,
+          }}
+        >
+          {task.type}
+        </Text>
+        <Text style={{ color: colors.info, fontWeight: 'bold', fontSize: 18 }}>
           {task.plant?.name || t('common.plantUnknown')}
         </Text>
         <Text style={{ color: colors.textTertiary, marginTop: spacing.sm, fontSize: 14 }}>
@@ -71,61 +91,105 @@ export default function TaskDetailScreen({ route, navigation }) {
         </Text>
       </View>
 
-      {task.note &&
-        <View style={{ marginBottom: 22, padding: 14, backgroundColor: colors.primarySurface, borderRadius: radius.md }}>
-          <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>{t('tasks.noteLabel')}</Text>
+      {task.note && (
+        <View
+          style={{
+            marginBottom: spacing.lg + 6,
+            padding: spacing.md + 2,
+            backgroundColor: colors.primarySurface,
+            borderRadius: radius.md,
+          }}
+        >
+          <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
+            {t('tasks.noteLabel')}
+          </Text>
           <Text style={{ marginTop: spacing.xs, color: colors.textPrimary }}>{task.note}</Text>
         </View>
-      }
+      )}
 
       {/* Status Info */}
-      <View style={{ marginBottom: spacing.lg, flexDirection: "row", alignItems: "center" }}>
+      <View style={{ marginBottom: spacing.lg, flexDirection: 'row', alignItems: 'center' }}>
         <Ionicons
-          name={task.state === "COMPLETED" ? "checkmark-done" :
-            task.state === "DUE" ? "hourglass-outline" :
-              task.state === "SKIPPED" ? "remove-circle-outline" :
-                "help-circle-outline"}
+          name={
+            task.state === 'COMPLETED'
+              ? 'checkmark-done'
+              : task.state === 'DUE'
+                ? 'hourglass-outline'
+                : task.state === 'SKIPPED'
+                  ? 'remove-circle-outline'
+                  : 'help-circle-outline'
+          }
           size={22}
-          color={task.state === "COMPLETED" ? colors.success :
-            task.state === "SKIPPED" ? colors.warning : colors.textSecondary}
+          color={
+            task.state === 'COMPLETED'
+              ? colors.success
+              : task.state === 'SKIPPED'
+                ? colors.warning
+                : colors.textSecondary
+          }
           style={{ marginRight: 6 }}
         />
-        <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>{t('tasks.statusLabel', { state: task.state })}</Text>
+        <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
+          {t('tasks.statusLabel', { state: task.state })}
+        </Text>
       </View>
 
       {/* Action Buttons */}
-      {task.state === "DUE" && (
-        <View style={{ flexDirection: "row", justifyContent: "space-evenly", marginTop: spacing.lg }}>
-          <TouchableOpacity style={{
-            backgroundColor: colors.primary, borderRadius: radius.sm, padding: 14, minWidth: 120, alignItems: "center"
-          }} onPress={handleDone}>
+      {task.state === 'DUE' && (
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: spacing.lg }}
+        >
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.primary,
+              borderRadius: radius.sm,
+              padding: spacing.md + 2,
+              minWidth: 120,
+              alignItems: 'center',
+            }}
+            onPress={handleDone}
+          >
             <Ionicons name="checkmark-circle-outline" size={28} color={colors.surface} />
-            <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('common.done')}</Text>
+            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>{t('common.done')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{
-            backgroundColor: colors.warning, borderRadius: radius.sm, padding: 14, minWidth: 120, alignItems: "center"
-          }} onPress={handleSkip}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.warning,
+              borderRadius: radius.sm,
+              padding: spacing.md + 2,
+              minWidth: 120,
+              alignItems: 'center',
+            }}
+            onPress={handleSkip}
+          >
             <MaterialIcons name="not-interested" size={28} color={colors.surface} />
-            <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('common.skip')}</Text>
+            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>{t('common.skip')}</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* Healthcheck Quickstart */}
-      {task.type === "Healthcheck" && (
+      {task.type === 'Healthcheck' && (
         <TouchableOpacity
           style={{
-            marginTop: 30,
-            alignSelf: "center",
+            marginTop: spacing.xxl + 6,
+            alignSelf: 'center',
             backgroundColor: colors.info,
             borderRadius: radius.lg,
             paddingVertical: spacing.md,
-            paddingHorizontal: 30
+            paddingHorizontal: spacing.xl + 10,
           }}
           onPress={() => navigation.navigate('PlantDetail', { plant: task.plant })}
         >
-          <Ionicons name="pulse" size={20} color={colors.surface} style={{ marginRight: spacing.sm }} />
-          <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('tasks.healthcheckDetails')}</Text>
+          <Ionicons
+            name="pulse"
+            size={20}
+            color={colors.surface}
+            style={{ marginRight: spacing.sm }}
+          />
+          <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+            {t('tasks.healthcheckDetails')}
+          </Text>
         </TouchableOpacity>
       )}
     </ScrollView>

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { TextInput, Button, Card, Title } from 'react-native-paper';
+import { TextInput, Card, Title } from 'react-native-paper';
 import { createLocation } from '../lib/api/locations';
 import { t } from '../i18n';
+import { spacing } from '../theme/tokens';
+import DSButton from '../theme/DSButton';
 
 export default function HomeLocationForm({ afterSave }) {
   const [name, setName] = useState('');
@@ -49,31 +51,31 @@ export default function HomeLocationForm({ afterSave }) {
           label={t('common.name')}
           value={name}
           onChangeText={setName}
-          style={{ marginBottom: 12 }}
+          style={{ marginBottom: spacing.md }}
         />
         <TextInput
           label={t('home.addressPlaceholder')}
           value={address}
           onChangeText={setAddress}
-          style={{ marginBottom: 12 }}
+          style={{ marginBottom: spacing.md }}
         />
         <TextInput
           label={t('home.labelPlaceholder')}
           value={label}
           onChangeText={setLabel}
-          style={{ marginBottom: 12 }}
+          style={{ marginBottom: spacing.md }}
         />
         {/*
         // Falls du noch andere Felder der Tabelle aufnehmen willst:
-        <TextInput label="Land (optional)" value={country} onChangeText={setCountry} style={{ marginBottom: 12 }} />
-        <TextInput label="Ort (optional)" value={locality} onChangeText={setLocality} style={{ marginBottom: 12 }} />
-        <TextInput label="Postleitzahl (optional)" value={postalCode} onChangeText={setPostalCode} style={{ marginBottom: 12 }} />
-        <TextInput label="Breitengrad (optional)" value={lat} onChangeText={setLat} keyboardType="numeric" style={{ marginBottom: 12 }} />
-        <TextInput label="Längengrad (optional)" value={lon} onChangeText={setLon} keyboardType="numeric" style={{ marginBottom: 12 }} />
+        <TextInput label="Land (optional)" value={country} onChangeText={setCountry} style={{ marginBottom: spacing.md }} />
+        <TextInput label="Ort (optional)" value={locality} onChangeText={setLocality} style={{ marginBottom: spacing.md }} />
+        <TextInput label="Postleitzahl (optional)" value={postalCode} onChangeText={setPostalCode} style={{ marginBottom: spacing.md }} />
+        <TextInput label="Breitengrad (optional)" value={lat} onChangeText={setLat} keyboardType="numeric" style={{ marginBottom: spacing.md }} />
+        <TextInput label="Längengrad (optional)" value={lon} onChangeText={setLon} keyboardType="numeric" style={{ marginBottom: spacing.md }} />
         */}
-        <Button mode="contained" onPress={save} loading={loading} disabled={loading}>
+        <DSButton onPress={save} loading={loading} disabled={loading}>
           {t('common.save')}
-        </Button>
+        </DSButton>
       </Card.Content>
     </Card>
   );

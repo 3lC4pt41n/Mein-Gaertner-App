@@ -1,17 +1,23 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, ActivityIndicator,
-  StyleSheet, RefreshControl, Image,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+  RefreshControl,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { getLeaderboard, getMyRank, getMyStats } from '../services/leaderboardService';
-import { colors, spacing, radius } from '../theme';
+import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
 const RANK_ICONS = ['trophy', 'medal', 'ribbon'];
-const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
+const RANK_COLORS = [colors.gold, colors.silver, colors.bronze];
 
 export default function LeaderboardScreen() {
   const TIME_WINDOWS = [
@@ -68,7 +74,7 @@ export default function LeaderboardScreen() {
 
   const renderTabBar = (items, selected, onSelect) => (
     <View style={styles.tabBar}>
-      {items.map(item => (
+      {items.map((item) => (
         <TouchableOpacity
           key={item.key}
           style={[styles.tab, selected === item.key && styles.tabActive]}
@@ -126,7 +132,7 @@ export default function LeaderboardScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name="trophy" size={28} color="#FFD700" />
+        <Ionicons name="trophy" size={28} color={colors.gold} />
         <Text style={styles.headerTitle}> {t('leaderboard.title')}</Text>
       </View>
 
@@ -141,10 +147,14 @@ export default function LeaderboardScreen() {
       ) : (
         <FlatList
           data={leaderboard}
-          keyExtractor={item => item.user_id}
+          keyExtractor={(item) => item.user_id}
           renderItem={renderItem}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryLight} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primaryLight}
+            />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -157,8 +167,11 @@ export default function LeaderboardScreen() {
               {/* Mein Rang Karte */}
               {optedIn && myRank && (
                 <View style={styles.myRankCard}>
-                  <Ionicons name="location" size={20} color={colors.primaryLight} />
-                  <Text style={styles.myRankTitle}> {t('leaderboard.yourRank', { rank: myRank.rank })}</Text>
+                  <Ionicons name="location" size={20} color={colors.primary} />
+                  <Text style={styles.myRankTitle}>
+                    {' '}
+                    {t('leaderboard.yourRank', { rank: myRank.rank })}
+                  </Text>
                   <Text style={styles.myRankScore}>
                     {formatScore(myRank.score)} {t('common.pointsFull')}
                   </Text>
@@ -177,7 +190,11 @@ export default function LeaderboardScreen() {
                     />
                     <StatItem
                       icon="star"
-                      label={scoreType === 'gardener' ? t('leaderboard.gardenerScore') : t('leaderboard.discoveryScore')}
+                      label={
+                        scoreType === 'gardener'
+                          ? t('leaderboard.gardenerScore')
+                          : t('leaderboard.discoveryScore')
+                      }
                       value={formatScore(myStats[statsKey]?.[timeWindow] ?? 0)}
                     />
                     <StatItem
@@ -193,11 +210,9 @@ export default function LeaderboardScreen() {
               {!optedIn && (
                 <View style={styles.optInCard}>
                   <Ionicons name="information-circle-outline" size={24} color={colors.warning} />
-                  <View style={{ flex: 1, marginLeft: 10 }}>
+                  <View style={{ flex: 1, marginLeft: spacing.sm }}>
                     <Text style={styles.optInTitle}>{t('leaderboard.notInRanking')}</Text>
-                    <Text style={styles.optInText}>
-                      {t('leaderboard.optInMessage')}
-                    </Text>
+                    <Text style={styles.optInText}>{t('leaderboard.optInMessage')}</Text>
                   </View>
                 </View>
               )}
@@ -212,7 +227,7 @@ export default function LeaderboardScreen() {
 function StatItem({ icon, label, value }) {
   return (
     <View style={styles.statItem}>
-      <Ionicons name={icon} size={20} color={colors.primaryLight} />
+      <Ionicons name={icon} size={20} color={colors.primary} />
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
@@ -231,7 +246,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 50,
-    paddingBottom: 10,
+    paddingBottom: spacing.sm,
   },
   headerTitle: { fontSize: 22, fontWeight: 'bold', color: colors.textPrimary },
 
@@ -240,7 +255,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: 6,
+    paddingVertical: spacing.xs,
     gap: spacing.sm,
   },
   tab: {
@@ -250,7 +265,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.divider,
   },
   tabActive: { backgroundColor: colors.primary },
-  tabText: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
+  tabText: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
   tabTextActive: { color: colors.surface, fontWeight: '600' },
 
   // List Items
@@ -258,17 +273,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: 10,
+    paddingVertical: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.background,
   },
   listItemMe: { backgroundColor: colors.primarySurface },
   rankCol: { width: 36, alignItems: 'center' },
-  rankText: { fontSize: 15, fontWeight: '600', color: colors.textSecondary },
+  rankText: { fontSize: 14, fontWeight: '600', color: colors.textSecondary },
   avatarCol: { width: 44, alignItems: 'center' },
   avatar: { width: 36, height: 36, borderRadius: 18 },
-  nameCol: { flex: 1, paddingHorizontal: 10 },
-  nameText: { fontSize: 15, color: colors.textPrimary },
+  nameCol: { flex: 1, paddingHorizontal: spacing.sm },
+  nameText: { fontSize: 14, color: colors.textPrimary },
   nameTextMe: { fontWeight: 'bold', color: colors.primary },
   scoreCol: { alignItems: 'flex-end' },
   scoreText: { fontSize: 14, fontWeight: '600', color: colors.textSecondary },
@@ -276,7 +291,7 @@ const styles = StyleSheet.create({
 
   // Empty State
   emptyContainer: { alignItems: 'center', paddingTop: 60 },
-  emptyText: { marginTop: spacing.md, color: colors.textTertiary, fontSize: 15 },
+  emptyText: { marginTop: spacing.md, color: colors.textTertiary, fontSize: 14 },
 
   // My Rank Card
   myRankCard: {
@@ -302,22 +317,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
-  statsTitle: { fontSize: 15, fontWeight: 'bold', color: colors.textPrimary, marginBottom: spacing.md },
+  statsTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
   statsRow: { flexDirection: 'row', justifyContent: 'space-around' },
   statItem: { alignItems: 'center', gap: spacing.xs },
   statValue: { fontSize: 18, fontWeight: 'bold', color: colors.textPrimary },
-  statLabel: { fontSize: 11, color: colors.textTertiary },
+  statLabel: { fontSize: 12, color: colors.textTertiary },
 
   // Opt-in CTA
   optInCard: {
     marginHorizontal: spacing.lg,
     marginTop: spacing.md,
-    padding: 14,
-    backgroundColor: '#FFF8E1',
+    padding: spacing.md,
+    backgroundColor: colors.warningSurface,
     borderRadius: radius.md,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  optInTitle: { fontWeight: 'bold', fontSize: 14, color: '#F57C00' },
-  optInText: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  optInTitle: { fontWeight: 'bold', fontSize: 14, color: colors.warning },
+  optInText: { fontSize: 12, color: colors.textSecondary, marginTop: spacing.xs },
 });

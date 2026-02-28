@@ -15,6 +15,7 @@ export const colors = {
   danger: '#E53935',
   dangerSurface: '#FFEBEE',
   info: '#2196F3',
+  infoSurface: '#E3F2FD',
 
   textPrimary: '#222222',
   textSecondary: '#555555',
@@ -28,6 +29,14 @@ export const colors = {
   borderLight: '#EEEEEE',
   divider: '#F0F0F0',
   overlay: 'rgba(0,0,0,0.25)',
+
+  // Spezialfarben
+  google: '#DB4437',
+  gold: '#FFD700',
+  silver: '#C0C0C0',
+  bronze: '#CD7F32',
+  healthGood: '#8BC34A',
+  completedSurface: '#B2DFDB',
 
   chatUserBubble: '#DCF8C6',
   chatBotBubble: '#F1F0F0',
@@ -61,7 +70,7 @@ export const typography = {
   heading: { fontSize: 22, fontWeight: 'bold', color: '#222222' },
   subheading: { fontSize: 18, fontWeight: '600', color: '#222222' },
   body: { fontSize: 14, color: '#555555' },
-  bodyBold: { fontSize: 14, fontWeight: '600', color: '#333333' },
+  bodyBold: { fontSize: 14, fontWeight: '600', color: '#222222' },
   caption: { fontSize: 12, color: '#888888' },
   label: { fontSize: 14, fontWeight: '600', color: '#555555' },
 };

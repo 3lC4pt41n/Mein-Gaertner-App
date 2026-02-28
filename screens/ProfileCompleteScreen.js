@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   TextInput,
-  Button,
   Alert,
   Text,
   TouchableOpacity,
@@ -12,18 +11,14 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
-import {
-  LANGUAGE_OPTIONS,
-  getLanguageLabel,
-  normalizeLanguage,
-} from '../services/languageService';
+import { LANGUAGE_OPTIONS, getLanguageLabel, normalizeLanguage } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
-import { colors, spacing, radius } from '../theme';
+import { colors, spacing, radius } from '../theme/tokens';
+import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 
 async function createAvatarSignedUrl(path) {
-  const { data, error } = await supabase
-    .storage
+  const { data, error } = await supabase.storage
     .from('chat-images')
     .createSignedUrl(path, 60 * 60 * 24 * 7);
 
@@ -40,9 +35,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
   const [languageOpen, setLanguageOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
-  const [avatarPath, setAvatarPath] = useState(
-    user?.user_metadata?.gardener_avatar_path || ''
-  );
+  const [avatarPath, setAvatarPath] = useState(user?.user_metadata?.gardener_avatar_path || '');
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null);
 
   useEffect(() => {
@@ -103,10 +96,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
     }
 
     if (!avatarPath) {
-      Alert.alert(
-        t('profile.avatarMissing'),
-        t('profile.avatarMissingMessage')
-      );
+      Alert.alert(t('profile.avatarMissing'), t('profile.avatarMissingMessage'));
       return;
     }
 
@@ -138,16 +128,32 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.xl }}>
       <Text>{t('profile.username')}</Text>
-      <TextInput value={username} onChangeText={setUsername} style={{ borderWidth: 1, marginBottom: spacing.md }} />
+      <TextInput
+        value={username}
+        onChangeText={setUsername}
+        style={{ borderWidth: 1, marginBottom: spacing.md }}
+      />
 
       <Text>{t('profile.firstName')}</Text>
-      <TextInput value={firstName} onChangeText={setFirstName} style={{ borderWidth: 1, marginBottom: spacing.md }} />
+      <TextInput
+        value={firstName}
+        onChangeText={setFirstName}
+        style={{ borderWidth: 1, marginBottom: spacing.md }}
+      />
 
       <Text>{t('profile.lastName')}</Text>
-      <TextInput value={lastName} onChangeText={setLastName} style={{ borderWidth: 1, marginBottom: spacing.md }} />
+      <TextInput
+        value={lastName}
+        onChangeText={setLastName}
+        style={{ borderWidth: 1, marginBottom: spacing.md }}
+      />
 
       <Text>{t('profile.country')}</Text>
-      <TextInput value={country} onChangeText={setCountry} style={{ borderWidth: 1, marginBottom: spacing.md }} />
+      <TextInput
+        value={country}
+        onChangeText={setCountry}
+        style={{ borderWidth: 1, marginBottom: spacing.md }}
+      />
 
       <Text>{t('profile.language')}</Text>
       <TouchableOpacity
@@ -165,7 +171,14 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       </TouchableOpacity>
 
       {languageOpen && (
-        <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, marginBottom: spacing.md }}>
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: radius.sm,
+            marginBottom: spacing.md,
+          }}
+        >
           {LANGUAGE_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.code}
@@ -177,7 +190,8 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
                 paddingVertical: spacing.md,
                 paddingHorizontal: spacing.md,
                 backgroundColor: language === option.code ? colors.primarySurface : colors.surface,
-                borderBottomWidth: option.code === LANGUAGE_OPTIONS[LANGUAGE_OPTIONS.length - 1].code ? 0 : 1,
+                borderBottomWidth:
+                  option.code === LANGUAGE_OPTIONS[LANGUAGE_OPTIONS.length - 1].code ? 0 : 1,
                 borderBottomColor: colors.borderLight,
               }}
             >
@@ -190,14 +204,20 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       <Text style={{ fontWeight: 'bold', marginTop: spacing.sm, marginBottom: spacing.sm }}>
         {t('profile.avatarStep')}
       </Text>
-      <Button
-        title={t('profile.avatarButton')}
+      <DSButton
         onPress={handleCaptureAndGenerateAvatar}
         disabled={saving || generatingAvatar}
-      />
+        fullWidth
+      >
+        {t('profile.avatarButton')}
+      </DSButton>
 
       {generatingAvatar ? (
-        <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginTop: spacing.md }} />
+        <ActivityIndicator
+          size="small"
+          color={colors.primaryLight}
+          style={{ marginTop: spacing.md }}
+        />
       ) : null}
 
       {avatarPreviewUrl ? (
@@ -214,16 +234,32 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
           }}
         />
       ) : (
-        <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: spacing.md, marginBottom: spacing.md }}>
+        <Text
+          style={{
+            textAlign: 'center',
+            color: colors.textSecondary,
+            marginTop: spacing.md,
+            marginBottom: spacing.md,
+          }}
+        >
           {t('profile.noAvatar')}
         </Text>
       )}
 
-      <Button title={t('profile.saveProfile')} onPress={handleSave} disabled={saving || generatingAvatar} />
+      <DSButton onPress={handleSave} disabled={saving || generatingAvatar} fullWidth>
+        {t('profile.saveProfile')}
+      </DSButton>
 
       {showSkip && (
         <View style={{ marginTop: spacing.lg }}>
-          <Button title={t('common.skip')} color="gray" onPress={onDone} disabled={saving || generatingAvatar} />
+          <DSButton
+            variant="secondary"
+            onPress={onDone}
+            disabled={saving || generatingAvatar}
+            fullWidth
+          >
+            {t('common.skip')}
+          </DSButton>
         </View>
       )}
     </ScrollView>

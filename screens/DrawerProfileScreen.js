@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, StyleSheet, Switch, TextInput, Alert } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { supabase } from "../supabase";
-import { getLanguageLabel } from "../services/languageService";
-import { colors, spacing, radius } from '../theme';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, Switch, TextInput, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../supabase';
+import { getLanguageLabel } from '../services/languageService';
+import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -15,13 +15,13 @@ export default function DrawerProfileScreen() {
 
   // Leaderboard-Felder
   const [optIn, setOptIn] = useState(false);
-  const [displayName, setDisplayName] = useState("");
+  const [displayName, setDisplayName] = useState('');
 
   useEffect(() => {
     if (authProfile) {
       setProfile(authProfile);
       setOptIn(authProfile?.leaderboard_opt_in ?? false);
-      setDisplayName(authProfile?.public_display_name ?? "");
+      setDisplayName(authProfile?.public_display_name ?? '');
     }
     setLoading(false);
   }, [authProfile]);
@@ -30,13 +30,13 @@ export default function DrawerProfileScreen() {
     if (!profile) return;
     setSaving(true);
     const { error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update({
         leaderboard_opt_in: newOptIn,
         public_display_name: newDisplayName || null,
         leaderboard_visibility: newOptIn ? 'global' : 'private',
       })
-      .eq("id", profile.id);
+      .eq('id', profile.id);
 
     if (error) {
       Alert.alert(t('common.error'), t('profile.saveError'));
@@ -55,11 +55,12 @@ export default function DrawerProfileScreen() {
 
   if (loading) return <ActivityIndicator style={{ marginTop: 40 }} />;
 
-  if (!profile) return (
-    <View style={styles.center}>
-      <Text>{t('profile.noProfile')}</Text>
-    </View>
-  );
+  if (!profile)
+    return (
+      <View style={styles.center}>
+        <Text>{t('profile.noProfile')}</Text>
+      </View>
+    );
 
   return (
     <View style={styles.container}>
@@ -85,9 +86,7 @@ export default function DrawerProfileScreen() {
         <View style={styles.optInRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>{t('profile.showInRanking')}</Text>
-            <Text style={styles.hint}>
-              {t('profile.showInRankingHint')}
-            </Text>
+            <Text style={styles.hint}>{t('profile.showInRankingHint')}</Text>
           </View>
           <Switch
             value={optIn}
@@ -100,9 +99,7 @@ export default function DrawerProfileScreen() {
         {optIn && (
           <View style={styles.displayNameRow}>
             <Text style={styles.label}>{t('profile.displayName')}</Text>
-            <Text style={styles.hint}>
-              {t('profile.displayNameHint')}
-            </Text>
+            <Text style={styles.hint}>{t('profile.displayNameHint')}</Text>
             <TextInput
               style={styles.input}
               value={displayName}
@@ -122,15 +119,15 @@ function ProfileRow({ label, value }) {
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value || "\u2013"}</Text>
+      <Text style={styles.value}>{value || '\u2013'}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
-  header: { alignItems: "center", paddingTop: 30, paddingBottom: 10 },
-  title: { fontWeight: "bold", fontSize: 22, marginTop: spacing.sm },
+  header: { alignItems: 'center', paddingTop: 30, paddingBottom: 10 },
+  title: { fontWeight: 'bold', fontSize: 22, marginTop: spacing.sm, color: colors.textPrimary },
   section: {
     marginHorizontal: spacing.xl,
     marginTop: spacing.xl,
@@ -139,33 +136,36 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.borderLight,
   },
   sectionTitle: {
-    fontWeight: "bold",
-    fontSize: 16,
+    fontWeight: 'bold',
+    fontSize: 18,
     color: colors.primary,
     marginBottom: spacing.md,
   },
   row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingVertical: 6,
   },
   optInRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: spacing.sm,
   },
   displayNameRow: {
     paddingTop: spacing.sm,
   },
   label: { fontSize: 14, color: colors.textSecondary },
-  value: { fontSize: 14, fontWeight: "600" },
+  value: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   hint: { fontSize: 12, color: colors.textTertiary, marginTop: 2 },
   input: {
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.sm,
-    padding: 10,
+    padding: spacing.md,
     marginTop: spacing.sm,
     fontSize: 14,
+    color: colors.textPrimary,
+    backgroundColor: colors.surface,
   },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });

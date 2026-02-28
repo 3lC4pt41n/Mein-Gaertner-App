@@ -1,11 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, ScrollView, ActivityIndicator, StyleSheet,
-  RefreshControl, TouchableOpacity
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+  RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
-import { colors, spacing, radius, shadows } from '../theme';
+import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -39,7 +44,9 @@ export default function AdminDashboardScreen() {
       const totalRevenue = econ.reduce((s, u) => s + parseFloat(u.total_revenue_eur || 0), 0);
       const totalCost = econ.reduce((s, u) => s + parseFloat(u.total_openai_cost_usd || 0), 0);
       const totalUsers = econ.length;
-      const activeSubscribers = econ.filter(u => u.plan_status === 'active' && u.current_plan !== 'none').length;
+      const activeSubscribers = econ.filter(
+        (u) => u.plan_status === 'active' && u.current_plan !== 'none'
+      ).length;
       const totalCreditsUsed = econ.reduce((s, u) => s + (u.total_credits_used || 0), 0);
 
       setTotals({ totalRevenue, totalCost, totalUsers, activeSubscribers, totalCreditsUsed });
@@ -51,9 +58,14 @@ export default function AdminDashboardScreen() {
     }
   }, []);
 
-  useEffect(() => { if (authorized) loadData(); }, [authorized, loadData]);
+  useEffect(() => {
+    if (authorized) loadData();
+  }, [authorized, loadData]);
 
-  const onRefresh = () => { setRefreshing(true); loadData(); };
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
 
   if (authLoading || loading) {
     return (
@@ -67,7 +79,9 @@ export default function AdminDashboardScreen() {
     return (
       <View style={styles.center}>
         <Ionicons name="lock-closed" size={48} color={colors.textDisabled} />
-        <Text style={{ color: colors.textTertiary, marginTop: spacing.md, fontSize: 16 }}>{t('common.noAccess')}</Text>
+        <Text style={{ color: colors.textTertiary, marginTop: spacing.md, fontSize: 16 }}>
+          {t('common.noAccess')}
+        </Text>
       </View>
     );
   }
@@ -75,52 +89,77 @@ export default function AdminDashboardScreen() {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryLight} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.primaryLight}
+        />
+      }
     >
       <Text style={styles.pageTitle}>{t('admin.title')}</Text>
 
       {/* ─── KPI Cards ──────────────────────────────────────── */}
       {totals && (
         <View style={styles.kpiRow}>
+          <KPICard icon="people" color={colors.info} label="User" value={totals.totalUsers} />
           <KPICard
-            icon="people" color={colors.info}
-            label="User" value={totals.totalUsers}
+            icon="card"
+            color={colors.primary}
+            label="Revenue"
+            value={`${totals.totalRevenue.toFixed(2)} €`}
           />
           <KPICard
-            icon="card" color={colors.primary}
-            label="Revenue" value={`${totals.totalRevenue.toFixed(2)} €`}
+            icon="trending-down"
+            color={colors.danger}
+            label="OpenAI Cost"
+            value={`$${totals.totalCost.toFixed(2)}`}
           />
           <KPICard
-            icon="trending-down" color={colors.danger}
-            label="OpenAI Cost" value={`$${totals.totalCost.toFixed(2)}`}
-          />
-          <KPICard
-            icon="flash" color={colors.warning}
-            label="Credits used" value={totals.totalCreditsUsed}
+            icon="flash"
+            color={colors.warning}
+            label="Credits used"
+            value={totals.totalCreditsUsed}
           />
         </View>
       )}
 
       {/* Margin */}
       {totals && (
-        <View style={[styles.marginCard, {
-          backgroundColor: totals.totalRevenue - totals.totalCost > 0 ? colors.primarySurface : colors.dangerSurface
-        }]}>
+        <View
+          style={[
+            styles.marginCard,
+            {
+              backgroundColor:
+                totals.totalRevenue - totals.totalCost > 0
+                  ? colors.primarySurface
+                  : colors.dangerSurface,
+            },
+          ]}
+        >
           <Text style={styles.marginLabel}>{t('admin.netMargin')}</Text>
-          <Text style={[styles.marginValue, {
-            color: totals.totalRevenue - totals.totalCost > 0 ? colors.primary : colors.danger
-          }]}>
+          <Text
+            style={[
+              styles.marginValue,
+              {
+                color: totals.totalRevenue - totals.totalCost > 0 ? colors.primary : colors.danger,
+              },
+            ]}
+          >
             {(totals.totalRevenue - totals.totalCost).toFixed(2)} €
           </Text>
           <Text style={styles.marginSub}>
-            {t('admin.activeSubscriptions', { active: totals.activeSubscribers, total: totals.totalUsers })}
+            {t('admin.activeSubscriptions', {
+              active: totals.activeSubscribers,
+              total: totals.totalUsers,
+            })}
           </Text>
         </View>
       )}
 
       {/* ─── Tab Switcher ───────────────────────────────────── */}
       <View style={styles.tabRow}>
-        {['daily', 'users'].map(tabKey => (
+        {['daily', 'users'].map((tabKey) => (
           <TouchableOpacity
             key={tabKey}
             style={[styles.tabBtn, tab === tabKey && styles.tabBtnActive]}
@@ -150,7 +189,8 @@ export default function AdminDashboardScreen() {
                 </View>
                 <View style={styles.dayBottom}>
                   <Text style={styles.dayCost}>
-                    Credits: {day.credits_consumed} | Cost: ${parseFloat(day.openai_cost_usd || 0).toFixed(3)}
+                    Credits: {day.credits_consumed} | Cost: $
+                    {parseFloat(day.openai_cost_usd || 0).toFixed(3)}
                   </Text>
                 </View>
               </View>
@@ -166,7 +206,8 @@ export default function AdminDashboardScreen() {
             <Text style={styles.emptyText}>{t('admin.noUserData')}</Text>
           ) : (
             userEconomics.map((u, idx) => {
-              const margin = parseFloat(u.total_revenue_eur || 0) - parseFloat(u.total_openai_cost_usd || 0);
+              const margin =
+                parseFloat(u.total_revenue_eur || 0) - parseFloat(u.total_openai_cost_usd || 0);
               return (
                 <View key={u.user_id || idx} style={styles.userCard}>
                   <View style={styles.userHeader}>
@@ -198,9 +239,14 @@ export default function AdminDashboardScreen() {
                     </View>
                     <View style={styles.userStat}>
                       <Text style={styles.userStatLabel}>Margin</Text>
-                      <Text style={[styles.userStatValue, {
-                        color: margin >= 0 ? colors.primary : colors.danger
-                      }]}>
+                      <Text
+                        style={[
+                          styles.userStatValue,
+                          {
+                            color: margin >= 0 ? colors.primary : colors.danger,
+                          },
+                        ]}
+                      >
                         {margin.toFixed(2)} €
                       </Text>
                     </View>
@@ -243,18 +289,27 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   pageTitle: {
-    fontSize: 22, fontWeight: 'bold', color: colors.textPrimary,
-    margin: spacing.lg, marginBottom: spacing.sm,
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    margin: spacing.lg,
+    marginBottom: spacing.sm,
   },
 
   // KPI
   kpiRow: {
-    flexDirection: 'row', flexWrap: 'wrap',
-    marginHorizontal: spacing.md, gap: spacing.sm,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: spacing.md,
+    gap: spacing.sm,
   },
   kpiCard: {
-    flex: 1, minWidth: '45%', backgroundColor: colors.surface,
-    padding: 14, borderRadius: radius.md, alignItems: 'center',
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: colors.surface,
+    padding: 14,
+    borderRadius: radius.md,
+    alignItems: 'center',
     ...shadows.sm,
   },
   kpiValue: { fontSize: 20, fontWeight: 'bold', color: colors.textPrimary, marginTop: spacing.xs },
@@ -262,20 +317,30 @@ const styles = StyleSheet.create({
 
   // Margin
   marginCard: {
-    marginHorizontal: spacing.lg, marginTop: spacing.md, padding: spacing.lg,
-    borderRadius: radius.md, alignItems: 'center',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.md,
+    alignItems: 'center',
   },
-  marginLabel: { fontSize: 13, color: colors.textSecondary },
+  marginLabel: { fontSize: 12, color: colors.textSecondary },
   marginValue: { fontSize: 28, fontWeight: 'bold', marginVertical: spacing.xs },
   marginSub: { fontSize: 12, color: colors.textTertiary },
 
   // Tabs
   tabRow: {
-    flexDirection: 'row', marginHorizontal: spacing.lg, marginTop: spacing.lg,
-    backgroundColor: colors.border, borderRadius: radius.md, padding: 3,
+    flexDirection: 'row',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    backgroundColor: colors.border,
+    borderRadius: radius.md,
+    padding: 3,
   },
   tabBtn: {
-    flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: radius.sm,
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: radius.sm,
   },
   tabBtnActive: { backgroundColor: colors.primary },
   tabText: { color: colors.textSecondary, fontWeight: '600', fontSize: 14 },
@@ -283,33 +348,64 @@ const styles = StyleSheet.create({
 
   // Daily
   dayCard: {
-    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginTop: spacing.sm,
-    padding: 14, borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    padding: 14,
+    borderRadius: radius.md,
   },
-  dayDate: { fontWeight: 'bold', fontSize: 15, color: colors.textPrimary, marginBottom: spacing.sm },
+  dayDate: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
   dayStats: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
-  dayBottom: { marginTop: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, borderColor: colors.borderLight, paddingTop: 6 },
+  dayBottom: {
+    marginTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderLight,
+    paddingTop: 6,
+  },
   dayCost: { fontSize: 12, color: colors.textTertiary },
   statPill: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
-    backgroundColor: colors.background, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderRadius: radius.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.sm,
   },
   statPillValue: { fontWeight: 'bold', fontSize: 14, color: colors.textPrimary },
-  statPillLabel: { fontSize: 11, color: colors.textTertiary },
+  statPillLabel: { fontSize: 12, color: colors.textTertiary },
 
   // Users
   userCard: {
-    backgroundColor: colors.surface, marginHorizontal: spacing.lg, marginTop: spacing.sm,
-    padding: 14, borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    padding: 14,
+    borderRadius: radius.md,
   },
-  userHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm },
+  userHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    gap: spacing.sm,
+  },
   userId: { fontSize: 14, color: colors.textSecondary, fontFamily: 'monospace' },
-  planBadge: { backgroundColor: colors.primarySurface, paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.sm },
+  planBadge: {
+    backgroundColor: colors.primarySurface,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+  },
   planText: { color: colors.primary, fontSize: 12, fontWeight: 'bold' },
   userStats: { flexDirection: 'row', justifyContent: 'space-between' },
   userStat: { alignItems: 'center' },
-  userStatLabel: { fontSize: 11, color: colors.textTertiary },
-  userStatValue: { fontSize: 15, fontWeight: 'bold', color: colors.textPrimary },
+  userStatLabel: { fontSize: 12, color: colors.textTertiary },
+  userStatValue: { fontSize: 14, fontWeight: 'bold', color: colors.textPrimary },
 
-  emptyText: { textAlign: 'center', color: colors.textDisabled, padding: 30, fontSize: 15 },
+  emptyText: { textAlign: 'center', color: colors.textDisabled, padding: 30, fontSize: 14 },
 });

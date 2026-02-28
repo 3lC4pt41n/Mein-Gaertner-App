@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   TextInput,
-  Button,
   Text,
   FlatList,
   KeyboardAvoidingView,
@@ -20,7 +19,8 @@ import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
 import { chatWithBen } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
-import { colors, spacing, radius } from '../theme';
+import { colors, spacing, radius } from '../theme/tokens';
+import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -325,11 +325,14 @@ export default function AssistantScreen() {
             backgroundColor: colors.surface,
           }}
         />
-        <Button
-          title={t('common.send')}
+        <DSButton
           onPress={sendMessage}
           disabled={loading || !input.trim()}
-        />
+          size="sm"
+          style={{ marginLeft: spacing.sm }}
+        >
+          {t('common.send')}
+        </DSButton>
       </View>
     </KeyboardAvoidingView>
   );

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchBalance } from '../services/creditService';
-import { colors, spacing, radius } from '../theme';
+import { colors, spacing, radius } from '../theme/tokens';
 
 export default function CreditBadge({ onPress, style }) {
   const [balance, setBalance] = useState(null);
@@ -29,14 +29,17 @@ export default function CreditBadge({ onPress, style }) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={[{
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: isLow ? colors.warningSurface : colors.primarySurface,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: radius.lg,
-      }, style]}
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: isLow ? colors.warningSurface : colors.primarySurface,
+          paddingHorizontal: spacing.sm,
+          paddingVertical: spacing.xs,
+          borderRadius: radius.lg,
+        },
+        style,
+      ]}
     >
       <Ionicons
         name="flash"
@@ -44,11 +47,13 @@ export default function CreditBadge({ onPress, style }) {
         color={isLow ? colors.warning : colors.primaryLight}
         style={{ marginRight: spacing.xs }}
       />
-      <Text style={{
-        fontWeight: "bold",
-        fontSize: 14,
-        color: isLow ? colors.warning : colors.primary,
-      }}>
+      <Text
+        style={{
+          fontWeight: 'bold',
+          fontSize: 14,
+          color: isLow ? colors.warning : colors.primary,
+        }}
+      >
         {balance}
       </Text>
     </TouchableOpacity>
