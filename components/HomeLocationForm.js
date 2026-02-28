@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TextInput, Button, Card, Title } from 'react-native-paper';
 import { createLocation } from '../lib/api/locations';
+import { t } from '../i18n';
 
 export default function HomeLocationForm({ afterSave }) {
   const [name, setName] = useState('');
@@ -43,26 +44,26 @@ export default function HomeLocationForm({ afterSave }) {
   return (
     <Card>
       <Card.Content>
-        <Title>Neues Zuhause</Title>
+        <Title>{t('home.newHome')}</Title>
         <TextInput
-          label="Name"
+          label={t('common.name')}
           value={name}
           onChangeText={setName}
           style={{ marginBottom: 12 }}
         />
         <TextInput
-          label="Adresse (optional)"
+          label={t('home.addressPlaceholder')}
           value={address}
           onChangeText={setAddress}
           style={{ marginBottom: 12 }}
         />
         <TextInput
-          label="Label (optional, z.B. Zuhause 1, Büro, etc.)"
+          label={t('home.labelPlaceholder')}
           value={label}
           onChangeText={setLabel}
           style={{ marginBottom: 12 }}
         />
-        {/* 
+        {/*
         // Falls du noch andere Felder der Tabelle aufnehmen willst:
         <TextInput label="Land (optional)" value={country} onChangeText={setCountry} style={{ marginBottom: 12 }} />
         <TextInput label="Ort (optional)" value={locality} onChangeText={setLocality} style={{ marginBottom: 12 }} />
@@ -71,7 +72,7 @@ export default function HomeLocationForm({ afterSave }) {
         <TextInput label="Längengrad (optional)" value={lon} onChangeText={setLon} keyboardType="numeric" style={{ marginBottom: 12 }} />
         */}
         <Button mode="contained" onPress={save} loading={loading} disabled={loading}>
-          Speichern
+          {t('common.save')}
         </Button>
       </Card.Content>
     </Card>

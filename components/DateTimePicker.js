@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, Platform } from 'react-native';
 import { colors, spacing, radius } from '../theme';
+import { t } from '../i18n';
 
-const TASK_TYPES = ["Gießen", "Düngen", "Healthcheck", "Sonstiges"];
+const TASK_TYPES = [
+  { key: "Gießen", i18nKey: "watering" },
+  { key: "Düngen", i18nKey: "fertilizing" },
+  { key: "Healthcheck", i18nKey: "healthcheck" },
+  { key: "Sonstiges", i18nKey: "other" },
+];
 
 export default function AddTaskDialog({ onClose, onSave }) {
-  const [type, setType] = useState(TASK_TYPES[0]);
+  const [type, setType] = useState(TASK_TYPES[0].key);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
 
@@ -16,25 +22,25 @@ export default function AddTaskDialog({ onClose, onSave }) {
       backgroundColor: colors.surface, margin: 30, borderRadius: radius.lg,
       padding: 18, shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 10
     }}>
-      <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: spacing.md }}>Neue Aufgabe anlegen</Text>
-      <Text style={{ marginTop: spacing.sm }}>Typ:</Text>
-      {TASK_TYPES.map(t => (
-        <TouchableOpacity key={t} onPress={() => setType(t)}>
+      <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: spacing.md }}>{t('tasks.newTaskCreate')}</Text>
+      <Text style={{ marginTop: spacing.sm }}>{t('tasks.typeLabel')}</Text>
+      {TASK_TYPES.map(tt => (
+        <TouchableOpacity key={tt.key} onPress={() => setType(tt.key)}>
           <Text style={{
-            color: t === type ? colors.primary : colors.textPrimary,
-            fontWeight: t === type ? "bold" : "normal",
+            color: tt.key === type ? colors.primary : colors.textPrimary,
+            fontWeight: tt.key === type ? "bold" : "normal",
             paddingVertical: spacing.xs,
-          }}>{t}</Text>
+          }}>{t('tasks.taskTypes.' + tt.i18nKey)}</Text>
         </TouchableOpacity>
       ))}
-      <Text style={{ marginTop: spacing.sm }}>Datum (YYYY-MM-DD):</Text>
+      <Text style={{ marginTop: spacing.sm }}>{t('tasks.dateLabel')}</Text>
       <TextInput
         value={date}
         onChangeText={setDate}
         placeholder={today}
         style={{ borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, padding: 6 }}
       />
-      <Text style={{ marginTop: spacing.sm }}>Zeit (HH:MM):</Text>
+      <Text style={{ marginTop: spacing.sm }}>{t('tasks.timeLabel')}</Text>
       <TextInput
         value={time}
         onChangeText={setTime}
@@ -42,12 +48,12 @@ export default function AddTaskDialog({ onClose, onSave }) {
         style={{ borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, padding: 6 }}
       />
       <View style={{ flexDirection: "row", marginTop: spacing.md, justifyContent: "flex-end" }}>
-        <Button title="Abbrechen" onPress={onClose} color={colors.textTertiary} />
+        <Button title={t('common.cancel')} onPress={onClose} color={colors.textTertiary} />
         <View style={{ width: spacing.sm }} />
         <Button
-          title="Speichern"
+          title={t('common.save')}
           onPress={() => {
-            if (!date || !time) return alert("Bitte Datum und Zeit angeben!");
+            if (!date || !time) return alert(t('tasks.dateTimeRequired'));
             onSave(type, `${date}T${time}:00`);
           }}
           color={colors.primary}

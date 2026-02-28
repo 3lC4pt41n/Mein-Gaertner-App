@@ -19,6 +19,7 @@ import {
 } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
 import { colors, spacing, radius } from '../theme';
+import { t } from '../i18n';
 
 async function createAvatarSignedUrl(path) {
   const { data, error } = await supabase
@@ -54,7 +55,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
   const handleCaptureAndGenerateAvatar = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Fehler", "Kamerazugriff wird für den Avatar benötigt.");
+      Alert.alert(t('common.error'), t('profile.cameraRequired'));
       return;
     }
 
@@ -69,7 +70,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
 
     const asset = result.assets?.[0];
     if (!asset?.base64) {
-      Alert.alert("Fehler", "Konnte das Foto nicht lesen.");
+      Alert.alert(t('common.error'), t('profile.photoReadError'));
       return;
     }
 
@@ -77,7 +78,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
     try {
       const avatarData = await generateGardenerAvatar(asset.base64, language);
       if (!avatarData?.avatar_path) {
-        throw new Error("Avatar konnte nicht erstellt werden.");
+        throw new Error(t('profile.avatarCreateError'));
       }
 
       const { error: updateError } = await supabase.auth.updateUser({
@@ -87,9 +88,9 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
 
       setAvatarPath(avatarData.avatar_path);
       setAvatarPreviewUrl(avatarData.avatar_url || null);
-      Alert.alert("Erfolg", "Dein Gärtner-Avatar wurde erstellt.");
+      Alert.alert(t('common.success'), t('profile.avatarCreated'));
     } catch (error) {
-      Alert.alert("Fehler", error.message || "Avatar-Generierung fehlgeschlagen.");
+      Alert.alert(t('common.error'), error.message || t('profile.avatarFailed'));
     } finally {
       setGeneratingAvatar(false);
     }
@@ -97,14 +98,14 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
 
   const handleSave = async () => {
     if (!user?.id) {
-      Alert.alert("Fehler", "Kein User ID gefunden.");
+      Alert.alert(t('common.error'), t('profile.noUserId'));
       return;
     }
 
     if (!avatarPath) {
       Alert.alert(
-        "Avatar fehlt",
-        "Bitte nimm ein Foto auf und generiere deinen Gärtner-Avatar."
+        t('profile.avatarMissing'),
+        t('profile.avatarMissingMessage')
       );
       return;
     }
@@ -123,11 +124,11 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
         .eq('id', user.id);
 
       if (error) {
-        Alert.alert("Fehler beim Speichern", error.message);
+        Alert.alert(t('profile.saveProfileError'), error.message);
         return;
       }
 
-      Alert.alert("Erfolg", "Profil gespeichert!");
+      Alert.alert(t('common.success'), t('profile.profileSaved'));
       onDone && onDone();
     } finally {
       setSaving(false);
@@ -136,19 +137,19 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
 
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.xl }}>
-      <Text>Benutzername</Text>
+      <Text>{t('profile.username')}</Text>
       <TextInput value={username} onChangeText={setUsername} style={{ borderWidth: 1, marginBottom: spacing.md }} />
 
-      <Text>Vorname</Text>
+      <Text>{t('profile.firstName')}</Text>
       <TextInput value={firstName} onChangeText={setFirstName} style={{ borderWidth: 1, marginBottom: spacing.md }} />
 
-      <Text>Nachname</Text>
+      <Text>{t('profile.lastName')}</Text>
       <TextInput value={lastName} onChangeText={setLastName} style={{ borderWidth: 1, marginBottom: spacing.md }} />
 
-      <Text>Land</Text>
+      <Text>{t('profile.country')}</Text>
       <TextInput value={country} onChangeText={setCountry} style={{ borderWidth: 1, marginBottom: spacing.md }} />
 
-      <Text>Sprache</Text>
+      <Text>{t('profile.language')}</Text>
       <TouchableOpacity
         onPress={() => setLanguageOpen((prev) => !prev)}
         style={{
@@ -187,10 +188,10 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       )}
 
       <Text style={{ fontWeight: 'bold', marginTop: spacing.sm, marginBottom: spacing.sm }}>
-        Letzter Schritt: Foto aufnehmen & Avatar erstellen
+        {t('profile.avatarStep')}
       </Text>
       <Button
-        title="📷 Foto aufnehmen & Gärtner-Avatar generieren"
+        title={t('profile.avatarButton')}
         onPress={handleCaptureAndGenerateAvatar}
         disabled={saving || generatingAvatar}
       />
@@ -214,15 +215,15 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
         />
       ) : (
         <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: spacing.md, marginBottom: spacing.md }}>
-          Noch kein Avatar erstellt.
+          {t('profile.noAvatar')}
         </Text>
       )}
 
-      <Button title="Profil speichern" onPress={handleSave} disabled={saving || generatingAvatar} />
+      <Button title={t('profile.saveProfile')} onPress={handleSave} disabled={saving || generatingAvatar} />
 
       {showSkip && (
         <View style={{ marginTop: spacing.lg }}>
-          <Button title="Überspringen" color="gray" onPress={onDone} disabled={saving || generatingAvatar} />
+          <Button title={t('common.skip')} color="gray" onPress={onDone} disabled={saving || generatingAvatar} />
         </View>
       )}
     </ScrollView>

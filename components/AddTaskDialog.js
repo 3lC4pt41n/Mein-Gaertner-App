@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { colors, spacing, radius, shadows } from '../theme';
 import DSButton from '../theme/DSButton';
+import { t } from '../i18n';
 
 let NativeDateTimePicker = null;
 try {
@@ -16,20 +17,20 @@ try {
 } catch { /* Web / Expo Go ohne Picker */ }
 
 const TASK_TYPES = [
-  { key: "Gießen", icon: "water-outline", color: "#2196f3" },
-  { key: "Düngen", icon: "leaf-outline", color: "#8BC34A" },
-  { key: "Healthcheck", icon: "pulse-outline", color: "#FF9800" },
-  { key: "Umtopfen", icon: "flower-outline", color: "#9C27B0" },
-  { key: "Sonstiges", icon: "calendar-outline", color: "#607D8B" },
+  { key: "Gießen", i18nKey: "watering", icon: "water-outline", color: "#2196f3" },
+  { key: "Düngen", i18nKey: "fertilizing", icon: "leaf-outline", color: "#8BC34A" },
+  { key: "Healthcheck", i18nKey: "healthcheck", icon: "pulse-outline", color: "#FF9800" },
+  { key: "Umtopfen", i18nKey: "repotting", icon: "flower-outline", color: "#9C27B0" },
+  { key: "Sonstiges", i18nKey: "other", icon: "calendar-outline", color: "#607D8B" },
 ];
 
 const INTERVAL_PRESETS = [
-  { label: "Jeden Tag", days: 1 },
-  { label: "Alle 3 Tage", days: 3 },
-  { label: "Alle 5 Tage", days: 5 },
-  { label: "Jede Woche", days: 7 },
-  { label: "Alle 2 Wochen", days: 14 },
-  { label: "Jeden Monat", days: 30 },
+  { i18nKey: "daily", days: 1 },
+  { i18nKey: "every3days", days: 3 },
+  { i18nKey: "every5days", days: 5 },
+  { i18nKey: "weekly", days: 7 },
+  { i18nKey: "biweekly", days: 14 },
+  { i18nKey: "monthly", days: 30 },
 ];
 
 export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId, initialPlantName }) {
@@ -101,7 +102,7 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
 
   const handleSave = () => {
     if (!selectedPlant) {
-      alert('Bitte wähle eine Pflanze aus!');
+      alert(t('tasks.selectPlantRequired'));
       return;
     }
 
@@ -109,7 +110,7 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
     const effectiveInterval = customInterval ? parseInt(customInterval, 10) : intervalDays;
 
     if (recurring && (!effectiveInterval || effectiveInterval < 1)) {
-      alert('Bitte ein Intervall > 0 angeben!');
+      alert(t('tasks.intervalRequired'));
       return;
     }
 
@@ -137,11 +138,11 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
         }}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: spacing.lg, color: colors.textPrimary }}>
-              Neue Aufgabe
+              {t('tasks.newTask')}
             </Text>
 
             {/* Pflanzenwahl */}
-            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>Pflanze:</Text>
+            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>{t('tasks.plantLabel')}</Text>
             {initialPlantId ? (
               <Text style={{ fontWeight: "bold", color: colors.info, marginBottom: spacing.md, fontSize: 15 }}>
                 {initialPlantName || '?'}
@@ -156,7 +157,7 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                 onPress={() => setShowPlantPicker(!showPlantPicker)}
               >
                 <Text style={{ color: selectedPlant ? colors.textPrimary : colors.textDisabled, fontSize: 15 }}>
-                  {selectedPlant ? selectedPlant.name : "Pflanze auswählen..."}
+                  {selectedPlant ? selectedPlant.name : t('tasks.selectPlant')}
                 </Text>
                 <Ionicons name={showPlantPicker ? "chevron-up" : "chevron-down"} size={18} color={colors.textTertiary} />
               </TouchableOpacity>
@@ -171,7 +172,7 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                   <ActivityIndicator style={{ padding: spacing.lg }} color={colors.primaryLight} />
                 ) : plants.length === 0 ? (
                   <Text style={{ padding: spacing.md, color: colors.textDisabled, textAlign: "center" }}>
-                    Keine Pflanzen vorhanden
+                    {t('tasks.noPlants')}
                   </Text>
                 ) : (
                   <ScrollView nestedScrollEnabled>
@@ -201,32 +202,32 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
             )}
 
             {/* Aufgabentyp */}
-            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>Typ:</Text>
+            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>{t('tasks.typeLabel')}</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: spacing.lg }}>
-              {TASK_TYPES.map(t => (
+              {TASK_TYPES.map(tt => (
                 <TouchableOpacity
-                  key={t.key}
-                  onPress={() => setType(t.key)}
+                  key={tt.key}
+                  onPress={() => setType(tt.key)}
                   style={{
                     flexDirection: "row", alignItems: "center",
                     paddingVertical: 6, paddingHorizontal: 10, marginRight: 6, marginBottom: 6,
                     borderRadius: radius.pill, borderWidth: 1.5,
-                    borderColor: t.key === type ? t.color : colors.border,
-                    backgroundColor: t.key === type ? t.color + '15' : "transparent",
+                    borderColor: tt.key === type ? tt.color : colors.border,
+                    backgroundColor: tt.key === type ? tt.color + '15' : "transparent",
                   }}
                 >
-                  <Ionicons name={t.icon} size={16} color={t.key === type ? t.color : colors.textDisabled} />
+                  <Ionicons name={tt.icon} size={16} color={tt.key === type ? tt.color : colors.textDisabled} />
                   <Text style={{
                     marginLeft: spacing.xs, fontSize: 13,
-                    fontWeight: t.key === type ? "bold" : "normal",
-                    color: t.key === type ? t.color : colors.textSecondary,
-                  }}>{t.key}</Text>
+                    fontWeight: tt.key === type ? "bold" : "normal",
+                    color: tt.key === type ? tt.color : colors.textSecondary,
+                  }}>{t('tasks.taskTypes.' + tt.i18nKey)}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
             {/* Datum & Zeit */}
-            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>Datum & Zeit:</Text>
+            <Text style={{ fontWeight: "600", marginBottom: spacing.xs + 2 }}>{t('tasks.dateTimeLabel')}</Text>
             {Platform.OS === "web" || !NativeDateTimePicker ? (
               <TextInput
                 value={`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${formatLocalTime(date)}`}
@@ -242,7 +243,7 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                   borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
                   padding: spacing.sm, marginBottom: spacing.md,
                 }}
-                placeholder="JJJJ-MM-TT HH:MM"
+                placeholder={t('tasks.datePlaceholder')}
               />
             ) : (
               <View style={{ marginBottom: spacing.md }}>
@@ -305,7 +306,7 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Ionicons name="repeat" size={20} color={recurring ? colors.primaryLight : colors.textDisabled} />
                 <Text style={{ marginLeft: spacing.sm, fontWeight: "600", color: recurring ? colors.primary : colors.textSecondary }}>
-                  Wiederholen
+                  {t('tasks.recurring')}
                 </Text>
               </View>
               <Switch
@@ -337,13 +338,13 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                           fontSize: 12,
                           fontWeight: active ? "bold" : "normal",
                           color: active ? colors.primary : colors.textSecondary,
-                        }}>{p.label}</Text>
+                        }}>{t('tasks.intervals.' + p.i18nKey)}</Text>
                       </TouchableOpacity>
                     );
                   })}
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ color: colors.textSecondary, marginRight: 6 }}>Oder alle</Text>
+                  <Text style={{ color: colors.textSecondary, marginRight: 6 }}>{t('tasks.orEvery')}</Text>
                   <TextInput
                     value={customInterval}
                     onChangeText={val => setCustomInterval(val.replace(/[^0-9]/g, ''))}
@@ -354,17 +355,17 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
                       padding: spacing.xs, width: 50, textAlign: "center",
                     }}
                   />
-                  <Text style={{ color: colors.textSecondary, marginLeft: 6 }}>Tage</Text>
+                  <Text style={{ color: colors.textSecondary, marginLeft: 6 }}>{t('tasks.daysUnit')}</Text>
                 </View>
               </View>
             )}
 
             {/* Notiz */}
-            <Text style={{ fontWeight: "600", marginBottom: spacing.xs }}>Notiz (optional):</Text>
+            <Text style={{ fontWeight: "600", marginBottom: spacing.xs }}>{t('tasks.noteOptional')}</Text>
             <TextInput
               value={note}
               onChangeText={setNote}
-              placeholder="z.B. 'Mit lauwarmem Wasser gießen'"
+              placeholder={t('tasks.notePlaceholder')}
               style={{
                 borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
                 padding: spacing.sm, minHeight: 40, marginBottom: spacing.lg,
@@ -375,10 +376,10 @@ export default function AddTaskDialog({ visible, onClose, onSave, initialPlantId
             {/* Buttons */}
             <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: spacing.sm }}>
               <DSButton variant="ghost" size="sm" onPress={onClose}>
-                Abbrechen
+                {t('common.cancel')}
               </DSButton>
               <DSButton variant="primary" size="sm" onPress={handleSave}>
-                {recurring ? "Serie anlegen" : "Speichern"}
+                {recurring ? t('tasks.createSeries') : t('common.save')}
               </DSButton>
             </View>
           </ScrollView>

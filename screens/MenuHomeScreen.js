@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { View, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { t } from '../i18n';
 
 export default function MenuHomeScreen() {
   const navigation = useNavigation();
@@ -13,8 +14,8 @@ export default function MenuHomeScreen() {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 22 }}>🌱 Menü-Übersicht</Text>
-      <Text>Das Drawer-Menü sollte schon offen sein. Und wenn nicht, Pech gehabt.</Text>
+      <Text style={{ fontSize: 22 }}>{t('minor.menuOverview')}</Text>
+      <Text>{t('minor.menuSubtitle')}</Text>
     </View>
   );
 }

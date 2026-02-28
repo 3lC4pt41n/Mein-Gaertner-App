@@ -11,6 +11,7 @@ import {
 } from '../services/purchaseService';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, radius, shadows } from '../theme';
+import i18n, { t } from '../i18n';
 
 export default function StoreScreen({ isAdmin }) {
   const navigation = useNavigation();
@@ -53,8 +54,8 @@ export default function StoreScreen({ isAdmin }) {
       if (!offerings?.current?.availablePackages) {
         // Fallback: Direkt über Product ID (für Development)
         Alert.alert(
-          "Store nicht verfügbar",
-          "In-App-Käufe sind in der Entwicklungsumgebung nicht verfügbar.\n\nDies funktioniert erst nach dem Build mit EAS und Store-Konfiguration.",
+          t('store.storeUnavailable'),
+          t('store.storeUnavailableMessage'),
           [{ text: "OK" }]
         );
         return;
@@ -65,7 +66,7 @@ export default function StoreScreen({ isAdmin }) {
       );
 
       if (!rcPackage) {
-        Alert.alert("Fehler", `Paket "${pkg.name}" nicht im Store gefunden.`);
+        Alert.alert(t('common.error'), t('store.packageNotFound', { name: pkg.name }));
         return;
       }
 
@@ -73,9 +74,9 @@ export default function StoreScreen({ isAdmin }) {
 
       if (result.success) {
         Alert.alert(
-          "Kauf erfolgreich! 🎉",
-          `${pkg.credits} Credits wurden deinem Konto gutgeschrieben.`,
-          [{ text: "Super!" }]
+          t('store.purchaseSuccess'),
+          t('store.purchaseSuccessMessage', { credits: pkg.credits }),
+          [{ text: t('store.purchaseSuccessButton') }]
         );
         // Balance neu laden (Webhook verarbeitet die Credits)
         setTimeout(loadData, 2000);
@@ -83,7 +84,7 @@ export default function StoreScreen({ isAdmin }) {
         // User hat abgebrochen – nichts tun
       }
     } catch (e) {
-      Alert.alert("Kauf fehlgeschlagen", e.message);
+      Alert.alert(t('store.purchaseFailed'), e.message);
     } finally {
       setPurchasing(null);
     }
@@ -93,19 +94,19 @@ export default function StoreScreen({ isAdmin }) {
   const handleRestore = async () => {
     try {
       await restorePurchases();
-      Alert.alert("Wiederhergestellt", "Deine Käufe wurden wiederhergestellt.");
+      Alert.alert(t('store.restored'), t('store.restoreSuccess'));
       loadData();
     } catch (e) {
-      Alert.alert("Fehler", e.message);
+      Alert.alert(t('common.error'), e.message);
     }
   };
 
   // ─── Action Labels für Usage ───────────────────────────────
   const actionLabels = {
-    plant_scan: '🌱 Pflanze erkannt',
-    plant_details: '📋 Details generiert',
-    healthcheck: '💚 Healthcheck',
-    chat: '💬 Chat mit Ben',
+    plant_scan: t('store.actionLabels.plantScan'),
+    plant_details: t('store.actionLabels.plantDetails'),
+    healthcheck: t('store.actionLabels.healthcheck'),
+    chat: t('store.actionLabels.chat'),
   };
 
   if (loading) {
@@ -125,8 +126,8 @@ export default function StoreScreen({ isAdmin }) {
       <View style={styles.balanceCard}>
         <Ionicons name="flash" size={32} color={colors.primaryLight} />
         <View style={{ marginLeft: spacing.md, flex: 1 }}>
-          <Text style={styles.balanceLabel}>Dein Guthaben</Text>
-          <Text style={styles.balanceValue}>{balance ?? 0} Credits</Text>
+          <Text style={styles.balanceLabel}>{t('store.balance')}</Text>
+          <Text style={styles.balanceValue}>{balance ?? 0} {t('store.creditsUnit')}</Text>
         </View>
         {subscription?.plan && subscription.plan !== 'none' && (
           <View style={styles.subBadge}>
@@ -143,13 +144,13 @@ export default function StoreScreen({ isAdmin }) {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="checkmark-circle" size={20} color={colors.primaryLight} />
             <Text style={styles.activeSubText}>
-              Abo aktiv: <Text style={{ fontWeight: 'bold' }}>
+              {t('store.subscriptionActive')}: <Text style={{ fontWeight: 'bold' }}>
                 {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
               </Text>
             </Text>
           </View>
           <TouchableOpacity onPress={openManageSubscriptions}>
-            <Text style={styles.manageLink}>Verwalten</Text>
+            <Text style={styles.manageLink}>{t('store.manage')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -162,7 +163,7 @@ export default function StoreScreen({ isAdmin }) {
         >
           <Ionicons name="cart-outline" size={18} color={tab === 'packages' ? colors.surface : colors.textSecondary} />
           <Text style={[styles.tabText, tab === 'packages' && styles.tabTextActive]}>
-            Shop
+            {t('store.shopTab')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -171,7 +172,7 @@ export default function StoreScreen({ isAdmin }) {
         >
           <Ionicons name="bar-chart-outline" size={18} color={tab === 'usage' ? colors.surface : colors.textSecondary} />
           <Text style={[styles.tabText, tab === 'usage' && styles.tabTextActive]}>
-            Verbrauch
+            {t('store.usageTab')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -179,9 +180,9 @@ export default function StoreScreen({ isAdmin }) {
       {tab === 'packages' ? (
         <>
           {/* ─── Abo-Pakete ──────────────────────────────────── */}
-          <Text style={styles.sectionTitle}>Monatliches Abo</Text>
+          <Text style={styles.sectionTitle}>{t('store.subscriptionTitle')}</Text>
           <Text style={styles.sectionSubtitle}>
-            33% günstiger als Einmalkauf – jeden Monat frische Credits
+            {t('store.subscriptionSubtitle')}
           </Text>
           {SUBSCRIPTION_PACKAGES.map(pkg => (
             <TouchableOpacity
@@ -192,7 +193,7 @@ export default function StoreScreen({ isAdmin }) {
             >
               {pkg.popular && (
                 <View style={styles.popularBadge}>
-                  <Text style={styles.popularText}>Beliebt</Text>
+                  <Text style={styles.popularText}>{t('store.popular')}</Text>
                 </View>
               )}
               <View style={styles.packageHeader}>
@@ -201,7 +202,7 @@ export default function StoreScreen({ isAdmin }) {
               </View>
               <View style={styles.packageDetails}>
                 <Text style={styles.packageCredits}>
-                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits} Credits/Monat
+                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits} {t('store.creditsPerMonth')}
                 </Text>
                 <Text style={styles.packageDesc}>{pkg.description}</Text>
               </View>
@@ -212,9 +213,9 @@ export default function StoreScreen({ isAdmin }) {
           ))}
 
           {/* ─── Einmalkauf-Pakete ────────────────────────────── */}
-          <Text style={[styles.sectionTitle, { marginTop: spacing.xxl }]}>Einmalkauf</Text>
+          <Text style={[styles.sectionTitle, { marginTop: spacing.xxl }]}>{t('store.oneTimeTitle')}</Text>
           <Text style={styles.sectionSubtitle}>
-            Credits ohne Abo – nie ablaufend
+            {t('store.oneTimeSubtitle')}
           </Text>
           {ONE_TIME_PACKAGES.map(pkg => (
             <TouchableOpacity
@@ -225,7 +226,7 @@ export default function StoreScreen({ isAdmin }) {
             >
               {pkg.popular && (
                 <View style={styles.popularBadge}>
-                  <Text style={styles.popularText}>Bestes Angebot</Text>
+                  <Text style={styles.popularText}>{t('store.bestDeal')}</Text>
                 </View>
               )}
               <View style={styles.packageHeader}>
@@ -234,7 +235,7 @@ export default function StoreScreen({ isAdmin }) {
               </View>
               <View style={styles.packageDetails}>
                 <Text style={styles.packageCredits}>
-                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits} Credits
+                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits} {t('store.creditsUnit')}
                 </Text>
                 <Text style={styles.packageDesc}>{pkg.description}</Text>
               </View>
@@ -246,25 +247,24 @@ export default function StoreScreen({ isAdmin }) {
 
           {/* ─── Restore & Info ───────────────────────────────── */}
           <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore}>
-            <Text style={styles.restoreText}>Käufe wiederherstellen</Text>
+            <Text style={styles.restoreText}>{t('store.restorePurchases')}</Text>
           </TouchableOpacity>
 
           <View style={styles.infoBox}>
             <Ionicons name="information-circle-outline" size={18} color={colors.textTertiary} />
             <Text style={styles.infoText}>
-              Credits werden für KI-Funktionen verbraucht: Pflanzen-Erkennung, Healthchecks und Chat mit Ben.
-              Abo-Credits sind 33% günstiger und werden monatlich aufgefüllt.
+              {t('store.infoText')}
             </Text>
           </View>
         </>
       ) : (
         <>
           {/* ─── Usage Tab ───────────────────────────────────── */}
-          <Text style={styles.sectionTitle}>Letzter Verbrauch</Text>
+          <Text style={styles.sectionTitle}>{t('store.usageTitle')}</Text>
           {recentUsage.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons name="leaf-outline" size={48} color={colors.textDisabled} />
-              <Text style={styles.emptyText}>Noch keine KI-Nutzung</Text>
+              <Text style={styles.emptyText}>{t('store.noUsage')}</Text>
             </View>
           ) : (
             recentUsage.map((item, idx) => (
@@ -274,7 +274,7 @@ export default function StoreScreen({ isAdmin }) {
                     {actionLabels[item.action] || item.action}
                   </Text>
                   <Text style={styles.usageDate}>
-                    {new Date(item.created_at).toLocaleDateString('de-DE', {
+                    {new Date(item.created_at).toLocaleDateString(i18n.locale, {
                       day: '2-digit', month: '2-digit', year: 'numeric',
                       hour: '2-digit', minute: '2-digit'
                     })}
@@ -294,7 +294,7 @@ export default function StoreScreen({ isAdmin }) {
           onPress={() => navigation.navigate('AdminDashboard')}
         >
           <Ionicons name="stats-chart" size={16} color={colors.textTertiary} />
-          <Text style={styles.adminBtnText}>Admin Dashboard</Text>
+          <Text style={styles.adminBtnText}>{t('store.adminDashboard')}</Text>
         </TouchableOpacity>
       )}
 

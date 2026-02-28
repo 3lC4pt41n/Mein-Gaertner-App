@@ -5,6 +5,7 @@ import { fetchTasks, completeTask, skipTask, createTask, createRecurringTask, ca
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AddTaskDialog from '../components/AddTaskDialog';
 import { colors, spacing, radius, shadows, typography } from '../theme';
+import { t } from '../i18n';
 
 function getTaskColor(state, due_at) {
   if (state === "COMPLETED") return "#B2DFDB";
@@ -52,7 +53,7 @@ export default function TaskScreen() {
       const data = await fetchTasks(userId);
       setTasks(data ?? []);
     } catch (e) {
-      Alert.alert("Fehler", e.message);
+      Alert.alert(t('common.error'), e.message);
     } finally {
       setLoading(false);
     }
@@ -63,16 +64,16 @@ export default function TaskScreen() {
       await completeTask(task, userId);
       loadTasks();
     } catch (e) {
-      Alert.alert("Fehler", "Abschließen fehlgeschlagen: " + e.message);
+      Alert.alert(t('common.error'), t('tasks.completeFailed') + ": " + e.message);
     }
   };
 
   const handleSkip = async (task) => {
     try {
-      await skipTask(task, userId, "Manuell übersprungen");
+      await skipTask(task, userId, t('tasks.manualSkipReason'));
       loadTasks();
     } catch (e) {
-      Alert.alert("Fehler", "Überspringen fehlgeschlagen: " + e.message);
+      Alert.alert(t('common.error'), t('tasks.skipFailed') + ": " + e.message);
     }
   };
 
@@ -86,7 +87,7 @@ export default function TaskScreen() {
       setShowAddDialog(false);
       loadTasks();
     } catch (e) {
-      Alert.alert("Fehler", "Aufgabe erstellen fehlgeschlagen: " + e.message);
+      Alert.alert(t('common.error'), t('tasks.createFailed') + ": " + e.message);
     }
   };
 
@@ -142,7 +143,7 @@ export default function TaskScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Text style={{ ...typography.xxl, fontWeight: "bold", textAlign: "center", marginTop: spacing.xl, marginBottom: spacing.md, color: colors.textPrimary }}>
-        Aufgaben & Termine
+        {t('tasks.title')}
       </Text>
       {loading && <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.xxxl }} />}
       <FlatList
@@ -151,7 +152,7 @@ export default function TaskScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: 100 }}
         ListEmptyComponent={!loading && (
-          <Text style={{ textAlign: "center", color: colors.textTertiary, marginTop: 80 }}>Keine Aufgaben offen</Text>
+          <Text style={{ textAlign: "center", color: colors.textTertiary, marginTop: 80 }}>{t('tasks.noTasks')}</Text>
         )}
       />
       <TouchableOpacity

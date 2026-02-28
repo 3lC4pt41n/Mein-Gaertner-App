@@ -8,13 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { fetchLatestHealthcheck } from '../services/plantService';
 import { useNavigation } from '@react-navigation/native';
-import { fetchCurrentUserLanguage, getUiText } from '../services/languageService';
+import { t } from '../i18n';
 import { colors, spacing, radius, shadows } from '../theme';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Nicht eingeloggt");
+  if (!user) throw new Error(t('common.notLoggedIn'));
   const { data: locations, error: locError } = await supabase
     .from("locations")
     .select("id, name")
@@ -63,7 +63,6 @@ export default function PlantDetailScreen({ route }) {
   const details = plant.details || {};
   const [healthcheck, setHealthcheck] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState('de');
 
   // --- Zone-Picker States ---
   const [sections, setSections] = useState([]);
@@ -91,18 +90,11 @@ export default function PlantDetailScreen({ route }) {
     }
   }, [plant.id, plant.zone_id]);
 
-  useEffect(() => {
-    fetchCurrentUserLanguage()
-      .then(setLanguage)
-      .catch(() => setLanguage('de'));
-  }, []);
-
-  const plantDetailsText = getUiText(language).plantDetails;
   const tabNames = [
-    { key: 'overview', label: plantDetailsText.tabOverview },
-    { key: 'care', label: plantDetailsText.tabCare },
-    { key: 'extras', label: plantDetailsText.tabExtras },
-    { key: 'health', label: plantDetailsText.tabHealth },
+    { key: 'overview', label: t('plants.tabOverview') },
+    { key: 'care', label: t('plants.tabCare') },
+    { key: 'extras', label: t('plants.tabExtras') },
+    { key: 'health', label: t('plants.tabHealth') },
   ];
 
   // Aktuelle Zone inkl. Location-Namen laden (ohne PostgREST-Join)
@@ -131,7 +123,7 @@ export default function PlantDetailScreen({ route }) {
       const data = await fetchZonesWithLocationsGrouped();
       setSections(data);
     } catch (err) {
-      Alert.alert("Fehler", err.message);
+      Alert.alert(t('common.error'), err.message);
       setSections([]);
     }
     setZonesLoading(false);
@@ -146,11 +138,11 @@ export default function PlantDetailScreen({ route }) {
         .update({ zone_id: zone.id })
         .eq("id", plant.id);
       if (error) throw error;
-      Alert.alert("Erfolg", `Pflanze jetzt in Zone „${zone.name}"`);
+      Alert.alert(t('common.success'), t('plants.zoneAssigned', { zone: zone.name }));
       setPickerVisible(false);
       setAssignedZone(zone);
     } catch (e) {
-      Alert.alert("Fehler", e.message);
+      Alert.alert(t('common.error'), e.message);
     } finally {
       setSavingZone(false);
     }
@@ -159,12 +151,12 @@ export default function PlantDetailScreen({ route }) {
   // Pflanze aus Zone entfernen (Austreten)
   const removeZone = async () => {
     Alert.alert(
-      "Zone entfernen?",
-      "Soll die Pflanze wirklich aus dieser Zone entfernt werden?",
+      t('plants.removeZoneTitle'),
+      t('plants.removeZoneMessage'),
       [
-        { text: "Abbrechen", style: "cancel" },
+        { text: t('common.cancel'), style: "cancel" },
         {
-          text: "Entfernen",
+          text: t('common.remove'),
           style: "destructive",
           onPress: async () => {
             try {
@@ -174,9 +166,9 @@ export default function PlantDetailScreen({ route }) {
                 .eq("id", plant.id);
               if (error) throw error;
               setAssignedZone(null);
-              Alert.alert("Erfolg", "Zone entfernt. Jetzt kannst du eine neue zuweisen.");
+              Alert.alert(t('common.success'), t('plants.removeZoneSuccess'));
             } catch (e) {
-              Alert.alert("Fehler", e.message);
+              Alert.alert(t('common.error'), e.message);
             }
           }
         }
@@ -195,14 +187,14 @@ export default function PlantDetailScreen({ route }) {
         <Text style={styles.title}>{plant.name}</Text>
         <Text style={styles.subtitle}>{plant.note}</Text>
         {healthcheck && typeof healthcheck.healthscore === "number" &&
-          <ScoreCircle score={healthcheck.healthscore} label={plantDetailsText.healthLabel} />}
+          <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />}
 
         {/* Zugewiesene Zone */}
         {assignedZone ? (
           <View style={{ alignItems: "center", marginVertical: spacing.sm }}>
             <Ionicons name="home-outline" size={18} color={colors.primaryLight} />
             <Text style={{ color: colors.textPrimary, fontWeight: "bold", fontSize: 16 }}>
-              Zugewiesen: {assignedZone.name}
+              {t('plants.assignedTo', { zone: assignedZone.name })}
               {assignedZone.location?.name ? ` (${assignedZone.location.name})` : ""}
             </Text>
             <View style={{ flexDirection: "row", marginTop: spacing.sm }}>
@@ -211,14 +203,14 @@ export default function PlantDetailScreen({ route }) {
                 onPress={() => { setPickerVisible(true); loadZones(); }}
               >
                 <Ionicons name="swap-horizontal" size={18} color={colors.surface} style={{ marginRight: spacing.sm }} />
-                <Text style={{ color: colors.surface, fontWeight: "bold" }}>Zone wechseln</Text>
+                <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('plants.changeZone')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.zoneBtn, { backgroundColor: colors.danger }]}
                 onPress={removeZone}
               >
                 <Ionicons name="close" size={18} color={colors.surface} style={{ marginRight: spacing.sm }} />
-                <Text style={{ color: colors.surface, fontWeight: "bold" }}>Zone entfernen</Text>
+                <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('plants.removeZone')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -228,25 +220,25 @@ export default function PlantDetailScreen({ route }) {
             onPress={() => { setPickerVisible(true); loadZones(); }}
           >
             <Ionicons name="home-outline" size={18} color={colors.surface} style={{ marginRight: spacing.sm }} />
-            <Text style={{ color: colors.surface, fontWeight: "bold" }}>Zone zuweisen</Text>
+            <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('plants.assignZone')}</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* Tabs */}
       <View style={{ flexDirection: "row", marginVertical: spacing.lg, justifyContent: "center" }}>
-        {tabNames.map(t => (
-          <TouchableOpacity key={t.key} onPress={() => setTab(t.key)}
+        {tabNames.map(item => (
+          <TouchableOpacity key={item.key} onPress={() => setTab(item.key)}
             style={{
-              backgroundColor: tab === t.key ? colors.primary : colors.borderLight,
+              backgroundColor: tab === item.key ? colors.primary : colors.borderLight,
               borderRadius: radius.pill, paddingVertical: spacing.sm, paddingHorizontal: 18,
-              marginHorizontal: 2, elevation: tab === t.key ? 2 : 0
+              marginHorizontal: 2, elevation: tab === item.key ? 2 : 0
             }}>
             <Text style={{
-              color: tab === t.key ? colors.surface : colors.textPrimary,
+              color: tab === item.key ? colors.surface : colors.textPrimary,
               fontWeight: "bold",
               fontSize: 16
-            }}>{t.label}</Text>
+            }}>{item.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -256,7 +248,7 @@ export default function PlantDetailScreen({ route }) {
         {tab === 'health' ? (
           loading ? <ActivityIndicator color={colors.primaryLight} /> : healthcheck ? (
             <View>
-              <ScoreCircle score={healthcheck.healthscore} label={plantDetailsText.healthLabel} />
+              <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
               <Text style={{ textAlign: "center", fontSize: 17, marginBottom: spacing.sm, color: colors.textSecondary }}>
                 {healthcheck.summary}
               </Text>
@@ -278,7 +270,7 @@ export default function PlantDetailScreen({ route }) {
                 fontSize: 15, textAlign: "center"
               }}>{healthcheck.recommendation}</Text>
             </View>
-          ) : <Text style={{ color: colors.textDisabled, textAlign: "center" }}>{plantDetailsText.noHealthcheck}</Text>
+          ) : <Text style={{ color: colors.textDisabled, textAlign: "center" }}>{t('plants.noHealthcheck')}</Text>
         ) : details[tab] ? (
           <View>
             {Object.entries(details[tab]).map(([k, v]) => (
@@ -289,7 +281,7 @@ export default function PlantDetailScreen({ route }) {
             ))}
           </View>
         ) : (
-          <Text style={{ color: colors.textDisabled }}>{plantDetailsText.noDetails}</Text>
+          <Text style={{ color: colors.textDisabled }}>{t('plants.noDetails')}</Text>
         )}
       </View>
 
@@ -302,7 +294,7 @@ export default function PlantDetailScreen({ route }) {
       >
         <TouchableOpacity style={styles.overlay} activeOpacity={1} onPressOut={() => setPickerVisible(false)}>
           <TouchableOpacity style={styles.sheet} activeOpacity={1}>
-            <Text style={styles.sheetTitle}>Zone auswählen</Text>
+            <Text style={styles.sheetTitle}>{t('plants.selectZone')}</Text>
             {zonesLoading ? (
               <ActivityIndicator size="large" color={colors.primaryLight} />
             ) : sections.length ? (
@@ -322,10 +314,10 @@ export default function PlantDetailScreen({ route }) {
                     <Text style={styles.zoneName}>{item.name} <Text style={styles.zoneType}>({item.type})</Text></Text>
                   </TouchableOpacity>
                 )}
-                ListEmptyComponent={<Text style={{ textAlign: "center", color: colors.textSecondary }}>Keine Zonen angelegt.</Text>}
+                ListEmptyComponent={<Text style={{ textAlign: "center", color: colors.textSecondary }}>{t('home.noZones')}</Text>}
               />
             ) : (
-              <Text style={{ textAlign: "center", color: colors.textSecondary }}>Keine Zonen angelegt.</Text>
+              <Text style={{ textAlign: "center", color: colors.textSecondary }}>{t('home.noZones')}</Text>
             )}
             {savingZone && <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.md }} />}
           </TouchableOpacity>

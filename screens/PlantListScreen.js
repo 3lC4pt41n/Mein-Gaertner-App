@@ -8,6 +8,7 @@ import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
 import { fetchPlants, fetchHealthchecks } from '../services/plantService';
 import { colors, spacing, radius, shadows } from '../theme';
+import { t } from '../i18n';
 
 // Native animation auf Android aktivieren
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -52,10 +53,10 @@ async function getGroupedPlants(userId) {
 
 export default function PlantListScreen() {
   const [index, setIndex] = useState(0);
-  const [routes] = useState([
-    { key: 'all', title: 'Alle' },
-    { key: 'homes', title: 'Zuhause' }
-  ]);
+  const routes = [
+    { key: 'all', title: t('plants.tabAll') },
+    { key: 'homes', title: t('plants.tabHomes') }
+  ];
   const [allPlants, setAllPlants] = useState([]);
   const [grouped, setGrouped] = useState([]);
   const [userId, setUserId] = useState(null);
@@ -83,7 +84,7 @@ export default function PlantListScreen() {
       setAllPlants(await getAllPlants(userId));
       setGrouped(await getGroupedPlants(userId));
     } catch (e) {
-      Alert.alert("Fehler", e.message);
+      Alert.alert(t('common.error'), e.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -116,7 +117,7 @@ export default function PlantListScreen() {
           <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.textPrimary }}>{item.name || "?"}</Text>
           <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: spacing.xs }}>{item.note}</Text>
           {item.healthscore !== null &&
-            <Text style={{ fontSize: 13, color: colors.primary, marginTop: 2 }}>Healthscore: {item.healthscore} / 100</Text>
+            <Text style={{ fontSize: 13, color: colors.primary, marginTop: 2 }}>{t('plants.healthscoreValue', { score: item.healthscore })}</Text>
           }
         </View>
       </View>
@@ -137,7 +138,7 @@ export default function PlantListScreen() {
         }} />
       }
       ListEmptyComponent={!loading && (
-        <Text style={{ textAlign: "center", color: colors.textTertiary, marginTop: 100 }}>Noch keine Pflanzen gespeichert.</Text>
+        <Text style={{ textAlign: "center", color: colors.textTertiary, marginTop: 100 }}>{t('plants.noPlants')}</Text>
       )}
     />
   );
@@ -152,7 +153,7 @@ export default function PlantListScreen() {
     loading ? <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: 30 }} /> :
     <ScrollView style={{ flex: 1 }}>
       {grouped.length === 0 &&
-        <Text style={{ textAlign: "center", color: colors.textTertiary, marginTop: 100 }}>Noch keine Standorte/Zonen/Pflanzen.</Text>
+        <Text style={{ textAlign: "center", color: colors.textTertiary, marginTop: 100 }}>{t('plants.noLocations')}</Text>
       }
       {grouped.map(location => (
         <View key={location.id} style={{ marginBottom: spacing.xxl }}>
@@ -161,7 +162,7 @@ export default function PlantListScreen() {
             <View key={zone.id} style={{ marginLeft: spacing.md, marginBottom: 6, backgroundColor: colors.background, borderRadius: radius.sm }}>
               <TouchableOpacity onPress={() => toggleZone(zone.id)} style={{ flexDirection: "row", alignItems: "center", padding: spacing.md }}>
                 <Text style={{ fontSize: 16, fontWeight: "600", flex: 1, color: colors.textPrimary }}>{zone.name}</Text>
-                <Text style={{ color: colors.textTertiary }}>{zone.plants.length} Pflanzen</Text>
+                <Text style={{ color: colors.textTertiary }}>{t('plants.plantsCount', { count: zone.plants.length })}</Text>
                 <Text style={{ marginLeft: spacing.sm, color: colors.primary }}>{expandedZones[zone.id] ? "▲" : "▼"}</Text>
               </TouchableOpacity>
               {expandedZones[zone.id] && zone.plants.length > 0 && (
@@ -183,14 +184,14 @@ export default function PlantListScreen() {
                           <Text style={{ fontSize: 15, fontWeight: "bold", color: colors.textPrimary }}>{plant.name}</Text>
                           <Text style={{ fontSize: 13, color: colors.textSecondary }}>{plant.note}</Text>
                           {plant.healthscore !== null &&
-                            <Text style={{ fontSize: 12, color: colors.primary }}>Healthscore: {plant.healthscore} / 100</Text>
+                            <Text style={{ fontSize: 12, color: colors.primary }}>{t('plants.healthscoreValue', { score: plant.healthscore })}</Text>
                           }
                         </View>
                       </View>
                     </TouchableOpacity>
                   ))}
                   {zone.plants.length === 0 &&
-                    <Text style={{ color: colors.textTertiary, marginLeft: spacing.sm, marginBottom: spacing.md }}>Keine Pflanzen in dieser Zone.</Text>
+                    <Text style={{ color: colors.textTertiary, marginLeft: spacing.sm, marginBottom: spacing.md }}>{t('plants.noZonePlants')}</Text>
                   }
                 </View>
               )}

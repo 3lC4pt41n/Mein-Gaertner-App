@@ -9,6 +9,7 @@ import { logDiscovery } from '../services/discoveryService';
 import { supabase } from '../supabase';
 import { useNavigation } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
+import { t } from '../i18n';
 import { colors, spacing, radius } from '../theme';
 
 export default function AddPlantScreen() {
@@ -41,8 +42,8 @@ export default function AddPlantScreen() {
   const handleCreditError = (e) => {
     if (e.code === 'INSUFFICIENT_CREDITS') {
       Alert.alert(
-        "Nicht genügend Credits",
-        `Du hast ${e.balance} Credits, brauchst aber ${e.required}.\n\nGehe zum Shop, um Credits nachzuladen.`,
+        t('common.insufficientCredits'),
+        t('common.insufficientCreditsMessage', { balance: e.balance, required: e.required }),
         [{ text: "OK" }]
       );
       return true;
@@ -54,7 +55,7 @@ export default function AddPlantScreen() {
   const takePhotoAndRecognize = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      alert("Kamerazugriff wird benötigt.");
+      alert(t('common.cameraRequired'));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -73,13 +74,13 @@ export default function AddPlantScreen() {
       try {
         // Edge Function aufrufen statt direkt OpenAI
         const data = await recognizePlant(base64, language);
-        setName(data.name || "Kein Name erkannt");
-        setNote(data.note || "Kein Hinweis vorhanden");
+        setName(data.name || t('plants.noNameRecognized'));
+        setNote(data.note || t('plants.noNoteAvailable'));
         if (typeof data.balance === 'number') setBalance(data.balance);
       } catch (e) {
         if (!handleCreditError(e)) {
-          Alert.alert("Fehler", e.message || "Unbekannter Fehler");
-          setNote("Fehler: " + (e.message || "Verbindung fehlgeschlagen"));
+          Alert.alert(t('common.error'), e.message || t('plants.unknownError'));
+          setNote(t('common.error') + ": " + (e.message || t('plants.scanError')));
           setName("");
         }
       }
@@ -90,7 +91,7 @@ export default function AddPlantScreen() {
   // Details, Healthcheck holen + speichern + zur Detailansicht navigieren
   const handleSaveAndDetails = async () => {
     if (!userId || !imageUri || !name) {
-      Alert.alert("Fehler", "Bitte Foto, Name und Nutzer prüfen!");
+      Alert.alert(t('common.error'), t('plants.photoUserNameCheck'));
       return;
     }
     setLoading(true);
@@ -100,7 +101,7 @@ export default function AddPlantScreen() {
     try {
       uploadedUrl = await uploadPlantImage(imageUri, userId);
     } catch (e) {
-      Alert.alert("Fehler beim Hochladen", e.message);
+      Alert.alert(t('plants.uploadError'), e.message);
       setLoading(false);
       return;
     }
@@ -114,7 +115,7 @@ export default function AddPlantScreen() {
     } catch (e) {
       if (handleCreditError(e)) { setLoading(false); return; }
       details = null;
-      Alert.alert("Warnung", "Konnte Detaildaten nicht laden.");
+      Alert.alert(t('common.warning'), t('plants.detailsWarning'));
     }
 
     // 2. Healthcheck über Edge Function holen
@@ -126,7 +127,7 @@ export default function AddPlantScreen() {
     } catch (e) {
       if (handleCreditError(e)) { setLoading(false); return; }
       healthcheck = null;
-      Alert.alert("Warnung", "Healthcheck konnte nicht erzeugt werden.");
+      Alert.alert(t('common.warning'), t('plants.healthcheckWarning'));
     }
 
     // 3. Pflanze speichern
@@ -179,7 +180,7 @@ export default function AddPlantScreen() {
         params: { plant }
       });
     } catch (err) {
-      Alert.alert("Fehler", "Speichern fehlgeschlagen: " + err.message);
+      Alert.alert(t('common.error'), t('plants.saveFailedMessage', { message: err.message }));
     } finally {
       setLoading(false);
     }
@@ -194,7 +195,7 @@ export default function AddPlantScreen() {
           padding: spacing.md, borderRadius: radius.sm, marginBottom: spacing.md,
           flexDirection: "row", justifyContent: "space-between", alignItems: "center"
         }}>
-          <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>Credits</Text>
+          <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>{t('common.credits')}</Text>
           <Text style={{
             fontWeight: "bold", fontSize: 16,
             color: balance > 20 ? colors.primaryLight : colors.warning
@@ -204,18 +205,18 @@ export default function AddPlantScreen() {
         </View>
       )}
 
-      <Button title="📷 Foto aufnehmen & erkennen" onPress={takePhotoAndRecognize} />
+      <Button title={t('plants.scanButton')} onPress={takePhotoAndRecognize} />
       {imageUri && (
         <Image
           source={{ uri: imageUri }}
           style={{ width: "100%", height: 200, marginVertical: spacing.md, borderRadius: radius.sm }}
         />
       )}
-      <Text style={{ fontWeight: "bold", marginTop: spacing.md }}>Name:</Text>
-      <TextInput value={name} onChangeText={setName} placeholder="z. B. Monstera deliciosa" style={{ borderWidth: 1, padding: spacing.sm, marginBottom: spacing.md }} />
-      <Text style={{ fontWeight: "bold" }}>Hinweis:</Text>
-      <TextInput multiline value={note} onChangeText={setNote} placeholder="Pflegehinweis von GPT" style={{ borderWidth: 1, padding: spacing.sm, minHeight: 80 }} />
-      <Button title="✅ Pflanze speichern & Details anzeigen" onPress={handleSaveAndDetails} disabled={!name || loading} />
+      <Text style={{ fontWeight: "bold", marginTop: spacing.md }}>{t('plants.nameLabel')}</Text>
+      <TextInput value={name} onChangeText={setName} placeholder={t('plants.namePlaceholder')} style={{ borderWidth: 1, padding: spacing.sm, marginBottom: spacing.md }} />
+      <Text style={{ fontWeight: "bold" }}>{t('plants.noteLabel')}</Text>
+      <TextInput multiline value={note} onChangeText={setNote} placeholder={t('plants.notePlaceholder')} style={{ borderWidth: 1, padding: spacing.sm, minHeight: 80 }} />
+      <Button title={t('plants.saveAndDetails')} onPress={handleSaveAndDetails} disabled={!name || loading} />
       {loading && <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginVertical: spacing.xl }} />}
     </ScrollView>
   );

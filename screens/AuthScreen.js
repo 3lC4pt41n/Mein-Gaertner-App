@@ -15,9 +15,8 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { colors, spacing, radius } from '../theme';
+import { t } from '../i18n';
 
-const NETWORK_ERROR_MSG =
-  "Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung und versuche es erneut.";
 const APP_SCHEME = 'digitalergaertner';
 const OAUTH_REDIRECT_PATH = 'auth/callback';
 const PASSWORD_RESET_PATH = 'auth/reset-password';
@@ -167,11 +166,11 @@ export default function AuthScreen({
         }
 
         if (isRecovery) {
-          Alert.alert("Passwort zurücksetzen", "Bitte gib jetzt dein neues Passwort ein.");
+          Alert.alert(t('auth.resetPassword'), t('auth.resetPasswordMessage'));
         }
       } catch (err) {
-        const msg = isNetworkError(err) ? NETWORK_ERROR_MSG : err?.message;
-        Alert.alert("Fehler", msg || "Authentifizierung fehlgeschlagen.");
+        const msg = isNetworkError(err) ? t('common.networkError') : err?.message;
+        Alert.alert(t('common.error'), msg || t('auth.authFailed'));
       } finally {
         clearWebAuthParams();
         setAuthLoading(false);
@@ -209,28 +208,28 @@ export default function AuthScreen({
   // Registrierung per Email
   const handleSignup = async () => {
     if (!email || !password) {
-      Alert.alert("Fehler", "E-Mail und Passwort dürfen nicht leer sein.");
+      Alert.alert(t('common.error'), t('auth.emptyFields'));
       return;
     }
     if (password.length < 6) {
-      Alert.alert("Fehler", "Das Passwort muss mindestens 6 Zeichen lang sein.");
+      Alert.alert(t('common.error'), t('auth.passwordMinLength'));
       return;
     }
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) {
-        const msg = isNetworkError(error) ? NETWORK_ERROR_MSG : error.message;
-        Alert.alert("Fehler", msg);
+        const msg = isNetworkError(error) ? t('common.networkError') : error.message;
+        Alert.alert(t('common.error'), msg);
       } else {
-        Alert.alert("Bestätigungslink verschickt", "Bitte prüfe deine Email und bestätige sie.");
+        Alert.alert(t('auth.confirmSent'), t('auth.confirmSentMessage'));
         if (Platform.OS === "web") {
-          alert("Bestätigungslink verschickt!");
+          alert(t('auth.confirmSentAlert'));
         }
       }
     } catch (err) {
-      const msg = isNetworkError(err) ? NETWORK_ERROR_MSG : err.message;
-      Alert.alert("Fehler", msg);
+      const msg = isNetworkError(err) ? t('common.networkError') : err.message;
+      Alert.alert(t('common.error'), msg);
     } finally {
       setLoading(false);
     }
@@ -239,19 +238,19 @@ export default function AuthScreen({
   // Login per Email
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Fehler", "E-Mail und Passwort dürfen nicht leer sein.");
+      Alert.alert(t('common.error'), t('auth.emptyFields'));
       return;
     }
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        const msg = isNetworkError(error) ? NETWORK_ERROR_MSG : error.message;
-        Alert.alert("Fehler", msg);
+        const msg = isNetworkError(error) ? t('common.networkError') : error.message;
+        Alert.alert(t('common.error'), msg);
       }
     } catch (err) {
-      const msg = isNetworkError(err) ? NETWORK_ERROR_MSG : err.message;
-      Alert.alert("Fehler", msg);
+      const msg = isNetworkError(err) ? t('common.networkError') : err.message;
+      Alert.alert(t('common.error'), msg);
     } finally {
       setLoading(false);
     }
@@ -270,8 +269,8 @@ export default function AuthScreen({
       });
 
       if (error) {
-        const msg = isNetworkError(error) ? NETWORK_ERROR_MSG : error.message;
-        Alert.alert("Fehler", msg);
+        const msg = isNetworkError(error) ? t('common.networkError') : error.message;
+        Alert.alert(t('common.error'), msg);
         return;
       }
 
@@ -279,8 +278,8 @@ export default function AuthScreen({
         await Linking.openURL(data.url);
       }
     } catch (err) {
-      const msg = isNetworkError(err) ? NETWORK_ERROR_MSG : err?.message;
-      Alert.alert("Fehler", msg || "Google Login fehlgeschlagen.");
+      const msg = isNetworkError(err) ? t('common.networkError') : err?.message;
+      Alert.alert(t('common.error'), msg || t('auth.googleLoginFailed'));
     } finally {
       setLoading(false);
     }
@@ -288,7 +287,7 @@ export default function AuthScreen({
 
   const handleForgotPassword = async () => {
     if (!email) {
-      Alert.alert("Fehler", "Bitte gib zuerst deine E-Mail-Adresse ein.");
+      Alert.alert(t('common.error'), t('auth.forgotPasswordPrompt'));
       return;
     }
 
@@ -299,18 +298,18 @@ export default function AuthScreen({
       });
 
       if (error) {
-        const msg = isNetworkError(error) ? NETWORK_ERROR_MSG : error.message;
-        Alert.alert("Fehler", msg);
+        const msg = isNetworkError(error) ? t('common.networkError') : error.message;
+        Alert.alert(t('common.error'), msg);
         return;
       }
 
       Alert.alert(
-        "E-Mail versendet",
-        "Wir haben dir einen Link zum Zurücksetzen des Passworts geschickt."
+        t('auth.emailSent'),
+        t('auth.emailSentMessage')
       );
     } catch (err) {
-      const msg = isNetworkError(err) ? NETWORK_ERROR_MSG : err?.message;
-      Alert.alert("Fehler", msg || "Passwort-Reset fehlgeschlagen.");
+      const msg = isNetworkError(err) ? t('common.networkError') : err?.message;
+      Alert.alert(t('common.error'), msg || t('auth.resetFailed'));
     } finally {
       setLoading(false);
     }
@@ -318,17 +317,17 @@ export default function AuthScreen({
 
   const handleUpdatePassword = async () => {
     if (!newPassword || !confirmNewPassword) {
-      Alert.alert("Fehler", "Bitte fülle beide Passwort-Felder aus.");
+      Alert.alert(t('common.error'), t('auth.passwordFieldsRequired'));
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert("Fehler", "Das Passwort muss mindestens 6 Zeichen lang sein.");
+      Alert.alert(t('common.error'), t('auth.passwordMinLength'));
       return;
     }
 
     if (newPassword !== confirmNewPassword) {
-      Alert.alert("Fehler", "Die Passwörter stimmen nicht überein.");
+      Alert.alert(t('common.error'), t('auth.passwordsMismatch'));
       return;
     }
 
@@ -336,19 +335,19 @@ export default function AuthScreen({
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) {
-        const msg = isNetworkError(error) ? NETWORK_ERROR_MSG : error.message;
-        Alert.alert("Fehler", msg);
+        const msg = isNetworkError(error) ? t('common.networkError') : error.message;
+        Alert.alert(t('common.error'), msg);
         return;
       }
 
-      Alert.alert("Erfolg", "Dein Passwort wurde erfolgreich aktualisiert.");
+      Alert.alert(t('common.success'), t('auth.passwordUpdated'));
       setNewPassword('');
       setConfirmNewPassword('');
       setRecoveryMode(false);
       onPasswordResetComplete?.();
     } catch (err) {
-      const msg = isNetworkError(err) ? NETWORK_ERROR_MSG : err?.message;
-      Alert.alert("Fehler", msg || "Passwort konnte nicht aktualisiert werden.");
+      const msg = isNetworkError(err) ? t('common.networkError') : err?.message;
+      Alert.alert(t('common.error'), msg || t('auth.passwordUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -357,9 +356,9 @@ export default function AuthScreen({
   const renderRecoveryForm = () => (
     <>
       <Text style={styles.recoveryTitle}>
-        Neues Passwort setzen
+        {t('auth.newPasswordLabel')}
       </Text>
-      <Text>Neues Passwort</Text>
+      <Text>{t('auth.newPassword')}</Text>
       <TextInput
         secureTextEntry
         value={newPassword}
@@ -367,7 +366,7 @@ export default function AuthScreen({
         style={styles.input}
         editable={!loading}
       />
-      <Text>Passwort wiederholen</Text>
+      <Text>{t('auth.confirmPassword')}</Text>
       <TextInput
         secureTextEntry
         value={confirmNewPassword}
@@ -375,13 +374,13 @@ export default function AuthScreen({
         style={[styles.input, { marginBottom: spacing.lg }]}
         editable={!loading}
       />
-      <Button title="Neues Passwort speichern" onPress={handleUpdatePassword} color={colors.primary} disabled={loading} />
+      <Button title={t('auth.saveNewPassword')} onPress={handleUpdatePassword} color={colors.primary} disabled={loading} />
     </>
   );
 
   const renderAuthForm = () => (
     <>
-      <Text>Email</Text>
+      <Text>{t('auth.email')}</Text>
       <TextInput
         autoCapitalize="none"
         keyboardType="email-address"
@@ -390,7 +389,7 @@ export default function AuthScreen({
         style={styles.input}
         editable={!loading}
       />
-      <Text>Passwort</Text>
+      <Text>{t('auth.password')}</Text>
       <TextInput
         secureTextEntry
         value={password}
@@ -399,7 +398,7 @@ export default function AuthScreen({
         editable={!loading}
       />
 
-      <Button title="Einloggen" onPress={handleLogin} color={colors.primary} disabled={loading} />
+      <Button title={t('auth.login')} onPress={handleLogin} color={colors.primary} disabled={loading} />
       <View style={{ height: spacing.sm }} />
       <TouchableOpacity
         onPress={handleGoogleLogin}
@@ -410,19 +409,19 @@ export default function AuthScreen({
         <View style={styles.googleIconWrap}>
           <FontAwesome name="google" size={18} color="#DB4437" />
         </View>
-        <Text style={styles.googleButtonText}>Sign in with Google</Text>
+        <Text style={styles.googleButtonText}>{t('auth.googleSignIn')}</Text>
       </TouchableOpacity>
       <View style={{ height: spacing.sm }} />
-      <Button title="Registrieren" onPress={handleSignup} disabled={loading} />
+      <Button title={t('auth.signup')} onPress={handleSignup} disabled={loading} />
       <View style={{ height: spacing.sm }} />
-      <Button title="Passwort vergessen" onPress={handleForgotPassword} disabled={loading} />
+      <Button title={t('auth.forgotPassword')} onPress={handleForgotPassword} disabled={loading} />
     </>
   );
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        Digitaler Gärtner
+        {t('auth.appTitle')}
       </Text>
 
       {recoveryMode ? renderRecoveryForm() : renderAuthForm()}

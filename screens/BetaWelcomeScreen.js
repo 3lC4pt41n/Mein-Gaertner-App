@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme';
+import { t } from '../i18n';
 
 const { width } = Dimensions.get('window');
 
@@ -13,9 +14,9 @@ export default function BetaWelcomeScreen({ onDone }) {
         <View style={styles.iconCircle}>
           <Ionicons name="leaf" size={48} color={colors.surface} />
         </View>
-        <Text style={styles.title}>Willkommen beim Beta-Test!</Text>
+        <Text style={styles.title}>{t('beta.title')}</Text>
         <Text style={styles.subtitle}>
-          Schön, dass du dabei bist. Hier ist alles, was du wissen musst.
+          {t('beta.subtitle')}
         </Text>
       </View>
 
@@ -23,16 +24,16 @@ export default function BetaWelcomeScreen({ onDone }) {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Ionicons name="flash" size={24} color={colors.primaryLight} />
-          <Text style={styles.cardTitle}>So funktionieren Credits</Text>
+          <Text style={styles.cardTitle}>{t('beta.creditsTitle')}</Text>
         </View>
         <Text style={styles.cardText}>
-          Jede KI-Funktion in der App verbraucht Credits. Dein Guthaben siehst du jederzeit im Shop-Tab.
+          {t('beta.creditsDesc')}
         </Text>
         <View style={styles.creditTable}>
-          <CreditRow icon="camera" label="Pflanze scannen" credits="12" />
-          <CreditRow icon="document-text" label="Details generieren" credits="15" />
-          <CreditRow icon="heart" label="Healthcheck" credits="8" />
-          <CreditRow icon="chatbox" label="Chat mit Ben" credits="3" />
+          <CreditRow icon="camera" label={t('beta.scanLabel')} credits="12" />
+          <CreditRow icon="document-text" label={t('beta.detailsLabel')} credits="15" />
+          <CreditRow icon="heart" label={t('beta.healthcheckLabel')} credits="8" />
+          <CreditRow icon="chatbox" label={t('beta.chatLabel')} credits="3" />
         </View>
       </View>
 
@@ -40,10 +41,10 @@ export default function BetaWelcomeScreen({ onDone }) {
       <View style={[styles.card, styles.giftCard]}>
         <View style={styles.cardHeader}>
           <Ionicons name="gift" size={24} color="#FF9800" />
-          <Text style={styles.cardTitle}>100 Gratis-Credits</Text>
+          <Text style={styles.cardTitle}>{t('beta.giftTitle')}</Text>
         </View>
         <Text style={styles.cardText}>
-          Als Beta-Tester bekommst du 100 Credits geschenkt – das reicht für etwa 10 Pflanzen-Scans mit Healthcheck oder viele Chats mit Ben.
+          {t('beta.giftDesc')}
         </Text>
       </View>
 
@@ -51,10 +52,10 @@ export default function BetaWelcomeScreen({ onDone }) {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Ionicons name="cart" size={24} color="#2196F3" />
-          <Text style={styles.cardTitle}>Credits nachladen</Text>
+          <Text style={styles.cardTitle}>{t('beta.reloadTitle')}</Text>
         </View>
         <Text style={styles.cardText}>
-          Wenn deine Credits aufgebraucht sind, kannst du im Shop neue kaufen – als Einmalkauf oder günstiger im Monats-Abo.
+          {t('beta.reloadDesc')}
         </Text>
       </View>
 
@@ -62,17 +63,17 @@ export default function BetaWelcomeScreen({ onDone }) {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Ionicons name="chatbubbles" size={24} color="#9C27B0" />
-          <Text style={styles.cardTitle}>Dein Feedback zählt!</Text>
+          <Text style={styles.cardTitle}>{t('beta.feedbackTitle')}</Text>
         </View>
         <Text style={styles.cardText}>
-          Als Beta-Tester hilfst du uns, die App besser zu machen. Sag uns, was dir gefällt und was fehlt – wir lesen alles!
+          {t('beta.feedbackDesc')}
         </Text>
       </View>
 
       {/* CTA */}
       <TouchableOpacity style={styles.ctaButton} onPress={onDone}>
         <Ionicons name="leaf" size={20} color={colors.surface} style={{ marginRight: spacing.sm }} />
-        <Text style={styles.ctaText}>Los geht's!</Text>
+        <Text style={styles.ctaText}>{t('beta.ctaButton')}</Text>
       </TouchableOpacity>
 
       <View style={{ height: 40 }} />

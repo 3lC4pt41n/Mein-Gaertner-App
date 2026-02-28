@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { colors, spacing, radius, shadows } from '../theme';
+import { t } from '../i18n';
 
 // Admin Dashboard – nur für User mit is_admin = true.
 // Doppelte Absicherung: Frontend-Check + DB-Views geben nur
@@ -78,7 +79,7 @@ export default function AdminDashboardScreen() {
     return (
       <View style={styles.center}>
         <Ionicons name="lock-closed" size={48} color={colors.textDisabled} />
-        <Text style={{ color: colors.textTertiary, marginTop: spacing.md, fontSize: 16 }}>Kein Zugriff</Text>
+        <Text style={{ color: colors.textTertiary, marginTop: spacing.md, fontSize: 16 }}>{t('common.noAccess')}</Text>
       </View>
     );
   }
@@ -88,7 +89,7 @@ export default function AdminDashboardScreen() {
       style={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryLight} />}
     >
-      <Text style={styles.pageTitle}>Admin Dashboard</Text>
+      <Text style={styles.pageTitle}>{t('admin.title')}</Text>
 
       {/* ─── KPI Cards ──────────────────────────────────────── */}
       {totals && (
@@ -117,28 +118,28 @@ export default function AdminDashboardScreen() {
         <View style={[styles.marginCard, {
           backgroundColor: totals.totalRevenue - totals.totalCost > 0 ? colors.primarySurface : colors.dangerSurface
         }]}>
-          <Text style={styles.marginLabel}>Netto-Margin</Text>
+          <Text style={styles.marginLabel}>{t('admin.netMargin')}</Text>
           <Text style={[styles.marginValue, {
             color: totals.totalRevenue - totals.totalCost > 0 ? colors.primary : colors.danger
           }]}>
             {(totals.totalRevenue - totals.totalCost).toFixed(2)} €
           </Text>
           <Text style={styles.marginSub}>
-            Abos aktiv: {totals.activeSubscribers} / {totals.totalUsers}
+            {t('admin.activeSubscriptions', { active: totals.activeSubscribers, total: totals.totalUsers })}
           </Text>
         </View>
       )}
 
       {/* ─── Tab Switcher ───────────────────────────────────── */}
       <View style={styles.tabRow}>
-        {['daily', 'users'].map(t => (
+        {['daily', 'users'].map(tabKey => (
           <TouchableOpacity
-            key={t}
-            style={[styles.tabBtn, tab === t && styles.tabBtnActive]}
-            onPress={() => setTab(t)}
+            key={tabKey}
+            style={[styles.tabBtn, tab === tabKey && styles.tabBtnActive]}
+            onPress={() => setTab(tabKey)}
           >
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
-              {t === 'daily' ? 'Tagesstatistik' : 'User-Details'}
+            <Text style={[styles.tabText, tab === tabKey && styles.tabTextActive]}>
+              {tabKey === 'daily' ? t('admin.dailyTab') : t('admin.usersTab')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -148,7 +149,7 @@ export default function AdminDashboardScreen() {
       {tab === 'daily' && (
         <>
           {dailyStats.length === 0 ? (
-            <Text style={styles.emptyText}>Noch keine Daten vorhanden.</Text>
+            <Text style={styles.emptyText}>{t('admin.noData')}</Text>
           ) : (
             dailyStats.map((day, idx) => (
               <View key={day.day || idx} style={styles.dayCard}>
@@ -174,7 +175,7 @@ export default function AdminDashboardScreen() {
       {tab === 'users' && (
         <>
           {userEconomics.length === 0 ? (
-            <Text style={styles.emptyText}>Noch keine User-Daten.</Text>
+            <Text style={styles.emptyText}>{t('admin.noUserData')}</Text>
           ) : (
             userEconomics.map((u, idx) => {
               const margin = parseFloat(u.total_revenue_eur || 0) - parseFloat(u.total_openai_cost_usd || 0);

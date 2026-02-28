@@ -7,22 +7,23 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { getLeaderboard, getMyRank, getMyStats } from '../services/leaderboardService';
 import { colors, spacing, radius } from '../theme';
-
-const TIME_WINDOWS = [
-  { key: 'week', label: 'Woche' },
-  { key: 'month', label: 'Monat' },
-  { key: 'all', label: 'Gesamt' },
-];
-
-const SCORE_TYPES = [
-  { key: 'gardener', label: 'Gärtner' },
-  { key: 'discovery', label: 'Entdecker' },
-];
+import { t } from '../i18n';
 
 const RANK_ICONS = ['trophy', 'medal', 'ribbon'];
 const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
 export default function LeaderboardScreen() {
+  const TIME_WINDOWS = [
+    { key: 'week', label: t('leaderboard.timeWindows.week') },
+    { key: 'month', label: t('leaderboard.timeWindows.month') },
+    { key: 'all', label: t('leaderboard.timeWindows.all') },
+  ];
+
+  const SCORE_TYPES = [
+    { key: 'gardener', label: t('leaderboard.scoreTypes.gardener') },
+    { key: 'discovery', label: t('leaderboard.scoreTypes.discovery') },
+  ];
+
   const [userId, setUserId] = useState(null);
   const [timeWindow, setTimeWindow] = useState('week');
   const [scoreType, setScoreType] = useState('gardener');
@@ -118,12 +119,12 @@ export default function LeaderboardScreen() {
         </View>
         <View style={styles.nameCol}>
           <Text style={[styles.nameText, isMe && styles.nameTextMe]} numberOfLines={1}>
-            {item.display_name || 'Anonym'}
+            {item.display_name || t('common.anonymous')}
           </Text>
         </View>
         <View style={styles.scoreCol}>
           <Text style={[styles.scoreText, isMe && styles.scoreTextMe]}>
-            {formatScore(item.score)} Pkt
+            {formatScore(item.score)} {t('common.points')}
           </Text>
         </View>
       </View>
@@ -137,7 +138,7 @@ export default function LeaderboardScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Ionicons name="trophy" size={28} color="#FFD700" />
-        <Text style={styles.headerTitle}> Rangliste</Text>
+        <Text style={styles.headerTitle}> {t('leaderboard.title')}</Text>
       </View>
 
       {/* Zeitfenster-Tabs */}
@@ -159,7 +160,7 @@ export default function LeaderboardScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="leaf-outline" size={48} color={colors.textDisabled} />
-              <Text style={styles.emptyText}>Noch keine Einträge im Ranking.</Text>
+              <Text style={styles.emptyText}>{t('leaderboard.noEntries')}</Text>
             </View>
           }
           ListFooterComponent={
@@ -168,9 +169,9 @@ export default function LeaderboardScreen() {
               {optedIn && myRank && (
                 <View style={styles.myRankCard}>
                   <Ionicons name="location" size={20} color={colors.primaryLight} />
-                  <Text style={styles.myRankTitle}> Dein Rang: #{myRank.rank}</Text>
+                  <Text style={styles.myRankTitle}> {t('leaderboard.yourRank', { rank: myRank.rank })}</Text>
                   <Text style={styles.myRankScore}>
-                    {formatScore(myRank.score)} Punkte
+                    {formatScore(myRank.score)} {t('common.pointsFull')}
                   </Text>
                 </View>
               )}
@@ -178,21 +179,21 @@ export default function LeaderboardScreen() {
               {/* Eigene Stats (immer sichtbar) */}
               {myStats && (
                 <View style={styles.statsCard}>
-                  <Text style={styles.statsTitle}>Deine Statistiken</Text>
+                  <Text style={styles.statsTitle}>{t('leaderboard.yourStats')}</Text>
                   <View style={styles.statsRow}>
                     <StatItem
                       icon="flame"
-                      label="Streak"
-                      value={`${myStats.streak} Tage`}
+                      label={t('leaderboard.streak')}
+                      value={t('leaderboard.streakValue', { days: myStats.streak })}
                     />
                     <StatItem
                       icon="star"
-                      label={scoreType === 'gardener' ? 'Gärtner-Score' : 'Entdecker-Score'}
+                      label={scoreType === 'gardener' ? t('leaderboard.gardenerScore') : t('leaderboard.discoveryScore')}
                       value={formatScore(myStats[statsKey]?.[timeWindow] ?? 0)}
                     />
                     <StatItem
                       icon="leaf"
-                      label="Entdeckt"
+                      label={t('leaderboard.discovered')}
                       value={myStats.totalDiscoveries}
                     />
                   </View>
@@ -204,9 +205,9 @@ export default function LeaderboardScreen() {
                 <View style={styles.optInCard}>
                   <Ionicons name="information-circle-outline" size={24} color={colors.warning} />
                   <View style={{ flex: 1, marginLeft: 10 }}>
-                    <Text style={styles.optInTitle}>Nicht im Ranking?</Text>
+                    <Text style={styles.optInTitle}>{t('leaderboard.notInRanking')}</Text>
                     <Text style={styles.optInText}>
-                      Aktiviere die Rangliste in deinem Profil, um dich mit anderen zu messen.
+                      {t('leaderboard.optInMessage')}
                     </Text>
                   </View>
                 </View>

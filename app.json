@@ -48,7 +48,8 @@
     "plugins": [
       "@react-native-community/datetimepicker",
       "expo-font",
-      "expo-updates"
+      "expo-updates",
+      "expo-localization"
     ],
     "extra": {
       "eas": {

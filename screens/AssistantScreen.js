@@ -9,6 +9,7 @@ import { chatWithBen } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { colors, spacing, radius } from '../theme';
+import { t } from '../i18n';
 
 const GARDENER_NAME = "Ben";
 
@@ -86,8 +87,8 @@ export default function AssistantScreen() {
   const handleCreditError = (e) => {
     if (e.code === 'INSUFFICIENT_CREDITS') {
       Alert.alert(
-        "Nicht genügend Credits",
-        `Du hast ${e.balance} Credits, brauchst aber ${e.required}.\n\nGehe zum Shop, um Credits nachzuladen.`,
+        t('common.insufficientCredits'),
+        t('common.insufficientCreditsMessage', { balance: e.balance, required: e.required }),
         [{ text: "OK" }]
       );
       return true;
@@ -99,7 +100,7 @@ export default function AssistantScreen() {
   const takeAndSendPhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      alert("Kamerazugriff wird benötigt.");
+      alert(t('common.cameraRequired'));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -113,16 +114,16 @@ export default function AssistantScreen() {
       try {
         // Upload gibt jetzt Dateinamen zurueck (nicht Signed URL)
         const imagePath = await uploadChatImage(result.assets[0].uri, user_id);
-        if (!imagePath) throw new Error("Upload fehlgeschlagen");
+        if (!imagePath) throw new Error(t('assistant.uploadFailed'));
         // Signed URL fuer Anzeige generieren
         const displayUrl = await getChatImageUrl(imagePath);
-        const msg = { user_id, sender: "user", content: "[Bild]", image_path: imagePath, image_url: displayUrl };
+        const msg = { user_id, sender: "user", content: t('assistant.imageMessage'), image_path: imagePath, image_url: displayUrl };
         await saveMessage(msg);
         setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
         await getBenAnswer("", displayUrl);
       } catch (e) {
         if (!handleCreditError(e)) {
-          Alert.alert("Fehler", e.message);
+          Alert.alert(t('common.error'), e.message);
         }
       } finally {
         setLoading(false);
@@ -136,7 +137,7 @@ export default function AssistantScreen() {
       console.log('[Ben] Calling chatWithBen...', { text, image_url, language });
       const data = await chatWithBen(text, image_url, language);
       console.log('[Ben] Response:', JSON.stringify(data));
-      const content = data?.content || "\u{1F914} Keine Antwort.";
+      const content = data?.content || t('assistant.noAnswer');
       if (typeof data?.balance === 'number') setBalance(data.balance);
 
       const msg = { user_id, sender: GARDENER_NAME, content };
@@ -145,7 +146,7 @@ export default function AssistantScreen() {
     } catch (e) {
       console.error('[Ben] Error:', e.message, e);
       if (!handleCreditError(e)) {
-        Alert.alert("Fehler", e.message);
+        Alert.alert(t('common.error'), e.message);
       }
     }
   };
@@ -196,7 +197,7 @@ export default function AssistantScreen() {
         {item.image_url &&
           <Image source={{ uri: item.image_url }} style={{ width: 150, height: 150, borderRadius: 10, marginBottom: spacing.xs }} resizeMode="cover" />}
         <Text>{item.content}</Text>
-        <Text style={{ fontSize: 10, color: colors.textTertiary }}>{item.sender === "user" ? "Du" : GARDENER_NAME}</Text>
+        <Text style={{ fontSize: 10, color: colors.textTertiary }}>{item.sender === "user" ? t('assistant.you') : GARDENER_NAME}</Text>
       </View>
     </View>
   );
@@ -210,7 +211,7 @@ export default function AssistantScreen() {
           padding: spacing.sm, flexDirection: "row", justifyContent: "space-between",
           alignItems: "center", paddingHorizontal: spacing.lg,
         }}>
-          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>Credits</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.credits')}</Text>
           <Text style={{
             fontWeight: "bold",
             color: balance > 10 ? colors.primary : colors.warning
@@ -236,7 +237,7 @@ export default function AssistantScreen() {
                 <ActivityIndicator size="small" color={colors.primaryLight} />
               ) : (
                 <Text style={{ color: colors.primary, fontSize: 13 }}>
-                  Ältere Nachrichten laden...
+                  {t('assistant.loadOlder')}
                 </Text>
               )}
             </TouchableOpacity>
@@ -251,10 +252,10 @@ export default function AssistantScreen() {
         <TextInput
           value={input}
           onChangeText={setInput}
-          placeholder="Schreib Ben eine Nachricht …"
+          placeholder={t('assistant.placeholder')}
           style={{ flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, padding: spacing.sm, backgroundColor: colors.surface }}
         />
-        <Button title="Senden" onPress={sendMessage} disabled={loading || !input.trim()} />
+        <Button title={t('common.send')} onPress={sendMessage} disabled={loading || !input.trim()} />
       </View>
     </KeyboardAvoidingView>
   );

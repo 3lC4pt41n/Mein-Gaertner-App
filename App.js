@@ -22,37 +22,38 @@ import LeaderboardScreen from "./screens/LeaderboardScreen";
 import { supabase } from "./supabase";
 import { initPurchases } from "./services/purchaseService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUiText, normalizeLanguage } from "./services/languageService";
+import { normalizeLanguage } from "./services/languageService";
+import i18n, { t } from "./i18n";
 import { colors } from "./theme";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 // ---------- Plant Stack ---------------------------
-function PlantStack({ menuLabels }) {
+function PlantStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Meine Pflanzen"
         component={PlantListScreen}
-        options={{ title: menuLabels.plantStackTitle }}
+        options={{ title: t('nav.plantStackTitle') }}
       />
       <Stack.Screen
         name="PlantDetail"
         component={PlantDetailScreen}
-        options={{ title: menuLabels.plantDetailsTitle }}
+        options={{ title: t('nav.plantDetailsTitle') }}
       />
       <Stack.Screen
         name="TaskDetail"
         component={TaskDetailScreen}
-        options={{ title: menuLabels.taskTitle }}
+        options={{ title: t('nav.taskTitle') }}
       />
     </Stack.Navigator>
   );
 }
 
 // ---------- Task Stack (Aufgaben + Detail) --------
-function TaskStack({ menuLabels }) {
+function TaskStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -63,19 +64,19 @@ function TaskStack({ menuLabels }) {
       <Stack.Screen
         name="TaskDetail"
         component={TaskDetailScreen}
-        options={{ title: menuLabels.taskTitle || 'Aufgabe' }}
+        options={{ title: t('nav.taskTitle') }}
       />
     </Stack.Navigator>
   );
 }
 
 // ---------- Shop Stack (Store + Admin Dashboard) ---
-function ShopStack({ menuLabels, isAdmin }) {
+function ShopStack({ isAdmin }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="StoreMain"
-        options={{ title: menuLabels.shop }}
+        options={{ title: t('nav.shop') }}
       >
         {(props) => <StoreScreen {...props} isAdmin={isAdmin} />}
       </Stack.Screen>
@@ -83,7 +84,7 @@ function ShopStack({ menuLabels, isAdmin }) {
         <Stack.Screen
           name="AdminDashboard"
           component={AdminDashboardScreen}
-          options={{ title: menuLabels.adminTitle }}
+          options={{ title: t('nav.adminTitle') }}
         />
       )}
     </Stack.Navigator>
@@ -175,8 +176,8 @@ export default function App() {
     );
   }
 
-  const languageCode = normalizeLanguage(profile?.language);
-  const menuLabels = getUiText(languageCode).menu;
+  // Set i18n locale from user profile language
+  i18n.locale = normalizeLanguage(profile?.language);
 
   const profileIncomplete =
     !profile?.username ||
@@ -239,40 +240,40 @@ export default function App() {
         <Tab.Screen
           name="Zuhause"
           component={HomeManager}
-          options={{ title: menuLabels.home, tabBarLabel: menuLabels.home }}
+          options={{ title: t('nav.home'), tabBarLabel: t('nav.home') }}
         />
         <Tab.Screen
           name="MeinePflanzenTab"
-          options={{ title: menuLabels.plants, tabBarLabel: menuLabels.plants }}
+          options={{ title: t('nav.plants'), tabBarLabel: t('nav.plants') }}
         >
-          {() => <PlantStack menuLabels={menuLabels} />}
+          {() => <PlantStack />}
         </Tab.Screen>
         <Tab.Screen
           name="Pflanze hinzufügen"
           component={AddPlantScreen}
-          options={{ title: menuLabels.addPlant, tabBarLabel: menuLabels.addPlant }}
+          options={{ title: t('nav.addPlant'), tabBarLabel: t('nav.addPlant') }}
         />
         <Tab.Screen
           name="Aufgaben"
-          options={{ title: menuLabels.tasks, tabBarLabel: menuLabels.tasks }}
+          options={{ title: t('nav.tasks'), tabBarLabel: t('nav.tasks') }}
         >
-          {() => <TaskStack menuLabels={menuLabels} />}
+          {() => <TaskStack />}
         </Tab.Screen>
         <Tab.Screen
           name="Rangliste"
           component={LeaderboardScreen}
-          options={{ title: menuLabels.leaderboard || 'Rangliste', tabBarLabel: menuLabels.leaderboard || 'Rangliste' }}
+          options={{ title: t('nav.leaderboard'), tabBarLabel: t('nav.leaderboard') }}
         />
         <Tab.Screen
           name="Mein Gärtner"
           component={AssistantScreen}
-          options={{ title: menuLabels.assistant, tabBarLabel: menuLabels.assistant }}
+          options={{ title: t('nav.assistant'), tabBarLabel: t('nav.assistant') }}
         />
         <Tab.Screen
           name="Shop"
-          options={{ title: menuLabels.shop, tabBarLabel: menuLabels.shop }}
+          options={{ title: t('nav.shop'), tabBarLabel: t('nav.shop') }}
         >
-          {() => <ShopStack menuLabels={menuLabels} isAdmin={!!profile?.is_admin} />}
+          {() => <ShopStack isAdmin={!!profile?.is_admin} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>

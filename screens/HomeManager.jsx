@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput, Alert } 
 import { Modal, Portal, Provider as PaperProvider, Button, Card, IconButton } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
+import { t } from '../i18n';
 
 export default function HomeManager() {
   const [locations, setLocations] = useState([]);
@@ -18,7 +19,7 @@ export default function HomeManager() {
   const getUserId = async () => {
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error || !user) {
-      Alert.alert("Nicht eingeloggt", "Bitte logge dich ein!");
+      Alert.alert(t('common.notLoggedIn'), t('common.notLoggedInMessage'));
       throw new Error("Not authenticated");
     }
     return user.id;
@@ -58,7 +59,7 @@ export default function HomeManager() {
       }));
       setLocations(merged);
     } catch (err) {
-      Alert.alert("Fehler beim Laden", err.message);
+      Alert.alert(t('home.loadError'), err.message);
     }
     setLoading(false);
   };
@@ -86,7 +87,7 @@ export default function HomeManager() {
   const saveLocation = async () => {
     const user_id = await getUserId();
     if (!form.name.trim()) {
-      Alert.alert("Fehler", "Name darf nicht leer sein.");
+      Alert.alert(t('common.error'), t('common.nameRequired'));
       return;
     }
     try {
@@ -108,14 +109,14 @@ export default function HomeManager() {
       closeModal();
       reload();
     } catch (err) {
-      Alert.alert("Fehler", err.message);
+      Alert.alert(t('common.error'), err.message);
     }
   };
 
   // CRUD – Zones
   const saveZone = async () => {
     if (!form.name.trim()) {
-      Alert.alert("Fehler", "Name darf nicht leer sein.");
+      Alert.alert(t('common.error'), t('common.nameRequired'));
       return;
     }
     try {
@@ -137,19 +138,19 @@ export default function HomeManager() {
       closeModal();
       reload();
     } catch (err) {
-      Alert.alert("Fehler", err.message);
+      Alert.alert(t('common.error'), err.message);
     }
   };
 
   // Delete – Locations
   const deleteLocation = async (locationId) => {
     Alert.alert(
-      "Zuhause löschen?",
-      "Alle zugehörigen Zonen und Pflanzen werden entfernt. Sicher?",
+      t('home.deleteHomeTitle'),
+      t('home.deleteHomeMessage'),
       [
-        { text: "Abbrechen" },
+        { text: t('common.cancel') },
         {
-          text: "Löschen",
+          text: t('common.delete'),
           style: "destructive",
           onPress: async () => {
             try {
@@ -162,7 +163,7 @@ export default function HomeManager() {
               if (error) throw error;
               reload();
             } catch (err) {
-              Alert.alert("Fehler", err.message);
+              Alert.alert(t('common.error'), err.message);
             }
           },
         },
@@ -172,10 +173,10 @@ export default function HomeManager() {
 
   // Delete – Zones
   const deleteZone = async (zoneId) => {
-    Alert.alert("Zone löschen?", "Alle zugehörigen Pflanzen verlieren ihren Standort.", [
-      { text: "Abbrechen" },
+    Alert.alert(t('home.deleteZoneTitle'), t('home.deleteZoneMessage'), [
+      { text: t('common.cancel') },
       {
-        text: "Löschen",
+        text: t('common.delete'),
         style: "destructive",
         onPress: async () => {
           try {
@@ -183,7 +184,7 @@ export default function HomeManager() {
             if (error) throw error;
             reload();
           } catch (err) {
-            Alert.alert("Fehler", err.message);
+            Alert.alert(t('common.error'), err.message);
           }
         },
       },
@@ -204,7 +205,7 @@ export default function HomeManager() {
   // Picker für Zone-Type
   const renderZoneTypeInput = () => (
     <View style={{ marginBottom: 12 }}>
-      <Text style={{ marginBottom: 4 }}>Typ:</Text>
+      <Text style={{ marginBottom: 4 }}>{t('common.type')}</Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
         {["room", "balcony", "garden", "greenhouse"].map((type) => (
           <Button
@@ -230,7 +231,7 @@ export default function HomeManager() {
         keyExtractor={(l) => l.id}
         ListHeaderComponent={() => (
           <Button mode="contained" icon="home-plus" onPress={() => openLocationModal()}>
-            Neues Zuhause
+            {t('home.newHome')}
           </Button>
         )}
         renderItem={({ item }) => (
@@ -256,7 +257,7 @@ export default function HomeManager() {
                     <ZoneRow key={z.id} item={z} locationId={item.id} />
                   )
                 ) : (
-                  <Text style={styles.emptyTxt}>Keine Zonen angelegt.</Text>
+                  <Text style={styles.emptyTxt}>{t('home.noZones')}</Text>
                 )}
                 <Button
                   mode="outlined"
@@ -264,7 +265,7 @@ export default function HomeManager() {
                   style={{ marginTop: 8 }}
                   onPress={() => openZoneModal(item.id)}
                 >
-                  Zone hinzufügen
+                  {t('home.addZone')}
                 </Button>
                 <Button
                   icon="pencil"
@@ -272,7 +273,7 @@ export default function HomeManager() {
                   onPress={() => openLocationModal(item)}
                   style={{ marginTop: 8 }}
                 >
-                  Zuhause bearbeiten
+                  {t('home.editHome')}
                 </Button>
                 <Button
                   icon="delete"
@@ -281,7 +282,7 @@ export default function HomeManager() {
                   color="red"
                   style={{ marginTop: 8 }}
                 >
-                  Zuhause löschen
+                  {t('home.deleteHome')}
                 </Button>
               </Card.Content>
             )}
@@ -295,24 +296,24 @@ export default function HomeManager() {
           <Text style={styles.modalTitle}>
             {editing?.type === "location"
               ? editing.locationId
-                ? "Zuhause bearbeiten"
-                : "Neues Zuhause"
+                ? t('home.editHome')
+                : t('home.newHome')
               : editing?.zone
-              ? "Zone bearbeiten"
-              : "Neue Zone"}
+              ? t('home.editZone')
+              : t('home.newZone')}
           </Text>
           <TextInput
             style={styles.input}
-            placeholder="Name"
+            placeholder={t('common.name')}
             value={form.name}
-            onChangeText={(t) => setForm({ ...form, name: t })}
+            onChangeText={(val) => setForm({ ...form, name: val })}
           />
           {editing?.type === "location" && (
             <TextInput
               style={styles.input}
-              placeholder="Adresse (optional)"
+              placeholder={t('home.addressPlaceholder')}
               value={form.address}
-              onChangeText={(t) => setForm({ ...form, address: t })}
+              onChangeText={(val) => setForm({ ...form, address: val })}
             />
           )}
           {editing?.type === "zone" && renderZoneTypeInput()}
@@ -321,7 +322,7 @@ export default function HomeManager() {
             onPress={editing?.type === "location" ? saveLocation : saveZone}
             style={{ marginTop: 12 }}
           >
-            Speichern
+            {t('common.save')}
           </Button>
         </Modal>
       </Portal>

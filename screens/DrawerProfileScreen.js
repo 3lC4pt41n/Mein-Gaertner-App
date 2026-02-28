@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { getLanguageLabel } from "../services/languageService";
 import { colors, spacing, radius } from '../theme';
+import { t } from '../i18n';
 
 export default function DrawerProfileScreen() {
   const [profile, setProfile] = useState(null);
@@ -44,7 +45,7 @@ export default function DrawerProfileScreen() {
       .eq("id", profile.id);
 
     if (error) {
-      Alert.alert("Fehler", "Einstellung konnte nicht gespeichert werden.");
+      Alert.alert(t('common.error'), t('profile.saveError'));
     }
     setSaving(false);
   };
@@ -62,7 +63,7 @@ export default function DrawerProfileScreen() {
 
   if (!profile) return (
     <View style={styles.center}>
-      <Text>Kein Profil gefunden.</Text>
+      <Text>{t('profile.noProfile')}</Text>
     </View>
   );
 
@@ -71,27 +72,27 @@ export default function DrawerProfileScreen() {
       {/* Profil-Header */}
       <View style={styles.header}>
         <Ionicons name="person" size={60} color={colors.primaryLight} />
-        <Text style={styles.title}>Profil</Text>
+        <Text style={styles.title}>{t('profile.title')}</Text>
       </View>
 
       {/* Profil-Infos */}
       <View style={styles.section}>
-        <ProfileRow label="Benutzername" value={profile.username} />
-        <ProfileRow label="Vorname" value={profile.first_name} />
-        <ProfileRow label="Nachname" value={profile.last_name} />
-        <ProfileRow label="Land" value={profile.country} />
-        <ProfileRow label="Sprache" value={getLanguageLabel(profile.language)} />
+        <ProfileRow label={t('profile.username')} value={profile.username} />
+        <ProfileRow label={t('profile.firstName')} value={profile.first_name} />
+        <ProfileRow label={t('profile.lastName')} value={profile.last_name} />
+        <ProfileRow label={t('profile.country')} value={profile.country} />
+        <ProfileRow label={t('profile.language')} value={getLanguageLabel(profile.language)} />
       </View>
 
       {/* Leaderboard-Settings */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Rangliste</Text>
+        <Text style={styles.sectionTitle}>{t('profile.leaderboardSection')}</Text>
 
         <View style={styles.optInRow}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.label}>Im Ranking anzeigen</Text>
+            <Text style={styles.label}>{t('profile.showInRanking')}</Text>
             <Text style={styles.hint}>
-              Dein Score wird anderen Nutzern angezeigt.
+              {t('profile.showInRankingHint')}
             </Text>
           </View>
           <Switch
@@ -104,16 +105,16 @@ export default function DrawerProfileScreen() {
 
         {optIn && (
           <View style={styles.displayNameRow}>
-            <Text style={styles.label}>Anzeigename (optional)</Text>
+            <Text style={styles.label}>{t('profile.displayName')}</Text>
             <Text style={styles.hint}>
-              Wird statt deinem Benutzernamen im Ranking angezeigt.
+              {t('profile.displayNameHint')}
             </Text>
             <TextInput
               style={styles.input}
               value={displayName}
               onChangeText={setDisplayName}
               onBlur={handleDisplayNameSave}
-              placeholder={profile.username || "Anzeigename"}
+              placeholder={profile.username || t('profile.displayNamePlaceholder')}
               maxLength={30}
             />
           </View>

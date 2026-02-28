@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, TouchableOpacity, Alert, ScrollView } fr
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { fetchTask, completeTask, skipTask } from '../services/taskService';
 import { colors, spacing, radius, shadows } from '../theme';
+import { t } from '../i18n';
 
 export default function TaskDetailScreen({ route, navigation }) {
   const { task: initialTask } = route.params;
@@ -14,10 +15,10 @@ export default function TaskDetailScreen({ route, navigation }) {
     (async () => {
       setLoading(true);
       try {
-        const t = await fetchTask(initialTask.id, initialTask.user_id);
-        setTask(t);
+        const fetched = await fetchTask(initialTask.id, initialTask.user_id);
+        setTask(fetched);
       } catch (e) {
-        Alert.alert("Fehler", e.message);
+        Alert.alert(t('common.error'), e.message);
       }
       setLoading(false);
     })();
@@ -26,20 +27,20 @@ export default function TaskDetailScreen({ route, navigation }) {
   const handleDone = async () => {
     try {
       await completeTask(task, task.user_id);
-      Alert.alert("Fertig!", "Aufgabe erledigt ✅");
+      Alert.alert(t('tasks.taskDone'), t('tasks.taskDoneMessage'));
       navigation.goBack();
     } catch (e) {
-      Alert.alert("Fehler", e.message);
+      Alert.alert(t('common.error'), e.message);
     }
   };
 
   const handleSkip = async () => {
     try {
-      await skipTask(task, task.user_id, "Vom Nutzer übersprungen");
-      Alert.alert("Übersprungen!", "Die Aufgabe wurde übersprungen.");
+      await skipTask(task, task.user_id, t('tasks.skipReason'));
+      Alert.alert(t('tasks.taskSkipped'), t('tasks.taskSkippedMessage'));
       navigation.goBack();
     } catch (e) {
-      Alert.alert("Fehler", e.message);
+      Alert.alert(t('common.error'), e.message);
     }
   };
 
@@ -63,7 +64,7 @@ export default function TaskDetailScreen({ route, navigation }) {
         />
         <Text style={{ fontWeight: "bold", fontSize: 20, marginBottom: 2, color: colors.textPrimary }}>{task.type}</Text>
         <Text style={{ color: colors.info, fontWeight: "bold", fontSize: 16 }}>
-          {task.plant?.name || "Pflanze unbekannt"}
+          {task.plant?.name || t('common.plantUnknown')}
         </Text>
         <Text style={{ color: colors.textTertiary, marginTop: spacing.sm, fontSize: 14 }}>
           {new Date(task.due_at).toLocaleString()}
@@ -72,7 +73,7 @@ export default function TaskDetailScreen({ route, navigation }) {
 
       {task.note &&
         <View style={{ marginBottom: 22, padding: 14, backgroundColor: colors.primarySurface, borderRadius: radius.md }}>
-          <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>Notiz:</Text>
+          <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>{t('tasks.noteLabel')}</Text>
           <Text style={{ marginTop: spacing.xs, color: colors.textPrimary }}>{task.note}</Text>
         </View>
       }
@@ -89,7 +90,7 @@ export default function TaskDetailScreen({ route, navigation }) {
             task.state === "SKIPPED" ? colors.warning : colors.textSecondary}
           style={{ marginRight: 6 }}
         />
-        <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>Status: {task.state}</Text>
+        <Text style={{ fontWeight: "bold", color: colors.textPrimary }}>{t('tasks.statusLabel', { state: task.state })}</Text>
       </View>
 
       {/* Action Buttons */}
@@ -99,13 +100,13 @@ export default function TaskDetailScreen({ route, navigation }) {
             backgroundColor: colors.primary, borderRadius: radius.sm, padding: 14, minWidth: 120, alignItems: "center"
           }} onPress={handleDone}>
             <Ionicons name="checkmark-circle-outline" size={28} color={colors.surface} />
-            <Text style={{ color: colors.surface, fontWeight: "bold" }}>Erledigt</Text>
+            <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('common.done')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={{
             backgroundColor: colors.warning, borderRadius: radius.sm, padding: 14, minWidth: 120, alignItems: "center"
           }} onPress={handleSkip}>
             <MaterialIcons name="not-interested" size={28} color={colors.surface} />
-            <Text style={{ color: colors.surface, fontWeight: "bold" }}>Überspringen</Text>
+            <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('common.skip')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -124,7 +125,7 @@ export default function TaskDetailScreen({ route, navigation }) {
           onPress={() => navigation.navigate('PlantDetail', { plant: task.plant })}
         >
           <Ionicons name="pulse" size={20} color={colors.surface} style={{ marginRight: spacing.sm }} />
-          <Text style={{ color: colors.surface, fontWeight: "bold" }}>Healthcheck & Details</Text>
+          <Text style={{ color: colors.surface, fontWeight: "bold" }}>{t('tasks.healthcheckDetails')}</Text>
         </TouchableOpacity>
       )}
     </ScrollView>
