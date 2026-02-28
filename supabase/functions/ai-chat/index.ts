@@ -1,10 +1,10 @@
 // Edge Function: Chat mit Ben (Pflanzen-Coach)
 // POST Body: { text?: string, image_url?: string, language?: string }
 // History wird server-seitig aus der DB geladen (nicht mehr vom Client gesendet)
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
-import { getServiceClient } from "../_shared/supabase-client.ts";
-import { callOpenAI } from "../_shared/openai.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { getServiceClient } from '../_shared/supabase-client.ts';
+import { callOpenAI } from '../_shared/openai.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -12,46 +12,38 @@ import {
   logUsage,
   corsHeaders,
   getUserIdFromAuth,
-} from "../_shared/credits.ts";
-import {
-  getLanguagePromptName,
-  getUserLanguage,
-} from "../_shared/language.ts";
-import {
-  estimateTokens,
-  selectMessagesWithinBudget,
-} from "../_shared/tokens.ts";
+} from '../_shared/credits.ts';
+import { getLanguagePromptName, getUserLanguage } from '../_shared/language.ts';
+import { estimateTokens, selectMessagesWithinBudget } from '../_shared/tokens.ts';
 import {
   validateText,
   validateImageUrl,
   validateLanguage,
   validationErrorResponse,
-} from "../_shared/validate.ts";
+} from '../_shared/validate.ts';
+import { checkRateLimit } from '../_shared/rate-limit.ts';
 
 // ─── Garden Context: Pflanzen, Healthchecks, Tasks laden ────────────
 
-async function loadGardenContext(
-  serviceClient: SupabaseClient,
-  userId: string
-): Promise<string> {
+async function loadGardenContext(serviceClient: SupabaseClient, userId: string): Promise<string> {
   // Pflanzen laden
   const { data: plants } = await serviceClient
-    .from("plants")
-    .select("id, name, note, zone_id, created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .from('plants')
+    .select('id, name, note, zone_id, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
 
   if (!plants || plants.length === 0) {
-    return "The user has no plants registered yet. Encourage them to add their first plant.";
+    return 'The user has no plants registered yet. Encourage them to add their first plant.';
   }
 
   // Letzter Healthcheck pro Pflanze
   const plantIds = plants.map((p: any) => p.id);
   const { data: healthchecks } = await serviceClient
-    .from("plant_healthchecks")
-    .select("plant_id, healthscore, summary, recommendation, created_at")
-    .in("plant_id", plantIds)
-    .order("created_at", { ascending: false });
+    .from('plant_healthchecks')
+    .select('plant_id, healthscore, summary, recommendation, created_at')
+    .in('plant_id', plantIds)
+    .order('created_at', { ascending: false });
 
   const latestHC: Record<string, any> = {};
   for (const hc of healthchecks || []) {
@@ -62,11 +54,11 @@ async function loadGardenContext(
 
   // Faellige Tasks
   const { data: tasks } = await serviceClient
-    .from("tasks")
-    .select("plant_id, type, due_at, state, note")
-    .eq("user_id", userId)
-    .in("state", ["DUE", "OPEN"])
-    .order("due_at", { ascending: true })
+    .from('tasks')
+    .select('plant_id, type, due_at, state, note')
+    .eq('user_id', userId)
+    .in('state', ['DUE', 'OPEN'])
+    .order('due_at', { ascending: true })
     .limit(20);
 
   const tasksByPlant: Record<string, any[]> = {};
@@ -80,9 +72,9 @@ async function loadGardenContext(
   const zoneMap: Record<string, string> = {};
   if (zoneIds.length > 0) {
     const { data: zones } = await serviceClient
-      .from("zones")
-      .select("id, name, type")
-      .in("id", zoneIds);
+      .from('zones')
+      .select('id, name, type')
+      .in('id', zoneIds);
     for (const z of zones || []) {
       zoneMap[z.id] = `${z.name} (${z.type})`;
     }
@@ -98,9 +90,7 @@ async function loadGardenContext(
     context += `- ${plant.name}`;
     if (zone) context += ` [${zone}]`;
     if (hc) {
-      const daysAgo = Math.floor(
-        (Date.now() - new Date(hc.created_at).getTime()) / 86400000
-      );
+      const daysAgo = Math.floor((Date.now() - new Date(hc.created_at).getTime()) / 86400000);
       context += ` | Health: ${hc.healthscore}/100 (${daysAgo}d ago)`;
       if (hc.recommendation) context += ` | Tip: ${hc.recommendation}`;
     }
@@ -109,12 +99,12 @@ async function loadGardenContext(
         .map((t: any) => {
           const due = new Date(t.due_at);
           const overdue = due < new Date();
-          return `${t.type}${overdue ? " (OVERDUE)" : ""}`;
+          return `${t.type}${overdue ? ' (OVERDUE)' : ''}`;
         })
-        .join(", ");
+        .join(', ');
       context += ` | Tasks: ${taskStr}`;
     }
-    context += "\n";
+    context += '\n';
   }
 
   return context;
@@ -163,10 +153,10 @@ async function loadAndPrepareHistory(
 ): Promise<any[]> {
   // Mehr laden als noetig, dann per Token-Budget filtern
   const { data: allMessages, error } = await serviceClient
-    .from("messages")
-    .select("sender, content, image_path, image_url, created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+    .from('messages')
+    .select('sender, content, image_path, image_url, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
     .limit(30);
 
   if (error || !allMessages) return [];
@@ -180,30 +170,32 @@ async function loadAndPrepareHistory(
     let imageUrl: string | null = null;
 
     // Nur echte Storage-Pfade verarbeiten (keine data: URIs oder base64)
-    if (msg.image_path && !msg.image_path.startsWith("data:")) {
+    if (msg.image_path && !msg.image_path.startsWith('data:')) {
       const { data: signedData } = await serviceClient.storage
-        .from("chat-images")
+        .from('chat-images')
         .createSignedUrl(msg.image_path, 60 * 60);
       if (signedData?.signedUrl) imageUrl = signedData.signedUrl;
-    } else if (msg.image_url && !msg.image_url.startsWith("data:") && msg.image_url.startsWith("http")) {
+    } else if (
+      msg.image_url &&
+      !msg.image_url.startsWith('data:') &&
+      msg.image_url.startsWith('http')
+    ) {
       // Nur echte HTTP-URLs verwenden, keine base64 data-URIs
       imageUrl = msg.image_url;
     }
 
-    const role = msg.sender === "user" ? "user" : "assistant";
+    const role = msg.sender === 'user' ? 'user' : 'assistant';
     if (imageUrl) {
       prepared.push({
         role,
         content: [
-          ...(msg.content && msg.content !== "[Bild]"
-            ? [{ type: "text", text: msg.content }]
-            : []),
-          { type: "image_url", image_url: { url: imageUrl } },
+          ...(msg.content && msg.content !== '[Bild]' ? [{ type: 'text', text: msg.content }] : []),
+          { type: 'image_url', image_url: { url: imageUrl } },
         ],
       });
     } else {
       // Kein Bild (oder base64) — nur Text senden
-      const text = msg.content || "[Bild]";
+      const text = msg.content || '[Bild]';
       prepared.push({ role, content: text });
     }
   }
@@ -213,32 +205,29 @@ async function loadAndPrepareHistory(
 
 // ─── Summary Memory: Rolling Zusammenfassung aktualisieren ────────────
 
-async function maybeUpdateSummary(
-  serviceClient: SupabaseClient,
-  userId: string
-): Promise<void> {
+async function maybeUpdateSummary(serviceClient: SupabaseClient, userId: string): Promise<void> {
   // Message-Count pruefen
   const { count } = await serviceClient
-    .from("messages")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId);
+    .from('messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId);
 
   // Nur alle 20 Messages zusammenfassen
   if (!count || count % 20 !== 0) return;
 
   // Bestehende Summary laden
   const { data: existing } = await serviceClient
-    .from("chat_memory")
-    .select("summary")
-    .eq("user_id", userId)
+    .from('chat_memory')
+    .select('summary')
+    .eq('user_id', userId)
     .maybeSingle();
 
   // Letzte 20 Messages laden
   const { data: recentMessages } = await serviceClient
-    .from("messages")
-    .select("sender, content, created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+    .from('messages')
+    .select('sender, content, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
     .limit(20);
 
   if (!recentMessages || recentMessages.length < 10) return;
@@ -246,60 +235,58 @@ async function maybeUpdateSummary(
   const msgText = recentMessages
     .reverse()
     .map((m: any) => `${m.sender}: ${m.content}`)
-    .join("\n");
+    .join('\n');
 
-  const previousSummary = existing?.summary || "No previous summary.";
+  const previousSummary = existing?.summary || 'No previous summary.';
 
   // GPT-4o-mini fuer guenstige Zusammenfassung
   try {
     const summaryResult = await callOpenAI({
-      model: "gpt-4o-mini",
+      model: 'gpt-4o-mini',
       messages: [
         {
-          role: "system",
+          role: 'system',
           content: `Summarize this gardening chat conversation into 3-5 bullet points.
 Focus on: plant problems discussed, advice given, user preferences learned, important facts about the user's garden.
 Keep under 200 words. Write in the same language as the conversation.
 Previous summary to update/extend: ${previousSummary}`,
         },
-        { role: "user", content: msgText },
+        { role: 'user', content: msgText },
       ],
       max_tokens: 300,
       temperature: 0.3,
     });
 
     // Upsert Summary
-    await serviceClient
-      .from("chat_memory")
-      .upsert(
-        {
-          user_id: userId,
-          summary: summaryResult.content,
-          message_count: count,
-          last_message_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" }
-      );
+    await serviceClient.from('chat_memory').upsert(
+      {
+        user_id: userId,
+        summary: summaryResult.content,
+        message_count: count,
+        last_message_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' }
+    );
   } catch (e) {
     // Summary-Fehler sind nicht kritisch, Chat funktioniert trotzdem
-    console.error("Summary update failed:", e);
+    console.error('Summary update failed:', e);
   }
 }
 
 // ─── Main Handler ────────────
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Nicht authentifiziert" }), {
+      return new Response(JSON.stringify({ error: 'Nicht authentifiziert' }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -311,11 +298,15 @@ serve(async (req) => {
 
     // Input-Validierung
     const validationErr = validationErrorResponse([
-      validateText(text, 2000, "text"),
+      validateText(text, 2000, 'text'),
       validateImageUrl(image_url),
     ]);
     if (validationErr) return validationErr;
     const language = validateLanguage(requestedLanguage);
+
+    // Rate Limiting (vor Credit-Abzug)
+    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'chat');
+    if (rateLimitResp) return rateLimitResp;
 
     // Credits atomar abziehen
     const cost = CREDIT_COSTS.chat;
@@ -323,12 +314,16 @@ serve(async (req) => {
     try {
       newBalance = await deductCreditsAtomic(serviceClient, userId, cost);
     } catch (e: any) {
-      if (e.code === "INSUFFICIENT_CREDITS") {
+      if (e.code === 'INSUFFICIENT_CREDITS') {
         return new Response(
-          JSON.stringify({ error: "Nicht genügend Credits", balance: e.balance, required: e.required }),
+          JSON.stringify({
+            error: 'Nicht genügend Credits',
+            balance: e.balance,
+            required: e.required,
+          }),
           {
             status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
       }
@@ -339,11 +334,7 @@ serve(async (req) => {
     const [userLang, gardenContext, memoryData] = await Promise.all([
       getUserLanguage(serviceClient, userId, language),
       loadGardenContext(serviceClient, userId),
-      serviceClient
-        .from("chat_memory")
-        .select("summary")
-        .eq("user_id", userId)
-        .maybeSingle(),
+      serviceClient.from('chat_memory').select('summary').eq('user_id', userId).maybeSingle(),
     ]);
 
     const finalLanguage = userLang;
@@ -357,29 +348,22 @@ serve(async (req) => {
     const historyBudget = Math.max(0, 6000 - systemTokens - maxOutputTokens);
 
     // History server-seitig laden (Token-Budget basiert)
-    const historyMessages = await loadAndPrepareHistory(
-      serviceClient,
-      userId,
-      historyBudget
-    );
+    const historyMessages = await loadAndPrepareHistory(serviceClient, userId, historyBudget);
 
     // Chat-Nachrichten aufbauen
-    const chatMessages: any[] = [
-      { role: "system", content: systemPrompt },
-      ...historyMessages,
-    ];
+    const chatMessages: any[] = [{ role: 'system', content: systemPrompt }, ...historyMessages];
 
     // Neue Nachricht (Text und/oder Bild)
     if (image_url) {
       chatMessages.push({
-        role: "user",
+        role: 'user',
         content: [
-          { type: "text", text: text || "Was ist das auf dem Bild?" },
-          { type: "image_url", image_url: { url: image_url } },
+          { type: 'text', text: text || 'Was ist das auf dem Bild?' },
+          { type: 'image_url', image_url: { url: image_url } },
         ],
       });
     } else if (text) {
-      chatMessages.push({ role: "user", content: text });
+      chatMessages.push({ role: 'user', content: text });
     }
 
     // OpenAI Call (Credits bereits abgezogen, Refund bei Fehler)
@@ -398,7 +382,7 @@ serve(async (req) => {
     // Usage loggen + Summary im Hintergrund aktualisieren (non-blocking)
     await logUsage(serviceClient, {
       user_id: userId,
-      action: "chat",
+      action: 'chat',
       prompt_tokens: result.prompt_tokens,
       completion_tokens: result.completion_tokens,
       total_tokens: result.total_tokens,
@@ -410,7 +394,7 @@ serve(async (req) => {
 
     // Summary Memory im Hintergrund aktualisieren (blockiert Response nicht)
     maybeUpdateSummary(serviceClient, userId).catch((e) =>
-      console.error("Summary background error:", e)
+      console.error('Summary background error:', e)
     );
 
     return new Response(
@@ -420,16 +404,13 @@ serve(async (req) => {
         credits_used: cost,
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (e: any) {
-    return new Response(
-      JSON.stringify({ error: e.message || "Unbekannter Fehler" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

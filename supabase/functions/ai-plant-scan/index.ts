@@ -1,8 +1,8 @@
 // Edge Function: Pflanze erkennen (Foto → Name + Hinweis)
 // POST Body: { base64: string } (base64-kodiertes Bild)
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { getServiceClient } from "../_shared/supabase-client.ts";
-import { callOpenAI } from "../_shared/openai.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
+import { callOpenAI } from '../_shared/openai.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -10,29 +10,23 @@ import {
   logUsage,
   corsHeaders,
   getUserIdFromAuth,
-} from "../_shared/credits.ts";
-import {
-  getLanguagePromptName,
-  getUserLanguage,
-} from "../_shared/language.ts";
-import {
-  validateBase64,
-  validateLanguage,
-  validationErrorResponse,
-} from "../_shared/validate.ts";
+} from '../_shared/credits.ts';
+import { getLanguagePromptName, getUserLanguage } from '../_shared/language.ts';
+import { validateBase64, validateLanguage, validationErrorResponse } from '../_shared/validate.ts';
+import { checkRateLimit } from '../_shared/rate-limit.ts';
 
 serve(async (req) => {
   // CORS Preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Nicht authentifiziert" }), {
+      return new Response(JSON.stringify({ error: 'Nicht authentifiziert' }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -43,19 +37,21 @@ serve(async (req) => {
     const { base64, language: requestedLanguage } = await req.json();
 
     // Input-Validierung (VOR Credit-Abzug)
-    const vErr = validationErrorResponse([
-      validateBase64(base64, 10_000_000),
-    ]);
+    const vErr = validationErrorResponse([validateBase64(base64, 10_000_000)]);
     if (vErr) return vErr;
 
     if (!base64) {
-      return new Response(JSON.stringify({ error: "base64 Bild fehlt" }), {
+      return new Response(JSON.stringify({ error: 'base64 Bild fehlt' }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const language = validateLanguage(requestedLanguage);
+
+    // Rate Limiting (vor Credit-Abzug)
+    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'plant_scan');
+    if (rateLimitResp) return rateLimitResp;
 
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
     const cost = CREDIT_COSTS.plant_scan;
@@ -63,12 +59,16 @@ serve(async (req) => {
     try {
       newBalance = await deductCreditsAtomic(serviceClient, userId, cost);
     } catch (e: any) {
-      if (e.code === "INSUFFICIENT_CREDITS") {
+      if (e.code === 'INSUFFICIENT_CREDITS') {
         return new Response(
-          JSON.stringify({ error: "Nicht genügend Credits", balance: e.balance, required: e.required }),
+          JSON.stringify({
+            error: 'Nicht genügend Credits',
+            balance: e.balance,
+            required: e.required,
+          }),
           {
             status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
       }
@@ -84,10 +84,10 @@ serve(async (req) => {
       result = await callOpenAI({
         messages: [
           {
-            role: "user",
+            role: 'user',
             content: [
               {
-                type: "text",
+                type: 'text',
                 text: `Identify the plant in this photo and return JSON in exactly this format:
 {
   "name": "Botanical name",
@@ -99,7 +99,7 @@ Rules:
 - If uncertain, still provide your best estimate.`,
               },
               {
-                type: "image_url",
+                type: 'image_url',
                 image_url: { url: `data:image/jpeg;base64,${base64}` },
               },
             ],
@@ -115,7 +115,7 @@ Rules:
     // Usage loggen
     await logUsage(serviceClient, {
       user_id: userId,
-      action: "plant_scan",
+      action: 'plant_scan',
       prompt_tokens: result.prompt_tokens,
       completion_tokens: result.completion_tokens,
       total_tokens: result.total_tokens,
@@ -129,12 +129,12 @@ Rules:
     let parsed;
     try {
       const cleaned = result.content
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
         .trim();
       parsed = JSON.parse(cleaned);
     } catch {
-      parsed = { name: "Nicht erkannt", note: result.content };
+      parsed = { name: 'Nicht erkannt', note: result.content };
     }
 
     return new Response(
@@ -144,16 +144,13 @@ Rules:
         credits_used: cost,
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (e: any) {
-    return new Response(
-      JSON.stringify({ error: e.message || "Unbekannter Fehler" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

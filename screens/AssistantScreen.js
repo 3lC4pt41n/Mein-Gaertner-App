@@ -104,7 +104,7 @@ export default function AssistantScreen() {
     }
   };
 
-  // Credit-Error Handler
+  // Credit- & Rate-Limit-Error Handler
   const handleCreditError = (e) => {
     if (e.code === 'INSUFFICIENT_CREDITS') {
       Alert.alert(
@@ -112,6 +112,12 @@ export default function AssistantScreen() {
         t('common.insufficientCreditsMessage', { balance: e.balance, required: e.required }),
         [{ text: 'OK' }]
       );
+      return true;
+    }
+    if (e.code === 'RATE_LIMIT_EXCEEDED') {
+      Alert.alert('Moment bitte', e.message || 'Zu viele Anfragen. Bitte warte etwas.', [
+        { text: 'OK' },
+      ]);
       return true;
     }
     return false;

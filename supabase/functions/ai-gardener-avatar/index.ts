@@ -1,34 +1,24 @@
 // Edge Function: User-Foto -> persoenlicher Gaertner-Avatar
 // POST Body: { base64: string, language?: string }
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { getServiceClient } from "../_shared/supabase-client.ts";
-import {
-  corsHeaders,
-  getUserIdFromAuth,
-  logUsage,
-} from "../_shared/credits.ts";
-import {
-  getLanguagePromptName,
-  getUserLanguage,
-} from "../_shared/language.ts";
-import { callOpenAIImageEdit } from "../_shared/openai.ts";
-import {
-  validateBase64,
-  validateLanguage,
-  validationErrorResponse,
-} from "../_shared/validate.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
+import { corsHeaders, getUserIdFromAuth, logUsage } from '../_shared/credits.ts';
+import { getLanguagePromptName, getUserLanguage } from '../_shared/language.ts';
+import { callOpenAIImageEdit } from '../_shared/openai.ts';
+import { validateBase64, validateLanguage, validationErrorResponse } from '../_shared/validate.ts';
+import { checkRateLimit } from '../_shared/rate-limit.ts';
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Nicht authentifiziert" }), {
+      return new Response(JSON.stringify({ error: 'Nicht authentifiziert' }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -37,25 +27,28 @@ serve(async (req) => {
     const { base64, language: requestedLanguage } = await req.json();
 
     // Input-Validierung
-    const vErr = validationErrorResponse([
-      validateBase64(base64, 10_000_000),
-    ]);
+    const vErr = validationErrorResponse([validateBase64(base64, 10_000_000)]);
     if (vErr) return vErr;
 
     if (!base64) {
-      return new Response(JSON.stringify({ error: "base64 Bild fehlt" }), {
+      return new Response(JSON.stringify({ error: 'base64 Bild fehlt' }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const language = validateLanguage(requestedLanguage);
+
+    // Rate Limiting
+    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'avatar');
+    if (rateLimitResp) return rateLimitResp;
+
     const resolvedLanguage = await getUserLanguage(serviceClient, userId, language);
     const languagePromptName = getLanguagePromptName(resolvedLanguage);
 
     const imageResult = await callOpenAIImageEdit({
       image_base64: base64,
-      size: "1024x1024",
+      size: '1024x1024',
       prompt: `Create a clean illustrated avatar of this person as a friendly modern gardener.
 Style rules:
 - Portrait, head and shoulders, centered, neutral background.
@@ -66,13 +59,13 @@ Style rules:
 - Visual language and details should feel natural for ${languagePromptName}.`,
     });
 
-    const bucket = "chat-images";
+    const bucket = 'chat-images';
     const avatarPath = `avatars/gardener_${userId}_${Date.now()}.png`;
 
     const { error: uploadError } = await serviceClient.storage
       .from(bucket)
       .upload(avatarPath, imageResult.image_bytes, {
-        contentType: "image/png",
+        contentType: 'image/png',
         upsert: true,
       });
 
@@ -86,7 +79,7 @@ Style rules:
 
     await logUsage(serviceClient, {
       user_id: userId,
-      action: "avatar",
+      action: 'avatar',
       prompt_tokens: 0,
       completion_tokens: 0,
       total_tokens: 0,
@@ -102,16 +95,13 @@ Style rules:
         avatar_url: urlData.signedUrl,
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (e: any) {
-    return new Response(
-      JSON.stringify({ error: e.message || "Unbekannter Fehler" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

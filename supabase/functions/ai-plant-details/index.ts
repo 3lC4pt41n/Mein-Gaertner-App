@@ -1,8 +1,8 @@
 // Edge Function: Pflanzen-Details generieren (Name → Detail-JSON)
 // POST Body: { name: string, note: string }
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { getServiceClient } from "../_shared/supabase-client.ts";
-import { callOpenAI } from "../_shared/openai.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
+import { callOpenAI } from '../_shared/openai.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -10,17 +10,14 @@ import {
   logUsage,
   corsHeaders,
   getUserIdFromAuth,
-} from "../_shared/credits.ts";
+} from '../_shared/credits.ts';
 import {
   getLanguagePromptName,
   getUserLanguage,
   type SupportedLanguage,
-} from "../_shared/language.ts";
-import {
-  validateText,
-  validateLanguage,
-  validationErrorResponse,
-} from "../_shared/validate.ts";
+} from '../_shared/language.ts';
+import { validateText, validateLanguage, validationErrorResponse } from '../_shared/validate.ts';
+import { checkRateLimit } from '../_shared/rate-limit.ts';
 
 const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
   de: `{
@@ -191,16 +188,16 @@ const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Nicht authentifiziert" }), {
+      return new Response(JSON.stringify({ error: 'Nicht authentifiziert' }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -211,19 +208,23 @@ serve(async (req) => {
 
     // Input-Validierung (VOR Credit-Abzug)
     const vErr = validationErrorResponse([
-      validateText(name, 200, "name"),
-      validateText(note, 500, "note"),
+      validateText(name, 200, 'name'),
+      validateText(note, 500, 'note'),
     ]);
     if (vErr) return vErr;
 
     if (!name) {
-      return new Response(JSON.stringify({ error: "Pflanzenname fehlt" }), {
+      return new Response(JSON.stringify({ error: 'Pflanzenname fehlt' }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const language = validateLanguage(requestedLanguage);
+
+    // Rate Limiting (vor Credit-Abzug)
+    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'plant_details');
+    if (rateLimitResp) return rateLimitResp;
 
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
     const cost = CREDIT_COSTS.plant_details;
@@ -231,12 +232,16 @@ serve(async (req) => {
     try {
       newBalance = await deductCreditsAtomic(serviceClient, userId, cost);
     } catch (e: any) {
-      if (e.code === "INSUFFICIENT_CREDITS") {
+      if (e.code === 'INSUFFICIENT_CREDITS') {
         return new Response(
-          JSON.stringify({ error: "Nicht genügend Credits", balance: e.balance, required: e.required }),
+          JSON.stringify({
+            error: 'Nicht genügend Credits',
+            balance: e.balance,
+            required: e.required,
+          }),
           {
             status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
       }
@@ -247,7 +252,7 @@ serve(async (req) => {
     const languagePromptName = getLanguagePromptName(resolvedLanguage);
     const schema = DETAILS_SCHEMA_BY_LANGUAGE[resolvedLanguage];
 
-    const prompt = `Create plant details for "${name}" (hint: "${note || ""}") and return ONLY one JSON object in EXACTLY this schema:
+    const prompt = `Create plant details for "${name}" (hint: "${note || ''}") and return ONLY one JSON object in EXACTLY this schema:
 
 ${schema}
 
@@ -260,7 +265,7 @@ Rules:
     let result;
     try {
       result = await callOpenAI({
-        messages: [{ role: "user", content: prompt }],
+        messages: [{ role: 'user', content: prompt }],
         max_tokens: 1500,
       });
     } catch (e) {
@@ -270,7 +275,7 @@ Rules:
 
     await logUsage(serviceClient, {
       user_id: userId,
-      action: "plant_details",
+      action: 'plant_details',
       prompt_tokens: result.prompt_tokens,
       completion_tokens: result.completion_tokens,
       total_tokens: result.total_tokens,
@@ -283,8 +288,8 @@ Rules:
     let details;
     try {
       const cleaned = result.content
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
         .trim();
       details = JSON.parse(cleaned);
     } catch {
@@ -298,16 +303,13 @@ Rules:
         credits_used: cost,
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (e: any) {
-    return new Response(
-      JSON.stringify({ error: e.message || "Unbekannter Fehler" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

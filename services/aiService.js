@@ -3,8 +3,10 @@ import { supabase } from '../supabase';
 // Helper: Edge Function aufrufen über den Supabase Client
 // Der Client setzt apikey + Authorization Header automatisch korrekt
 async function callEdgeFunction(functionName, body) {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) throw new Error("Nicht eingeloggt");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error('Nicht eingeloggt');
 
   const { data, error } = await supabase.functions.invoke(functionName, {
     body,
@@ -15,7 +17,9 @@ async function callEdgeFunction(functionName, body) {
     let parsed;
     try {
       parsed = typeof error.context === 'string' ? JSON.parse(error.context) : error.context;
-    } catch { parsed = null; }
+    } catch {
+      parsed = null;
+    }
 
     // Spezialbehandlung: Nicht genug Credits (HTTP 402)
     if (parsed?.code === 'INSUFFICIENT_CREDITS' || error.message?.includes('402')) {
@@ -25,6 +29,15 @@ async function callEdgeFunction(functionName, body) {
       err.required = parsed?.required;
       throw err;
     }
+
+    // Spezialbehandlung: Rate Limit (HTTP 429)
+    if (parsed?.code === 'RATE_LIMIT_EXCEEDED' || error.message?.includes('429')) {
+      const err = new Error(parsed?.error || 'Zu viele Anfragen. Bitte warte etwas.');
+      err.code = 'RATE_LIMIT_EXCEEDED';
+      err.retryAfter = parsed?.retry_after_seconds;
+      throw err;
+    }
+
     throw new Error(parsed?.error || error.message || `Fehler bei ${functionName}`);
   }
 

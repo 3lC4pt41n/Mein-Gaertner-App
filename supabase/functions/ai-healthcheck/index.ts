@@ -1,8 +1,8 @@
 // Edge Function: Healthcheck (Pflanzenbild → Gesundheitsbewertung)
 // POST Body: { image_url: string, plant_name?: string }
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { getServiceClient } from "../_shared/supabase-client.ts";
-import { callOpenAI } from "../_shared/openai.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
+import { callOpenAI } from '../_shared/openai.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -10,71 +10,69 @@ import {
   logUsage,
   corsHeaders,
   getUserIdFromAuth,
-} from "../_shared/credits.ts";
+} from '../_shared/credits.ts';
 import {
   getLanguagePromptName,
   getUserLanguage,
   type SupportedLanguage,
-} from "../_shared/language.ts";
+} from '../_shared/language.ts';
 import {
   validateImageUrl,
   validateText,
   validateLanguage,
   validationErrorResponse,
-} from "../_shared/validate.ts";
+} from '../_shared/validate.ts';
+import { checkRateLimit } from '../_shared/rate-limit.ts';
 
 const HEALTHCHECK_CRITERIA: Record<SupportedLanguage, string[]> = {
   de: [
-    "Blattfarbe & -struktur",
-    "Schädlingsbefall",
-    "Blattintegrität",
-    "Wuchsform & Standfestigkeit",
-    "Topf- zu Pflanzengröße",
-    "Substrat & Oberfläche",
-    "Gesamtpflege-Anzeichen",
+    'Blattfarbe & -struktur',
+    'Schädlingsbefall',
+    'Blattintegrität',
+    'Wuchsform & Standfestigkeit',
+    'Topf- zu Pflanzengröße',
+    'Substrat & Oberfläche',
+    'Gesamtpflege-Anzeichen',
   ],
   en: [
-    "Leaf color & texture",
-    "Pest infestation",
-    "Leaf integrity",
-    "Growth form & stability",
-    "Pot size vs plant size",
-    "Substrate & surface",
-    "Overall care indicators",
+    'Leaf color & texture',
+    'Pest infestation',
+    'Leaf integrity',
+    'Growth form & stability',
+    'Pot size vs plant size',
+    'Substrate & surface',
+    'Overall care indicators',
   ],
   fr: [
-    "Couleur et texture des feuilles",
-    "Infestation de ravageurs",
-    "Intégrité des feuilles",
-    "Port de la plante et stabilité",
-    "Taille du pot vs taille de la plante",
-    "Substrat et surface",
+    'Couleur et texture des feuilles',
+    'Infestation de ravageurs',
+    'Intégrité des feuilles',
+    'Port de la plante et stabilité',
+    'Taille du pot vs taille de la plante',
+    'Substrat et surface',
     "Signes globaux d'entretien",
   ],
   it: [
-    "Colore e struttura delle foglie",
-    "Infestazione da parassiti",
-    "Integrità delle foglie",
-    "Portamento e stabilità",
-    "Dimensione vaso vs dimensione pianta",
-    "Substrato e superficie",
-    "Indicatori generali di cura",
+    'Colore e struttura delle foglie',
+    'Infestazione da parassiti',
+    'Integrità delle foglie',
+    'Portamento e stabilità',
+    'Dimensione vaso vs dimensione pianta',
+    'Substrato e superficie',
+    'Indicatori generali di cura',
   ],
   es: [
-    "Color y textura de las hojas",
-    "Plagas",
-    "Integridad de las hojas",
-    "Forma de crecimiento y estabilidad",
-    "Tamaño de maceta vs tamaño de planta",
-    "Sustrato y superficie",
-    "Indicadores generales de cuidado",
+    'Color y textura de las hojas',
+    'Plagas',
+    'Integridad de las hojas',
+    'Forma de crecimiento y estabilidad',
+    'Tamaño de maceta vs tamaño de planta',
+    'Sustrato y superficie',
+    'Indicadores generales de cuidado',
   ],
 };
 
-function buildHealthcheckPrompt(
-  language: SupportedLanguage,
-  languagePromptName: string
-) {
+function buildHealthcheckPrompt(language: SupportedLanguage, languagePromptName: string) {
   const c = HEALTHCHECK_CRITERIA[language];
   return `Analyze the provided plant photo and run a plant health check. Return ONLY this JSON:
 
@@ -102,16 +100,16 @@ Rules:
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Nicht authentifiziert" }), {
+      return new Response(JSON.stringify({ error: 'Nicht authentifiziert' }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -123,18 +121,22 @@ serve(async (req) => {
     // Input-Validierung (VOR Credit-Abzug)
     const vErr = validationErrorResponse([
       validateImageUrl(image_url),
-      validateText(plant_name, 200, "plant_name"),
+      validateText(plant_name, 200, 'plant_name'),
     ]);
     if (vErr) return vErr;
 
     if (!image_url) {
-      return new Response(JSON.stringify({ error: "image_url fehlt" }), {
+      return new Response(JSON.stringify({ error: 'image_url fehlt' }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const language = validateLanguage(requestedLanguage);
+
+    // Rate Limiting (vor Credit-Abzug)
+    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'healthcheck');
+    if (rateLimitResp) return rateLimitResp;
 
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
     const cost = CREDIT_COSTS.healthcheck;
@@ -142,12 +144,16 @@ serve(async (req) => {
     try {
       newBalance = await deductCreditsAtomic(serviceClient, userId, cost);
     } catch (e: any) {
-      if (e.code === "INSUFFICIENT_CREDITS") {
+      if (e.code === 'INSUFFICIENT_CREDITS') {
         return new Response(
-          JSON.stringify({ error: "Nicht genügend Credits", balance: e.balance, required: e.required }),
+          JSON.stringify({
+            error: 'Nicht genügend Credits',
+            balance: e.balance,
+            required: e.required,
+          }),
           {
             status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
       }
@@ -160,14 +166,12 @@ serve(async (req) => {
 
     // OpenAI Call
     const messages: any[] = [
-      { role: "user", content: healthcheckPrompt },
+      { role: 'user', content: healthcheckPrompt },
       {
-        role: "user",
+        role: 'user',
         content: [
-          ...(plant_name
-            ? [{ type: "text", text: `Die Pflanze heißt: ${plant_name}` }]
-            : []),
-          { type: "image_url", image_url: { url: image_url } },
+          ...(plant_name ? [{ type: 'text', text: `Die Pflanze heißt: ${plant_name}` }] : []),
+          { type: 'image_url', image_url: { url: image_url } },
         ],
       },
     ];
@@ -186,7 +190,7 @@ serve(async (req) => {
     // Usage loggen
     await logUsage(serviceClient, {
       user_id: userId,
-      action: "healthcheck",
+      action: 'healthcheck',
       prompt_tokens: result.prompt_tokens,
       completion_tokens: result.completion_tokens,
       total_tokens: result.total_tokens,
@@ -200,8 +204,8 @@ serve(async (req) => {
     let parsed;
     try {
       const cleaned = result.content
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
         .trim();
       parsed = JSON.parse(cleaned);
     } catch {
@@ -215,16 +219,13 @@ serve(async (req) => {
         credits_used: cost,
       }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (e: any) {
-    return new Response(
-      JSON.stringify({ error: e.message || "Unbekannter Fehler" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
