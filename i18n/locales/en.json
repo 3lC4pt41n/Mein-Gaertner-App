@@ -328,6 +328,23 @@
     "permissionMessage": "Allow notifications to receive reminders for your plant care tasks."
   },
 
+  "feedback": {
+    "title": "Feedback",
+    "subtitle": "Help us improve the app. Every bit of feedback counts!",
+    "categoryLabel": "Category",
+    "categories": {
+      "bug": "Bug",
+      "feature": "Idea",
+      "other": "Other"
+    },
+    "messageLabel": "Your message",
+    "placeholder": "Describe a bug, idea or suggestion...",
+    "messageRequired": "Please enter a message.",
+    "submit": "Send Feedback",
+    "thankYou": "Thank you!",
+    "successMessage": "Your feedback has been received. We read everything!"
+  },
+
   "minor": {
     "calendarSoon": "📅 Calendar view coming soon!",
     "todayTitle": "🌞 Today – your plant day!",

@@ -38,6 +38,14 @@
   {{ $cta = "Aceptar invitación" }}
   {{ $fallback = "Abrir enlace manualmente:" }}
   {{ $footer = "¿No conoces Digitaler Gärtner? Ignora este correo." }}
+{{ else if eq $lang "ru" }}
+  {{ $subtitle = "Ваш умный помощник для растений" }}
+  {{ $title = "Вас пригласили" }}
+  {{ $desc = "Вы можете использовать <strong>Digitaler Gärtner</strong> – для организованного, здорового и зелёного ухода за растениями." }}
+  {{ $note = "Настройте свой аккаунт, чтобы начать." }}
+  {{ $cta = "Принять приглашение" }}
+  {{ $fallback = "Открыть ссылку вручную:" }}
+  {{ $footer = "Не знакомы с Digitaler Gärtner? Просто проигнорируйте это письмо." }}
 {{ end }}
 <!DOCTYPE html>
 <html lang="{{ $lang }}">

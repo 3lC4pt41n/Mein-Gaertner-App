@@ -38,6 +38,14 @@
   {{ $cta = "Iniciar sesión" }}
   {{ $fallback = "Abrir enlace manualmente:" }}
   {{ $footer = "¿No solicitaste este inicio de sesión? Ignora este correo." }}
+{{ else if eq $lang "ru" }}
+  {{ $subtitle = "Ваш умный помощник для растений" }}
+  {{ $title = "Безопасный вход" }}
+  {{ $desc = "Используйте эту ссылку для входа. Достаточно одного клика." }}
+  {{ $note = "Ссылка одноразовая и скоро истечёт." }}
+  {{ $cta = "Войти" }}
+  {{ $fallback = "Открыть ссылку вручную:" }}
+  {{ $footer = "Вы не запрашивали вход? Просто проигнорируйте это письмо." }}
 {{ end }}
 <!DOCTYPE html>
 <html lang="{{ $lang }}">

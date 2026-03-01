@@ -328,6 +328,23 @@
     "permissionMessage": "Permite las notificaciones para recibir recordatorios de tus tareas de cuidado."
   },
 
+  "feedback": {
+    "title": "Comentarios",
+    "subtitle": "Ayúdanos a mejorar la app. ¡Cada opinión cuenta!",
+    "categoryLabel": "Categoría",
+    "categories": {
+      "bug": "Error",
+      "feature": "Idea",
+      "other": "Otro"
+    },
+    "messageLabel": "Tu mensaje",
+    "placeholder": "Describe un error, idea o sugerencia...",
+    "messageRequired": "Introduce un mensaje.",
+    "submit": "Enviar comentario",
+    "thankYou": "¡Gracias!",
+    "successMessage": "Tu comentario ha sido recibido. ¡Leemos todo!"
+  },
+
   "minor": {
     "calendarSoon": "📅 ¡Vista de calendario próximamente!",
     "todayTitle": "🌞 Hoy – ¡tu día de plantas!",

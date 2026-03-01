@@ -43,6 +43,15 @@
   {{ $fallback = "Si el botón no funciona, copia este enlace en tu navegador:" }}
   {{ $footer = "¿No creaste una cuenta? Ignora este correo." }}
   {{ $outside = "Si recibiste este correo inesperadamente, no necesitas hacer nada." }}
+{{ else if eq $lang "ru" }}
+  {{ $subtitle = "Ваш умный помощник для растений" }}
+  {{ $title = "Активировать аккаунт" }}
+  {{ $desc = "Добро пожаловать в сад. Подтвердите свой адрес электронной почты, чтобы активировать аккаунт." }}
+  {{ $note = "Эта ссылка ограничена по времени." }}
+  {{ $cta = "Активировать аккаунт" }}
+  {{ $fallback = "Если кнопка не работает, скопируйте эту ссылку в браузер:" }}
+  {{ $footer = "Вы не создавали аккаунт? Просто проигнорируйте это письмо." }}
+  {{ $outside = "Если вы получили это письмо по ошибке, никаких действий не требуется." }}
 {{ end }}
 <!DOCTYPE html>
 <html lang="{{ $lang }}">

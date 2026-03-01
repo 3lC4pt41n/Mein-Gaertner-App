@@ -33,6 +33,13 @@
   {{ $cta = "Cambiar correo" }}
   {{ $fallback = "Abrir enlace manualmente:" }}
   {{ $footer = "¿No solicitaste este cambio? Ignora este correo." }}
+{{ else if eq $lang "ru" }}
+  {{ $subtitle = "Ваш умный помощник для растений" }}
+  {{ $title = "Подтвердите адрес электронной почты" }}
+  {{ $desc = "Вы хотите изменить адрес электронной почты. Подтвердите изменение с помощью кнопки ниже." }}
+  {{ $cta = "Изменить e-mail" }}
+  {{ $fallback = "Открыть ссылку вручную:" }}
+  {{ $footer = "Вы не запрашивали это изменение? Просто проигнорируйте это письмо." }}
 {{ end }}
 <!DOCTYPE html>
 <html lang="{{ $lang }}">

@@ -7,6 +7,7 @@ export const LANGUAGE_OPTIONS = [
   { code: 'fr', label: 'Français' },
   { code: 'it', label: 'Italiano' },
   { code: 'es', label: 'Español' },
+  { code: 'ru', label: 'Русский' },
 ];
 
 const LANGUAGE_ALIAS_TO_CODE = {
@@ -31,6 +32,10 @@ const LANGUAGE_ALIAS_TO_CODE = {
   español: 'es',
   spanish: 'es',
   spanisch: 'es',
+  ru: 'ru',
+  russian: 'ru',
+  русский: 'ru',
+  russisch: 'ru',
 };
 
 export function normalizeLanguage(input) {

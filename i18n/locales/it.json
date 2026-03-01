@@ -328,6 +328,23 @@
     "permissionMessage": "Consenti le notifiche per ricevere promemoria sulle tue attività di cura."
   },
 
+  "feedback": {
+    "title": "Feedback",
+    "subtitle": "Aiutaci a migliorare l'app. Ogni opinione conta!",
+    "categoryLabel": "Categoria",
+    "categories": {
+      "bug": "Bug",
+      "feature": "Idea",
+      "other": "Altro"
+    },
+    "messageLabel": "Il tuo messaggio",
+    "placeholder": "Descrivi un bug, un'idea o un suggerimento...",
+    "messageRequired": "Inserisci un messaggio.",
+    "submit": "Invia feedback",
+    "thankYou": "Grazie!",
+    "successMessage": "Il tuo feedback è stato ricevuto. Leggiamo tutto!"
+  },
+
   "minor": {
     "calendarSoon": "📅 Vista calendario in arrivo!",
     "todayTitle": "🌞 Oggi – la tua giornata verde!",

@@ -328,6 +328,23 @@
     "permissionMessage": "Autorisez les notifications pour recevoir des rappels pour vos tâches d'entretien."
   },
 
+  "feedback": {
+    "title": "Commentaires",
+    "subtitle": "Aidez-nous à améliorer l'application. Chaque retour compte !",
+    "categoryLabel": "Catégorie",
+    "categories": {
+      "bug": "Bug",
+      "feature": "Idée",
+      "other": "Autre"
+    },
+    "messageLabel": "Votre message",
+    "placeholder": "Décrivez un bug, une idée ou une suggestion...",
+    "messageRequired": "Veuillez entrer un message.",
+    "submit": "Envoyer le commentaire",
+    "thankYou": "Merci !",
+    "successMessage": "Votre commentaire a été reçu. Nous lisons tout !"
+  },
+
   "minor": {
     "calendarSoon": "📅 Vue calendrier bientôt disponible !",
     "todayTitle": "🌞 Aujourd'hui – votre journée plantes !",

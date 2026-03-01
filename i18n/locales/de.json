@@ -328,6 +328,23 @@
     "permissionMessage": "Erlaube Benachrichtigungen, um Erinnerungen für deine Pflegeaufgaben zu erhalten."
   },
 
+  "feedback": {
+    "title": "Feedback",
+    "subtitle": "Hilf uns, die App zu verbessern. Jede Rückmeldung zählt!",
+    "categoryLabel": "Kategorie",
+    "categories": {
+      "bug": "Fehler",
+      "feature": "Idee",
+      "other": "Sonstiges"
+    },
+    "messageLabel": "Deine Nachricht",
+    "placeholder": "Beschreibe den Fehler, deine Idee oder einen Vorschlag...",
+    "messageRequired": "Bitte gib eine Nachricht ein.",
+    "submit": "Feedback senden",
+    "thankYou": "Danke!",
+    "successMessage": "Dein Feedback ist angekommen. Wir lesen alles!"
+  },
+
   "minor": {
     "calendarSoon": "📅 Kalenderansicht kommt bald!",
     "todayTitle": "🌞 Heute – dein Pflanzentag!",

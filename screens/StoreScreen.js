@@ -329,6 +329,15 @@ export default function StoreScreen({ isAdmin }) {
         </>
       )}
 
+      {/* ─── Feedback (Beta) ──────────────────────────────── */}
+      <TouchableOpacity
+        style={styles.adminBtn}
+        onPress={() => navigation.navigate('Feedback')}
+      >
+        <Ionicons name="chatbox-ellipses-outline" size={16} color={colors.primary} />
+        <Text style={[styles.adminBtnText, { color: colors.primary }]}>{t('feedback.title')}</Text>
+      </TouchableOpacity>
+
       {/* ─── Admin Dashboard (nur für Admins) ─────────────── */}
       {isAdmin && (
         <TouchableOpacity

@@ -19,6 +19,7 @@ import StoreScreen from "./screens/StoreScreen";
 import AdminDashboardScreen from "./screens/AdminDashboardScreen";
 import BetaWelcomeScreen from "./screens/BetaWelcomeScreen";
 import LeaderboardScreen from "./screens/LeaderboardScreen";
+import FeedbackScreen from "./screens/FeedbackScreen";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppLoadingScreen from "./components/AppLoadingScreen";
@@ -85,6 +86,11 @@ function ShopStack({ isAdmin }) {
       >
         {(props) => <StoreScreen {...props} isAdmin={isAdmin} />}
       </Stack.Screen>
+      <Stack.Screen
+        name="Feedback"
+        component={FeedbackScreen}
+        options={{ title: t('feedback.title') }}
+      />
       {isAdmin && (
         <Stack.Screen
           name="AdminDashboard"
