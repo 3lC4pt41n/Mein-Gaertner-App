@@ -91,6 +91,9 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      - name: Create Google Service Account file
+        run: echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > ./google-service-account.json
+
       - name: Submit to Play Store (Internal)
         run: eas submit --platform android --profile production --latest --non-interactive
 
@@ -114,6 +117,9 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Create ASC API Key file
+        run: echo '${{ secrets.ASC_API_KEY_P8 }}' > ./asc-api-key.p8
 
       - name: Submit to App Store (TestFlight)
         run: eas submit --platform ios --profile production --latest --non-interactive

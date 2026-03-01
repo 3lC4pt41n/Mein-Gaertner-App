@@ -38,9 +38,11 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "tim.mergenthaler@icloud.com",
         "ascAppId": "6759793273",
-        "appleTeamId": "28BN8BX5M8"
+        "appleTeamId": "28BN8BX5M8",
+        "ascApiKeyPath": "./asc-api-key.p8",
+        "ascApiKeyId": "VQF5PUJ7FN",
+        "ascApiKeyIssuerId": "c1062983-69bb-4e51-a003-57a1b331a806"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
