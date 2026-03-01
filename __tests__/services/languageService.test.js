@@ -54,6 +54,13 @@ describe('normalizeLanguage', () => {
     expect(normalizeLanguage('Spanisch')).toBe('es');
   });
 
+  it('normalizes Russian language names', () => {
+    expect(normalizeLanguage('ru')).toBe('ru');
+    expect(normalizeLanguage('Russian')).toBe('ru');
+    expect(normalizeLanguage('русский')).toBe('ru');
+    expect(normalizeLanguage('Russisch')).toBe('ru');
+  });
+
   it('returns "de" for unknown languages', () => {
     expect(normalizeLanguage('portuguese')).toBe('de');
     expect(normalizeLanguage('japanese')).toBe('de');
@@ -77,6 +84,7 @@ describe('getLanguageLabel', () => {
     expect(getLanguageLabel('fr')).toBe('Français');
     expect(getLanguageLabel('it')).toBe('Italiano');
     expect(getLanguageLabel('es')).toBe('Español');
+    expect(getLanguageLabel('ru')).toBe('Русский');
   });
 
   it('returns "Deutsch" for unknown input', () => {
@@ -92,8 +100,8 @@ describe('getLanguageLabel', () => {
 });
 
 describe('LANGUAGE_OPTIONS', () => {
-  it('contains 5 supported languages', () => {
-    expect(LANGUAGE_OPTIONS).toHaveLength(5);
+  it('contains 6 supported languages', () => {
+    expect(LANGUAGE_OPTIONS).toHaveLength(6);
   });
 
   it('each option has code and label', () => {
