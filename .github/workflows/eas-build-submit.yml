@@ -6,11 +6,28 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build:
+  # ── 1. Tests ──────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+  # ── 2a. Android Build (parallel) ─────────────────────
+  build-android:
+    needs: test
     runs-on: ubuntu-latest
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -26,17 +43,77 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Run tests
-        run: npm test
-
       - name: Build Android
         run: eas build --platform android --profile production --non-interactive
+
+  # ── 2b. iOS Build (parallel) ─────────────────────────
+  build-ios:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build iOS
         run: eas build --platform ios --profile production --non-interactive
 
+  # ── 3a. Submit to Play Store ─────────────────────────
+  submit-android:
+    needs: build-android
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
       - name: Submit to Play Store (Internal)
         run: eas submit --platform android --profile production --latest --non-interactive
+
+  # ── 3b. Submit to App Store ──────────────────────────
+  submit-ios:
+    needs: build-ios
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Submit to App Store (TestFlight)
         run: eas submit --platform ios --profile production --latest --non-interactive

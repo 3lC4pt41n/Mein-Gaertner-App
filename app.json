@@ -26,7 +26,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.elcaptain.digitalergaertner",
-      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Wird benötigt, um Pflanzen zu fotografieren und per KI zu erkennen."
@@ -37,8 +36,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.elcaptain.digitalergaertner",
-      "versionCode": 1
+      "package": "com.elcaptain.digitalergaertner"
     },
     "web": {
       "favicon": "./assets/favicon.png"
