@@ -24,9 +24,6 @@ jobs:
       - name: Link Supabase project
         run: supabase link --project-ref $SUPABASE_PROJECT_REF
 
-      - name: Revert ghost migration 20260305 (was marked applied but never ran)
-        run: supabase migration repair --status reverted 20260305 2>/dev/null || true
-
       - name: Push database migrations
         run: supabase db push --include-all
 
@@ -38,3 +35,4 @@ jobs:
           supabase functions deploy ai-chat --no-verify-jwt
           supabase functions deploy ai-gardener-avatar --no-verify-jwt
           supabase functions deploy revenucat-webhook --no-verify-jwt
+          supabase functions deploy privacy-policy --no-verify-jwt
