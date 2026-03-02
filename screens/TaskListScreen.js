@@ -19,6 +19,7 @@ import {
 } from '../services/taskService';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AddTaskDialog from '../components/AddTaskDialog';
+import WeatherWidget from '../components/WeatherWidget';
 import { colors, spacing, radius, shadows, typography } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
@@ -204,6 +205,7 @@ export default function TaskScreen() {
       >
         {t('tasks.title')}
       </Text>
+      <WeatherWidget />
       {loading && (
         <ActivityIndicator
           size="large"

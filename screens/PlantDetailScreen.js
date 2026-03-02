@@ -16,8 +16,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { fetchLatestHealthcheck } from '../services/plantService';
+import { addDiaryEntry } from '../services/diaryService';
+import DiaryTimeline from '../components/DiaryTimeline';
+import PlantGallery from '../components/PlantGallery';
+import AddDiaryEntryDialog from '../components/AddDiaryEntryDialog';
 import { useNavigation } from '@react-navigation/native';
 import { t } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 
 // Helper zum Gruppieren Locations > Zonen
@@ -83,8 +88,11 @@ function ScoreCircle({ score = 0, label = 'Health' }) {
 export default function PlantDetailScreen({ route }) {
   const { plant } = route.params;
   const navigation = useNavigation();
+  const { userId } = useAuth();
 
   const [tab, setTab] = useState('overview');
+  const [showDiaryDialog, setShowDiaryDialog] = useState(false);
+  const [diaryKey, setDiaryKey] = useState(0); // to refresh diary after new entry
   const details = plant.details || {};
   const [healthcheck, setHealthcheck] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -117,10 +125,22 @@ export default function PlantDetailScreen({ route }) {
 
   const tabNames = [
     { key: 'overview', label: t('plants.tabOverview') },
+    { key: 'diary', label: t('plants.tabDiary') },
+    { key: 'gallery', label: t('plants.tabGallery') },
     { key: 'care', label: t('plants.tabCare') },
-    { key: 'extras', label: t('plants.tabExtras') },
     { key: 'health', label: t('plants.tabHealth') },
   ];
+
+  const handleSaveDiaryEntry = async ({ title, note, imageUri }) => {
+    try {
+      await addDiaryEntry({ plant_id: plant.id, user_id: userId, title, note, imageUri });
+      setShowDiaryDialog(false);
+      setDiaryKey(prev => prev + 1); // refresh diary
+      Alert.alert(t('common.success'), t('diary.entrySaved'));
+    } catch (e) {
+      Alert.alert(t('common.error'), e.message);
+    }
+  };
 
   // Aktuelle Zone inkl. Location-Namen laden (ohne PostgREST-Join)
   async function fetchAssignedZone() {
@@ -323,7 +343,23 @@ export default function PlantDetailScreen({ route }) {
         ))}
       </View>
 
-      {/* Tab Content */}
+      {/* Diary / Gallery tabs rendered outside the card */}
+      {tab === 'diary' && (
+        <View>
+          <TouchableOpacity
+            style={[styles.zoneBtn, { alignSelf: 'center', marginBottom: spacing.md }]}
+            onPress={() => setShowDiaryDialog(true)}
+          >
+            <Ionicons name="add" size={18} color={colors.surface} style={{ marginRight: spacing.xs }} />
+            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>{t('diary.addEntry')}</Text>
+          </TouchableOpacity>
+          <DiaryTimeline key={diaryKey} plantId={plant.id} />
+        </View>
+      )}
+      {tab === 'gallery' && <PlantGallery plantId={plant.id} />}
+
+      {/* Tab Content (care, health, overview) */}
+      {tab !== 'diary' && tab !== 'gallery' && (
       <View style={styles.card}>
         {tab === 'health' ? (
           loading ? (
@@ -400,6 +436,15 @@ export default function PlantDetailScreen({ route }) {
           <Text style={{ color: colors.textDisabled }}>{t('plants.noDetails')}</Text>
         )}
       </View>
+      )}
+
+      {/* Add Diary Entry Dialog */}
+      <AddDiaryEntryDialog
+        visible={showDiaryDialog}
+        onClose={() => setShowDiaryDialog(false)}
+        onSave={handleSaveDiaryEntry}
+        plantId={plant.id}
+      />
 
       {/* --------- Zone Picker Modal: SectionList mit Locations als Header --------- */}
       <Modal

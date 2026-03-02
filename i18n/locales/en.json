@@ -41,6 +41,8 @@
     "plants": "Plants",
     "addPlant": "Add Plant",
     "tasks": "Tasks",
+    "calendar": "Calendar",
+    "dex": "Plant-Dex",
     "leaderboard": "Ranking",
     "assistant": "My Gardener",
     "shop": "Shop",
@@ -108,9 +110,11 @@
     "plantsCount": "{{count}} Plants",
     "noZonePlants": "No plants in this zone.",
     "tabOverview": "Overview",
-    "tabCare": "Care & Placement",
+    "tabDiary": "Diary",
+    "tabGallery": "Gallery",
+    "tabCare": "Care",
     "tabExtras": "Extras",
-    "tabHealth": "Health Check",
+    "tabHealth": "Health",
     "healthLabel": "Health",
     "noHealthcheck": "No health check available.",
     "noDetails": "No details available.",
@@ -343,6 +347,76 @@
     "submit": "Send Feedback",
     "thankYou": "Thank you!",
     "successMessage": "Your feedback has been received. We read everything!"
+  },
+
+  "weather": {
+    "title": "Weather",
+    "humidity": "Humidity",
+    "rain": "Rain",
+    "frost": "Frost",
+    "heat": "Heat",
+    "noData": "No weather data",
+    "locationRequired": "Location is needed for weather data."
+  },
+
+  "diary": {
+    "title": "Diary",
+    "addEntry": "Add Entry",
+    "entrySaved": "Diary entry saved!",
+    "noEntries": "No entries yet",
+    "noEntriesHint": "Add photos and notes to document your plant's growth.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g. First bloom!",
+    "noteLabel": "Note",
+    "notePlaceholder": "What happened?",
+    "addPhoto": "Add Photo",
+    "loadMore": "Load more",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "types": {
+      "manual": "Note",
+      "healthcheck": "Health Check",
+      "task": "Task",
+      "discovery": "Discovery"
+    }
+  },
+
+  "gallery": {
+    "title": "Gallery",
+    "noPhotos": "No photos yet",
+    "noPhotosHint": "Photos from the diary will appear here.",
+    "photoCount": "{{current}} / {{total}}"
+  },
+
+  "calendar": {
+    "title": "Calendar",
+    "due": "Due",
+    "completed": "Completed",
+    "overdue": "Overdue",
+    "skipped": "Skipped"
+  },
+
+  "dex": {
+    "title": "Plant-Dex",
+    "progress": "{{discovered}} / {{total}} species discovered",
+    "filterAll": "All",
+    "filterDiscovered": "Mine",
+    "filterFirst": "First Discoveries",
+    "noSpecies": "No plant species in the database yet.",
+    "noneDiscovered": "You haven't discovered any species yet. Scan your first plant!",
+    "discoveredBy": "Discovered by {{count}} gardeners",
+    "firstDiscoverer": "First Discoverer",
+    "newDiscovery": "New species discovered!",
+    "firstDiscoveryTitle": "You are the first discoverer!",
+    "continue": "Continue",
+    "undiscovered": "???"
+  },
+
+  "ben": {
+    "taskCreated": "Task created",
+    "recurringTaskCreated": "Recurring task created",
+    "taskCreatedMessage": "{{type}} for {{plant}}, due on {{date}}",
+    "recurringTaskCreatedMessage": "{{type}} for {{plant}}, every {{days}} days"
   },
 
   "minor": {

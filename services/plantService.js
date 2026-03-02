@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { addAutoDiaryEntry } from './diaryService';
 
 // Slug aus Pflanzenname generieren: "Monstera Deliciosa" → "monstera-deliciosa-a3f2"
 function generateSlug(name) {
@@ -84,6 +85,17 @@ export async function saveHealthcheck({
     meta: { healthscore, prev_score: prevScore, delta },
   });
   if (eventError) console.warn('gardening_event log error:', eventError.message);
+
+  // Auto-diary entry for healthcheck
+  addAutoDiaryEntry({
+    plant_id,
+    user_id,
+    type: 'healthcheck',
+    title: `Healthcheck: ${healthscore}/100`,
+    note: summary,
+    image_url: null,
+    meta: { healthscore, delta },
+  }).catch(e => console.warn('Diary auto-entry error:', e.message));
 
   return data;
 }

@@ -41,6 +41,8 @@
     "plants": "Pflanzen",
     "addPlant": "Pflanze hinzufügen",
     "tasks": "Aufgaben",
+    "calendar": "Kalender",
+    "dex": "Pflanzen-Dex",
     "leaderboard": "Rangliste",
     "assistant": "Mein Gärtner",
     "shop": "Shop",
@@ -108,9 +110,11 @@
     "plantsCount": "{{count}} Pflanzen",
     "noZonePlants": "Keine Pflanzen in dieser Zone.",
     "tabOverview": "Überblick",
-    "tabCare": "Pflege & Standort",
+    "tabDiary": "Tagebuch",
+    "tabGallery": "Galerie",
+    "tabCare": "Pflege",
     "tabExtras": "Extras",
-    "tabHealth": "Healthcheck",
+    "tabHealth": "Health",
     "healthLabel": "Health",
     "noHealthcheck": "Kein Healthcheck vorhanden.",
     "noDetails": "Keine Details verfügbar.",
@@ -343,6 +347,76 @@
     "submit": "Feedback senden",
     "thankYou": "Danke!",
     "successMessage": "Dein Feedback ist angekommen. Wir lesen alles!"
+  },
+
+  "weather": {
+    "title": "Wetter",
+    "humidity": "Feuchtigkeit",
+    "rain": "Regen",
+    "frost": "Frost",
+    "heat": "Hitze",
+    "noData": "Keine Wetterdaten",
+    "locationRequired": "Standort wird für Wetterdaten benötigt."
+  },
+
+  "diary": {
+    "title": "Tagebuch",
+    "addEntry": "Eintrag hinzufügen",
+    "entrySaved": "Tagebuch-Eintrag gespeichert!",
+    "noEntries": "Noch keine Einträge",
+    "noEntriesHint": "Füge Fotos und Notizen hinzu, um das Wachstum deiner Pflanze zu dokumentieren.",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "z.B. Erste Blüte!",
+    "noteLabel": "Notiz",
+    "notePlaceholder": "Was ist passiert?",
+    "addPhoto": "Foto hinzufügen",
+    "loadMore": "Mehr laden",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "types": {
+      "manual": "Notiz",
+      "healthcheck": "Healthcheck",
+      "task": "Aufgabe",
+      "discovery": "Entdeckung"
+    }
+  },
+
+  "gallery": {
+    "title": "Galerie",
+    "noPhotos": "Noch keine Fotos",
+    "noPhotosHint": "Fotos aus dem Tagebuch erscheinen hier.",
+    "photoCount": "{{current}} / {{total}}"
+  },
+
+  "calendar": {
+    "title": "Kalender",
+    "due": "Fällig",
+    "completed": "Erledigt",
+    "overdue": "Überfällig",
+    "skipped": "Übersprungen"
+  },
+
+  "dex": {
+    "title": "Pflanzen-Dex",
+    "progress": "{{discovered}} / {{total}} Arten entdeckt",
+    "filterAll": "Alle",
+    "filterDiscovered": "Meine",
+    "filterFirst": "Erst-Entdeckungen",
+    "noSpecies": "Noch keine Pflanzenarten in der Datenbank.",
+    "noneDiscovered": "Du hast noch keine Arten entdeckt. Scanne deine erste Pflanze!",
+    "discoveredBy": "Entdeckt von {{count}} Gärtnern",
+    "firstDiscoverer": "Erst-Entdecker",
+    "newDiscovery": "Neue Art entdeckt!",
+    "firstDiscoveryTitle": "Du bist der Erst-Entdecker!",
+    "continue": "Weiter",
+    "undiscovered": "???"
+  },
+
+  "ben": {
+    "taskCreated": "Aufgabe erstellt",
+    "recurringTaskCreated": "Wiederkehrende Aufgabe erstellt",
+    "taskCreatedMessage": "{{type}} für {{plant}}, fällig am {{date}}",
+    "recurringTaskCreatedMessage": "{{type}} für {{plant}}, alle {{days}} Tage"
   },
 
   "minor": {

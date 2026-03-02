@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { addAutoDiaryEntry } from './diaryService';
 
 // ── Task-Gewichte für Punkteberechnung ─────────────────────
 // Schlüssel = die deutschen Strings, die in der DB gespeichert werden
@@ -181,7 +182,19 @@ export async function completeTask(task, user_id) {
     meta: { task_type: task.type, weight, late: isLate },
   });
 
-  // 4. Auto-Rescheduling bei Recurring Tasks
+  // 4. Auto-diary entry for task completion
+  if (task.plant_id) {
+    addAutoDiaryEntry({
+      plant_id: task.plant_id,
+      user_id: user_id,
+      type: 'task',
+      title: `${task.type} erledigt`,
+      note: task.note || null,
+      meta: { task_type: task.type, late: isLate },
+    }).catch(e => console.warn('Diary auto-entry error:', e.message));
+  }
+
+  // 5. Auto-Rescheduling bei Recurring Tasks
   if (task.template_id) {
     await rescheduleFromTemplate(task.template_id, task.due_at, user_id);
   }

@@ -20,6 +20,8 @@ import AdminDashboardScreen from "./screens/AdminDashboardScreen";
 import BetaWelcomeScreen from "./screens/BetaWelcomeScreen";
 import LeaderboardScreen from "./screens/LeaderboardScreen";
 import FeedbackScreen from "./screens/FeedbackScreen";
+import CalendarScreen from "./screens/CalendarScreen";
+import PlantDexScreen from "./screens/PlantDexScreen";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppLoadingScreen from "./components/AppLoadingScreen";
@@ -187,6 +189,8 @@ function AppContent() {
             else if (route.name === "MeinePflanzenTab") iconName = "leaf-outline";
             else if (route.name === "Pflanze hinzufügen") iconName = "add-circle-outline";
             else if (route.name === "Aufgaben") iconName = "clipboard-outline";
+            else if (route.name === "Kalender") iconName = "calendar-outline";
+            else if (route.name === "Pflanzen-Dex") iconName = "albums-outline";
             else if (route.name === "Rangliste") iconName = "trophy-outline";
             else if (route.name === "Mein Gärtner") iconName = "chatbox-ellipses-outline";
             else if (route.name === "Shop") iconName = "flash-outline";
@@ -219,6 +223,16 @@ function AppContent() {
         >
           {() => <TaskStack />}
         </Tab.Screen>
+        <Tab.Screen
+          name="Kalender"
+          component={CalendarScreen}
+          options={{ title: t('nav.calendar'), tabBarLabel: t('nav.calendar') }}
+        />
+        <Tab.Screen
+          name="Pflanzen-Dex"
+          component={PlantDexScreen}
+          options={{ title: t('nav.dex'), tabBarLabel: t('nav.dex') }}
+        />
         <Tab.Screen
           name="Rangliste"
           component={LeaderboardScreen}

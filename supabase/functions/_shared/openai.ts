@@ -16,6 +16,13 @@ export interface OpenAIResponse {
   total_tokens: number;
   cost_usd: number;
   model: string;
+  tool_calls?: Array<{
+    id: string;
+    function: {
+      name: string;
+      arguments: string;
+    };
+  }>;
 }
 
 export interface OpenAIImageEditResponse {
@@ -38,11 +45,28 @@ export async function callOpenAI(params: {
   model?: string;
   max_tokens?: number;
   temperature?: number;
+  tools?: any[];
+  tool_choice?: string | { type: string };
 }): Promise<OpenAIResponse> {
   const apiKey = Deno.env.get("OPENAI_API_KEY");
   if (!apiKey) throw new Error("OPENAI_API_KEY nicht konfiguriert");
 
   const model = params.model || "gpt-4o";
+
+  const body: Record<string, any> = {
+    model,
+    messages: params.messages,
+    max_tokens: params.max_tokens || 1500,
+    temperature: params.temperature ?? 0.3,
+  };
+
+  if (params.tools) {
+    body.tools = params.tools;
+  }
+
+  if (params.tool_choice) {
+    body.tool_choice = params.tool_choice;
+  }
 
   const res = await fetch(OPENAI_URL, {
     method: "POST",
@@ -50,12 +74,7 @@ export async function callOpenAI(params: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      messages: params.messages,
-      max_tokens: params.max_tokens || 1500,
-      temperature: params.temperature ?? 0.3,
-    }),
+    body: JSON.stringify(body),
   });
 
   const json = await res.json();
@@ -73,14 +92,21 @@ export async function callOpenAI(params: {
   const cost_usd =
     prompt_tokens * pricing.input + completion_tokens * pricing.output;
 
-  return {
-    content: json.choices?.[0]?.message?.content || "",
+  const message = json.choices?.[0]?.message || {};
+  const response: OpenAIResponse = {
+    content: message.content || "",
     prompt_tokens,
     completion_tokens,
     total_tokens,
     cost_usd,
     model,
   };
+
+  if (message.tool_calls) {
+    response.tool_calls = message.tool_calls;
+  }
+
+  return response;
 }
 
 export async function callOpenAIImageEdit(params: {

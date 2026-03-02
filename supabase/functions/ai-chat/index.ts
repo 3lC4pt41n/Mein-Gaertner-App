@@ -135,13 +135,139 @@ Playful but always respectful, friendly and encouraging.
 - If they have no plants yet, encourage them to add their first plant via the scan feature.
 - For plant diagnosis: ask about light, watering frequency, and recent changes before guessing.
 - Never recommend chemical pesticides without first suggesting natural alternatives.
-- If unsure, ask a follow-up question rather than guessing.`;
+- If unsure, ask a follow-up question rather than guessing.
+
+## TOOLS
+- You can create tasks for the user using the create_task and create_recurring_task functions.
+- When the user asks you to remind them, schedule something, or create a care plan, use these tools.
+- After creating a task, confirm what you created in a friendly message.
+- For recurring tasks, suggest reasonable intervals based on plant type and season.`;
 
   if (memorySummary) {
     prompt += `\n\n## PREVIOUS CONVERSATION CONTEXT\n${memorySummary}`;
   }
 
   return prompt;
+}
+
+// ─── Function Calling: Tool Definitions ────────────
+
+function buildTools() {
+  return [
+    {
+      type: 'function',
+      function: {
+        name: 'create_task',
+        description: 'Create a one-time plant care task for the user',
+        parameters: {
+          type: 'object',
+          properties: {
+            plant_name: { type: 'string', description: 'Name of the plant (must match an existing plant)' },
+            task_type: { type: 'string', enum: ['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges'], description: 'Type of task' },
+            due_date: { type: 'string', description: 'Due date in ISO format (YYYY-MM-DD)' },
+            note: { type: 'string', description: 'Optional note for the task' },
+          },
+          required: ['plant_name', 'task_type', 'due_date'],
+        },
+      },
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'create_recurring_task',
+        description: 'Create a recurring plant care task that repeats every N days',
+        parameters: {
+          type: 'object',
+          properties: {
+            plant_name: { type: 'string', description: 'Name of the plant (must match an existing plant)' },
+            task_type: { type: 'string', enum: ['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges'], description: 'Type of task' },
+            interval_days: { type: 'number', description: 'Interval in days between tasks' },
+            note: { type: 'string', description: 'Optional note for the task' },
+          },
+          required: ['plant_name', 'task_type', 'interval_days'],
+        },
+      },
+    },
+  ];
+}
+
+// ─── Tool Call Handler ────────────
+
+async function handleToolCall(
+  serviceClient: SupabaseClient,
+  userId: string,
+  toolCall: any,
+  plants: any[]
+): Promise<string> {
+  const fn = toolCall.function;
+  const args = JSON.parse(fn.arguments);
+
+  // Find plant by name (case-insensitive partial match)
+  const plant = plants.find((p: any) =>
+    p.name.toLowerCase().includes(args.plant_name.toLowerCase())
+  );
+
+  if (!plant) {
+    return JSON.stringify({ error: `Plant "${args.plant_name}" not found. Available plants: ${plants.map((p: any) => p.name).join(', ')}` });
+  }
+
+  if (fn.name === 'create_task') {
+    const dueAt = new Date(args.due_date + 'T09:00:00').toISOString();
+    const { data, error } = await serviceClient
+      .from('tasks')
+      .insert({
+        plant_id: plant.id,
+        user_id: userId,
+        type: args.task_type,
+        due_at: dueAt,
+        note: args.note || null,
+        state: 'DUE',
+      })
+      .select()
+      .single();
+
+    if (error) return JSON.stringify({ error: error.message });
+    return JSON.stringify({ success: true, task_type: args.task_type, plant_name: plant.name, due_date: args.due_date });
+  }
+
+  if (fn.name === 'create_recurring_task') {
+    const dueAt = new Date(Date.now() + args.interval_days * 86400000).toISOString();
+
+    // Upsert template
+    const { data: tpl, error: tplError } = await serviceClient
+      .from('task_templates')
+      .upsert({
+        user_id: userId,
+        plant_id: plant.id,
+        type: args.task_type,
+        interval_days: args.interval_days,
+        next_due_at: dueAt,
+        active: true,
+      }, { onConflict: 'user_id,plant_id,type' })
+      .select()
+      .single();
+
+    if (tplError) return JSON.stringify({ error: tplError.message });
+
+    // Create first task
+    const dedupeKey = `${tpl.id}:${new Date(dueAt).toISOString().slice(0, 10)}`;
+    await serviceClient
+      .from('tasks')
+      .insert({
+        plant_id: plant.id,
+        user_id: userId,
+        type: args.task_type,
+        due_at: dueAt,
+        state: 'DUE',
+        template_id: tpl.id,
+        dedupe_key: dedupeKey,
+        note: args.note || `Alle ${args.interval_days} Tage`,
+      });
+
+    return JSON.stringify({ success: true, task_type: args.task_type, plant_name: plant.name, interval_days: args.interval_days });
+  }
+
+  return JSON.stringify({ error: 'Unknown function' });
 }
 
 // ─── Server-seitige History laden + Signed URLs generieren ────────────
@@ -330,16 +456,18 @@ serve(async (req) => {
       throw e;
     }
 
-    // Sprache (DB-Profil) + Garden Context + Memory parallel laden
-    const [userLang, gardenContext, memoryData] = await Promise.all([
+    // Sprache (DB-Profil) + Garden Context + Memory + Plants parallel laden
+    const [userLang, gardenContext, memoryData, plantsData] = await Promise.all([
       getUserLanguage(serviceClient, userId, language),
       loadGardenContext(serviceClient, userId),
       serviceClient.from('chat_memory').select('summary').eq('user_id', userId).maybeSingle(),
+      serviceClient.from('plants').select('id, name').eq('user_id', userId),
     ]);
 
     const finalLanguage = userLang;
     const languagePromptName = getLanguagePromptName(finalLanguage);
     const memorySummary = memoryData?.data?.summary || null;
+    const userPlants = plantsData?.data || [];
     const systemPrompt = buildSystemPrompt(languagePromptName, gardenContext, memorySummary);
 
     // Token-Budget fuer History berechnen
@@ -373,7 +501,36 @@ serve(async (req) => {
         messages: chatMessages,
         temperature: 0.7,
         max_tokens: 500,
+        tools: buildTools(),
+        tool_choice: 'auto',
       });
+
+      // Handle function calling loop
+      if (result.tool_calls && result.tool_calls.length > 0) {
+        // Add assistant message with tool calls
+        chatMessages.push({
+          role: 'assistant',
+          content: result.content || null,
+          tool_calls: result.tool_calls,
+        });
+
+        // Execute each tool call
+        for (const toolCall of result.tool_calls) {
+          const toolResult = await handleToolCall(serviceClient, userId, toolCall, userPlants);
+          chatMessages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: toolResult,
+          });
+        }
+
+        // Get final response from GPT with tool results
+        result = await callOpenAI({
+          messages: chatMessages,
+          temperature: 0.7,
+          max_tokens: 500,
+        });
+      }
     } catch (e) {
       await refundCredits(serviceClient, userId, cost);
       throw e;
