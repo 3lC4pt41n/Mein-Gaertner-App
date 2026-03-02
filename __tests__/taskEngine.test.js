@@ -14,7 +14,7 @@ import {
   getTaskWeight,
   calcTaskPoints,
   calcSkipPoints,
-} from '../services/taskService';
+} from '../services/scoringHelpers';
 
 // ── Dedupe-Key Berechnung ───────────────────────────────────
 // Diese Helper-Funktion ist klein und kann inline bleiben

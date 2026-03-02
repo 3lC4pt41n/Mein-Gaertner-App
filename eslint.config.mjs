@@ -39,6 +39,7 @@ export default [
         navigator: 'readonly',
         // Jest globals
         describe: 'readonly',
+        test: 'readonly',
         it: 'readonly',
         expect: 'readonly',
         jest: 'readonly',

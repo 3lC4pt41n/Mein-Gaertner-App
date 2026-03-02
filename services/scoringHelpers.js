@@ -70,6 +70,18 @@ export function calcDiscoveryScore(events) {
  * @param {Array<string>} dates - Array von ISO-Datums-Strings
  * @returns {number} Streak-Länge (Anzahl aufeinanderfolgender Tage)
  */
+/**
+ * Berechnet das nächste Fälligkeitsdatum basierend auf Basis-Datum und Intervall.
+ * Wenn das Basis-Datum in der Vergangenheit liegt, wird ab jetzt gerechnet.
+ * @param {string} baseDueAt - ISO-Datums-String des Basis-Datums
+ * @param {number} intervalDays - Intervall in Tagen
+ * @returns {Date} Nächstes Fälligkeitsdatum
+ */
+export function computeNextDueAt(baseDueAt, intervalDays) {
+  const base = new Date(Math.max(new Date(baseDueAt).getTime(), Date.now()));
+  return new Date(base.getTime() + intervalDays * 86400000);
+}
+
 export function calcStreak(dates) {
   const uniqueDates = [...new Set(dates.map(d => new Date(d).toISOString().slice(0, 10)))]
     .sort()

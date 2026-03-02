@@ -1,9 +1,9 @@
 import { supabase } from '../supabase';
 import { addAutoDiaryEntry } from './diaryService';
-import { getTaskWeight, calcTaskPoints, calcSkipPoints } from './scoringHelpers';
+import { getTaskWeight, calcTaskPoints, calcSkipPoints, computeNextDueAt } from './scoringHelpers';
 
 // Re-export for backwards compatibility and tests
-export { getTaskWeight, calcTaskPoints, calcSkipPoints } from './scoringHelpers';
+export { getTaskWeight, calcTaskPoints, calcSkipPoints, computeNextDueAt } from './scoringHelpers';
 
 // ── Gardening-Event loggen (intern) ────────────────────────
 async function logGardeningEvent({ userId, eventType, plantId, taskId, points, meta = {} }) {
@@ -230,16 +230,7 @@ export async function skipTask(task, user_id, reason = "") {
 // Recurring-Task Logik
 // ═══════════════════════════════════════════════════════════
 
-/**
- * Berechnet nächstes Due-Date: interval_days ab dem späteren von
- * (geplantes due_at, jetzt). Verhindert "Drift in die Vergangenheit".
- *
- * Diese Funktion ist rein (keine DB-Abhängigkeit) und wird auch exportiert für Tests.
- */
-export function computeNextDueAt(baseDueAt, intervalDays) {
-  const base = new Date(Math.max(new Date(baseDueAt).getTime(), Date.now()));
-  return new Date(base.getTime() + intervalDays * 86400000);
-}
+// computeNextDueAt ist jetzt in scoringHelpers.js definiert und wird oben re-exportiert
 
 /**
  * Erzeugt idempotent die nächste Aufgabe für ein Template.

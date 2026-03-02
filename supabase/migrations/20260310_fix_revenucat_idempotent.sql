@@ -5,10 +5,10 @@
 -- Add UNIQUE constraint on provider_transaction_id (for non-null values)
 -- Create RPC function for atomic credit_purchase with deduplication
 
--- 1) Add UNIQUE constraint on provider_transaction_id
-ALTER TABLE public.transactions
-ADD CONSTRAINT transactions_provider_transaction_id_unique
-UNIQUE (provider_transaction_id) WHERE provider_transaction_id IS NOT NULL;
+-- 1) Add partial UNIQUE index on provider_transaction_id (for non-null values)
+CREATE UNIQUE INDEX IF NOT EXISTS transactions_provider_transaction_id_unique
+ON public.transactions (provider_transaction_id)
+WHERE provider_transaction_id IS NOT NULL;
 
 -- 2) Create RPC function for idempotent credit purchase
 CREATE OR REPLACE FUNCTION public.credit_purchase(
