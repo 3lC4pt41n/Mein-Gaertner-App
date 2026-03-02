@@ -1,24 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_REQUESTS = 50; // 50 requests per minute per IP
+const RATE_LIMIT_REQUESTS = 30; // 30 requests per minute per user
 
 /**
- * Check and enforce rate limiting by IP
+ * Check and enforce rate limiting by user ID (not spoofable like IP)
  */
-const checkRateLimit = (ip: string): boolean => {
+const checkRateLimit = (key: string): boolean => {
   const now = Date.now();
-  const limitData = RATE_LIMIT_MAP.get(ip);
+  const limitData = RATE_LIMIT_MAP.get(key);
 
   if (!limitData || now > limitData.resetTime) {
-    RATE_LIMIT_MAP.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    RATE_LIMIT_MAP.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
     return true;
   }
 
@@ -28,15 +29,6 @@ const checkRateLimit = (ip: string): boolean => {
 
   limitData.count++;
   return true;
-};
-
-/**
- * Get client IP from headers
- */
-const getClientIP = (req: Request): string => {
-  return req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-    req.headers.get("cf-connecting-ip") ||
-    "unknown";
 };
 
 /**
@@ -68,22 +60,38 @@ serve(async (req: Request) => {
   if (req.method !== "GET") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
-      headers: {
-        "Content-Type": "application/json",
-        ...CORS_HEADERS,
-      },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 
-  // Get client IP for rate limiting
-  const clientIP = getClientIP(req);
-  if (!checkRateLimit(clientIP)) {
+  // ── Authenticate via Supabase JWT ──────────────────────────
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return new Response(JSON.stringify({ error: "Missing authorization" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  }
+
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  }
+
+  // Rate-limit by authenticated user ID (not spoofable)
+  if (!checkRateLimit(user.id)) {
     return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
       status: 429,
-      headers: {
-        "Content-Type": "application/json",
-        ...CORS_HEADERS,
-      },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 
@@ -99,10 +107,7 @@ serve(async (req: Request) => {
   if (!validateCoordinates(lat, lon)) {
     return new Response(JSON.stringify({ error: "Invalid latitude or longitude" }), {
       status: 400,
-      headers: {
-        "Content-Type": "application/json",
-        ...CORS_HEADERS,
-      },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 
@@ -110,10 +115,7 @@ serve(async (req: Request) => {
   if (!["current", "forecast"].includes(type)) {
     return new Response(JSON.stringify({ error: "Invalid type parameter. Must be 'current' or 'forecast'" }), {
       status: 400,
-      headers: {
-        "Content-Type": "application/json",
-        ...CORS_HEADERS,
-      },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 
@@ -124,10 +126,7 @@ serve(async (req: Request) => {
       console.error("OPENWEATHER_API_KEY not configured");
       return new Response(JSON.stringify({ error: "API key not configured" }), {
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       });
     }
 
@@ -142,10 +141,7 @@ serve(async (req: Request) => {
       console.error(`OpenWeatherMap API error: ${weatherResponse.status}`);
       return new Response(JSON.stringify({ error: "Failed to fetch weather data" }), {
         status: weatherResponse.status,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       });
     }
 
@@ -163,10 +159,7 @@ serve(async (req: Request) => {
     console.error("Error in weather proxy:", error);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        ...CORS_HEADERS,
-      },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 });

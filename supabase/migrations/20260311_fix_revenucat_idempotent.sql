@@ -1,16 +1,19 @@
 -- ============================================================
 -- Migration: Fix RevenueCat webhook idempotency
--- Datum: 2026-03-10
+-- Datum: 2026-03-11
 -- ============================================================
--- Add UNIQUE constraint on provider_transaction_id (for non-null values)
--- Create RPC function for atomic credit_purchase with deduplication
+-- Full UNIQUE constraint on provider_transaction_id (non-null)
+-- RETURNING-based idempotency (no time-window heuristic)
 
--- 1) Add partial UNIQUE index on provider_transaction_id (for non-null values)
-CREATE UNIQUE INDEX IF NOT EXISTS transactions_provider_transaction_id_unique
-ON public.transactions (provider_transaction_id)
-WHERE provider_transaction_id IS NOT NULL;
+-- 1) Drop the partial index if it exists, replace with a proper UNIQUE constraint
+--    A full UNIQUE constraint works with ON CONFLICT (column) DO NOTHING.
+--    NULL values are always unique in PostgreSQL, so this is safe.
+DROP INDEX IF EXISTS transactions_provider_transaction_id_unique;
+ALTER TABLE public.transactions
+  ADD CONSTRAINT transactions_provider_transaction_id_key
+  UNIQUE (provider_transaction_id);
 
--- 2) Create RPC function for idempotent credit purchase
+-- 2) Create RPC function for idempotent credit purchase (RETURNING-based)
 CREATE OR REPLACE FUNCTION public.credit_purchase(
   p_user_id UUID,
   p_provider_transaction_id TEXT,
@@ -21,10 +24,9 @@ CREATE OR REPLACE FUNCTION public.credit_purchase(
 )
 RETURNS BOOLEAN AS $$
 DECLARE
-  v_inserted BOOLEAN;
+  v_new_id UUID;
 BEGIN
-  -- Insert transaction with ON CONFLICT DO NOTHING
-  -- Returns true if insert succeeded (new transaction), false if duplicate
+  -- INSERT ... RETURNING id: v_new_id is NULL when ON CONFLICT fires
   INSERT INTO public.transactions (
     user_id,
     type,
@@ -40,26 +42,16 @@ BEGIN
     p_amount_eur,
     p_provider_transaction_id
   )
-  ON CONFLICT (provider_transaction_id) DO NOTHING;
+  ON CONFLICT (provider_transaction_id) DO NOTHING
+  RETURNING id INTO v_new_id;
 
-  -- Check if the insert succeeded by seeing if row exists with this transaction_id
-  SELECT EXISTS(
-    SELECT 1 FROM public.transactions
-    WHERE provider_transaction_id = p_provider_transaction_id
-    AND created_at > now() - INTERVAL '1 second'
-  ) INTO v_inserted;
-
-  -- Only update balance if this was a new transaction (not a duplicate)
-  IF v_inserted THEN
-    -- Atomic increment: balance = balance + p_credits
-    UPDATE public.credit_balances
-    SET balance = balance + p_credits
-    WHERE user_id = p_user_id;
-
-    -- Ensure credit_balance exists for this user
+  -- Only update balance when the INSERT actually created a new row
+  IF v_new_id IS NOT NULL THEN
+    -- Upsert credit balance: insert or increment
     INSERT INTO public.credit_balances (user_id, balance)
     VALUES (p_user_id, p_credits)
-    ON CONFLICT (user_id) DO NOTHING;
+    ON CONFLICT (user_id)
+    DO UPDATE SET balance = credit_balances.balance + EXCLUDED.balance;
 
     RETURN TRUE;
   ELSE
@@ -68,7 +60,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 3) Create index on provider_transaction_id for faster lookups
+-- 3) Lookup index (the UNIQUE constraint already provides one, but keep
+--    an explicit partial index for queries that filter IS NOT NULL)
 CREATE INDEX IF NOT EXISTS idx_transactions_provider_transaction_id
 ON public.transactions(provider_transaction_id)
 WHERE provider_transaction_id IS NOT NULL;
