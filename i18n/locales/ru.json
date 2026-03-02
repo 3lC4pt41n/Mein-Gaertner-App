@@ -41,6 +41,8 @@
     "plants": "Растения",
     "addPlant": "Добавить растение",
     "tasks": "Задачи",
+    "calendar": "Календарь",
+    "dex": "Растение-Дex",
     "leaderboard": "Рейтинг",
     "assistant": "Мой Садовник",
     "shop": "Магазин",
@@ -108,6 +110,8 @@
     "plantsCount": "{{count}} растений",
     "noZonePlants": "В этой зоне нет растений.",
     "tabOverview": "Обзор",
+    "tabDiary": "Дневник",
+    "tabGallery": "Галерея",
     "tabCare": "Уход и размещение",
     "tabExtras": "Дополнительно",
     "tabHealth": "Проверка здоровья",
@@ -343,6 +347,76 @@
     "submit": "Отправить отзыв",
     "thankYou": "Спасибо!",
     "successMessage": "Ваш отзыв получен. Мы обязательно прочитаем его!"
+  },
+
+  "weather": {
+    "title": "Погода",
+    "humidity": "Влажность",
+    "rain": "Дождь",
+    "frost": "Мороз",
+    "heat": "Жара",
+    "noData": "Нет данных о погоде",
+    "locationRequired": "Для данных о погоде необходимо местоположение."
+  },
+
+  "diary": {
+    "title": "Дневник",
+    "addEntry": "Добавить запись",
+    "entrySaved": "Запись в дневнике сохранена!",
+    "noEntries": "Записей пока нет",
+    "noEntriesHint": "Добавляйте фото и заметки, чтобы документировать рост вашего растения.",
+    "titleLabel": "Заголовок",
+    "titlePlaceholder": "напр. Первый цветок!",
+    "noteLabel": "Заметка",
+    "notePlaceholder": "Что произошло?",
+    "addPhoto": "Добавить фото",
+    "loadMore": "Загрузить ещё",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "types": {
+      "manual": "Заметка",
+      "healthcheck": "Проверка здоровья",
+      "task": "Задача",
+      "discovery": "Открытие"
+    }
+  },
+
+  "gallery": {
+    "title": "Галерея",
+    "noPhotos": "Фото пока нет",
+    "noPhotosHint": "Фото из дневника появятся здесь.",
+    "photoCount": "{{current}} / {{total}}"
+  },
+
+  "calendar": {
+    "title": "Календарь",
+    "due": "К выполнению",
+    "completed": "Выполнено",
+    "overdue": "Просрочено",
+    "skipped": "Пропущено"
+  },
+
+  "dex": {
+    "title": "Растение-Дex",
+    "progress": "{{discovered}} / {{total}} видов обнаружено",
+    "filterAll": "Все",
+    "filterDiscovered": "Мои",
+    "filterFirst": "Первые открытия",
+    "noSpecies": "В базе данных пока нет видов растений.",
+    "noneDiscovered": "Вы ещё не обнаружили ни одного вида. Отсканируйте первое растение!",
+    "discoveredBy": "Обнаружено {{count}} садовниками",
+    "firstDiscoverer": "Первооткрыватель",
+    "newDiscovery": "Новый вид обнаружен!",
+    "firstDiscoveryTitle": "Вы первооткрыватель!",
+    "continue": "Продолжить",
+    "undiscovered": "???"
+  },
+
+  "ben": {
+    "taskCreated": "Задача создана",
+    "recurringTaskCreated": "Повторяющаяся задача создана",
+    "taskCreatedMessage": "{{type}} для {{plant}}, срок {{date}}",
+    "recurringTaskCreatedMessage": "{{type}} для {{plant}}, каждые {{days}} дней"
   },
 
   "minor": {

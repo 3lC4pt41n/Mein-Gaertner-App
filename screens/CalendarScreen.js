@@ -13,7 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { fetchTasks } from '../services/taskService';
 import WeatherWidget from '../components/WeatherWidget';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
-import { t } from '../i18n';
+import i18n, { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
 // ── Helpers ──────────────────────────────────────────
@@ -46,12 +46,23 @@ function toDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-const MONTH_NAMES_DE = [
-  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
-];
+// Locale-aware month name via Intl
+function getMonthName(year, month) {
+  const locale = i18n.locale || 'de';
+  return new Date(year, month, 1).toLocaleString(locale, { month: 'long' });
+}
 
-const DOW_HEADERS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+// Locale-aware day-of-week headers (Mon–Sun)
+function getDowHeaders() {
+  const locale = i18n.locale || 'de';
+  const headers = [];
+  // 2024-01-01 is a Monday
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(2024, 0, 1 + i);
+    headers.push(d.toLocaleString(locale, { weekday: 'short' }));
+  }
+  return headers;
+}
 
 // ── Main Component ──────────────────────────────────
 
@@ -140,7 +151,7 @@ export default function CalendarScreen() {
           <Ionicons name="chevron-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={styles.monthTitle}>
-          {MONTH_NAMES_DE[month]} {year}
+          {getMonthName(year, month)} {year}
         </Text>
         <TouchableOpacity onPress={goToNext} style={styles.navBtn}>
           <Ionicons name="chevron-forward" size={24} color={colors.primary} />
@@ -149,8 +160,8 @@ export default function CalendarScreen() {
 
       {/* Day-of-week headers */}
       <View style={styles.dowRow}>
-        {DOW_HEADERS.map((d) => (
-          <Text key={d} style={styles.dowText}>{d}</Text>
+        {getDowHeaders().map((d, i) => (
+          <Text key={i} style={styles.dowText}>{d}</Text>
         ))}
       </View>
 
@@ -236,7 +247,7 @@ export default function CalendarScreen() {
         >
           <TouchableOpacity style={styles.sheet} activeOpacity={1}>
             <Text style={styles.sheetTitle}>
-              {selectedDay && selectedDay.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {selectedDay && selectedDay.toLocaleDateString(i18n.locale || 'de', { weekday: 'long', day: 'numeric', month: 'long' })}
             </Text>
             {dayTasks.length === 0 ? (
               <Text style={{ textAlign: 'center', color: colors.textTertiary }}>{t('tasks.noTasks')}</Text>

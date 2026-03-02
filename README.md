@@ -10,17 +10,22 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 
 - **Pflanzen erkennen** -- Foto aufnehmen, GPT-4o identifiziert die Pflanze automatisch
 - **Healthcheck mit Score** -- KI-Bewertung des Pflanzenzustands per Bildanalyse (0-100)
-- **Chatbot "Ben"** -- Persoenlicher Gaertner-Assistent mit Chat-Verlauf & Bildanalyse
+- **Chatbot "Ben"** -- Persoenlicher Gaertner-Assistent mit Chat-Verlauf, Bildanalyse & Function Calling (Aufgaben erstellen, Wetter abfragen, Pflanzen nachschlagen)
+- **Pflanzen-Dex** -- Enzyklopaedie aller Pflanzenarten mit Entdeckungs-Tracking, Erst-Entdecker-Status und Fortschrittsanzeige
+- **Pflanzen-Tagebuch** -- Manuelle Eintraege mit Fotos, Auto-Logging von Healthchecks, Aufgaben & Entdeckungen, Timeline- und Galerie-Ansicht
+- **Wetterbasierte Pflege** -- Standortbasierte Wetterdaten (OpenWeather API), automatische Pflege-Aufgaben je nach Wetterlage
 - **Gaertner-Avatar** -- KI-generiertes Profilbild im Gaertner-Stil
-- **Aufgaben-System** -- Einmalige & wiederkehrende Aufgaben mit Auto-Rescheduling
+- **Aufgaben-System** -- Einmalige & wiederkehrende Aufgaben mit Auto-Rescheduling und Kalenderansicht
 - **Push-Benachrichtigungen** -- Lokale Erinnerungen fuer faellige Pflegeaufgaben
 - **Standort- & Zonen-Verwaltung** -- Mehrere Zuhause mit Raeumen, Balkon, Garten etc.
 - **Rangliste & Scoring** -- Gaertner-Score und Entdecker-Score mit Wettbewerb
 - **Credit-System** -- KI-Funktionen kosten Credits, kaufbar per Abo oder Einmalkauf
+- **Feedback-System** -- In-App Feedback (Bug, Feature, Sonstiges) direkt an die Datenbank
 - **Admin Dashboard** -- Tagesstatistiken, Nutzer-Details und Umsatz-Tracking
-- **5 Sprachen** -- Deutsch, English, Francais, Italiano, Espanol
+- **6 Sprachen** -- Deutsch, English, Français, Italiano, Español, Русский
 - **Offline-Erkennung** -- Banner bei fehlender Internetverbindung
 - **Design System** -- Einheitliche UI-Tokens, wiederverwendbare Komponenten
+- **DSGVO-konform** -- Datenschutzerklaerung, Konto-Loeschung mit 30-Tage-Frist, Cascade Delete
 
 ---
 
@@ -39,25 +44,27 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 │   ├── HomeManager.jsx           # Zuhause- & Zonen-Verwaltung (CRUD)
 │   ├── PlantListScreen.js        # Pflanzenliste mit Tabs (Alle / Zuhause)
 │   ├── AddPlantScreen.js         # Pflanze per Foto hinzufuegen (GPT-Scan)
-│   ├── PlantDetailScreen.js      # Pflanzendetails, Healthcheck, Zonenzuweisung
-│   ├── AssistantScreen.js        # Chat mit "Ben" (GPT-4o + Bildanalyse)
+│   ├── PlantDetailScreen.js      # Pflanzendetails, Healthcheck, Tagebuch, Zonenzuweisung
+│   ├── AssistantScreen.js        # Chat mit "Ben" (GPT-4o + Bildanalyse + Function Calling)
+│   ├── PlantDexScreen.js         # Pflanzen-Dex Enzyklopaedie mit Entdeckungs-Tracking
 │   ├── TaskListScreen.js         # Aufgabenuebersicht mit Erledigt/Uebersprungen
 │   ├── TaskDetailScreen.js       # Aufgabendetails & Historie
+│   ├── CalendarScreen.js         # Kalenderansicht fuer Aufgaben
+│   ├── TodayScreen.js            # Heutige Aufgaben
 │   ├── StoreScreen.js            # Credit-Shop (Abos + Einmalkaeufe)
 │   ├── LeaderboardScreen.js      # Rangliste (Woche/Monat/Gesamt)
+│   ├── FeedbackScreen.js         # In-App Feedback (Bug/Feature/Sonstiges)
 │   ├── AuthScreen.js             # Login / Registrierung / Passwort-Reset
 │   ├── ProfileCompleteScreen.js  # Profil vervollstaendigen + Avatar
 │   ├── DrawerProfileScreen.js    # Profil bearbeiten (Drawer)
 │   ├── AdminDashboardScreen.js   # Admin: Statistiken & User-Details
 │   ├── BetaWelcomeScreen.js      # Beta-Onboarding mit Credit-Erklaerung
-│   ├── CalendarScreen.js         # Kalenderansicht (Platzhalter)
-│   ├── TodayScreen.js            # Heutige Aufgaben
 │   └── MenuHomeScreen.js         # Menue-Uebersicht
 │
 ├── services/
 │   ├── aiService.js              # Edge-Function-Calls (Scan, Details, Health, Chat, Avatar)
 │   ├── creditService.js          # Credit-Guthaben, Usage-History, Transaktionen
-│   ├── purchaseService.js        # RevenueCat Init, Offerings, Käufe
+│   ├── purchaseService.js        # RevenueCat Init, Offerings, Kaeufe
 │   ├── taskService.js            # Aufgaben-CRUD, Recurring, Auto-Reschedule, Scoring
 │   ├── plantService.js           # Pflanzen-CRUD & Healthcheck-Speicherung
 │   ├── chatService.js            # Chat-Nachrichten speichern/laden
@@ -67,7 +74,10 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 │   ├── leaderboardService.js     # Ranking-Daten & Opt-in
 │   ├── discoveryService.js       # Entdecker-Score (neue Pflanzenarten)
 │   ├── notificationService.js    # Push-Notifications (Permissions, Scheduling)
-│   └── configService.js          # Konfigurationswerte aus Supabase
+│   ├── configService.js          # Konfigurationswerte aus Supabase
+│   ├── dexService.js             # Pflanzen-Dex: fetchDex, getDexProgress, getSpeciesDetails
+│   ├── diaryService.js           # Tagebuch: Eintraege, Auto-Logging, Galerie
+│   └── weatherService.js         # Wetter: OpenWeather API, Standort-Caching, Forecast
 │
 ├── components/
 │   ├── ErrorBoundary.js          # Fehler-Auffangkomponente mit Retry
@@ -76,7 +86,11 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 │   ├── AddTaskDialog.js          # Aufgabe erstellen (Modal)
 │   ├── CreditBadge.js            # Credit-Anzeige
 │   ├── HomeLocationForm.js       # Formular: Neues Zuhause anlegen
-│   └── DateTimePicker.js         # Datum/Zeit-Auswahl
+│   ├── DateTimePicker.js         # Datum/Zeit-Auswahl
+│   ├── DexCard.js                # Pflanzen-Dex Kartenkomponente
+│   ├── DiaryTimeline.js          # Tagebuch-Timeline mit Pagination
+│   ├── PlantGallery.js           # 3-Spalten Fotogalerie mit Lightbox
+│   └── WeatherWidget.js          # Wetteranzeige mit Icons & Temperatur
 │
 ├── hooks/
 │   └── useNetworkStatus.js       # NetInfo-basierter Connectivity-Hook
@@ -91,13 +105,14 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 │   └── DSInput.js                # Design-System Input
 │
 ├── i18n/
-│   ├── index.js                  # i18n-js Setup (5 Sprachen)
+│   ├── index.js                  # i18n-js Setup (6 Sprachen)
 │   └── locales/
-│       ├── de.json               # Deutsch (337 Keys)
+│       ├── de.json               # Deutsch
 │       ├── en.json               # English
-│       ├── fr.json               # Francais
+│       ├── es.json               # Español
+│       ├── fr.json               # Français
 │       ├── it.json               # Italiano
-│       └── es.json               # Espanol
+│       └── ru.json               # Русский
 │
 ├── __tests__/                    # 89 Tests, 7 Suites
 │   ├── scoring.test.js           # Scoring-Algorithmus
@@ -118,16 +133,27 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 │   │   ├── ai-plant-scan/        # Pflanzenerkennung per Foto
 │   │   ├── ai-plant-details/     # Detail-Generierung aus Name
 │   │   ├── ai-healthcheck/       # Gesundheits-Analyse per Bild
-│   │   ├── ai-chat/              # Chat mit Ben
+│   │   ├── ai-chat/              # Chat mit Ben (inkl. Function Calling)
 │   │   ├── ai-gardener-avatar/   # Avatar-Generierung
-│   │   └── revenucat-webhook/    # RevenueCat Abo-Webhook
-│   └── migrations/               # 11 SQL Migrationen
+│   │   ├── revenucat-webhook/    # RevenueCat Abo-Webhook
+│   │   └── privacy-policy/       # DSGVO-konforme Datenschutzerklaerung
+│   └── migrations/               # SQL Migrationen (inkl. Diary, Dex, Feedback, DSGVO)
 │
 ├── .github/workflows/            # CI/CD
 │   ├── ci.yml                    # Tests & Linting
-│   ├── eas-build-submit.yml      # EAS Build & Store-Upload
+│   ├── eas-build-submit.yml      # EAS Build & Store-Upload (Tag-getriggert)
 │   ├── eas-update.yml            # OTA Updates
 │   └── supabase-deploy.yml       # Edge Functions & Migrations
+│
+├── store-assets/                 # Google Play / App Store Grafiken
+│   ├── app-icon-512.*            # App-Symbol (512x512)
+│   ├── feature-graphic.*         # Vorstellungsgrafik (1024x500)
+│   └── screenshot-*.png          # Screenshots (1080x1920)
+│
+├── docs/
+│   └── privacy-policy.html       # Datenschutzerklaerung (GitHub Pages)
+│
+├── account-deletion.html         # Konto-Loeschseite (DE/EN, DSGVO)
 │
 ├── email-templates/              # Supabase Auth E-Mail-Templates
 │
@@ -148,6 +174,7 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 - [Expo Go](https://expo.dev/go) App auf dem Smartphone (fuer lokales Testing)
 - Supabase-Projekt mit konfigurierter DB, Auth, Storage und Edge Functions
 - RevenueCat-Projekt fuer In-App-Kaeufe (iOS + Android Keys)
+- OpenWeather API Key (fuer Wetter-Feature)
 
 ---
 
@@ -196,14 +223,17 @@ Smartphone / Browser
       │
       ├── AuthContext ──────────── Zentraler Auth-State (useAuth Hook)
       ├── Supabase Auth ────────── Login, Registrierung, Passwort-Reset, Google SSO
-      ├── Supabase DB ──────────── Pflanzen, Aufgaben, Locations, Zonen, Chat, Scores
-      ├── Supabase Storage ─────── Pflanzen-Bilder, Chat-Bilder, Avatare
+      ├── Supabase DB ──────────── Pflanzen, Aufgaben, Locations, Zonen, Chat, Scores,
+      │                            Tagebuch, Dex, Feedback
+      ├── Supabase Storage ─────── Pflanzen-Bilder, Chat-Bilder, Avatare, Tagebuch-Fotos
       ├── Edge Functions ───────── KI-Proxy (OpenAI Key bleibt server-seitig)
       │   ├── ai-plant-scan       Pflanzenerkennung
       │   ├── ai-plant-details    Detail-Generierung
       │   ├── ai-healthcheck      Gesundheits-Check
-      │   ├── ai-chat             Chat mit Ben
-      │   └── ai-gardener-avatar  Avatar-Erstellung
+      │   ├── ai-chat             Chat mit Ben (+ Function Calling)
+      │   ├── ai-gardener-avatar  Avatar-Erstellung
+      │   └── privacy-policy      Datenschutzerklaerung
+      ├── OpenWeather API ────────── Wetterdaten fuer standortbasierte Pflege
       ├── RevenueCat ───────────── In-App-Kaeufe (Abos + Einmal)
       └── expo-notifications ───── Lokale Push-Benachrichtigungen
 ```
@@ -211,6 +241,8 @@ Smartphone / Browser
 **Sicherheit:** Der OpenAI API Key liegt ausschliesslich in den Supabase Edge Functions. Das Frontend hat keinen direkten Zugriff. Alle KI-Aufrufe laufen ueber `supabase.functions.invoke()` mit JWT-Authentifizierung.
 
 **Credits:** Jede KI-Funktion verbraucht Credits. Die Abbuchung erfolgt atomar via PostgreSQL RPC (`deduct_credits`), um Race Conditions zu vermeiden.
+
+**DSGVO:** Vollstaendige Datenschutzerklaerung, Konto-Loeschung mit 30-Tage Hard-Delete, Cascade Delete fuer alle nutzerbezogenen Daten.
 
 ---
 
@@ -223,11 +255,13 @@ Smartphone / Browser
 | State           | React Context API (AuthContext)               |
 | Backend         | Supabase (PostgreSQL, Auth, Storage, Edge Fn) |
 | KI              | OpenAI GPT-4o (via Edge Functions)            |
+| Wetter          | OpenWeather API (Forecast + Current)          |
 | Navigation      | React Navigation 6 (Bottom Tabs + Stack)      |
 | UI              | React Native Paper + eigenes Design System    |
 | Payments        | RevenueCat (iOS + Android)                    |
 | i18n            | i18n-js (DE, EN, FR, IT, ES)                  |
 | Notifications   | expo-notifications (lokal)                    |
+| Standort        | expo-location                                 |
 | Offline         | @react-native-community/netinfo               |
 | Tests           | Jest 30 + React Testing Library               |
 | Linting         | ESLint (expo-config) + Prettier               |
@@ -259,9 +293,17 @@ Credits sind per Abo (33% guenstiger, monatlich aufgefuellt) oder als Einmalkauf
 
 ---
 
-## EAS Cloud Build
+## EAS Cloud Build & CI/CD
 
-Fuer native APK/IPA Builds:
+Builds werden automatisch per GitHub Actions getriggert (Tag-Push):
+
+```sh
+# Version taggen und pushen (triggert Build + Store-Submit)
+git tag v1.0.7
+git push origin v1.0.7
+```
+
+Manuell:
 
 ```sh
 # EAS CLI installieren
@@ -302,4 +344,4 @@ npx jest --coverage
 
 ## Lizenz
 
-MIT -- 2024/2025
+MIT -- 2024-2026

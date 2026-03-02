@@ -41,6 +41,8 @@
     "plants": "Piante",
     "addPlant": "Aggiungi pianta",
     "tasks": "Attività",
+    "calendar": "Calendario",
+    "dex": "Pianta-Dex",
     "leaderboard": "Classifica",
     "assistant": "Il Mio Giardiniere",
     "shop": "Negozio",
@@ -108,6 +110,8 @@
     "plantsCount": "{{count}} piante",
     "noZonePlants": "Nessuna pianta in questa zona.",
     "tabOverview": "Panoramica",
+    "tabDiary": "Diario",
+    "tabGallery": "Galleria",
     "tabCare": "Cura e posizione",
     "tabExtras": "Extra",
     "tabHealth": "Controllo salute",
@@ -343,6 +347,76 @@
     "submit": "Invia feedback",
     "thankYou": "Grazie!",
     "successMessage": "Il tuo feedback è stato ricevuto. Leggiamo tutto!"
+  },
+
+  "weather": {
+    "title": "Meteo",
+    "humidity": "Umidità",
+    "rain": "Pioggia",
+    "frost": "Gelo",
+    "heat": "Caldo",
+    "noData": "Nessun dato meteo",
+    "locationRequired": "La posizione è necessaria per i dati meteo."
+  },
+
+  "diary": {
+    "title": "Diario",
+    "addEntry": "Aggiungi voce",
+    "entrySaved": "Voce del diario salvata!",
+    "noEntries": "Ancora nessuna voce",
+    "noEntriesHint": "Aggiungi foto e note per documentare la crescita della tua pianta.",
+    "titleLabel": "Titolo",
+    "titlePlaceholder": "es. Primo fiore!",
+    "noteLabel": "Nota",
+    "notePlaceholder": "Cosa è successo?",
+    "addPhoto": "Aggiungi foto",
+    "loadMore": "Carica altro",
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "types": {
+      "manual": "Nota",
+      "healthcheck": "Controllo salute",
+      "task": "Attività",
+      "discovery": "Scoperta"
+    }
+  },
+
+  "gallery": {
+    "title": "Galleria",
+    "noPhotos": "Ancora nessuna foto",
+    "noPhotosHint": "Le foto dal diario appariranno qui.",
+    "photoCount": "{{current}} / {{total}}"
+  },
+
+  "calendar": {
+    "title": "Calendario",
+    "due": "In scadenza",
+    "completed": "Completata",
+    "overdue": "In ritardo",
+    "skipped": "Saltata"
+  },
+
+  "dex": {
+    "title": "Pianta-Dex",
+    "progress": "{{discovered}} / {{total}} specie scoperte",
+    "filterAll": "Tutte",
+    "filterDiscovered": "Le mie",
+    "filterFirst": "Prime scoperte",
+    "noSpecies": "Ancora nessuna specie nel database.",
+    "noneDiscovered": "Non hai ancora scoperto nessuna specie. Scansiona la tua prima pianta!",
+    "discoveredBy": "Scoperta da {{count}} giardinieri",
+    "firstDiscoverer": "Primo scopritore",
+    "newDiscovery": "Nuova specie scoperta!",
+    "firstDiscoveryTitle": "Sei il primo scopritore!",
+    "continue": "Continua",
+    "undiscovered": "???"
+  },
+
+  "ben": {
+    "taskCreated": "Attività creata",
+    "recurringTaskCreated": "Attività ricorrente creata",
+    "taskCreatedMessage": "{{type}} per {{plant}}, scadenza il {{date}}",
+    "recurringTaskCreatedMessage": "{{type}} per {{plant}}, ogni {{days}} giorni"
   },
 
   "minor": {
