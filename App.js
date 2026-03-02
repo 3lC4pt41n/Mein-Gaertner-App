@@ -1,38 +1,37 @@
 // App.js – Hauptnavigation mit RevenueCat + Credit Store
 // -----------------------------------------------------------
-import React, { useEffect, useRef } from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useRef } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import HomeManager from "./screens/HomeManager";
-import PlantListScreen from "./screens/PlantListScreen";
-import AddPlantScreen from "./screens/AddPlantScreen";
-import AssistantScreen from "./screens/AssistantScreen";
-import AuthScreen from "./screens/AuthScreen";
-import ProfileCompleteScreen from "./screens/ProfileCompleteScreen";
-import PlantDetailScreen from "./screens/PlantDetailScreen";
-import TaskListScreen from "./screens/TaskListScreen";
-import TaskDetailScreen from "./screens/TaskDetailScreen";
-import StoreScreen from "./screens/StoreScreen";
-import AdminDashboardScreen from "./screens/AdminDashboardScreen";
-import BetaWelcomeScreen from "./screens/BetaWelcomeScreen";
-import LeaderboardScreen from "./screens/LeaderboardScreen";
-import FeedbackScreen from "./screens/FeedbackScreen";
-import CalendarScreen from "./screens/CalendarScreen";
-import PlantDexScreen from "./screens/PlantDexScreen";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import ErrorBoundary from "./components/ErrorBoundary";
-import AppLoadingScreen from "./components/AppLoadingScreen";
-import OfflineBanner from "./components/OfflineBanner";
-import { t } from "./i18n";
-import { colors } from "./theme";
-import { supabase } from "./supabase";
+import HomeManager from './screens/HomeManager';
+import PlantListScreen from './screens/PlantListScreen';
+import AddPlantScreen from './screens/AddPlantScreen';
+import AssistantScreen from './screens/AssistantScreen';
+import AuthScreen from './screens/AuthScreen';
+import ProfileCompleteScreen from './screens/ProfileCompleteScreen';
+import PlantDetailScreen from './screens/PlantDetailScreen';
+import TaskListScreen from './screens/TaskListScreen';
+import TaskDetailScreen from './screens/TaskDetailScreen';
+import StoreScreen from './screens/StoreScreen';
+import AdminDashboardScreen from './screens/AdminDashboardScreen';
+import BetaWelcomeScreen from './screens/BetaWelcomeScreen';
+import LeaderboardScreen from './screens/LeaderboardScreen';
+import FeedbackScreen from './screens/FeedbackScreen';
+import CalendarScreen from './screens/CalendarScreen';
+import PlantDexScreen from './screens/PlantDexScreen';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
+import AppLoadingScreen from './components/AppLoadingScreen';
+import OfflineBanner from './components/OfflineBanner';
+import { t } from './i18n';
+import { colors } from './theme';
+import { supabase } from './supabase';
 import {
   registerForPushNotifications,
   addNotificationResponseListener,
-} from "./services/notificationService";
+} from './services/notificationService';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();

@@ -47,6 +47,7 @@ export default [
         afterEach: 'readonly',
         beforeAll: 'readonly',
         afterAll: 'readonly',
+        fail: 'readonly',
       },
     },
     rules: {
