@@ -1,19 +1,9 @@
 import { supabase } from '../supabase';
 import { addAutoDiaryEntry } from './diaryService';
+import { getTaskWeight, calcTaskPoints, calcSkipPoints } from './scoringHelpers';
 
-// ── Task-Gewichte für Punkteberechnung ─────────────────────
-// Schlüssel = die deutschen Strings, die in der DB gespeichert werden
-const TASK_WEIGHTS = {
-  'Gießen': 1,
-  'Düngen': 2,
-  'Umtopfen': 3,
-  'Healthcheck': 1,
-  'Sonstiges': 1,
-};
-
-function getTaskWeight(taskType) {
-  return TASK_WEIGHTS[taskType] || 1;
-}
+// Re-export for backwards compatibility and tests
+export { getTaskWeight, calcTaskPoints, calcSkipPoints } from './scoringHelpers';
 
 // ── Gardening-Event loggen (intern) ────────────────────────
 async function logGardeningEvent({ userId, eventType, plantId, taskId, points, meta = {} }) {
@@ -243,6 +233,8 @@ export async function skipTask(task, user_id, reason = "") {
 /**
  * Berechnet nächstes Due-Date: interval_days ab dem späteren von
  * (geplantes due_at, jetzt). Verhindert "Drift in die Vergangenheit".
+ *
+ * Diese Funktion ist rein (keine DB-Abhängigkeit) und wird auch exportiert für Tests.
  */
 export function computeNextDueAt(baseDueAt, intervalDays) {
   const base = new Date(Math.max(new Date(baseDueAt).getTime(), Date.now()));

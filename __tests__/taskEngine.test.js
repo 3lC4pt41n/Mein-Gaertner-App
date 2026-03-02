@@ -4,28 +4,20 @@
  * - Task-Gewichte mit deutschen Typ-Strings
  * - Dedupe-Key Generierung
  * - Edge Cases: DST, Vergangenheit, Zukunft
+ *
+ * WICHTIG: Die Funktionen werden aus den Production-Modulen importiert.
+ * Das garantiert, dass die Tests die echte Logik testen, nicht kopierte Logik.
  */
 
-// ── computeNextDueAt (aus taskService.js extrahiert) ────────
-function computeNextDueAt(baseDueAt, intervalDays) {
-  const base = new Date(Math.max(new Date(baseDueAt).getTime(), Date.now()));
-  return new Date(base.getTime() + intervalDays * 86400000);
-}
-
-// ── Task-Gewichte (aktualisiert: deutsche Schlüssel) ────────
-const TASK_WEIGHTS = {
-  'Gießen': 1,
-  'Düngen': 2,
-  'Umtopfen': 3,
-  'Healthcheck': 1,
-  'Sonstiges': 1,
-};
-
-function getTaskWeight(taskType) {
-  return TASK_WEIGHTS[taskType] || 1;
-}
+import {
+  computeNextDueAt,
+  getTaskWeight,
+  calcTaskPoints,
+  calcSkipPoints,
+} from '../services/taskService';
 
 // ── Dedupe-Key Berechnung ───────────────────────────────────
+// Diese Helper-Funktion ist klein und kann inline bleiben
 function computeDedupeKey(templateId, dueAtIso) {
   return `${templateId}:${new Date(dueAtIso).toISOString().slice(0, 10)}`;
 }
@@ -147,16 +139,6 @@ describe('Dedupe-Key', () => {
 });
 
 describe('Punkte-Berechnung mit deutschen Typ-Strings', () => {
-  function calcTaskPoints(taskType, isLate) {
-    const weight = getTaskWeight(taskType);
-    return isLate ? 0.4 * weight : 1.0 * weight;
-  }
-
-  function calcSkipPoints(taskType) {
-    const weight = getTaskWeight(taskType);
-    return -0.6 * weight;
-  }
-
   test('Gießen pünktlich: 1.0 Punkt', () => {
     expect(calcTaskPoints('Gießen', false)).toBe(1.0);
   });

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
+import { t } from '../i18n';
 
 const DexCard = ({ species, discovered, isFirstDiscoverer, onPress }) => {
   const handlePress = () => {

@@ -481,7 +481,8 @@ serve(async (req) => {
     // Chat-Nachrichten aufbauen
     const chatMessages: any[] = [{ role: 'system', content: systemPrompt }, ...historyMessages];
 
-    // Neue Nachricht (Text und/oder Bild)
+    // Neue Nachricht mit Bild (nur wenn Bild vorhanden)
+    // Text-only messages sind bereits in historyMessages vom DB-Load
     if (image_url) {
       chatMessages.push({
         role: 'user',
@@ -490,8 +491,6 @@ serve(async (req) => {
           { type: 'image_url', image_url: { url: image_url } },
         ],
       });
-    } else if (text) {
-      chatMessages.push({ role: 'user', content: text });
     }
 
     // OpenAI Call (Credits bereits abgezogen, Refund bei Fehler)

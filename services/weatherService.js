@@ -1,10 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
+import { SUPABASE_URL } from '../supabase.js';
 
-// API Configuration
-const OPENWEATHER_API_KEY = '<OPENWEATHER-API-KEY-REDACTED>';
-const WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/weather';
-const FORECAST_API_URL = 'https://api.openweathermap.org/data/2.5/forecast';
+// API Configuration - use Supabase Edge Function proxy
+const SUPABASE_WEATHER_PROXY = `${SUPABASE_URL}/functions/v1/weather-proxy`;
 
 // Cache Configuration
 const CACHE_KEY_WEATHER = '@weather_current';
@@ -74,11 +73,11 @@ const getLocation = async () => {
 };
 
 /**
- * Fetch current weather from OpenWeatherMap API
+ * Fetch current weather from Supabase Weather Proxy
  */
 const fetchWeatherFromAPI = async (latitude, longitude) => {
   try {
-    const url = `${WEATHER_API_URL}?lat=${latitude}&lon=${longitude}&appid=${OPENWEATHER_API_KEY}&units=metric`;
+    const url = `${SUPABASE_WEATHER_PROXY}?lat=${latitude}&lon=${longitude}&type=current&units=metric`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -105,11 +104,11 @@ const fetchWeatherFromAPI = async (latitude, longitude) => {
 };
 
 /**
- * Fetch weather forecast from OpenWeatherMap API
+ * Fetch weather forecast from Supabase Weather Proxy
  */
 const fetchForecastFromAPI = async (latitude, longitude, days = 5) => {
   try {
-    const url = `${FORECAST_API_URL}?lat=${latitude}&lon=${longitude}&appid=${OPENWEATHER_API_KEY}&units=metric`;
+    const url = `${SUPABASE_WEATHER_PROXY}?lat=${latitude}&lon=${longitude}&type=forecast&units=metric`;
     const response = await fetch(url);
 
     if (!response.ok) {

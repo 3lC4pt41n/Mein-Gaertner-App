@@ -22,10 +22,7 @@
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/native-stack": "^6.9.12",
     "@supabase/supabase-js": "^2.50.2",
-    "base-64": "^1.0.0",
     "buffer": "^6.0.3",
-    "classnames": "^2.3.2",
-    "dayjs": "^1.11.10",
     "expo": "^54.0.33",
     "expo-font": "~14.0.11",
     "expo-image-picker": "~17.0.10",
@@ -45,7 +42,6 @@
     "react-native-svg": "15.12.1",
     "react-native-tab-view": "^4.2.2",
     "react-native-url-polyfill": "^2.0.0",
-    "react-native-vector-icons": "^9.2.0",
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {

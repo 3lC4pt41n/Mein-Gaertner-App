@@ -30,11 +30,15 @@ export default function AddPlantScreen() {
       try {
         const bal = await fetchBalance();
         setBalance(bal);
-      } catch {}
+      } catch (e) {
+        console.warn('Failed to fetch balance:', e.message);
+      }
       try {
         const userLanguage = await fetchCurrentUserLanguage();
         setLanguage(userLanguage);
-      } catch {}
+      } catch (e) {
+        console.warn('Failed to fetch user language:', e.message);
+      }
     })();
   }, []);
 

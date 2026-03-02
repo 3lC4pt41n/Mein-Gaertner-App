@@ -30,7 +30,13 @@ export default [
         FormData: 'readonly',
         Blob: 'readonly',
         URL: 'readonly',
+        URLSearchParams: 'readonly',
         AbortController: 'readonly',
+        FileReader: 'readonly',
+        // Web globals
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
         // Jest globals
         describe: 'readonly',
         it: 'readonly',

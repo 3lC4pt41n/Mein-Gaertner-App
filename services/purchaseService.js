@@ -63,25 +63,28 @@ export const SUBSCRIPTION_PACKAGES = [
 ];
 
 // ─── RevenueCat initialisieren ──────────────────────────────────
-let isInitialized = false;
+let isConfigured = false;
 
 export async function initPurchases(userId) {
-  if (isInitialized) return;
+  // One-time SDK configuration
+  if (!isConfigured) {
+    try {
+      const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+      await Purchases.configure({ apiKey });
+      isConfigured = true;
+    } catch (e) {
+      console.warn('RevenueCat Konfiguration fehlgeschlagen:', e.message);
+      return;
+    }
+  }
 
+  // Always log in with the current user (for account switching)
   try {
-    const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
-
-    await Purchases.configure({ apiKey });
-
-    // Supabase User ID als RevenueCat App User ID setzen
     if (userId) {
       await Purchases.logIn(userId);
     }
-
-    isInitialized = true;
-    // RevenueCat erfolgreich initialisiert
   } catch (e) {
-    console.warn('RevenueCat Init fehlgeschlagen:', e.message);
+    console.warn('RevenueCat logIn fehlgeschlagen:', e.message);
   }
 }
 
@@ -165,5 +168,14 @@ export async function restorePurchases() {
     return info;
   } catch (e) {
     throw new Error('Wiederherstellen fehlgeschlagen: ' + e.message);
+  }
+}
+
+// ─── Logout / Reset RevenueCat ───────────────────────────────
+export async function logoutPurchases() {
+  try {
+    await Purchases.logOut();
+  } catch (e) {
+    console.warn('RevenueCat logOut fehlgeschlagen:', e.message);
   }
 }

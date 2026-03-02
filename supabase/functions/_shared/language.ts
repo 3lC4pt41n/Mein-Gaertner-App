@@ -1,4 +1,4 @@
-export type SupportedLanguage = "de" | "en" | "fr" | "it" | "es";
+export type SupportedLanguage = "de" | "en" | "fr" | "it" | "es" | "ru";
 
 const LANGUAGE_ALIASES: Record<string, SupportedLanguage> = {
   de: "de",
@@ -22,6 +22,9 @@ const LANGUAGE_ALIASES: Record<string, SupportedLanguage> = {
   español: "es",
   spanish: "es",
   spanisch: "es",
+  ru: "ru",
+  русский: "ru",
+  russian: "ru",
 };
 
 const LANGUAGE_PROMPT_NAMES: Record<SupportedLanguage, string> = {
@@ -30,6 +33,7 @@ const LANGUAGE_PROMPT_NAMES: Record<SupportedLanguage, string> = {
   fr: "French (Français)",
   it: "Italian (Italiano)",
   es: "Spanish (Español)",
+  ru: "Russian (Russisch)",
 };
 
 export function normalizeLanguage(input?: string | null): SupportedLanguage {

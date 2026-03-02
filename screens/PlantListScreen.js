@@ -26,20 +26,50 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// Fetch all plants with their latest healthcheck in a single query
+async function getPlantsWithHealthscores(userId) {
+  const plants = await fetchPlants(userId);
+
+  if (plants.length === 0) {
+    return plants;
+  }
+
+  // Fetch all latest healthchecks in ONE query instead of N queries
+  const plantIds = plants.map((p) => p.id);
+  const { data: healthchecks } = await supabase
+    .from('healthchecks')
+    .select('plant_id, healthscore')
+    .in('plant_id', plantIds)
+    .order('created_at', { ascending: false });
+
+  // Create a map of plant_id -> latest healthscore
+  const healthscoreMap = {};
+  if (healthchecks) {
+    for (let hc of healthchecks) {
+      // Only keep the first (latest) healthcheck per plant
+      if (!healthscoreMap[hc.plant_id]) {
+        healthscoreMap[hc.plant_id] = hc.healthscore;
+      }
+    }
+  }
+
+  // Merge healthscores into plants
+  const plantsWithScores = plants.map((plant) => ({
+    ...plant,
+    healthscore: healthscoreMap[plant.id] ?? null,
+  }));
+
+  return plantsWithScores;
+}
+
 // Dummy Service: Alle Pflanzen flach
 async function getAllPlants(userId) {
-  const plants = await fetchPlants(userId);
-  for (let plant of plants) {
-    const healthchecks = await fetchHealthchecks(plant.id);
-    plant.healthscore = healthchecks?.[0]?.healthscore ?? null;
-  }
-  return plants;
+  return getPlantsWithHealthscores(userId);
 }
 
 // Dummy Service: Pflanzen gruppiert nach location > zones > plants
-async function getGroupedPlants(userId) {
-  // Du solltest einen Service bauen, der alles auf einen Schlag holt.
-  // Hier ein Quick'n'Dirty Vorschlag:
+async function getGroupedPlants(userId, plants) {
+  // Reuse the same plants data that was already fetched
   const { data: locations } = await supabase
     .from('locations')
     .select('id, name')
@@ -51,13 +81,6 @@ async function getGroupedPlants(userId) {
       'location_id',
       (locations || []).map((l) => l.id)
     );
-  const { data: plants } = await supabase.from('plants').select('*').eq('user_id', userId);
-
-  // Healthcheck dazufügen
-  for (let plant of plants) {
-    const healthchecks = await fetchHealthchecks(plant.id);
-    plant.healthscore = healthchecks?.[0]?.healthscore ?? null;
-  }
 
   // Grouping: location > zones > plants
   return (locations || []).map((location) => ({
@@ -94,8 +117,10 @@ export default function PlantListScreen() {
   const loadAll = async () => {
     setLoading(true);
     try {
-      setAllPlants(await getAllPlants(userId));
-      setGrouped(await getGroupedPlants(userId));
+      // Fetch plants once with healthscores, then use for both views
+      const plants = await getPlantsWithHealthscores(userId);
+      setAllPlants(plants);
+      setGrouped(await getGroupedPlants(userId, plants));
     } catch (e) {
       Alert.alert(t('common.error'), e.message);
     } finally {

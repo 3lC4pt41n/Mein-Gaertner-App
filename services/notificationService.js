@@ -16,7 +16,7 @@ Notifications.setNotificationHandler({
 
 // ── Storage keys ────────────────────────────────────────────────────────────
 const NOTIFICATION_ID_PREFIX = 'notification_';
-const PUSH_TOKEN_KEY = 'expo_push_token';
+const PUSH_TOKEN_KEY_PREFIX = 'expo_push_token_';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Permissions
@@ -45,7 +45,7 @@ export async function requestNotificationPermissions() {
 
 /**
  * Get the Expo push token and store it in the user's profile.
- * Stores locally to avoid repeated calls.
+ * Stores locally to avoid repeated calls (scoped per user).
  * @param {string} userId - The user's Supabase ID
  * @param {object} supabase - Supabase client instance
  */
@@ -68,15 +68,16 @@ export async function registerForPushNotifications(userId, supabase) {
     const token = tokenData?.data;
     if (!token) return null;
 
-    // Only update DB if token changed
-    const storedToken = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
-    if (storedToken !== token) {
-      await supabase
-        .from('profiles')
-        .update({ push_token: token })
-        .eq('id', userId);
-      await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
-    }
+    // Use user-scoped cache key
+    const userPushTokenKey = `${PUSH_TOKEN_KEY_PREFIX}${userId}`;
+    const storedToken = await AsyncStorage.getItem(userPushTokenKey);
+
+    // Always write token for the active account, even if cached token matches
+    await supabase
+      .from('profiles')
+      .update({ push_token: token })
+      .eq('id', userId);
+    await AsyncStorage.setItem(userPushTokenKey, token);
 
     return token;
   } catch (e) {

@@ -30,9 +30,13 @@ serve(async (req) => {
 
   try {
     // RevenueCat Webhook Auth prüfen
+    const WEBHOOK_SECRET = Deno.env.get("REVENUCAT_WEBHOOK_SECRET");
+    if (!WEBHOOK_SECRET) {
+      throw new Error("REVENUCAT_WEBHOOK_SECRET is not configured");
+    }
+
     const authHeader = req.headers.get("Authorization");
-    const expectedToken = Deno.env.get("REVENUCAT_WEBHOOK_SECRET");
-    if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+    if (authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -70,33 +74,26 @@ serve(async (req) => {
         });
       }
 
-      // Credits gutschreiben
-      const { data: balance } = await serviceClient
-        .from("credit_balances")
-        .select("balance")
-        .eq("user_id", appUserId)
-        .single();
-
-      const currentBalance = balance?.balance || 0;
-
-      await serviceClient
-        .from("credit_balances")
-        .upsert({
-          user_id: appUserId,
-          balance: currentBalance + pkg.credits,
-        });
-
-      // Transaktion loggen
-      await serviceClient.from("transactions").insert([
+      // Credits gutschreiben (idempotent via RPC)
+      const { data: result, error } = await serviceClient.rpc(
+        "credit_purchase",
         {
-          user_id: appUserId,
-          type: pkg.type,
-          package_name: productId,
-          credits_added: pkg.credits,
-          amount_eur: event.price || 0,
-          provider_transaction_id: event.transaction_id || event.id,
-        },
-      ]);
+          p_user_id: appUserId,
+          p_provider_transaction_id: event.transaction_id || event.id,
+          p_package: productId,
+          p_credits: pkg.credits,
+          p_amount_eur: event.price || 0,
+          p_type: pkg.type,
+        }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      if (!result) {
+        console.log(`Duplicate webhook for transaction ${event.transaction_id || event.id}, skipping credit application`);
+      }
 
       // Abo-Status aktualisieren (falls Abo)
       if (SUB_PLANS[productId]) {

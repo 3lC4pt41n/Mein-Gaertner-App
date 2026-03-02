@@ -188,8 +188,8 @@ cd Mein-Gaertner-App
 # 2. Dependencies installieren
 npm install
 
-# 3. Supabase-Zugangsdaten in supabase.js konfigurieren
-#    SUPABASE_URL und SUPABASE_ANON_KEY eintragen
+# 3. (Optional) Supabase-Zugangsdaten in supabase.js - werden zur Runtime per Expo Config geladen
+#    Falls lokal entwickelt: SUPABASE_URL und SUPABASE_ANON_KEY im Expo Secret Manager setzen
 
 # 4. App starten
 npx expo start
@@ -203,7 +203,7 @@ Danach den QR-Code mit der Expo Go App scannen (iOS/Android).
 
 ```sh
 npm start          # Expo Dev Server starten
-npm test           # Jest Tests ausfuehren (89 Tests, 7 Suites)
+npm test           # Jest Tests ausfuehren (90 Tests, 7 Suites)
 npm run lint       # ESLint Pruefung
 npm run lint:fix   # ESLint Auto-Fix
 npm run format     # Prettier Formatierung
@@ -232,15 +232,17 @@ Smartphone / Browser
       │   ├── ai-healthcheck      Gesundheits-Check
       │   ├── ai-chat             Chat mit Ben (+ Function Calling)
       │   ├── ai-gardener-avatar  Avatar-Erstellung
+      │   ├── weather-proxy       Wetterdaten-Abfrage
+      │   ├── revenucat-webhook   RevenueCat Abo-Webhook
       │   └── privacy-policy      Datenschutzerklaerung
       ├── OpenWeather API ────────── Wetterdaten fuer standortbasierte Pflege
       ├── RevenueCat ───────────── In-App-Kaeufe (Abos + Einmal)
       └── expo-notifications ───── Lokale Push-Benachrichtigungen
 ```
 
-**Sicherheit:** Der OpenAI API Key liegt ausschliesslich in den Supabase Edge Functions. Das Frontend hat keinen direkten Zugriff. Alle KI-Aufrufe laufen ueber `supabase.functions.invoke()` mit JWT-Authentifizierung.
+**Sicherheit:** Der OpenAI API Key liegt ausschliesslich in den Supabase Edge Functions. Das Frontend hat keinen direkten Zugriff. Alle KI-Aufrufe laufen ueber `supabase.functions.invoke()`. Edge Functions werden ohne JWT-Verifikation deployt, validieren aber alle Requests (Authentifizierung, Rate-Limiting, Eingabedaten).
 
-**Credits:** Jede KI-Funktion verbraucht Credits. Die Abbuchung erfolgt atomar via PostgreSQL RPC (`deduct_credits`), um Race Conditions zu vermeiden.
+**Credits:** Die meisten KI-Funktionen verbrauchen Credits (Scan, Details, Healthcheck, Chat, Avatar). Die Avatar-Generierung wird nicht abgerechnet (cost_credits: 0). Die Abbuchung erfolgt atomar via PostgreSQL RPC (`deduct_credits`), um Race Conditions zu vermeiden.
 
 **DSGVO:** Vollstaendige Datenschutzerklaerung, Konto-Loeschung mit 30-Tage Hard-Delete, Cascade Delete fuer alle nutzerbezogenen Daten.
 
@@ -293,7 +295,28 @@ Credits sind per Abo (33% guenstiger, monatlich aufgefuellt) oder als Einmalkauf
 
 ---
 
-## EAS Cloud Build & CI/CD
+## Deployment & CI/CD
+
+### Edge Functions & Database (Supabase)
+
+Werden automatisch deployt via GitHub Actions beim Push zu `main`:
+
+```sh
+# .github/workflows/supabase-deploy.yml
+# Deployed automatisch bei Aenderungen in supabase/
+- ai-plant-scan
+- ai-plant-details
+- ai-healthcheck
+- ai-chat
+- ai-gardener-avatar
+- weather-proxy
+- revenucat-webhook
+- privacy-policy
+```
+
+Alle Edge Functions werden mit `--no-verify-jwt` deployt. Sie validieren Requests via Custom-Header und RPC-Token.
+
+### App Builds (EAS)
 
 Builds werden automatisch per GitHub Actions getriggert (Tag-Push):
 
@@ -331,7 +354,7 @@ npx jest __tests__/services/languageService.test.js
 npx jest --coverage
 ```
 
-**89 Tests** in 7 Suiten:
+**90 Tests** in 7 Suiten:
 - `taskEngine.test.js` -- Recurring Tasks, Catch-Up, Reschedule
 - `scoring.test.js` -- Punkteberechnung, Gewichtung
 - `languageService.test.js` -- Normalisierung, Aliase, Labels

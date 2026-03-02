@@ -1,4 +1,8 @@
 import { supabase } from '../supabase';
+import { calcDiscoveryScore, calcStreak } from './scoringHelpers';
+
+// Re-export for tests
+export { calcDiscoveryScore, calcStreak } from './scoringHelpers';
 
 // Score-Spalten-Mapping für Zeitfenster + Typ
 const SCORE_COLUMNS = {
@@ -38,21 +42,36 @@ export async function getLeaderboard(timeWindow = 'week', type = 'gardener', lim
 export async function getMyRank(userId, timeWindow = 'week', type = 'gardener') {
   const scoreCol = SCORE_COLUMNS[type]?.[timeWindow] || SCORE_COLUMNS.gardener.week;
 
-  // Alle Einträge absteigend sortiert holen und Position suchen
-  const { data, error } = await supabase
+  // Fetch user's score
+  const { data: userData, error: userError } = await supabase
     .from('leaderboard_public')
-    .select('user_id, ' + scoreCol)
-    .order(scoreCol, { ascending: false });
+    .select(scoreCol)
+    .eq('user_id', userId)
+    .single();
 
-  if (error) throw error;
+  if (userError || !userData) return null;
 
-  const index = (data || []).findIndex(e => e.user_id === userId);
-  if (index === -1) return null;
+  const userScore = userData[scoreCol];
+
+  // Count how many users have a higher score
+  const { count, error: countError } = await supabase
+    .from('leaderboard_public')
+    .select('*', { count: 'exact' })
+    .gt(scoreCol, userScore);
+
+  if (countError) throw countError;
+
+  // Get total leaderboard size
+  const { count: totalCount, error: totalError } = await supabase
+    .from('leaderboard_public')
+    .select('*', { count: 'exact' });
+
+  if (totalError) throw totalError;
 
   return {
-    rank: index + 1,
-    score: data[index][scoreCol],
-    total: data.length,
+    rank: (count || 0) + 1,
+    score: userScore,
+    total: totalCount || 0,
   };
 }
 
@@ -62,21 +81,33 @@ export async function getMyRank(userId, timeWindow = 'week', type = 'gardener') 
 export async function getMyNeighbors(userId, timeWindow = 'week', type = 'gardener', range = 5) {
   const scoreCol = SCORE_COLUMNS[type]?.[timeWindow] || SCORE_COLUMNS.gardener.week;
 
-  const { data, error } = await supabase
+  // Get user's rank first (with offset-based approach)
+  // Fetch a large window and find the user's position
+  const { data: rankedData, error: rankError } = await supabase
+    .from('leaderboard_public')
+    .select('user_id, ' + scoreCol)
+    .order(scoreCol, { ascending: false })
+    .limit(10000); // Get enough to find user position
+
+  if (rankError) throw rankError;
+  if (!rankedData || rankedData.length === 0) return [];
+
+  const userIndex = rankedData.findIndex(e => e.user_id === userId);
+  if (userIndex === -1) return [];
+
+  const start = Math.max(0, userIndex - range);
+  const end = Math.min(rankedData.length, userIndex + range + 1);
+
+  // Now fetch the neighbor window with full data
+  const { data: neighbors, error: neighborsError } = await supabase
     .from('leaderboard_public')
     .select('*')
-    .order(scoreCol, { ascending: false });
+    .order(scoreCol, { ascending: false })
+    .range(start, end - 1);
 
-  if (error) throw error;
-  if (!data || data.length === 0) return [];
+  if (neighborsError) throw neighborsError;
 
-  const index = data.findIndex(e => e.user_id === userId);
-  if (index === -1) return [];
-
-  const start = Math.max(0, index - range);
-  const end = Math.min(data.length, index + range + 1);
-
-  return data.slice(start, end).map((entry, i) => ({
+  return (neighbors || []).map((entry, i) => ({
     ...entry,
     rank: start + i + 1,
     score: entry[scoreCol],
@@ -91,7 +122,7 @@ export async function getMyStats(userId) {
   // Gardening-Punkte
   const { data: gardeningData, error: gErr } = await supabase
     .from('gardening_events')
-    .select('points, created_at')
+    .select('points, event_type, created_at')
     .eq('user_id', userId);
 
   if (gErr) throw gErr;
@@ -118,46 +149,26 @@ export async function getMyStats(userId) {
     .reduce((sum, e) => sum + Number(e.points), 0);
 
   // Discovery Scores
-  const calcDiscovery = (events) =>
-    events.length + 5 * events.filter(e => e.is_first).length;
-
-  const discoveryAll = calcDiscovery(discoveryData);
-  const discoveryWeek = calcDiscovery(discoveryData.filter(e => new Date(e.created_at) > weekAgo));
-  const discoveryMonth = calcDiscovery(discoveryData.filter(e => new Date(e.created_at) > monthAgo));
+  const discoveryAll = calcDiscoveryScore(discoveryData);
+  const discoveryWeek = calcDiscoveryScore(discoveryData.filter(e => new Date(e.created_at) > weekAgo));
+  const discoveryMonth = calcDiscoveryScore(discoveryData.filter(e => new Date(e.created_at) > monthAgo));
 
   // Streak berechnen (aufeinanderfolgende Tage mit Aktivität)
   const allDates = [
     ...gardeningData.map(e => e.created_at),
     ...discoveryData.map(e => e.created_at),
-  ]
-    .map(d => new Date(d).toISOString().slice(0, 10))
-    .filter((v, i, a) => a.indexOf(v) === i)
-    .sort()
-    .reverse();
+  ];
 
-  let streak = 0;
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-
-  if (allDates[0] === today || allDates[0] === yesterday) {
-    streak = 1;
-    for (let i = 1; i < allDates.length; i++) {
-      const prev = new Date(allDates[i - 1]);
-      const curr = new Date(allDates[i]);
-      const diff = (prev - curr) / 86400000;
-      if (diff === 1) streak++;
-      else break;
-    }
-  }
+  const streak = calcStreak(allDates);
 
   // Task-Quote
   const tasksTotal = gardeningData.filter(e =>
-    ['task_completed_on_time', 'task_completed_late', 'task_skipped'].includes(
-      // points > 0 = completed, points < 0 = skipped (vereinfacht)
-    )
+    ['task_completed_on_time', 'task_completed_late', 'task_skipped'].includes(e.event_type)
   ).length;
 
-  const tasksOnTime = gardeningData.filter(e => Number(e.points) > 0).length;
+  const tasksOnTime = gardeningData.filter(e =>
+    ['task_completed_on_time', 'task_completed_late'].includes(e.event_type)
+  ).length;
 
   return {
     gardenerScore: { week: gardenerScoreWeek, month: gardenerScoreMonth, all: gardenerScoreAll },

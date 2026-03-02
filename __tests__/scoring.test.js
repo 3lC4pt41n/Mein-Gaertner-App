@@ -6,113 +6,74 @@
  * - Healthcheck-Bonus
  * - Discovery-Score-Berechnung
  * - Streak-Berechnung
+ *
+ * WICHTIG: Die Funktionen werden aus den Production-Modulen importiert.
+ * Das garantiert, dass die Tests die echte Logik testen, nicht kopierte Logik.
  */
 
-// ── Task-Gewichtung (aus taskService.js extrahiert) ────────
-
-const TASK_WEIGHTS = {
-  watering: 1,
-  fertilizing: 2,
-  repotting: 3,
-};
-
-function getTaskWeight(taskType) {
-  return TASK_WEIGHTS[taskType] || 1;
-}
-
-function calcTaskPoints(taskType, isLate) {
-  const weight = getTaskWeight(taskType);
-  return isLate ? 0.4 * weight : 1.0 * weight;
-}
-
-function calcSkipPoints(taskType) {
-  const weight = getTaskWeight(taskType);
-  return -0.6 * weight;
-}
-
-// ── Healthcheck-Bonus (aus plantService.js extrahiert) ─────
-
-function calcHealthcheckPoints(currentScore, prevScore) {
-  const delta = prevScore !== null ? currentScore - prevScore : 0;
-  return 0.2 + 0.05 * Math.max(0, delta);
-}
-
-// ── Discovery-Score (aus leaderboard_public View-Logik) ────
-
-function calcDiscoveryScore(events) {
-  return events.length + 5 * events.filter(e => e.is_first).length;
-}
-
-// ── Streak-Berechnung (aus leaderboardService.js) ──────────
-
-function calcStreak(dates) {
-  const uniqueDates = [...new Set(dates.map(d => new Date(d).toISOString().slice(0, 10)))]
-    .sort()
-    .reverse();
-
-  if (uniqueDates.length === 0) return 0;
-
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-
-  if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0;
-
-  let streak = 1;
-  for (let i = 1; i < uniqueDates.length; i++) {
-    const prev = new Date(uniqueDates[i - 1]);
-    const curr = new Date(uniqueDates[i]);
-    const diff = (prev - curr) / 86400000;
-    if (diff === 1) streak++;
-    else break;
-  }
-  return streak;
-}
+import {
+  getTaskWeight,
+  calcTaskPoints,
+  calcSkipPoints,
+  calcHealthcheckPoints,
+  calcDiscoveryScore,
+  calcStreak,
+} from '../services/scoringHelpers';
 
 // ═══════════════════════════════════════════════════════════
 // Tests
 // ═══════════════════════════════════════════════════════════
 
 describe('Task-Gewichtung', () => {
-  test('watering = Gewicht 1', () => {
-    expect(getTaskWeight('watering')).toBe(1);
+  test('Gießen = Gewicht 1', () => {
+    expect(getTaskWeight('Gießen')).toBe(1);
   });
 
-  test('fertilizing = Gewicht 2', () => {
-    expect(getTaskWeight('fertilizing')).toBe(2);
+  test('Düngen = Gewicht 2', () => {
+    expect(getTaskWeight('Düngen')).toBe(2);
   });
 
-  test('repotting = Gewicht 3', () => {
-    expect(getTaskWeight('repotting')).toBe(3);
+  test('Umtopfen = Gewicht 3', () => {
+    expect(getTaskWeight('Umtopfen')).toBe(3);
+  });
+
+  test('Healthcheck = Gewicht 1', () => {
+    expect(getTaskWeight('Healthcheck')).toBe(1);
+  });
+
+  test('Sonstiges = Gewicht 1', () => {
+    expect(getTaskWeight('Sonstiges')).toBe(1);
   });
 
   test('unbekannter Typ = Fallback 1', () => {
-    expect(getTaskWeight('pruning')).toBe(1);
+    expect(getTaskWeight('Schneiden')).toBe(1);
     expect(getTaskWeight(undefined)).toBe(1);
+    expect(getTaskWeight('')).toBe(1);
   });
 });
 
 describe('Task-Punkte', () => {
   test('pünktlich erledigt: volle Punkte', () => {
-    expect(calcTaskPoints('watering', false)).toBe(1.0);
-    expect(calcTaskPoints('fertilizing', false)).toBe(2.0);
-    expect(calcTaskPoints('repotting', false)).toBe(3.0);
+    expect(calcTaskPoints('Gießen', false)).toBe(1.0);
+    expect(calcTaskPoints('Düngen', false)).toBe(2.0);
+    expect(calcTaskPoints('Umtopfen', false)).toBe(3.0);
   });
 
   test('verspätet erledigt: 40% der Punkte', () => {
-    expect(calcTaskPoints('watering', true)).toBeCloseTo(0.4);
-    expect(calcTaskPoints('fertilizing', true)).toBeCloseTo(0.8);
-    expect(calcTaskPoints('repotting', true)).toBeCloseTo(1.2);
+    expect(calcTaskPoints('Gießen', true)).toBeCloseTo(0.4);
+    expect(calcTaskPoints('Düngen', true)).toBeCloseTo(0.8);
+    expect(calcTaskPoints('Umtopfen', true)).toBeCloseTo(1.2);
   });
 
   test('übersprungen: negative Punkte (-60%)', () => {
-    expect(calcSkipPoints('watering')).toBeCloseTo(-0.6);
-    expect(calcSkipPoints('fertilizing')).toBeCloseTo(-1.2);
-    expect(calcSkipPoints('repotting')).toBeCloseTo(-1.8);
+    expect(calcSkipPoints('Gießen')).toBeCloseTo(-0.6);
+    expect(calcSkipPoints('Düngen')).toBeCloseTo(-1.2);
+    expect(calcSkipPoints('Umtopfen')).toBeCloseTo(-1.8);
   });
 
   test('Punkte-Balance: complete > skip (netto positiv)', () => {
-    const complete = calcTaskPoints('watering', false);
-    const skip = calcSkipPoints('watering');
+    const complete = calcTaskPoints('Gießen', false);
+    const skip = calcSkipPoints('Gießen');
     expect(complete + skip).toBeGreaterThan(0);
   });
 });
