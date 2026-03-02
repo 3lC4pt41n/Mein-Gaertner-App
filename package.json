@@ -30,6 +30,7 @@
     "expo-font": "~14.0.11",
     "expo-image-picker": "~17.0.10",
     "expo-localization": "~17.0.8",
+    "expo-location": "~19.0.8",
     "expo-notifications": "^0.32.16",
     "expo-updates": "~29.0.16",
     "i18n-js": "^4.5.2",
@@ -52,13 +53,13 @@
     "@jest/globals": "^30.2.0",
     "@testing-library/react-native": "^13.3.3",
     "@types/react": "~19.1.10",
-    "eslint": "^10.0.2",
+    "eslint": "^9.0.0",
     "eslint-config-expo": "^55.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "jest": "^30.2.0",
     "prettier": "^3.8.1",
-    "react-test-renderer": "^19.1.0",
+    "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
   },
   "private": true
