@@ -12,6 +12,8 @@ BEGIN;
 --    Returns: { rank, score, total }
 --    Uses dense_rank() window function – no full table scan needed
 --    on the client.
+--    SECURITY: SET search_path = public prevents search_path hijacking
+--    in SECURITY DEFINER context (CWE-340 / Supabase best practice).
 -- -------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_my_rank(
   p_score_column text,
@@ -21,6 +23,7 @@ RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
+SET search_path = public
 AS $$
 DECLARE
   result jsonb;
@@ -66,6 +69,7 @@ $$;
 -- 2. get_my_neighbors(score_column, p_user_id, p_range)
 --    Returns: array of { user_id, display_name, score, rank, is_me }
 --    Fetches ±range rows around the caller's position.
+--    SECURITY: SET search_path = public (same rationale as get_my_rank).
 -- -------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_my_neighbors(
   p_score_column text,
@@ -76,6 +80,7 @@ RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
+SET search_path = public
 AS $$
 DECLARE
   result jsonb;

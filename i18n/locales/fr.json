@@ -390,7 +390,9 @@
     "noData": "Pas de données météo",
     "locationRequired": "La localisation est nécessaire pour les données météo.",
     "unavailable": "Météo indisponible",
-    "tapToRetry": "Appuyez pour réessayer"
+    "tapToRetry": "Appuyez pour réessayer",
+    "locationDenied": "Accès à la localisation refusé",
+    "locationDeniedAction": "Ouvrir les réglages"
   },
   "diary": {
     "title": "Journal",

@@ -23,6 +23,15 @@ jest.mock('expo-image-picker', () => ({
   MediaTypeOptions: { Images: 'Images' },
 }));
 
+// Mock expo-location
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  getCurrentPositionAsync: jest.fn().mockResolvedValue({
+    coords: { latitude: 52.52, longitude: 13.405 },
+  }),
+  Accuracy: { Balanced: 3 },
+}));
+
 // Mock expo-localization
 jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'de' }],
@@ -95,6 +104,7 @@ jest.mock('./supabase', () => ({
     functions: {
       invoke: jest.fn(),
     },
+    rpc: jest.fn(),
     storage: {
       from: jest.fn().mockReturnValue({
         upload: jest.fn(),

@@ -12,3 +12,4 @@ dist/
 .claude/
 supabase/.temp/
 AUDIT_*.md
+ACTION_PLAN_*.md

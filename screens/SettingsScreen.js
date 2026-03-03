@@ -30,10 +30,7 @@ import { generateGardenerAvatar } from '../services/aiService';
 import { openManageSubscriptions } from '../services/purchaseService';
 import { rescheduleAllTaskReminders } from '../services/notificationService';
 import { fetchTasks } from '../services/taskService';
-
-// ---------- Feature Flags ---------------------------------------------
-const SHOW_ACCOUNT_DELETION = false;
-const SHOW_TERMS_LINK = false;
+import { SHOW_TERMS_LINK } from '../services/featureFlags';
 
 // ---------- Helpers ---------------------------------------------------
 
@@ -250,32 +247,6 @@ export default function SettingsScreen({ navigation }) {
     );
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      t('settings.deleteConfirmTitle'),
-      t('settings.deleteConfirmMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('settings.deleteConfirmButton'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Soft-delete: mark profile for deletion, then sign out
-              await supabase
-                .from('profiles')
-                .update({ deleted_at: new Date().toISOString() })
-                .eq('id', user.id);
-              await signOut();
-            } catch (error) {
-              Alert.alert(t('common.error'), error.message);
-            }
-          },
-        },
-      ]
-    );
-  };
-
   const handleManageSubscription = async () => {
     try {
       await openManageSubscriptions();
@@ -455,16 +426,6 @@ export default function SettingsScreen({ navigation }) {
           {t('settings.logout')}
         </DSButton>
 
-        {SHOW_ACCOUNT_DELETION ? (
-          <DSButton
-            variant="danger"
-            fullWidth
-            icon="trash-outline"
-            onPress={handleDeleteAccount}
-          >
-            {t('settings.deleteAccount')}
-          </DSButton>
-        ) : null}
       </DSCard>
 
       {/* ========== INFO SECTION ========== */}

@@ -390,7 +390,9 @@
     "noData": "No weather data",
     "locationRequired": "Location is needed for weather data.",
     "unavailable": "Weather unavailable",
-    "tapToRetry": "Tap to retry"
+    "tapToRetry": "Tap to retry",
+    "locationDenied": "Location access denied",
+    "locationDeniedAction": "Open settings"
   },
   "diary": {
     "title": "Diary",

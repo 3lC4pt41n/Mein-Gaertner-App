@@ -1,3 +1,22 @@
+/**
+ * Leaderboard Service
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Architecture decision (2026-03-13):
+ *   getMyRank() and getMyNeighbors() now use server-side RPCs with
+ *   dense_rank() window functions instead of fetching the full
+ *   leaderboard_public view and ranking client-side.
+ *
+ *   Rationale: The previous approach performed a full-table-scan on the
+ *   leaderboard_public view for every "my rank" request. With RPC, only
+ *   a single-row result (or a small neighborhood) is returned.
+ *
+ *   getLeaderboard() still reads from the view with .limit(50), which is
+ *   acceptable because Top-N queries are inherently bounded.
+ *
+ *   The RPCs use SECURITY DEFINER + SET search_path = public to prevent
+ *   search_path hijacking (Supabase best practice).
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 import { supabase } from '../supabase';
 import { calcDiscoveryScore, calcStreak } from './scoringHelpers';
 

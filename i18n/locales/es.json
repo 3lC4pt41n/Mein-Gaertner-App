@@ -390,7 +390,9 @@
     "noData": "Sin datos meteorológicos",
     "locationRequired": "Se necesita ubicación para los datos meteorológicos.",
     "unavailable": "Tiempo no disponible",
-    "tapToRetry": "Toca para reintentar"
+    "tapToRetry": "Toca para reintentar",
+    "locationDenied": "Acceso a ubicación denegado",
+    "locationDeniedAction": "Abrir ajustes"
   },
   "diary": {
     "title": "Diario",

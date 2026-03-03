@@ -390,7 +390,9 @@
     "noData": "Keine Wetterdaten",
     "locationRequired": "Standort wird für Wetterdaten benötigt.",
     "unavailable": "Wetter nicht verfügbar",
-    "tapToRetry": "Tippen zum Aktualisieren"
+    "tapToRetry": "Tippen zum Aktualisieren",
+    "locationDenied": "Standortzugriff nicht erlaubt",
+    "locationDeniedAction": "Einstellungen öffnen"
   },
   "diary": {
     "title": "Tagebuch",

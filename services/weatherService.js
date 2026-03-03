@@ -1,3 +1,22 @@
+/**
+ * Weather Service
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Permission handling (2026-03-13):
+ *   Location permission denial is propagated as a structured status object
+ *   `{ denied: true }` through the entire call chain:
+ *     requestLocationPermission → getLocation → getCurrentWeather/getWeatherForecast → getWeatherForTasks
+ *
+ *   This allows the UI (WeatherWidget) to distinguish between:
+ *     - Permission denied → show "open settings" CTA
+ *     - Service unavailable → show generic retry CTA
+ *
+ *   No API requests are made when location is denied (saves bandwidth/quota).
+ *
+ * Caching:
+ *   - Weather data: CACHE_TTL (1h) via AsyncStorage
+ *   - Location: LOCATION_TTL (30min) to avoid excessive GPS polls
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { SUPABASE_URL, supabase } from '../supabase.js';
@@ -193,7 +212,7 @@ export const getCurrentWeather = async () => {
     const location = await getLocation();
     if (!location || location.denied) {
       console.warn('No location available for weather');
-      return null;
+      return location?.denied ? { denied: true } : null;
     }
 
     // Fetch from API
@@ -233,9 +252,9 @@ export const getWeatherForecast = async (days = 5) => {
 
     // Get location
     const location = await getLocation();
-    if (!location) {
+    if (!location || location.denied) {
       console.warn('No location available for forecast');
-      return null;
+      return location?.denied ? { denied: true } : null;
     }
 
     // Fetch from API
@@ -269,11 +288,12 @@ export const getWeatherForecast = async (days = 5) => {
 export const getWeatherForTasks = async () => {
   try {
     const weather = await getCurrentWeather();
-    const forecast = await getWeatherForecast(1);
 
-    if (!weather) {
-      return null;
+    if (!weather || weather.denied) {
+      return weather?.denied ? { denied: true } : null;
     }
+
+    const forecast = await getWeatherForecast(1);
 
     const temperature = weather.temp;
     const isRainy = weather.rain_mm > 0 || (forecast && forecast[0]?.rain_probability > 50);

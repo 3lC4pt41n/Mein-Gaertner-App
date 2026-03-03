@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Linking, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getCurrentWeather, getWeatherForTasks } from '../services/weatherService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -60,15 +60,24 @@ const WeatherWidget = () => {
   const [weatherTasks, setWeatherTasks] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [denied, setDenied] = useState(false);
 
   const loadWeather = async () => {
     setLoading(true);
     setError(null);
+    setDenied(false);
     try {
       const [currentWeather, tasksWeather] = await Promise.all([
         getCurrentWeather(),
         getWeatherForTasks(),
       ]);
+
+      if (currentWeather?.denied) {
+        setDenied(true);
+        setWeather(null);
+        setWeatherTasks(null);
+        return;
+      }
 
       setWeather(currentWeather);
       setWeatherTasks(tasksWeather);
@@ -77,6 +86,14 @@ const WeatherWidget = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openAppSettings = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      Linking.openSettings();
     }
   };
 
@@ -93,6 +110,21 @@ const WeatherWidget = () => {
       <View style={styles.container}>
         <ActivityIndicator size="small" color={colors.primary} />
       </View>
+    );
+  }
+
+  if (denied) {
+    return (
+      <TouchableOpacity
+        style={styles.errorCard}
+        onPress={openAppSettings}
+        accessibilityRole="button"
+        accessibilityLabel={t('weather.locationDeniedAction')}
+      >
+        <Ionicons name="location-outline" size={24} color={colors.textTertiary} />
+        <Text style={styles.errorText}>{t('weather.locationDenied')}</Text>
+        <Text style={styles.errorHint}>{t('weather.locationDeniedAction')}</Text>
+      </TouchableOpacity>
     );
   }
 
