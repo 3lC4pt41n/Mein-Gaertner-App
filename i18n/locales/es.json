@@ -33,7 +33,9 @@
     "errorBoundaryTitle": "Algo salió mal",
     "errorBoundaryMessage": "La app encontró un error inesperado. Por favor, inténtalo de nuevo.",
     "errorBoundaryRetry": "Reintentar",
-    "errorBoundaryDetails": "Detalles del error"
+    "errorBoundaryDetails": "Detalles del error",
+    "buyCredits": "Comprar Credits",
+    "retry": "Reintentar"
   },
 
   "nav": {
@@ -49,7 +51,9 @@
     "plantStackTitle": "Mis Plantas",
     "plantDetailsTitle": "Detalles",
     "taskTitle": "Tarea",
-    "adminTitle": "Panel Admin"
+    "adminTitle": "Panel Admin",
+    "dexDetail": "Detalles de especie",
+    "more": "Más"
   },
 
   "auth": {
@@ -106,6 +110,7 @@
     "healthscore": "Healthscore",
     "healthscoreValue": "Healthscore: {{score}} / 100",
     "noPlants": "Aún no hay plantas guardadas.",
+    "scanFirstPlant": "Escanear tu primera planta",
     "noLocations": "Aún no hay ubicaciones/zonas/plantas.",
     "plantsCount": "{{count}} plantas",
     "noZonePlants": "No hay plantas en esta zona.",
@@ -142,7 +147,23 @@
     "saveFailed": "Error al guardar",
     "scanError": "Error de conexión",
     "unknownError": "Error desconocido",
-    "saveFailedMessage": "Error al guardar: {{message}}"
+    "saveFailedMessage": "Error al guardar: {{message}}",
+    "stepScan": "Escanear",
+    "stepSave": "Guardar",
+    "stepDone": "Listo",
+    "savePlant": "Guardar planta",
+    "rescan": "Escanear de nuevo",
+    "savedSuccess": "¡Planta guardada!",
+    "optionalUpgrades": "Añadir extras",
+    "upgradeHint": "Genera detalles de cuidado o un chequeo de salud (cuesta 1 Credit cada uno).",
+    "generateDetails": "Generar detalles de cuidado",
+    "detailsAlready": "Detalles ya generados",
+    "detailsGenerated": "¡Detalles de cuidado generados!",
+    "runHealthcheck": "Realizar chequeo de salud",
+    "healthcheckGenerated": "¡Chequeo de salud creado!",
+    "viewPlant": "Ver planta",
+    "zoneOptional": "Zona (opcional)",
+    "selectZoneOptional": "Asignar zona..."
   },
 
   "tasks": {
@@ -164,6 +185,7 @@
     "selectPlant": "Seleccionar planta...",
     "selectPlantRequired": "¡Selecciona una planta!",
     "noPlants": "No hay plantas disponibles",
+    "addFirstPlant": "Añadir tu primera planta",
     "plantLabel": "Planta:",
     "typeLabel": "Tipo:",
     "dateTimeLabel": "Fecha y hora:",
@@ -262,7 +284,8 @@
     "discoveryScore": "Puntuación explorador",
     "discovered": "Descubiertas",
     "notInRanking": "¿No estás en la clasificación?",
-    "optInMessage": "Activa la clasificación en tu perfil para competir con los demás."
+    "optInMessage": "Activa la clasificación en tu perfil para competir con los demás.",
+    "joinButton": "Unirse ahora"
   },
 
   "profile": {
@@ -293,7 +316,10 @@
     "noAvatar": "Aún no se ha creado un avatar.",
     "cameraRequired": "Se necesita acceso a la cámara para el avatar.",
     "photoReadError": "No se pudo leer la foto.",
-    "saveProfileError": "Error al guardar"
+    "saveProfileError": "Error al guardar",
+    "completeProfile": "Configurar perfil",
+    "retakeAvatar": "Tomar nueva foto",
+    "usernamePlaceholder": "Tu nombre de usuario"
   },
 
   "beta": {
@@ -356,7 +382,9 @@
     "frost": "Helada",
     "heat": "Calor",
     "noData": "Sin datos meteorológicos",
-    "locationRequired": "Se necesita ubicación para los datos meteorológicos."
+    "locationRequired": "Se necesita ubicación para los datos meteorológicos.",
+    "unavailable": "Tiempo no disponible",
+    "tapToRetry": "Toca para reintentar"
   },
 
   "diary": {
@@ -409,7 +437,19 @@
     "newDiscovery": "¡Nueva especie descubierta!",
     "firstDiscoveryTitle": "¡Eres el primer descubridor!",
     "continue": "Continuar",
-    "undiscovered": "???"
+    "undiscovered": "???",
+    "description": "Descripción",
+    "careSummary": "Cuidados",
+    "firstDiscoveredBy": "Descubierta por primera vez por",
+    "discoverers": "Descubridores",
+    "species": "Especies",
+    "filters": {
+      "all": "Todas",
+      "discovered": "Mías",
+      "first": "Primeros descubrimientos"
+    },
+    "empty": "Aún no has descubierto ninguna especie. ¡Escanea tu primera planta!",
+    "notDiscovered": "No descubierta"
   },
 
   "ben": {

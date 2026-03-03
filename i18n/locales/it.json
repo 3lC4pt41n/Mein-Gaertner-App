@@ -33,7 +33,9 @@
     "errorBoundaryTitle": "Qualcosa è andato storto",
     "errorBoundaryMessage": "L'app ha riscontrato un errore imprevisto. Riprova.",
     "errorBoundaryRetry": "Riprova",
-    "errorBoundaryDetails": "Dettagli errore"
+    "errorBoundaryDetails": "Dettagli errore",
+    "buyCredits": "Acquista Credits",
+    "retry": "Riprova"
   },
 
   "nav": {
@@ -49,7 +51,9 @@
     "plantStackTitle": "Le Mie Piante",
     "plantDetailsTitle": "Dettagli",
     "taskTitle": "Attività",
-    "adminTitle": "Dashboard Admin"
+    "adminTitle": "Dashboard Admin",
+    "dexDetail": "Dettagli specie",
+    "more": "Altro"
   },
 
   "auth": {
@@ -106,6 +110,7 @@
     "healthscore": "Healthscore",
     "healthscoreValue": "Healthscore: {{score}} / 100",
     "noPlants": "Nessuna pianta salvata.",
+    "scanFirstPlant": "Scansiona la tua prima pianta",
     "noLocations": "Nessuna posizione/zona/pianta presente.",
     "plantsCount": "{{count}} piante",
     "noZonePlants": "Nessuna pianta in questa zona.",
@@ -142,7 +147,23 @@
     "saveFailed": "Salvataggio non riuscito",
     "scanError": "Connessione non riuscita",
     "unknownError": "Errore sconosciuto",
-    "saveFailedMessage": "Salvataggio non riuscito: {{message}}"
+    "saveFailedMessage": "Salvataggio non riuscito: {{message}}",
+    "stepScan": "Scansione",
+    "stepSave": "Salva",
+    "stepDone": "Fatto",
+    "savePlant": "Salva pianta",
+    "rescan": "Scansiona di nuovo",
+    "savedSuccess": "Pianta salvata!",
+    "optionalUpgrades": "Aggiungi extra",
+    "upgradeHint": "Genera dettagli di cura o un controllo salute (costa 1 Credit ciascuno).",
+    "generateDetails": "Genera dettagli di cura",
+    "detailsAlready": "Dettagli già generati",
+    "detailsGenerated": "Dettagli di cura generati!",
+    "runHealthcheck": "Esegui controllo salute",
+    "healthcheckGenerated": "Controllo salute creato!",
+    "viewPlant": "Visualizza pianta",
+    "zoneOptional": "Zona (opzionale)",
+    "selectZoneOptional": "Assegna zona..."
   },
 
   "tasks": {
@@ -164,6 +185,7 @@
     "selectPlant": "Seleziona pianta...",
     "selectPlantRequired": "Seleziona una pianta!",
     "noPlants": "Nessuna pianta presente",
+    "addFirstPlant": "Aggiungi la tua prima pianta",
     "plantLabel": "Pianta:",
     "typeLabel": "Tipo:",
     "dateTimeLabel": "Data e ora:",
@@ -262,7 +284,8 @@
     "discoveryScore": "Punteggio esploratore",
     "discovered": "Scoperte",
     "notInRanking": "Non in classifica?",
-    "optInMessage": "Attiva la classifica nel tuo profilo per confrontarti con gli altri."
+    "optInMessage": "Attiva la classifica nel tuo profilo per confrontarti con gli altri.",
+    "joinButton": "Partecipa ora"
   },
 
   "profile": {
@@ -293,7 +316,10 @@
     "noAvatar": "Nessun avatar creato.",
     "cameraRequired": "L'accesso alla fotocamera è necessario per l'avatar.",
     "photoReadError": "Impossibile leggere la foto.",
-    "saveProfileError": "Errore durante il salvataggio"
+    "saveProfileError": "Errore durante il salvataggio",
+    "completeProfile": "Configura il profilo",
+    "retakeAvatar": "Scatta nuova foto",
+    "usernamePlaceholder": "Il tuo nome utente"
   },
 
   "beta": {
@@ -356,7 +382,9 @@
     "frost": "Gelo",
     "heat": "Caldo",
     "noData": "Nessun dato meteo",
-    "locationRequired": "La posizione è necessaria per i dati meteo."
+    "locationRequired": "La posizione è necessaria per i dati meteo.",
+    "unavailable": "Meteo non disponibile",
+    "tapToRetry": "Tocca per riprovare"
   },
 
   "diary": {
@@ -409,7 +437,19 @@
     "newDiscovery": "Nuova specie scoperta!",
     "firstDiscoveryTitle": "Sei il primo scopritore!",
     "continue": "Continua",
-    "undiscovered": "???"
+    "undiscovered": "???",
+    "description": "Descrizione",
+    "careSummary": "Cura",
+    "firstDiscoveredBy": "Scoperta per prima da",
+    "discoverers": "Scopritori",
+    "species": "Specie",
+    "filters": {
+      "all": "Tutte",
+      "discovered": "Le mie",
+      "first": "Prime scoperte"
+    },
+    "empty": "Non hai ancora scoperto nessuna specie. Scansiona la tua prima pianta!",
+    "notDiscovered": "Non scoperta"
   },
 
   "ben": {

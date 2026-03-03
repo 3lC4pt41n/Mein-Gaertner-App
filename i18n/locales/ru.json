@@ -33,7 +33,9 @@
     "errorBoundaryTitle": "Что-то пошло не так",
     "errorBoundaryMessage": "Приложение столкнулось с непредвиденной ошибкой. Попробуйте ещё раз.",
     "errorBoundaryRetry": "Попробовать снова",
-    "errorBoundaryDetails": "Подробности ошибки"
+    "errorBoundaryDetails": "Подробности ошибки",
+    "buyCredits": "Купить кредиты",
+    "retry": "Попробовать снова"
   },
 
   "nav": {
@@ -49,7 +51,9 @@
     "plantStackTitle": "Мои Растения",
     "plantDetailsTitle": "Подробности",
     "taskTitle": "Задача",
-    "adminTitle": "Панель администратора"
+    "adminTitle": "Панель администратора",
+    "dexDetail": "Подробности вида",
+    "more": "Ещё"
   },
 
   "auth": {
@@ -106,6 +110,7 @@
     "healthscore": "Здоровье",
     "healthscoreValue": "Здоровье: {{score}} / 100",
     "noPlants": "Растения ещё не сохранены.",
+    "scanFirstPlant": "Отсканировать первое растение",
     "noLocations": "Пока нет локаций/зон/растений.",
     "plantsCount": "{{count}} растений",
     "noZonePlants": "В этой зоне нет растений.",
@@ -142,7 +147,23 @@
     "saveFailed": "Ошибка сохранения",
     "scanError": "Ошибка подключения",
     "unknownError": "Неизвестная ошибка",
-    "saveFailedMessage": "Ошибка сохранения: {{message}}"
+    "saveFailedMessage": "Ошибка сохранения: {{message}}",
+    "stepScan": "Скан",
+    "stepSave": "Сохранить",
+    "stepDone": "Готово",
+    "savePlant": "Сохранить растение",
+    "rescan": "Сканировать снова",
+    "savedSuccess": "Растение сохранено!",
+    "optionalUpgrades": "Добавить дополнения",
+    "upgradeHint": "Сгенерируйте описание ухода или проверку здоровья (стоит 1 кредит каждое).",
+    "generateDetails": "Сгенерировать описание ухода",
+    "detailsAlready": "Описание уже создано",
+    "detailsGenerated": "Описание ухода создано!",
+    "runHealthcheck": "Выполнить проверку здоровья",
+    "healthcheckGenerated": "Проверка здоровья создана!",
+    "viewPlant": "Посмотреть растение",
+    "zoneOptional": "Зона (необязательно)",
+    "selectZoneOptional": "Назначить зону..."
   },
 
   "tasks": {
@@ -164,6 +185,7 @@
     "selectPlant": "Выберите растение...",
     "selectPlantRequired": "Выберите растение!",
     "noPlants": "Нет доступных растений",
+    "addFirstPlant": "Добавить первое растение",
     "plantLabel": "Растение:",
     "typeLabel": "Тип:",
     "dateTimeLabel": "Дата и время:",
@@ -262,7 +284,8 @@
     "discoveryScore": "Очки исследователя",
     "discovered": "Открыто",
     "notInRanking": "Нет в рейтинге?",
-    "optInMessage": "Включите рейтинг в профиле, чтобы соревноваться с другими."
+    "optInMessage": "Включите рейтинг в профиле, чтобы соревноваться с другими.",
+    "joinButton": "Присоединиться"
   },
 
   "profile": {
@@ -293,7 +316,10 @@
     "noAvatar": "Аватар ещё не создан.",
     "cameraRequired": "Для аватара необходим доступ к камере.",
     "photoReadError": "Не удалось прочитать фото.",
-    "saveProfileError": "Ошибка при сохранении"
+    "saveProfileError": "Ошибка при сохранении",
+    "completeProfile": "Настроить профиль",
+    "retakeAvatar": "Сделать новое фото",
+    "usernamePlaceholder": "Ваше имя пользователя"
   },
 
   "beta": {
@@ -356,7 +382,9 @@
     "frost": "Мороз",
     "heat": "Жара",
     "noData": "Нет данных о погоде",
-    "locationRequired": "Для данных о погоде необходимо местоположение."
+    "locationRequired": "Для данных о погоде необходимо местоположение.",
+    "unavailable": "Погода недоступна",
+    "tapToRetry": "Нажмите для обновления"
   },
 
   "diary": {
@@ -409,7 +437,19 @@
     "newDiscovery": "Новый вид обнаружен!",
     "firstDiscoveryTitle": "Вы первооткрыватель!",
     "continue": "Продолжить",
-    "undiscovered": "???"
+    "undiscovered": "???",
+    "description": "Описание",
+    "careSummary": "Уход",
+    "firstDiscoveredBy": "Первооткрыватель",
+    "discoverers": "Исследователи",
+    "species": "Виды",
+    "filters": {
+      "all": "Все",
+      "discovered": "Мои",
+      "first": "Первые открытия"
+    },
+    "empty": "Вы ещё не обнаружили ни одного вида. Отсканируйте первое растение!",
+    "notDiscovered": "Не обнаружено"
   },
 
   "ben": {

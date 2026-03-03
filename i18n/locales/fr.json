@@ -33,7 +33,9 @@
     "errorBoundaryTitle": "Un problème est survenu",
     "errorBoundaryMessage": "L'application a rencontré une erreur inattendue. Veuillez réessayer.",
     "errorBoundaryRetry": "Réessayer",
-    "errorBoundaryDetails": "Détails de l'erreur"
+    "errorBoundaryDetails": "Détails de l'erreur",
+    "buyCredits": "Acheter des Credits",
+    "retry": "Réessayer"
   },
 
   "nav": {
@@ -49,7 +51,9 @@
     "plantStackTitle": "Mes Plantes",
     "plantDetailsTitle": "Détails",
     "taskTitle": "Tâche",
-    "adminTitle": "Tableau Admin"
+    "adminTitle": "Tableau Admin",
+    "dexDetail": "Détails de l'espèce",
+    "more": "Plus"
   },
 
   "auth": {
@@ -106,6 +110,7 @@
     "healthscore": "Score santé",
     "healthscoreValue": "Score santé : {{score}} / 100",
     "noPlants": "Aucune plante enregistrée.",
+    "scanFirstPlant": "Scanner votre première plante",
     "noLocations": "Aucun emplacement, zone ou plante.",
     "plantsCount": "{{count}} Plantes",
     "noZonePlants": "Aucune plante dans cette zone.",
@@ -142,7 +147,23 @@
     "saveFailed": "Échec de l'enregistrement",
     "scanError": "Échec de la connexion",
     "unknownError": "Erreur inconnue",
-    "saveFailedMessage": "Échec de l'enregistrement : {{message}}"
+    "saveFailedMessage": "Échec de l'enregistrement : {{message}}",
+    "stepScan": "Scanner",
+    "stepSave": "Enregistrer",
+    "stepDone": "Terminé",
+    "savePlant": "Enregistrer la plante",
+    "rescan": "Scanner à nouveau",
+    "savedSuccess": "Plante enregistrée !",
+    "optionalUpgrades": "Ajouter des extras",
+    "upgradeHint": "Générez des détails d'entretien ou un bilan santé (coûte 1 Credit chacun).",
+    "generateDetails": "Générer les détails d'entretien",
+    "detailsAlready": "Détails déjà générés",
+    "detailsGenerated": "Détails d'entretien générés !",
+    "runHealthcheck": "Lancer le bilan santé",
+    "healthcheckGenerated": "Bilan santé créé !",
+    "viewPlant": "Voir la plante",
+    "zoneOptional": "Zone (facultatif)",
+    "selectZoneOptional": "Assigner une zone..."
   },
 
   "tasks": {
@@ -164,6 +185,7 @@
     "selectPlant": "Sélectionner une plante...",
     "selectPlantRequired": "Veuillez sélectionner une plante !",
     "noPlants": "Aucune plante disponible",
+    "addFirstPlant": "Ajouter votre première plante",
     "plantLabel": "Plante :",
     "typeLabel": "Type :",
     "dateTimeLabel": "Date & heure :",
@@ -262,7 +284,8 @@
     "discoveryScore": "Score explorateur",
     "discovered": "Découvertes",
     "notInRanking": "Pas dans le classement ?",
-    "optInMessage": "Activez le classement dans votre profil pour vous mesurer aux autres."
+    "optInMessage": "Activez le classement dans votre profil pour vous mesurer aux autres.",
+    "joinButton": "Rejoindre maintenant"
   },
 
   "profile": {
@@ -293,7 +316,10 @@
     "noAvatar": "Aucun avatar créé pour le moment.",
     "cameraRequired": "L'accès à la caméra est nécessaire pour l'avatar.",
     "photoReadError": "Impossible de lire la photo.",
-    "saveProfileError": "Erreur lors de l'enregistrement"
+    "saveProfileError": "Erreur lors de l'enregistrement",
+    "completeProfile": "Configurer le profil",
+    "retakeAvatar": "Reprendre la photo",
+    "usernamePlaceholder": "Votre nom d'utilisateur"
   },
 
   "beta": {
@@ -356,7 +382,9 @@
     "frost": "Gel",
     "heat": "Chaleur",
     "noData": "Pas de données météo",
-    "locationRequired": "La localisation est nécessaire pour les données météo."
+    "locationRequired": "La localisation est nécessaire pour les données météo.",
+    "unavailable": "Météo indisponible",
+    "tapToRetry": "Appuyez pour réessayer"
   },
 
   "diary": {
@@ -409,7 +437,19 @@
     "newDiscovery": "Nouvelle espèce découverte !",
     "firstDiscoveryTitle": "Vous êtes le premier découvreur !",
     "continue": "Continuer",
-    "undiscovered": "???"
+    "undiscovered": "???",
+    "description": "Description",
+    "careSummary": "Entretien",
+    "firstDiscoveredBy": "Découverte en premier par",
+    "discoverers": "Découvreurs",
+    "species": "Espèces",
+    "filters": {
+      "all": "Toutes",
+      "discovered": "Les miennes",
+      "first": "Premières découvertes"
+    },
+    "empty": "Vous n'avez encore découvert aucune espèce. Scannez votre première plante !",
+    "notDiscovered": "Non découverte"
   },
 
   "ben": {
