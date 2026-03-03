@@ -1,6 +1,7 @@
 // App.js – Hauptnavigation mit RevenueCat + Credit Store
 // -----------------------------------------------------------
 import React, { useEffect, useRef } from 'react';
+import { TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -21,6 +22,7 @@ import LeaderboardScreen from './screens/LeaderboardScreen';
 import FeedbackScreen from './screens/FeedbackScreen';
 import CalendarScreen from './screens/CalendarScreen';
 import PlantDexScreen from './screens/PlantDexScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLoadingScreen from './components/AppLoadingScreen';
@@ -100,6 +102,35 @@ function ShopStack({ isAdmin }) {
           options={{ title: t('nav.adminTitle') }}
         />
       )}
+    </Stack.Navigator>
+  );
+}
+
+// ---------- Home Stack (Home + Settings) -------------
+function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="HomeMain"
+        component={HomeManager}
+        options={({ navigation }) => ({
+          title: t('nav.home'),
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Settings')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={{ marginRight: 12 }}
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: t('settings.title') }}
+      />
     </Stack.Navigator>
   );
 }
@@ -203,9 +234,10 @@ function AppContent() {
       >
         <Tab.Screen
           name="Zuhause"
-          component={HomeManager}
           options={{ title: t('nav.home'), tabBarLabel: t('nav.home') }}
-        />
+        >
+          {() => <HomeStack />}
+        </Tab.Screen>
         <Tab.Screen
           name="MeinePflanzenTab"
           options={{ title: t('nav.plants'), tabBarLabel: t('nav.plants') }}

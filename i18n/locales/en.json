@@ -424,5 +424,37 @@
     "todayTitle": "🌞 Today – your plant day!",
     "menuOverview": "🌱 Menu Overview",
     "menuSubtitle": "The drawer menu should already be open. And if not, tough luck."
+  },
+
+  "settings": {
+    "title": "Settings",
+    "profileSection": "Profile",
+    "changeAvatar": "Change avatar",
+    "avatarUpdating": "Creating avatar…",
+    "profileSaved": "Profile saved!",
+    "profileSaveError": "Could not save profile.",
+    "preferencesSection": "Preferences",
+    "language": "Language",
+    "notifications": "Notifications",
+    "notificationsHint": "Reminders for care tasks",
+    "privacySection": "Privacy",
+    "showInLeaderboard": "Show in leaderboard",
+    "showInLeaderboardHint": "Other gardeners can see your score",
+    "publicDisplayName": "Public display name",
+    "publicDisplayNameHint": "Shown instead of your username",
+    "accountSection": "Account",
+    "manageSubscription": "Manage subscription",
+    "logout": "Log out",
+    "logoutConfirmTitle": "Log out?",
+    "logoutConfirmMessage": "Are you sure you want to log out?",
+    "deleteAccount": "Delete account",
+    "deleteConfirmTitle": "Delete account?",
+    "deleteConfirmMessage": "All your data (plants, diary, photos, tasks, chat) will be permanently deleted. Active subscriptions must be cancelled separately in the App Store.",
+    "deleteConfirmButton": "Delete permanently",
+    "infoSection": "About",
+    "version": "Version",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "feedback": "Give feedback"
   }
 }

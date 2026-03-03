@@ -424,5 +424,37 @@
     "todayTitle": "🌞 Heute – dein Pflanzentag!",
     "menuOverview": "🌱 Menü-Übersicht",
     "menuSubtitle": "Das Drawer-Menü sollte schon offen sein. Und wenn nicht, Pech gehabt."
+  },
+
+  "settings": {
+    "title": "Einstellungen",
+    "profileSection": "Profil",
+    "changeAvatar": "Avatar ändern",
+    "avatarUpdating": "Avatar wird erstellt…",
+    "profileSaved": "Profil gespeichert!",
+    "profileSaveError": "Profil konnte nicht gespeichert werden.",
+    "preferencesSection": "Einstellungen",
+    "language": "Sprache",
+    "notifications": "Benachrichtigungen",
+    "notificationsHint": "Erinnerungen für Pflegeaufgaben",
+    "privacySection": "Datenschutz",
+    "showInLeaderboard": "In Rangliste anzeigen",
+    "showInLeaderboardHint": "Andere Gärtner sehen deinen Score",
+    "publicDisplayName": "Öffentlicher Anzeigename",
+    "publicDisplayNameHint": "Wird statt deinem Benutzernamen angezeigt",
+    "accountSection": "Konto",
+    "manageSubscription": "Abonnement verwalten",
+    "logout": "Abmelden",
+    "logoutConfirmTitle": "Abmelden?",
+    "logoutConfirmMessage": "Möchtest du dich wirklich abmelden?",
+    "deleteAccount": "Konto löschen",
+    "deleteConfirmTitle": "Konto löschen?",
+    "deleteConfirmMessage": "Alle deine Daten (Pflanzen, Tagebuch, Fotos, Aufgaben, Chat) werden unwiderruflich gelöscht. Aktive Abos müssen separat im App Store gekündigt werden.",
+    "deleteConfirmButton": "Endgültig löschen",
+    "infoSection": "Über die App",
+    "version": "Version",
+    "privacyPolicy": "Datenschutzerklärung",
+    "termsOfService": "Nutzungsbedingungen",
+    "feedback": "Feedback geben"
   }
 }

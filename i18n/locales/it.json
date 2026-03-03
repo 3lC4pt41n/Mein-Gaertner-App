@@ -424,5 +424,37 @@
     "todayTitle": "🌞 Oggi – la tua giornata verde!",
     "menuOverview": "🌱 Panoramica menu",
     "menuSubtitle": "Il menu laterale dovrebbe essere già aperto. E se non lo è, pazienza."
+  },
+
+  "settings": {
+    "title": "Impostazioni",
+    "profileSection": "Profilo",
+    "changeAvatar": "Cambia avatar",
+    "avatarUpdating": "Creazione dell'avatar…",
+    "profileSaved": "Profilo salvato!",
+    "profileSaveError": "Impossibile salvare il profilo.",
+    "preferencesSection": "Preferenze",
+    "language": "Lingua",
+    "notifications": "Notifiche",
+    "notificationsHint": "Promemoria per le attività di cura",
+    "privacySection": "Privacy",
+    "showInLeaderboard": "Mostra in classifica",
+    "showInLeaderboardHint": "Altri giardinieri vedono il tuo punteggio",
+    "publicDisplayName": "Nome pubblico",
+    "publicDisplayNameHint": "Mostrato al posto del nome utente",
+    "accountSection": "Account",
+    "manageSubscription": "Gestisci abbonamento",
+    "logout": "Esci",
+    "logoutConfirmTitle": "Disconnettersi?",
+    "logoutConfirmMessage": "Sei sicuro di volerti disconnettere?",
+    "deleteAccount": "Elimina account",
+    "deleteConfirmTitle": "Eliminare l'account?",
+    "deleteConfirmMessage": "Tutti i tuoi dati (piante, diario, foto, attività, chat) verranno eliminati in modo permanente. Gli abbonamenti attivi devono essere cancellati separatamente nell'App Store.",
+    "deleteConfirmButton": "Elimina definitivamente",
+    "infoSection": "Info",
+    "version": "Versione",
+    "privacyPolicy": "Informativa sulla privacy",
+    "termsOfService": "Termini di servizio",
+    "feedback": "Invia feedback"
   }
 }

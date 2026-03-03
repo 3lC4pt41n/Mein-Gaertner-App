@@ -424,5 +424,37 @@
     "todayTitle": "🌞 Сегодня – ваш день растений!",
     "menuOverview": "🌱 Обзор меню",
     "menuSubtitle": "Боковое меню уже должно быть открыто. А если нет – ну что ж."
+  },
+
+  "settings": {
+    "title": "Настройки",
+    "profileSection": "Профиль",
+    "changeAvatar": "Изменить аватар",
+    "avatarUpdating": "Создание аватара…",
+    "profileSaved": "Профиль сохранён!",
+    "profileSaveError": "Не удалось сохранить профиль.",
+    "preferencesSection": "Параметры",
+    "language": "Язык",
+    "notifications": "Уведомления",
+    "notificationsHint": "Напоминания о задачах по уходу",
+    "privacySection": "Конфиденциальность",
+    "showInLeaderboard": "Показывать в рейтинге",
+    "showInLeaderboardHint": "Другие садовники видят ваш счёт",
+    "publicDisplayName": "Публичное имя",
+    "publicDisplayNameHint": "Отображается вместо имени пользователя",
+    "accountSection": "Аккаунт",
+    "manageSubscription": "Управление подпиской",
+    "logout": "Выйти",
+    "logoutConfirmTitle": "Выйти?",
+    "logoutConfirmMessage": "Вы уверены, что хотите выйти?",
+    "deleteAccount": "Удалить аккаунт",
+    "deleteConfirmTitle": "Удалить аккаунт?",
+    "deleteConfirmMessage": "Все ваши данные (растения, дневник, фото, задачи, чат) будут безвозвратно удалены. Активные подписки необходимо отменить отдельно в App Store.",
+    "deleteConfirmButton": "Удалить навсегда",
+    "infoSection": "О приложении",
+    "version": "Версия",
+    "privacyPolicy": "Политика конфиденциальности",
+    "termsOfService": "Условия использования",
+    "feedback": "Оставить отзыв"
   }
 }
