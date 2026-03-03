@@ -1,7 +1,7 @@
-// App.js \u2013 Hauptnavigation mit RevenueCat + Credit Store
+// App.js – Hauptnavigation mit RevenueCat + Credit Store
 // -----------------------------------------------------------
 import React, { useEffect, useRef } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -22,6 +22,8 @@ import LeaderboardScreen from './screens/LeaderboardScreen';
 import FeedbackScreen from './screens/FeedbackScreen';
 import CalendarScreen from './screens/CalendarScreen';
 import PlantDexScreen from './screens/PlantDexScreen';
+import DexDetailScreen from './screens/DexDetailScreen';
+import MoreScreen from './screens/MoreScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -39,7 +41,7 @@ import {
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// ---------- Plant Stack ---------------------------
+// ---------- Plant Stack (Plants + Dex) ---------------------------
 function PlantStack() {
   return (
     <Stack.Navigator>
@@ -58,11 +60,21 @@ function PlantStack() {
         component={TaskDetailScreen}
         options={{ title: t('nav.taskTitle') }}
       />
+      <Stack.Screen
+        name="PlantDex"
+        component={PlantDexScreen}
+        options={{ title: t('nav.dex') }}
+      />
+      <Stack.Screen
+        name="DexDetail"
+        component={DexDetailScreen}
+        options={{ title: t('nav.dexDetail') }}
+      />
     </Stack.Navigator>
   );
 }
 
-// ---------- Task Stack (Aufgaben + Detail) --------
+// ---------- Task Stack (Tasks + Detail + Calendar) --------
 function TaskStack() {
   return (
     <Stack.Navigator>
@@ -76,28 +88,58 @@ function TaskStack() {
         component={TaskDetailScreen}
         options={{ title: t('nav.taskTitle') }}
       />
+      <Stack.Screen
+        name="Calendar"
+        component={CalendarScreen}
+        options={{ title: t('nav.calendar') }}
+      />
     </Stack.Navigator>
   );
 }
 
-// ---------- Shop Stack (Store + Admin Dashboard) ---
-function ShopStack({ isAdmin }) {
+// ---------- More Stack (Assistant, Shop, Leaderboard, etc.) ---
+function MoreStack({ isAdmin }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="StoreMain"
+        name="MoreMain"
+        component={MoreScreen}
+        options={{ title: t('nav.more') }}
+      />
+      <Stack.Screen
+        name="AssistantMain"
+        component={AssistantScreen}
+        options={{ title: t('nav.assistant') }}
+      />
+      <Stack.Screen
+        name="ShopMain"
         options={{ title: t('nav.shop') }}
       >
         {(props) => <StoreScreen {...props} isAdmin={isAdmin} />}
       </Stack.Screen>
       <Stack.Screen
-        name="Feedback"
+        name="LeaderboardMain"
+        component={LeaderboardScreen}
+        options={{ title: t('nav.leaderboard') }}
+      />
+      <Stack.Screen
+        name="CalendarMain"
+        component={CalendarScreen}
+        options={{ title: t('nav.calendar') }}
+      />
+      <Stack.Screen
+        name="FeedbackMain"
         component={FeedbackScreen}
         options={{ title: t('feedback.title') }}
       />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: t('settings.title') }}
+      />
       {isAdmin && (
         <Stack.Screen
-          name="AdminDashboard"
+          name="AdminMain"
           component={AdminDashboardScreen}
           options={{ title: t('nav.adminTitle') }}
         />
@@ -120,6 +162,8 @@ function HomeStack() {
               onPress={() => navigation.navigate('Settings')}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               style={{ marginRight: 12 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('settings.title')}
             >
               <Ionicons name="settings-outline" size={24} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -134,6 +178,44 @@ function HomeStack() {
     </Stack.Navigator>
   );
 }
+
+// ---------- Custom Add-Plant Tab Button ----------------------
+function AddPlantTabButton({ children, onPress }) {
+  return (
+    <TouchableOpacity
+      style={tabButtonStyles.container}
+      onPress={onPress}
+      activeOpacity={0.75}
+      accessibilityRole="button"
+      accessibilityLabel={t('nav.addPlant')}
+    >
+      <View style={tabButtonStyles.button}>
+        {children}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+const tabButtonStyles = StyleSheet.create({
+  container: {
+    top: -12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  button: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+});
 
 // ---------- App Content (uses AuthContext) ---------
 function AppContent() {
@@ -157,10 +239,9 @@ function AppContent() {
     registerForPushNotifications(user.id, supabase).catch(console.warn);
   }, [user?.id]);
 
-  // --- Handle notification tap \u2192 navigate to Tasks tab ---
+  // --- Handle notification tap → navigate to Tasks tab ---
   useEffect(() => {
     const subscription = addNotificationResponseListener(() => {
-      // Navigate to the Tasks tab when a task reminder is tapped
       if (navigationRef.current) {
         navigationRef.current.navigate('Aufgaben');
       }
@@ -187,11 +268,12 @@ function AppContent() {
   }
 
   const profileIncomplete =
-    !profile?.username ||
+    !profile?.profile_setup_skipped &&
+    (!profile?.username ||
     !profile?.first_name ||
     !profile?.last_name ||
     !profile?.country ||
-    !profile?.language;
+    !profile?.language);
 
   if (profileIncomplete) {
     return (
@@ -208,7 +290,7 @@ function AppContent() {
     return <BetaWelcomeScreen onDone={dismissWelcome} />;
   }
 
-  // ---------- Navigation Container ------------------------
+  // ---------- Navigation Container (5 Tabs) ------------------
   return (
     <NavigationContainer ref={navigationRef}>
       <OfflineBanner />
@@ -216,19 +298,15 @@ function AppContent() {
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
             let iconName;
-            if (route.name === "Zuhause") iconName = "home-outline";
-            else if (route.name === "MeinePflanzenTab") iconName = "leaf-outline";
-            else if (route.name === "Pflanze hinzuf\u00fcgen") iconName = "add-circle-outline";
-            else if (route.name === "Aufgaben") iconName = "clipboard-outline";
-            else if (route.name === "Kalender") iconName = "calendar-outline";
-            else if (route.name === "Pflanzen-Dex") iconName = "albums-outline";
-            else if (route.name === "Rangliste") iconName = "trophy-outline";
-            else if (route.name === "Mein G\u00e4rtner") iconName = "chatbox-ellipses-outline";
-            else if (route.name === "Shop") iconName = "flash-outline";
+            if (route.name === 'Zuhause') iconName = 'home-outline';
+            else if (route.name === 'MeinePflanzenTab') iconName = 'leaf-outline';
+            else if (route.name === 'Pflanze hinzufügen') iconName = 'add';
+            else if (route.name === 'Aufgaben') iconName = 'clipboard-outline';
+            else if (route.name === 'Mehr') iconName = 'ellipsis-horizontal';
             return <Ionicons name={iconName} size={size} color={color} />;
           },
           tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: "gray",
+          tabBarInactiveTintColor: 'gray',
           headerShown: false,
         })}
       >
@@ -245,9 +323,16 @@ function AppContent() {
           {() => <PlantStack />}
         </Tab.Screen>
         <Tab.Screen
-          name="Pflanze hinzuf\u00fcgen"
+          name="Pflanze hinzufügen"
           component={AddPlantScreen}
-          options={{ title: t('nav.addPlant'), tabBarLabel: t('nav.addPlant') }}
+          options={{
+            title: t('nav.addPlant'),
+            tabBarLabel: () => null,
+            tabBarIcon: ({ size }) => (
+              <Ionicons name="add" size={size + 4} color="#FFFFFF" />
+            ),
+            tabBarButton: (props) => <AddPlantTabButton {...props} />,
+          }}
         />
         <Tab.Screen
           name="Aufgaben"
@@ -256,30 +341,10 @@ function AppContent() {
           {() => <TaskStack />}
         </Tab.Screen>
         <Tab.Screen
-          name="Kalender"
-          component={CalendarScreen}
-          options={{ title: t('nav.calendar'), tabBarLabel: t('nav.calendar') }}
-        />
-        <Tab.Screen
-          name="Pflanzen-Dex"
-          component={PlantDexScreen}
-          options={{ title: t('nav.dex'), tabBarLabel: t('nav.dex') }}
-        />
-        <Tab.Screen
-          name="Rangliste"
-          component={LeaderboardScreen}
-          options={{ title: t('nav.leaderboard'), tabBarLabel: t('nav.leaderboard') }}
-        />
-        <Tab.Screen
-          name="Mein G\u00e4rtner"
-          component={AssistantScreen}
-          options={{ title: t('nav.assistant'), tabBarLabel: t('nav.assistant') }}
-        />
-        <Tab.Screen
-          name="Shop"
-          options={{ title: t('nav.shop'), tabBarLabel: t('nav.shop') }}
+          name="Mehr"
+          options={{ title: t('nav.more'), tabBarLabel: t('nav.more') }}
         >
-          {() => <ShopStack isAdmin={isAdmin} />}
+          {() => <MoreStack isAdmin={isAdmin} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>

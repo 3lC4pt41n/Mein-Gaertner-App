@@ -254,7 +254,17 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
         <View style={{ marginTop: spacing.lg }}>
           <DSButton
             variant="secondary"
-            onPress={onDone}
+            onPress={async () => {
+              try {
+                await supabase
+                  .from('profiles')
+                  .update({ profile_setup_skipped: true })
+                  .eq('id', user.id);
+              } catch (_e) {
+                // Best-effort — even if the flag fails, let user through
+              }
+              onDone && onDone();
+            }}
             disabled={saving || generatingAvatar}
             fullWidth
           >

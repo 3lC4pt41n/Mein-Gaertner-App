@@ -16,8 +16,10 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
+import { Ionicons } from '@expo/vector-icons';
 import { fetchPlants, fetchHealthchecks } from '../services/plantService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
+import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -37,7 +39,7 @@ async function getPlantsWithHealthscores(userId) {
   // Fetch all latest healthchecks in ONE query instead of N queries
   const plantIds = plants.map((p) => p.id);
   const { data: healthchecks } = await supabase
-    .from('healthchecks')
+    .from('plant_healthchecks')
     .select('plant_id, healthscore')
     .in('plant_id', plantIds)
     .order('created_at', { ascending: false });
@@ -206,9 +208,20 @@ export default function PlantListScreen() {
         }
         ListEmptyComponent={
           !loading && (
-            <Text style={{ textAlign: 'center', color: colors.textTertiary, marginTop: 100 }}>
-              {t('plants.noPlants')}
-            </Text>
+            <View style={{ alignItems: 'center', marginTop: 80, paddingHorizontal: spacing.xl }}>
+              <Ionicons name="leaf-outline" size={56} color={colors.textDisabled} />
+              <Text style={{ textAlign: 'center', color: colors.textTertiary, marginTop: spacing.md, fontSize: 16 }}>
+                {t('plants.noPlants')}
+              </Text>
+              <DSButton
+                variant="primary"
+                icon="camera-outline"
+                onPress={() => navigation.navigate('Pflanze hinzufügen')}
+                style={{ marginTop: spacing.lg }}
+              >
+                {t('plants.scanFirstPlant')}
+              </DSButton>
+            </View>
           )
         }
       />

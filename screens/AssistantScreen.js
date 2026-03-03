@@ -19,6 +19,7 @@ import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
 import { chatWithBen } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
+import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
@@ -28,6 +29,7 @@ const GARDENER_NAME = 'Ben';
 
 export default function AssistantScreen() {
   const { userId: user_id, user } = useAuth();
+  const navigation = useNavigation();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -110,7 +112,10 @@ export default function AssistantScreen() {
       Alert.alert(
         t('common.insufficientCredits'),
         t('common.insufficientCreditsMessage', { balance: e.balance, required: e.required }),
-        [{ text: 'OK' }]
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('common.buyCredits'), onPress: () => navigation.navigate('Mehr', { screen: 'ShopMain' }) },
+        ]
       );
       return true;
     }
@@ -262,6 +267,14 @@ export default function AssistantScreen() {
           }}
         >
           <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.credits')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          {balance <= 10 && (
+            <TouchableOpacity onPress={() => navigation.navigate('Mehr', { screen: 'ShopMain' })}>
+              <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>
+                {t('common.buyCredits')}
+              </Text>
+            </TouchableOpacity>
+          )}
           <Text
             style={{
               fontWeight: 'bold',
@@ -270,6 +283,7 @@ export default function AssistantScreen() {
           >
             {balance}
           </Text>
+          </View>
         </View>
       )}
 

@@ -48,7 +48,10 @@ export default function AddPlantScreen() {
       Alert.alert(
         t('common.insufficientCredits'),
         t('common.insufficientCreditsMessage', { balance: e.balance, required: e.required }),
-        [{ text: 'OK' }]
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('common.buyCredits'), onPress: () => navigation.navigate('Mehr', { screen: 'ShopMain' }) },
+        ]
       );
       return true;
     }

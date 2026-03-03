@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getCurrentWeather, getWeatherForTasks } from '../services/weatherService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -59,25 +59,28 @@ const WeatherWidget = () => {
   const [weather, setWeather] = useState(null);
   const [weatherTasks, setWeatherTasks] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadWeather = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [currentWeather, tasksWeather] = await Promise.all([
+        getCurrentWeather(),
+        getWeatherForTasks(),
+      ]);
+
+      setWeather(currentWeather);
+      setWeatherTasks(tasksWeather);
+    } catch (err) {
+      console.warn('Error loading weather in widget:', err.message);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadWeather = async () => {
-      setLoading(true);
-      try {
-        const [currentWeather, tasksWeather] = await Promise.all([
-          getCurrentWeather(),
-          getWeatherForTasks(),
-        ]);
-
-        setWeather(currentWeather);
-        setWeatherTasks(tasksWeather);
-      } catch (error) {
-        console.warn('Error loading weather in widget:', error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadWeather();
 
     // Refresh weather every 30 minutes
@@ -94,7 +97,13 @@ const WeatherWidget = () => {
   }
 
   if (!weather || !weatherTasks) {
-    return null;
+    return (
+      <TouchableOpacity style={styles.errorCard} onPress={loadWeather}>
+        <Ionicons name="cloud-offline-outline" size={24} color={colors.textTertiary} />
+        <Text style={styles.errorText}>{t('weather.unavailable')}</Text>
+        <Text style={styles.errorHint}>{t('weather.tapToRetry')}</Text>
+      </TouchableOpacity>
+    );
   }
 
   const iconName = getWeatherIcon(weather.icon, weather.description);
@@ -152,6 +161,26 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  errorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.sm,
+    gap: spacing.sm,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.textTertiary,
+  },
+  errorHint: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '500',
   },
   card: {
     flexDirection: 'row',

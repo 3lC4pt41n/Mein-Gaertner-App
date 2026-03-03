@@ -33,7 +33,9 @@
     "errorBoundaryTitle": "Etwas ist schiefgelaufen",
     "errorBoundaryMessage": "Die App hat einen unerwarteten Fehler festgestellt. Bitte versuche es erneut.",
     "errorBoundaryRetry": "Nochmal versuchen",
-    "errorBoundaryDetails": "Fehlerdetails"
+    "errorBoundaryDetails": "Fehlerdetails",
+    "buyCredits": "Credits kaufen",
+    "retry": "Erneut versuchen"
   },
 
   "nav": {
@@ -49,7 +51,9 @@
     "plantStackTitle": "Meine Pflanzen",
     "plantDetailsTitle": "Details",
     "taskTitle": "Aufgabe",
-    "adminTitle": "Admin Dashboard"
+    "adminTitle": "Admin Dashboard",
+    "dexDetail": "Artdetails",
+    "more": "Mehr"
   },
 
   "auth": {
@@ -106,6 +110,7 @@
     "healthscore": "Healthscore",
     "healthscoreValue": "Healthscore: {{score}} / 100",
     "noPlants": "Noch keine Pflanzen gespeichert.",
+    "scanFirstPlant": "Erste Pflanze scannen",
     "noLocations": "Noch keine Standorte/Zonen/Pflanzen.",
     "plantsCount": "{{count}} Pflanzen",
     "noZonePlants": "Keine Pflanzen in dieser Zone.",
@@ -164,6 +169,7 @@
     "selectPlant": "Pflanze auswählen...",
     "selectPlantRequired": "Bitte wähle eine Pflanze aus!",
     "noPlants": "Keine Pflanzen vorhanden",
+    "addFirstPlant": "Erste Pflanze hinzufügen",
     "plantLabel": "Pflanze:",
     "typeLabel": "Typ:",
     "dateTimeLabel": "Datum & Zeit:",
@@ -262,7 +268,8 @@
     "discoveryScore": "Entdecker-Score",
     "discovered": "Entdeckt",
     "notInRanking": "Nicht im Ranking?",
-    "optInMessage": "Aktiviere die Rangliste in deinem Profil, um dich mit anderen zu messen."
+    "optInMessage": "Aktiviere die Rangliste in deinem Profil, um dich mit anderen zu messen.",
+    "joinButton": "Jetzt beitreten"
   },
 
   "profile": {
@@ -356,7 +363,9 @@
     "frost": "Frost",
     "heat": "Hitze",
     "noData": "Keine Wetterdaten",
-    "locationRequired": "Standort wird für Wetterdaten benötigt."
+    "locationRequired": "Standort wird für Wetterdaten benötigt.",
+    "unavailable": "Wetter nicht verfügbar",
+    "tapToRetry": "Tippen zum Aktualisieren"
   },
 
   "diary": {
@@ -409,7 +418,19 @@
     "newDiscovery": "Neue Art entdeckt!",
     "firstDiscoveryTitle": "Du bist der Erst-Entdecker!",
     "continue": "Weiter",
-    "undiscovered": "???"
+    "undiscovered": "???",
+    "description": "Beschreibung",
+    "careSummary": "Pflege",
+    "firstDiscoveredBy": "Erst-Entdeckt von",
+    "discoverers": "Entdecker",
+    "species": "Arten",
+    "filters": {
+      "all": "Alle",
+      "discovered": "Meine",
+      "first": "Erst-Entdeckungen"
+    },
+    "empty": "Noch keine Arten entdeckt. Scanne deine erste Pflanze!",
+    "notDiscovered": "Nicht entdeckt"
   },
 
   "ben": {

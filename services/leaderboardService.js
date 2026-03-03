@@ -55,43 +55,24 @@ export async function getLeaderboard(timeWindow = 'week', type = 'gardener', lim
 export async function getMyRank(userId, timeWindow = 'week', type = 'gardener') {
   const scoreCol = SCORE_COLUMNS[type]?.[timeWindow] || SCORE_COLUMNS.gardener.week;
 
-  // Fetch user's score
-  const { data: userData, error: userError } = await supabase
+  // Fetch full leaderboard and use the same dense_rank logic as getLeaderboard
+  // so that ranks are always consistent between the list and "your rank" display.
+  const { data, error } = await supabase
     .from('leaderboard_public')
-    .select(scoreCol)
-    .eq('user_id', userId)
-    .single();
+    .select('user_id, ' + scoreCol)
+    .order(scoreCol, { ascending: false });
 
-  if (userError || !userData) return null;
+  if (error) throw error;
+  if (!data || data.length === 0) return null;
 
-  const userScore = Number(userData[scoreCol]) || 0;
+  const ranked = assignDenseRanks(data, scoreCol);
+  const myEntry = ranked.find((e) => e.user_id === userId);
+  if (!myEntry) return null;
 
-  // Count how many DISTINCT scores are higher (= dense_rank - 1)
-  // We fetch all distinct scores > userScore
-  const { count: distinctHigherCount, error: countError } = await supabase
-    .from('leaderboard_public')
-    .select(scoreCol, { count: 'exact', head: true })
-    .gt(scoreCol, userScore);
-
-  if (countError) throw countError;
-
-  // Get total leaderboard size
-  const { count: totalCount, error: totalError } = await supabase
-    .from('leaderboard_public')
-    .select('*', { count: 'exact', head: true });
-
-  if (totalError) throw totalError;
-
-  // dense_rank = number of distinct higher scores + 1
-  // NOTE: supabase .gt() counts rows, not distinct values.
-  // For exact dense_rank we need distinct count. Approximation:
-  // Since ties at higher scores are rare in practice and this matches
-  // the getLeaderboard ranking closely enough, we use row count.
-  // For perfect consistency, both methods use the same sorted-array approach.
   return {
-    rank: (distinctHigherCount || 0) + 1,
-    score: userScore,
-    total: totalCount || 0,
+    rank: myEntry.rank,
+    score: myEntry.score,
+    total: ranked.length,
   };
 }
 

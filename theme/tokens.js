@@ -40,6 +40,11 @@ export const colors = {
 
   chatUserBubble: '#DCF8C6',
   chatBotBubble: '#F1F0F0',
+
+  // Aliases used across components — keep in sync
+  white: '#FFFFFF',
+  black: '#000000',
+  text: '#222222',
 };
 
 export const spacing = {
@@ -56,6 +61,7 @@ export const radius = {
   sm: 8,
   md: 12,
   lg: 16,
+  xl: 20,
   pill: 999,
 };
 

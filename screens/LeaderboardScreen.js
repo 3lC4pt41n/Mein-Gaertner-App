@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { getLeaderboard, getMyRank, getMyStats } from '../services/leaderboardService';
 import { colors, spacing, radius } from '../theme/tokens';
+import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -31,7 +32,7 @@ export default function LeaderboardScreen() {
     { key: 'discovery', label: t('leaderboard.scoreTypes.discovery') },
   ];
 
-  const { userId, profile: authProfile } = useAuth();
+  const { userId, profile: authProfile, updateProfile } = useAuth();
   const [timeWindow, setTimeWindow] = useState('week');
   const [scoreType, setScoreType] = useState('gardener');
   const [leaderboard, setLeaderboard] = useState([]);
@@ -213,6 +214,22 @@ export default function LeaderboardScreen() {
                   <View style={{ flex: 1, marginLeft: spacing.sm }}>
                     <Text style={styles.optInTitle}>{t('leaderboard.notInRanking')}</Text>
                     <Text style={styles.optInText}>{t('leaderboard.optInMessage')}</Text>
+                    <DSButton
+                      variant="primary"
+                      size="sm"
+                      icon="trophy-outline"
+                      onPress={async () => {
+                        try {
+                          await updateProfile({ leaderboard_opt_in: true });
+                          setOptedIn(true);
+                        } catch (e) {
+                          console.warn('Opt-in error:', e.message);
+                        }
+                      }}
+                      style={{ marginTop: spacing.sm }}
+                    >
+                      {t('leaderboard.joinButton')}
+                    </DSButton>
                   </View>
                 </View>
               )}

@@ -179,7 +179,7 @@ export default function TaskDetailScreen({ route, navigation }) {
             paddingVertical: spacing.md,
             paddingHorizontal: spacing.xl + 10,
           }}
-          onPress={() => navigation.navigate('PlantDetail', { plant: task.plant })}
+          onPress={() => navigation.navigate('MeinePflanzenTab', { screen: 'PlantDetail', params: { plant: task.plant } })}
         >
           <Ionicons
             name="pulse"

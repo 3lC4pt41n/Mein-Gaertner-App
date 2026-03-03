@@ -143,13 +143,17 @@ export async function fetchTaskRuns(task_id) {
  * Bei wiederkehrenden Tasks: automatisch nächsten Task erstellen.
  */
 export async function completeTask(task, user_id) {
-  // 1. Task als COMPLETED setzen
-  const { error } = await supabase
+  // 1. Task als COMPLETED setzen — nur wenn noch DUE (idempotent)
+  const { data: updated, error } = await supabase
     .from('tasks')
     .update({ state: 'COMPLETED' })
     .eq('id', task.id)
-    .eq('user_id', user_id);
+    .eq('user_id', user_id)
+    .eq('state', 'DUE')
+    .select('id');
   if (error) throw error;
+  // Already completed/skipped — no-op to prevent double-scoring
+  if (!updated || updated.length === 0) return;
 
   // 2. Run-Log anlegen
   const { error: runError } = await supabase
@@ -195,12 +199,16 @@ export async function completeTask(task, user_id) {
  * Bei wiederkehrenden Tasks: trotzdem nächsten Task erstellen.
  */
 export async function skipTask(task, user_id, reason = "") {
-  const { error } = await supabase
+  // Only skip if still DUE (idempotent — prevents double-scoring)
+  const { data: updated, error } = await supabase
     .from('tasks')
     .update({ state: 'SKIPPED' })
     .eq('id', task.id)
-    .eq('user_id', user_id);
+    .eq('user_id', user_id)
+    .eq('state', 'DUE')
+    .select('id');
   if (error) throw error;
+  if (!updated || updated.length === 0) return;
 
   const { error: runError } = await supabase
     .from('task_run')

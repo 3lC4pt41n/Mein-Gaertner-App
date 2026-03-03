@@ -28,6 +28,7 @@ import DSChipGroup from '../theme/DSChips';
 import { LANGUAGE_OPTIONS, normalizeLanguage, applyLanguage } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
 import { openManageSubscriptions } from '../services/purchaseService';
+import { rescheduleAllTaskReminders } from '../services/notificationService';
 
 // ---------- Helpers ---------------------------------------------------
 
@@ -117,6 +118,7 @@ export default function SettingsScreen({ navigation }) {
       setFirstName(profile.first_name ?? '');
       setLastName(profile.last_name ?? '');
       setLanguage(normalizeLanguage(profile.language));
+      setNotificationsEnabled(profile.notifications_enabled ?? true);
       setLeaderboardOptIn(profile.leaderboard_opt_in ?? false);
       setPublicDisplayName(profile.public_display_name ?? '');
     }
@@ -380,7 +382,18 @@ export default function SettingsScreen({ navigation }) {
           label={t('settings.notifications')}
           hint={t('settings.notificationsHint')}
           value={notificationsEnabled}
-          onValueChange={setNotificationsEnabled}
+          onValueChange={async (val) => {
+            setNotificationsEnabled(val);
+            try {
+              await updateProfile({ notifications_enabled: val });
+              if (!val) {
+                // Cancel all scheduled reminders when notifications disabled
+                await rescheduleAllTaskReminders([]);
+              }
+            } catch {
+              setNotificationsEnabled(!val); // Revert on error
+            }
+          }}
         />
       </DSCard>
 
@@ -460,7 +473,7 @@ export default function SettingsScreen({ navigation }) {
         <LinkRow
           icon="chatbubble-ellipses-outline"
           label={t('settings.feedback')}
-          onPress={() => navigation.navigate('Shop', { screen: 'Feedback' })}
+          onPress={() => navigation.navigate('Mehr', { screen: 'FeedbackMain' })}
         />
       </DSCard>
 

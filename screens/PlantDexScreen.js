@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { fetchDex, getDexProgress } from '../services/dexService';
 import DexCard from '../components/DexCard';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const PlantDexScreen = () => {
   const { user } = useAuth();
+  const navigation = useNavigation();
   const [species, setSpecies] = useState([]);
   const [progress, setProgress] = useState({ total: 0, discovered: 0, firstDiscoveries: 0 });
   const [filter, setFilter] = useState('all');
@@ -104,12 +105,12 @@ const PlantDexScreen = () => {
             species={item}
             discovered={item.discovered}
             isFirstDiscoverer={item.isFirstDiscoverer}
+            onPress={(speciesId) => navigation.navigate('DexDetail', { speciesId, species: item })}
           />
         )}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
-        scrollEnabled={false}
         contentContainerStyle={styles.gridContainer}
       />
     );

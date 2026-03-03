@@ -16,6 +16,7 @@ import { colors, spacing, radius, shadows } from '../theme';
 import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
 let NativeDateTimePicker = null;
 try {
@@ -51,6 +52,7 @@ export default function AddTaskDialog({
   initialPlantName,
 }) {
   const { userId } = useAuth();
+  const navigation = useNavigation();
   const [type, setType] = useState(TASK_TYPES[0].key);
   const [date, setDate] = useState(() => {
     const d = new Date();
@@ -233,11 +235,22 @@ export default function AddTaskDialog({
                 {loadingPlants ? (
                   <ActivityIndicator style={{ padding: spacing.lg }} color={colors.primaryLight} />
                 ) : plants.length === 0 ? (
-                  <Text
-                    style={{ padding: spacing.md, color: colors.textDisabled, textAlign: 'center' }}
-                  >
-                    {t('tasks.noPlants')}
-                  </Text>
+                  <View style={{ padding: spacing.md, alignItems: 'center' }}>
+                    <Text style={{ color: colors.textDisabled, textAlign: 'center', marginBottom: spacing.sm }}>
+                      {t('tasks.noPlants')}
+                    </Text>
+                    <DSButton
+                      variant="primary"
+                      size="sm"
+                      icon="add-circle-outline"
+                      onPress={() => {
+                        onClose();
+                        navigation.navigate('Pflanze hinzufügen');
+                      }}
+                    >
+                      {t('tasks.addFirstPlant')}
+                    </DSButton>
+                  </View>
                 ) : (
                   <ScrollView nestedScrollEnabled>
                     {plants.map((p) => (

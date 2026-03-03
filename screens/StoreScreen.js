@@ -96,8 +96,23 @@ export default function StoreScreen({ isAdmin }) {
           t('store.purchaseSuccessMessage', { credits: pkg.credits }),
           [{ text: t('store.purchaseSuccessButton') }]
         );
-        // Balance neu laden (Webhook verarbeitet die Credits)
-        setTimeout(loadData, 2000);
+        // Poll for balance update (webhook may take a moment)
+        const prevBal = balance ?? 0;
+        const pollStart = Date.now();
+        const poll = async () => {
+          while (Date.now() - pollStart < 10000) {
+            await new Promise((r) => setTimeout(r, 1000));
+            const newBal = await fetchBalance();
+            if (newBal > prevBal) {
+              // Balance updated — reload all store data
+              await loadData();
+              return;
+            }
+          }
+          // Timeout fallback — reload anyway
+          await loadData();
+        };
+        poll().catch(console.warn);
       } else if (result.cancelled) {
         // User hat abgebrochen – nichts tun
       }

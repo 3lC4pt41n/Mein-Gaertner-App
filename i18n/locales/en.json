@@ -33,7 +33,9 @@
     "errorBoundaryTitle": "Something went wrong",
     "errorBoundaryMessage": "The app encountered an unexpected error. Please try again.",
     "errorBoundaryRetry": "Try Again",
-    "errorBoundaryDetails": "Error Details"
+    "errorBoundaryDetails": "Error Details",
+    "buyCredits": "Buy Credits",
+    "retry": "Try again"
   },
 
   "nav": {
@@ -49,7 +51,9 @@
     "plantStackTitle": "My Plants",
     "plantDetailsTitle": "Details",
     "taskTitle": "Task",
-    "adminTitle": "Admin Dashboard"
+    "adminTitle": "Admin Dashboard",
+    "dexDetail": "Species Details",
+    "more": "More"
   },
 
   "auth": {
@@ -106,6 +110,7 @@
     "healthscore": "Health Score",
     "healthscoreValue": "Health Score: {{score}} / 100",
     "noPlants": "No plants saved yet.",
+    "scanFirstPlant": "Scan your first plant",
     "noLocations": "No locations, zones or plants yet.",
     "plantsCount": "{{count}} Plants",
     "noZonePlants": "No plants in this zone.",
@@ -164,6 +169,7 @@
     "selectPlant": "Select a plant...",
     "selectPlantRequired": "Please select a plant!",
     "noPlants": "No plants available",
+    "addFirstPlant": "Add your first plant",
     "plantLabel": "Plant:",
     "typeLabel": "Type:",
     "dateTimeLabel": "Date & Time:",
@@ -262,7 +268,8 @@
     "discoveryScore": "Explorer Score",
     "discovered": "Discovered",
     "notInRanking": "Not in the ranking?",
-    "optInMessage": "Enable the ranking in your profile to compete with others."
+    "optInMessage": "Enable the ranking in your profile to compete with others.",
+    "joinButton": "Join now"
   },
 
   "profile": {
@@ -356,7 +363,9 @@
     "frost": "Frost",
     "heat": "Heat",
     "noData": "No weather data",
-    "locationRequired": "Location is needed for weather data."
+    "locationRequired": "Location is needed for weather data.",
+    "unavailable": "Weather unavailable",
+    "tapToRetry": "Tap to retry"
   },
 
   "diary": {
@@ -409,7 +418,19 @@
     "newDiscovery": "New species discovered!",
     "firstDiscoveryTitle": "You are the first discoverer!",
     "continue": "Continue",
-    "undiscovered": "???"
+    "undiscovered": "???",
+    "description": "Description",
+    "careSummary": "Care",
+    "firstDiscoveredBy": "First Discovered by",
+    "discoverers": "Discoverers",
+    "species": "Species",
+    "filters": {
+      "all": "All",
+      "discovered": "Mine",
+      "first": "First Discoveries"
+    },
+    "empty": "You haven't discovered any species yet. Scan your first plant!",
+    "notDiscovered": "Not discovered"
   },
 
   "ben": {

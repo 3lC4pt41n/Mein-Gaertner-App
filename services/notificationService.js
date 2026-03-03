@@ -102,9 +102,12 @@ export async function scheduleTaskReminder(task) {
     if (!task?.id || !task?.due_at) return;
 
     const dueDate = new Date(task.due_at);
-    // Schedule for 8:00 AM on the due date
+    // Use the task's actual due time if set, otherwise fall back to 8:00 AM
     const triggerDate = new Date(dueDate);
-    triggerDate.setHours(8, 0, 0, 0);
+    const hasExplicitTime = dueDate.getHours() !== 0 || dueDate.getMinutes() !== 0;
+    if (!hasExplicitTime) {
+      triggerDate.setHours(8, 0, 0, 0);
+    }
 
     // Don't schedule if the trigger time is in the past
     if (triggerDate <= new Date()) return;
