@@ -37,7 +37,6 @@
     "buyCredits": "Comprar Credits",
     "retry": "Reintentar"
   },
-
   "nav": {
     "home": "Inicio",
     "plants": "Plantas",
@@ -55,7 +54,6 @@
     "dexDetail": "Detalles de especie",
     "more": "Más"
   },
-
   "auth": {
     "appTitle": "Jardinero Digital",
     "email": "Email",
@@ -86,7 +84,6 @@
     "authFailed": "Error de autenticación.",
     "googleLoginFailed": "Error en el inicio de sesión con Google."
   },
-
   "home": {
     "newHome": "Nuevo hogar",
     "editHome": "Editar hogar",
@@ -101,9 +98,15 @@
     "noZones": "No hay zonas creadas.",
     "loadError": "Error al cargar",
     "addressPlaceholder": "Dirección (opcional)",
-    "labelPlaceholder": "Etiqueta (opcional, ej. Casa 1, Oficina, etc.)"
+    "labelPlaceholder": "Etiqueta (opcional, ej. Casa 1, Oficina, etc.)",
+    "zoneTypes": {
+      "room": "Habitación",
+      "balcony": "Balcón",
+      "garden": "Jardín",
+      "greenhouse": "Invernadero"
+    },
+    "unassignedPlants": "Plantas sin asignar"
   },
-
   "plants": {
     "tabAll": "Todas",
     "tabHomes": "Hogar",
@@ -155,7 +158,7 @@
     "rescan": "Escanear de nuevo",
     "savedSuccess": "¡Planta guardada!",
     "optionalUpgrades": "Añadir extras",
-    "upgradeHint": "Genera detalles de cuidado o un chequeo de salud (cuesta 1 Credit cada uno).",
+    "upgradeHint": "Genera detalles de cuidado ({{details}} Créditos) o un chequeo de salud ({{healthcheck}} Créditos).",
     "generateDetails": "Generar detalles de cuidado",
     "detailsAlready": "Detalles ya generados",
     "detailsGenerated": "¡Detalles de cuidado generados!",
@@ -165,7 +168,6 @@
     "zoneOptional": "Zona (opcional)",
     "selectZoneOptional": "Asignar zona..."
   },
-
   "tasks": {
     "title": "Tareas y citas",
     "noTasks": "No hay tareas pendientes",
@@ -219,7 +221,6 @@
     "emptyTitle": "¡Todo listo!",
     "emptyHint": "No hay tareas pendientes. Crea una nueva o disfruta tu día libre."
   },
-
   "assistant": {
     "placeholder": "Escribe un mensaje a Ben …",
     "you": "Tú",
@@ -235,7 +236,6 @@
     "suggestionCare": "¿Con qué frecuencia debo regar?",
     "takePhoto": "Tomar foto"
   },
-
   "store": {
     "balance": "Tu saldo",
     "creditsUnit": "Credits",
@@ -276,7 +276,6 @@
       "chat": "💬 Chat con Ben"
     }
   },
-
   "leaderboard": {
     "title": "Clasificación",
     "timeWindows": {
@@ -300,7 +299,6 @@
     "optInMessage": "Activa la clasificación en tu perfil para competir con los demás.",
     "joinButton": "Unirse ahora"
   },
-
   "profile": {
     "title": "Perfil",
     "username": "Nombre de usuario",
@@ -334,7 +332,6 @@
     "retakeAvatar": "Tomar nueva foto",
     "usernamePlaceholder": "Tu nombre de usuario"
   },
-
   "beta": {
     "title": "¡Bienvenido al Beta Test!",
     "subtitle": "Nos alegra que estés aquí. Esto es todo lo que necesitas saber.",
@@ -352,7 +349,6 @@
     "feedbackDesc": "Como beta tester nos ayudas a mejorar la app. Cuéntanos qué te gusta y qué falta – ¡leemos todo!",
     "ctaButton": "¡Vamos!"
   },
-
   "admin": {
     "title": "Panel Admin",
     "noAccess": "Sin acceso",
@@ -363,14 +359,12 @@
     "netMargin": "Margen neto",
     "activeSubscriptions": "Suscripciones activas: {{active}} / {{total}}"
   },
-
   "notifications": {
     "taskDueTitle": "¡Tarea pendiente!",
     "taskDueBody": "{{type}} para {{plant}} es para hoy.",
     "permissionTitle": "Notificaciones",
     "permissionMessage": "Permite las notificaciones para recibir recordatorios de tus tareas de cuidado."
   },
-
   "feedback": {
     "title": "Comentarios",
     "subtitle": "Ayúdanos a mejorar la app. ¡Cada opinión cuenta!",
@@ -387,7 +381,6 @@
     "thankYou": "¡Gracias!",
     "successMessage": "Tu comentario ha sido recibido. ¡Leemos todo!"
   },
-
   "weather": {
     "title": "Tiempo",
     "humidity": "Humedad",
@@ -399,7 +392,6 @@
     "unavailable": "Tiempo no disponible",
     "tapToRetry": "Toca para reintentar"
   },
-
   "diary": {
     "title": "Diario",
     "addEntry": "Añadir entrada",
@@ -421,14 +413,12 @@
       "discovery": "Descubrimiento"
     }
   },
-
   "gallery": {
     "title": "Galería",
     "noPhotos": "Aún no hay fotos",
     "noPhotosHint": "Las fotos del diario aparecerán aquí.",
     "photoCount": "{{current}} / {{total}}"
   },
-
   "calendar": {
     "title": "Calendario",
     "due": "Pendiente",
@@ -439,7 +429,6 @@
     "previousMonth": "Mes anterior",
     "nextMonth": "Mes siguiente"
   },
-
   "dex": {
     "title": "Planta-Dex",
     "progress": "{{discovered}} / {{total}} especies descubiertas",
@@ -467,21 +456,18 @@
     "empty": "Aún no has descubierto ninguna especie. ¡Escanea tu primera planta!",
     "notDiscovered": "No descubierta"
   },
-
   "ben": {
     "taskCreated": "Tarea creada",
     "recurringTaskCreated": "Tarea recurrente creada",
     "taskCreatedMessage": "{{type}} para {{plant}}, vence el {{date}}",
     "recurringTaskCreatedMessage": "{{type}} para {{plant}}, cada {{days}} días"
   },
-
   "minor": {
     "calendarSoon": "📅 ¡Vista de calendario próximamente!",
     "todayTitle": "🌞 Hoy – ¡tu día de plantas!",
     "menuOverview": "🌱 Vista general del menú",
     "menuSubtitle": "El menú lateral ya debería estar abierto. Y si no lo está, mala suerte."
   },
-
   "settings": {
     "title": "Ajustes",
     "profileSection": "Perfil",

@@ -98,7 +98,12 @@ const WeatherWidget = () => {
 
   if (!weather || !weatherTasks) {
     return (
-      <TouchableOpacity style={styles.errorCard} onPress={loadWeather}>
+      <TouchableOpacity
+        style={styles.errorCard}
+        onPress={loadWeather}
+        accessibilityRole="button"
+        accessibilityLabel={t('weather.tapToRetry')}
+      >
         <Ionicons name="cloud-offline-outline" size={24} color={colors.textTertiary} />
         <Text style={styles.errorText}>{t('weather.unavailable')}</Text>
         <Text style={styles.errorHint}>{t('weather.tapToRetry')}</Text>

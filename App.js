@@ -233,11 +233,11 @@ function AppContent() {
   } = useAuth();
   const navigationRef = useRef(null);
 
-  // --- Push Notification Registration (after login) ---
+  // --- Push Notification Registration (after login, respects preference) ---
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id || !profile?.notifications_enabled) return;
     registerForPushNotifications(user.id, supabase).catch(console.warn);
-  }, [user?.id]);
+  }, [user?.id, profile?.notifications_enabled]);
 
   // --- Handle notification tap → navigate to Tasks tab ---
   useEffect(() => {

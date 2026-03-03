@@ -37,7 +37,6 @@
     "buyCredits": "Acheter des Credits",
     "retry": "Réessayer"
   },
-
   "nav": {
     "home": "Accueil",
     "plants": "Plantes",
@@ -55,7 +54,6 @@
     "dexDetail": "Détails de l'espèce",
     "more": "Plus"
   },
-
   "auth": {
     "appTitle": "Jardinier Numérique",
     "email": "Email",
@@ -86,7 +84,6 @@
     "authFailed": "L'authentification a échoué.",
     "googleLoginFailed": "La connexion Google a échoué."
   },
-
   "home": {
     "newHome": "Nouveau domicile",
     "editHome": "Modifier le domicile",
@@ -101,9 +98,15 @@
     "noZones": "Aucune zone créée.",
     "loadError": "Erreur de chargement",
     "addressPlaceholder": "Adresse (facultatif)",
-    "labelPlaceholder": "Libellé (facultatif, ex. Maison 1, Bureau, etc.)"
+    "labelPlaceholder": "Libellé (facultatif, ex. Maison 1, Bureau, etc.)",
+    "zoneTypes": {
+      "room": "Pièce",
+      "balcony": "Balcon",
+      "garden": "Jardin",
+      "greenhouse": "Serre"
+    },
+    "unassignedPlants": "Plantes non assignées"
   },
-
   "plants": {
     "tabAll": "Toutes",
     "tabHomes": "Domiciles",
@@ -155,7 +158,7 @@
     "rescan": "Scanner à nouveau",
     "savedSuccess": "Plante enregistrée !",
     "optionalUpgrades": "Ajouter des extras",
-    "upgradeHint": "Générez des détails d'entretien ou un bilan santé (coûte 1 Credit chacun).",
+    "upgradeHint": "Générez des détails d'entretien ({{details}} Crédits) ou un bilan santé ({{healthcheck}} Crédits).",
     "generateDetails": "Générer les détails d'entretien",
     "detailsAlready": "Détails déjà générés",
     "detailsGenerated": "Détails d'entretien générés !",
@@ -165,7 +168,6 @@
     "zoneOptional": "Zone (facultatif)",
     "selectZoneOptional": "Assigner une zone..."
   },
-
   "tasks": {
     "title": "Tâches & planification",
     "noTasks": "Aucune tâche en cours",
@@ -219,7 +221,6 @@
     "emptyTitle": "Tout est fait !",
     "emptyHint": "Aucune tâche en attente. Créez-en une ou profitez de votre journée."
   },
-
   "assistant": {
     "placeholder": "Écrivez un message à Ben …",
     "you": "Vous",
@@ -235,7 +236,6 @@
     "suggestionCare": "À quelle fréquence arroser ?",
     "takePhoto": "Prendre une photo"
   },
-
   "store": {
     "balance": "Votre solde",
     "creditsUnit": "Credits",
@@ -276,7 +276,6 @@
       "chat": "💬 Chat avec Ben"
     }
   },
-
   "leaderboard": {
     "title": "Classement",
     "timeWindows": {
@@ -300,7 +299,6 @@
     "optInMessage": "Activez le classement dans votre profil pour vous mesurer aux autres.",
     "joinButton": "Rejoindre maintenant"
   },
-
   "profile": {
     "title": "Profil",
     "username": "Nom d'utilisateur",
@@ -334,7 +332,6 @@
     "retakeAvatar": "Reprendre la photo",
     "usernamePlaceholder": "Votre nom d'utilisateur"
   },
-
   "beta": {
     "title": "Bienvenue dans le test bêta !",
     "subtitle": "Ravi de vous compter parmi nous. Voici tout ce qu'il faut savoir.",
@@ -352,7 +349,6 @@
     "feedbackDesc": "En tant que testeur bêta, vous nous aidez à améliorer l'application. Dites-nous ce que vous aimez et ce qui manque – nous lisons tout !",
     "ctaButton": "C'est parti !"
   },
-
   "admin": {
     "title": "Tableau Admin",
     "noAccess": "Accès refusé",
@@ -363,14 +359,12 @@
     "netMargin": "Marge nette",
     "activeSubscriptions": "Abos actifs : {{active}} / {{total}}"
   },
-
   "notifications": {
     "taskDueTitle": "Tâche à faire !",
     "taskDueBody": "{{type}} pour {{plant}} est prévu aujourd'hui.",
     "permissionTitle": "Notifications",
     "permissionMessage": "Autorisez les notifications pour recevoir des rappels pour vos tâches d'entretien."
   },
-
   "feedback": {
     "title": "Commentaires",
     "subtitle": "Aidez-nous à améliorer l'application. Chaque retour compte !",
@@ -387,7 +381,6 @@
     "thankYou": "Merci !",
     "successMessage": "Votre commentaire a été reçu. Nous lisons tout !"
   },
-
   "weather": {
     "title": "Météo",
     "humidity": "Humidité",
@@ -399,7 +392,6 @@
     "unavailable": "Météo indisponible",
     "tapToRetry": "Appuyez pour réessayer"
   },
-
   "diary": {
     "title": "Journal",
     "addEntry": "Ajouter une entrée",
@@ -421,14 +413,12 @@
       "discovery": "Découverte"
     }
   },
-
   "gallery": {
     "title": "Galerie",
     "noPhotos": "Pas encore de photos",
     "noPhotosHint": "Les photos du journal apparaîtront ici.",
     "photoCount": "{{current}} / {{total}}"
   },
-
   "calendar": {
     "title": "Calendrier",
     "due": "À faire",
@@ -439,7 +429,6 @@
     "previousMonth": "Mois précédent",
     "nextMonth": "Mois suivant"
   },
-
   "dex": {
     "title": "Plante-Dex",
     "progress": "{{discovered}} / {{total}} espèces découvertes",
@@ -467,21 +456,18 @@
     "empty": "Vous n'avez encore découvert aucune espèce. Scannez votre première plante !",
     "notDiscovered": "Non découverte"
   },
-
   "ben": {
     "taskCreated": "Tâche créée",
     "recurringTaskCreated": "Tâche récurrente créée",
     "taskCreatedMessage": "{{type}} pour {{plant}}, échéance le {{date}}",
     "recurringTaskCreatedMessage": "{{type}} pour {{plant}}, tous les {{days}} jours"
   },
-
   "minor": {
     "calendarSoon": "📅 Vue calendrier bientôt disponible !",
     "todayTitle": "🌞 Aujourd'hui – votre journée plantes !",
     "menuOverview": "🌱 Aperçu du menu",
     "menuSubtitle": "Le menu latéral devrait déjà être ouvert. Et sinon, pas de chance."
   },
-
   "settings": {
     "title": "Paramètres",
     "profileSection": "Profil",

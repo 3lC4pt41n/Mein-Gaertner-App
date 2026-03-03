@@ -37,7 +37,6 @@
     "buyCredits": "Acquista Credits",
     "retry": "Riprova"
   },
-
   "nav": {
     "home": "Casa",
     "plants": "Piante",
@@ -55,7 +54,6 @@
     "dexDetail": "Dettagli specie",
     "more": "Altro"
   },
-
   "auth": {
     "appTitle": "Giardiniere Digitale",
     "email": "Email",
@@ -86,7 +84,6 @@
     "authFailed": "Autenticazione non riuscita.",
     "googleLoginFailed": "Login con Google non riuscito."
   },
-
   "home": {
     "newHome": "Nuova casa",
     "editHome": "Modifica casa",
@@ -101,9 +98,15 @@
     "noZones": "Nessuna zona creata.",
     "loadError": "Errore durante il caricamento",
     "addressPlaceholder": "Indirizzo (opzionale)",
-    "labelPlaceholder": "Etichetta (opzionale, es. Casa 1, Ufficio, ecc.)"
+    "labelPlaceholder": "Etichetta (opzionale, es. Casa 1, Ufficio, ecc.)",
+    "zoneTypes": {
+      "room": "Stanza",
+      "balcony": "Balcone",
+      "garden": "Giardino",
+      "greenhouse": "Serra"
+    },
+    "unassignedPlants": "Piante non assegnate"
   },
-
   "plants": {
     "tabAll": "Tutte",
     "tabHomes": "Casa",
@@ -155,7 +158,7 @@
     "rescan": "Scansiona di nuovo",
     "savedSuccess": "Pianta salvata!",
     "optionalUpgrades": "Aggiungi extra",
-    "upgradeHint": "Genera dettagli di cura o un controllo salute (costa 1 Credit ciascuno).",
+    "upgradeHint": "Genera dettagli di cura ({{details}} Crediti) o un controllo salute ({{healthcheck}} Crediti).",
     "generateDetails": "Genera dettagli di cura",
     "detailsAlready": "Dettagli già generati",
     "detailsGenerated": "Dettagli di cura generati!",
@@ -165,7 +168,6 @@
     "zoneOptional": "Zona (opzionale)",
     "selectZoneOptional": "Assegna zona..."
   },
-
   "tasks": {
     "title": "Attività e appuntamenti",
     "noTasks": "Nessuna attività in sospeso",
@@ -219,7 +221,6 @@
     "emptyTitle": "Tutto fatto!",
     "emptyHint": "Nessuna attività in sospeso. Creane una nuova o goditi la giornata."
   },
-
   "assistant": {
     "placeholder": "Scrivi un messaggio a Ben …",
     "you": "Tu",
@@ -235,7 +236,6 @@
     "suggestionCare": "Quanto spesso devo innaffiare?",
     "takePhoto": "Scatta foto"
   },
-
   "store": {
     "balance": "Il tuo saldo",
     "creditsUnit": "Credits",
@@ -276,7 +276,6 @@
       "chat": "💬 Chat con Ben"
     }
   },
-
   "leaderboard": {
     "title": "Classifica",
     "timeWindows": {
@@ -300,7 +299,6 @@
     "optInMessage": "Attiva la classifica nel tuo profilo per confrontarti con gli altri.",
     "joinButton": "Partecipa ora"
   },
-
   "profile": {
     "title": "Profilo",
     "username": "Nome utente",
@@ -334,7 +332,6 @@
     "retakeAvatar": "Scatta nuova foto",
     "usernamePlaceholder": "Il tuo nome utente"
   },
-
   "beta": {
     "title": "Benvenuto nel Beta Test!",
     "subtitle": "Grazie per essere qui. Ecco tutto quello che devi sapere.",
@@ -352,7 +349,6 @@
     "feedbackDesc": "Come beta tester ci aiuti a migliorare l'app. Dicci cosa ti piace e cosa manca – leggiamo tutto!",
     "ctaButton": "Iniziamo!"
   },
-
   "admin": {
     "title": "Dashboard Admin",
     "noAccess": "Accesso negato",
@@ -363,14 +359,12 @@
     "netMargin": "Margine netto",
     "activeSubscriptions": "Abbonamenti attivi: {{active}} / {{total}}"
   },
-
   "notifications": {
     "taskDueTitle": "Attività in scadenza!",
     "taskDueBody": "{{type}} per {{plant}} è prevista per oggi.",
     "permissionTitle": "Notifiche",
     "permissionMessage": "Consenti le notifiche per ricevere promemoria sulle tue attività di cura."
   },
-
   "feedback": {
     "title": "Feedback",
     "subtitle": "Aiutaci a migliorare l'app. Ogni opinione conta!",
@@ -387,7 +381,6 @@
     "thankYou": "Grazie!",
     "successMessage": "Il tuo feedback è stato ricevuto. Leggiamo tutto!"
   },
-
   "weather": {
     "title": "Meteo",
     "humidity": "Umidità",
@@ -399,7 +392,6 @@
     "unavailable": "Meteo non disponibile",
     "tapToRetry": "Tocca per riprovare"
   },
-
   "diary": {
     "title": "Diario",
     "addEntry": "Aggiungi voce",
@@ -421,14 +413,12 @@
       "discovery": "Scoperta"
     }
   },
-
   "gallery": {
     "title": "Galleria",
     "noPhotos": "Ancora nessuna foto",
     "noPhotosHint": "Le foto dal diario appariranno qui.",
     "photoCount": "{{current}} / {{total}}"
   },
-
   "calendar": {
     "title": "Calendario",
     "due": "In scadenza",
@@ -439,7 +429,6 @@
     "previousMonth": "Mese precedente",
     "nextMonth": "Mese successivo"
   },
-
   "dex": {
     "title": "Pianta-Dex",
     "progress": "{{discovered}} / {{total}} specie scoperte",
@@ -467,21 +456,18 @@
     "empty": "Non hai ancora scoperto nessuna specie. Scansiona la tua prima pianta!",
     "notDiscovered": "Non scoperta"
   },
-
   "ben": {
     "taskCreated": "Attività creata",
     "recurringTaskCreated": "Attività ricorrente creata",
     "taskCreatedMessage": "{{type}} per {{plant}}, scadenza il {{date}}",
     "recurringTaskCreatedMessage": "{{type}} per {{plant}}, ogni {{days}} giorni"
   },
-
   "minor": {
     "calendarSoon": "📅 Vista calendario in arrivo!",
     "todayTitle": "🌞 Oggi – la tua giornata verde!",
     "menuOverview": "🌱 Panoramica menu",
     "menuSubtitle": "Il menu laterale dovrebbe essere già aperto. E se non lo è, pazienza."
   },
-
   "settings": {
     "title": "Impostazioni",
     "profileSection": "Profilo",

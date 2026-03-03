@@ -28,6 +28,7 @@ import { useNavigation } from '@react-navigation/native';
 import DSButton from '../theme/DSButton';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import i18n, { t } from '../i18n';
+import { AI_COSTS } from '../services/pricingConfig';
 
 // ─── Per-credit pricing helper ─────────────────────────────────
 function parsePrice(priceStr) {
@@ -361,10 +362,10 @@ export default function StoreScreen({ isAdmin }) {
           <View style={styles.comparisonBox}>
             <Text style={styles.comparisonTitle}>{t('store.costComparisonTitle')}</Text>
             {[
-              { icon: 'search-outline', label: t('store.actionLabels.plantScan'), cost: '12' },
-              { icon: 'document-text-outline', label: t('store.costDetails'), cost: '15' },
-              { icon: 'heart-outline', label: t('store.actionLabels.healthcheck'), cost: '8' },
-              { icon: 'chatbubble-outline', label: t('store.costChat'), cost: '3' },
+              { icon: 'search-outline', label: t('store.actionLabels.plantScan'), cost: String(AI_COSTS.scan) },
+              { icon: 'document-text-outline', label: t('store.costDetails'), cost: String(AI_COSTS.details) },
+              { icon: 'heart-outline', label: t('store.actionLabels.healthcheck'), cost: String(AI_COSTS.healthcheck) },
+              { icon: 'chatbubble-outline', label: t('store.costChat'), cost: String(AI_COSTS.chat) },
             ].map((item, i) => (
               <View key={i} style={styles.comparisonRow}>
                 <Ionicons name={item.icon} size={16} color={colors.primary} />
@@ -418,7 +419,7 @@ export default function StoreScreen({ isAdmin }) {
       {/* ─── Feedback (Beta) ──────────────────────────────── */}
       <TouchableOpacity
         style={styles.adminBtn}
-        onPress={() => navigation.navigate('Feedback')}
+        onPress={() => navigation.navigate('FeedbackMain')}
       >
         <Ionicons name="chatbox-ellipses-outline" size={16} color={colors.primary} />
         <Text style={[styles.adminBtnText, { color: colors.primary }]}>{t('feedback.title')}</Text>
@@ -428,7 +429,7 @@ export default function StoreScreen({ isAdmin }) {
       {isAdmin && (
         <TouchableOpacity
           style={styles.adminBtn}
-          onPress={() => navigation.navigate('AdminDashboard')}
+          onPress={() => navigation.navigate('AdminMain')}
         >
           <Ionicons name="stats-chart" size={16} color={colors.textTertiary} />
           <Text style={styles.adminBtnText}>{t('store.adminDashboard')}</Text>

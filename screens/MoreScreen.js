@@ -11,6 +11,7 @@ const MENU_ITEMS = [
   { key: 'leaderboard', icon: 'trophy-outline', screen: 'LeaderboardMain' },
   { key: 'calendar', icon: 'calendar-outline', screen: 'CalendarMain' },
   { key: 'feedback', icon: 'chatbubble-outline', screen: 'FeedbackMain' },
+  { key: 'settings', icon: 'settings-outline', screen: 'Settings' },
 ];
 
 export default function MoreScreen({ navigation }) {
@@ -23,6 +24,7 @@ export default function MoreScreen({ navigation }) {
       leaderboard: t('nav.leaderboard'),
       calendar: t('nav.calendar'),
       feedback: t('feedback.title'),
+      settings: t('settings.title'),
       admin: t('nav.adminTitle'),
     };
     return labels[key] || key;
@@ -41,6 +43,8 @@ export default function MoreScreen({ navigation }) {
           style={styles.menuItem}
           activeOpacity={0.6}
           onPress={() => navigation.navigate(item.screen)}
+          accessibilityRole="button"
+          accessibilityLabel={getLabel(item.key)}
         >
           <View style={styles.menuIconContainer}>
             <Ionicons name={item.icon} size={22} color={colors.primary} />

@@ -37,7 +37,6 @@
     "buyCredits": "Buy Credits",
     "retry": "Try again"
   },
-
   "nav": {
     "home": "Home",
     "plants": "Plants",
@@ -55,7 +54,6 @@
     "dexDetail": "Species Details",
     "more": "More"
   },
-
   "auth": {
     "appTitle": "Digital Gardener",
     "email": "Email",
@@ -86,7 +84,6 @@
     "authFailed": "Authentication failed.",
     "googleLoginFailed": "Google login failed."
   },
-
   "home": {
     "newHome": "New Home",
     "editHome": "Edit Home",
@@ -101,9 +98,15 @@
     "noZones": "No zones created.",
     "loadError": "Failed to load",
     "addressPlaceholder": "Address (optional)",
-    "labelPlaceholder": "Label (optional, e.g. Home 1, Office, etc.)"
+    "labelPlaceholder": "Label (optional, e.g. Home 1, Office, etc.)",
+    "zoneTypes": {
+      "room": "Room",
+      "balcony": "Balcony",
+      "garden": "Garden",
+      "greenhouse": "Greenhouse"
+    },
+    "unassignedPlants": "Unassigned Plants"
   },
-
   "plants": {
     "tabAll": "All",
     "tabHomes": "Homes",
@@ -145,7 +148,7 @@
     "rescan": "Scan again",
     "savedSuccess": "Plant saved!",
     "optionalUpgrades": "Add extras",
-    "upgradeHint": "Generate care details or a health check (costs 1 credit each).",
+    "upgradeHint": "Generate care details ({{details}} Credits) or a health check ({{healthcheck}} Credits).",
     "generateDetails": "Generate care details",
     "detailsAlready": "Details already generated",
     "detailsGenerated": "Care details have been generated!",
@@ -165,7 +168,6 @@
     "unknownError": "Unknown error",
     "saveFailedMessage": "Save failed: {{message}}"
   },
-
   "tasks": {
     "title": "Tasks & Schedules",
     "noTasks": "No open tasks",
@@ -219,9 +221,8 @@
     "emptyTitle": "All done!",
     "emptyHint": "No open tasks. Create a new one or enjoy your day off."
   },
-
   "assistant": {
-    "placeholder": "Write Ben a message \u2026",
+    "placeholder": "Write Ben a message …",
     "you": "You",
     "ben": "Ben",
     "loadOlder": "Load older messages...",
@@ -235,16 +236,15 @@
     "suggestionCare": "How often should I water?",
     "takePhoto": "Take photo"
   },
-
   "store": {
     "balance": "Your Balance",
     "creditsUnit": "Credits",
     "shopTab": "Shop",
     "usageTab": "Usage",
     "subscriptionTitle": "Monthly Subscription",
-    "subscriptionSubtitle": "33% cheaper than one-time purchase \u2013 fresh Credits every month",
+    "subscriptionSubtitle": "33% cheaper than one-time purchase – fresh Credits every month",
     "oneTimeTitle": "One-Time Purchase",
-    "oneTimeSubtitle": "Credits without a subscription \u2013 never expire",
+    "oneTimeSubtitle": "Credits without a subscription – never expire",
     "creditsPerMonth": "Credits/month",
     "popular": "Popular",
     "bestDeal": "Best Deal",
@@ -276,7 +276,6 @@
       "chat": "💬 Chat with Ben"
     }
   },
-
   "leaderboard": {
     "title": "Ranking",
     "timeWindows": {
@@ -300,7 +299,6 @@
     "optInMessage": "Enable the ranking in your profile to compete with others.",
     "joinButton": "Join now"
   },
-
   "profile": {
     "title": "Profile",
     "username": "Username",
@@ -334,7 +332,6 @@
     "retakeAvatar": "Retake photo",
     "usernamePlaceholder": "Your username"
   },
-
   "beta": {
     "title": "Welcome to the Beta Test!",
     "subtitle": "Great to have you on board. Here's everything you need to know.",
@@ -345,14 +342,13 @@
     "healthcheckLabel": "Health Check",
     "chatLabel": "Chat with Ben",
     "giftTitle": "100 Free Credits",
-    "giftDesc": "As a beta tester, you get 100 free Credits \u2013 enough for about 10 plant scans with health checks or plenty of chats with Ben.",
+    "giftDesc": "As a beta tester, you get 100 free Credits – enough for about 10 plant scans with health checks or plenty of chats with Ben.",
     "reloadTitle": "Top Up Credits",
-    "reloadDesc": "When your Credits run out, you can buy more in the Shop \u2013 as a one-time purchase or cheaper with a monthly subscription.",
+    "reloadDesc": "When your Credits run out, you can buy more in the Shop – as a one-time purchase or cheaper with a monthly subscription.",
     "feedbackTitle": "Your Feedback Matters!",
-    "feedbackDesc": "As a beta tester, you're helping us improve the app. Tell us what you like and what's missing \u2013 we read everything!",
+    "feedbackDesc": "As a beta tester, you're helping us improve the app. Tell us what you like and what's missing – we read everything!",
     "ctaButton": "Let's go!"
   },
-
   "admin": {
     "title": "Admin Dashboard",
     "noAccess": "No access",
@@ -363,14 +359,12 @@
     "netMargin": "Net Margin",
     "activeSubscriptions": "Active subs: {{active}} / {{total}}"
   },
-
   "notifications": {
     "taskDueTitle": "Task due!",
     "taskDueBody": "{{type}} for {{plant}} is due today.",
     "permissionTitle": "Notifications",
     "permissionMessage": "Allow notifications to receive reminders for your plant care tasks."
   },
-
   "feedback": {
     "title": "Feedback",
     "subtitle": "Help us improve the app. Every bit of feedback counts!",
@@ -387,7 +381,6 @@
     "thankYou": "Thank you!",
     "successMessage": "Your feedback has been received. We read everything!"
   },
-
   "weather": {
     "title": "Weather",
     "humidity": "Humidity",
@@ -399,7 +392,6 @@
     "unavailable": "Weather unavailable",
     "tapToRetry": "Tap to retry"
   },
-
   "diary": {
     "title": "Diary",
     "addEntry": "Add Entry",
@@ -421,14 +413,12 @@
       "discovery": "Discovery"
     }
   },
-
   "gallery": {
     "title": "Gallery",
     "noPhotos": "No photos yet",
     "noPhotosHint": "Photos from the diary will appear here.",
     "photoCount": "{{current}} / {{total}}"
   },
-
   "calendar": {
     "title": "Calendar",
     "due": "Due",
@@ -439,7 +429,6 @@
     "previousMonth": "Previous month",
     "nextMonth": "Next month"
   },
-
   "dex": {
     "title": "Plant-Dex",
     "progress": "{{discovered}} / {{total}} species discovered",
@@ -467,26 +456,23 @@
     "empty": "You haven't discovered any species yet. Scan your first plant!",
     "notDiscovered": "Not discovered"
   },
-
   "ben": {
     "taskCreated": "Task created",
     "recurringTaskCreated": "Recurring task created",
     "taskCreatedMessage": "{{type}} for {{plant}}, due on {{date}}",
     "recurringTaskCreatedMessage": "{{type}} for {{plant}}, every {{days}} days"
   },
-
   "minor": {
     "calendarSoon": "📅 Calendar view coming soon!",
-    "todayTitle": "🌞 Today \u2013 your plant day!",
+    "todayTitle": "🌞 Today – your plant day!",
     "menuOverview": "🌱 Menu Overview",
     "menuSubtitle": "The drawer menu should already be open. And if not, tough luck."
   },
-
   "settings": {
     "title": "Settings",
     "profileSection": "Profile",
     "changeAvatar": "Change avatar",
-    "avatarUpdating": "Creating avatar\u2026",
+    "avatarUpdating": "Creating avatar…",
     "profileSaved": "Profile saved!",
     "profileSaveError": "Could not save profile.",
     "preferencesSection": "Preferences",

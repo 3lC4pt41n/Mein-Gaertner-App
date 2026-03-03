@@ -37,7 +37,6 @@
     "buyCredits": "Credits kaufen",
     "retry": "Erneut versuchen"
   },
-
   "nav": {
     "home": "Zuhause",
     "plants": "Pflanzen",
@@ -55,7 +54,6 @@
     "dexDetail": "Artdetails",
     "more": "Mehr"
   },
-
   "auth": {
     "appTitle": "Digitaler Gärtner",
     "email": "Email",
@@ -86,7 +84,6 @@
     "authFailed": "Authentifizierung fehlgeschlagen.",
     "googleLoginFailed": "Google Login fehlgeschlagen."
   },
-
   "home": {
     "newHome": "Neues Zuhause",
     "editHome": "Zuhause bearbeiten",
@@ -101,9 +98,15 @@
     "noZones": "Keine Zonen angelegt.",
     "loadError": "Fehler beim Laden",
     "addressPlaceholder": "Adresse (optional)",
-    "labelPlaceholder": "Label (optional, z.B. Zuhause 1, Büro, etc.)"
+    "labelPlaceholder": "Label (optional, z.B. Zuhause 1, Büro, etc.)",
+    "zoneTypes": {
+      "room": "Zimmer",
+      "balcony": "Balkon",
+      "garden": "Garten",
+      "greenhouse": "Gewächshaus"
+    },
+    "unassignedPlants": "Nicht zugewiesene Pflanzen"
   },
-
   "plants": {
     "tabAll": "Alle",
     "tabHomes": "Zuhause",
@@ -131,7 +134,7 @@
     "removeZoneTitle": "Zone entfernen?",
     "removeZoneMessage": "Soll die Pflanze wirklich aus dieser Zone entfernt werden?",
     "removeZoneSuccess": "Zone entfernt. Jetzt kannst du eine neue zuweisen.",
-    "zoneAssigned": "Pflanze jetzt in Zone \u201E{{zone}}\u201C",
+    "zoneAssigned": "Pflanze jetzt in Zone „{{zone}}“",
     "scanButton": "Foto aufnehmen & erkennen",
     "nameLabel": "Name",
     "namePlaceholder": "z. B. Monstera deliciosa",
@@ -145,7 +148,7 @@
     "rescan": "Nochmal scannen",
     "savedSuccess": "Pflanze gespeichert!",
     "optionalUpgrades": "Extras hinzufügen",
-    "upgradeHint": "Lass dir Pflege-Details oder einen Healthcheck generieren (kostet je 1 Credit).",
+    "upgradeHint": "Lass dir Pflege-Details ({{details}} Credits) oder einen Healthcheck ({{healthcheck}} Credits) generieren.",
     "generateDetails": "Pflege-Details generieren",
     "detailsAlready": "Details bereits vorhanden",
     "detailsGenerated": "Pflege-Details wurden generiert!",
@@ -165,7 +168,6 @@
     "unknownError": "Unbekannter Fehler",
     "saveFailedMessage": "Speichern fehlgeschlagen: {{message}}"
   },
-
   "tasks": {
     "title": "Aufgaben & Termine",
     "noTasks": "Keine Aufgaben offen",
@@ -219,9 +221,8 @@
     "emptyTitle": "Alles erledigt!",
     "emptyHint": "Keine offenen Aufgaben. Erstelle eine neue oder genieße den freien Tag."
   },
-
   "assistant": {
-    "placeholder": "Schreib Ben eine Nachricht \u2026",
+    "placeholder": "Schreib Ben eine Nachricht …",
     "you": "Du",
     "ben": "Ben",
     "loadOlder": "Ältere Nachrichten laden...",
@@ -235,16 +236,15 @@
     "suggestionCare": "Wie oft soll ich gießen?",
     "takePhoto": "Foto aufnehmen"
   },
-
   "store": {
     "balance": "Dein Guthaben",
     "creditsUnit": "Credits",
     "shopTab": "Shop",
     "usageTab": "Verbrauch",
     "subscriptionTitle": "Monatliches Abo",
-    "subscriptionSubtitle": "33% günstiger als Einmalkauf \u2013 jeden Monat frische Credits",
+    "subscriptionSubtitle": "33% günstiger als Einmalkauf – jeden Monat frische Credits",
     "oneTimeTitle": "Einmalkauf",
-    "oneTimeSubtitle": "Credits ohne Abo \u2013 nie ablaufend",
+    "oneTimeSubtitle": "Credits ohne Abo – nie ablaufend",
     "creditsPerMonth": "Credits/Monat",
     "popular": "Beliebt",
     "bestDeal": "Bestes Angebot",
@@ -276,7 +276,6 @@
       "chat": "💬 Chat mit Ben"
     }
   },
-
   "leaderboard": {
     "title": "Rangliste",
     "timeWindows": {
@@ -300,7 +299,6 @@
     "optInMessage": "Aktiviere die Rangliste in deinem Profil, um dich mit anderen zu messen.",
     "joinButton": "Jetzt beitreten"
   },
-
   "profile": {
     "title": "Profil",
     "username": "Benutzername",
@@ -334,7 +332,6 @@
     "retakeAvatar": "Neues Foto aufnehmen",
     "usernamePlaceholder": "Dein Benutzername"
   },
-
   "beta": {
     "title": "Willkommen beim Beta-Test!",
     "subtitle": "Schön, dass du dabei bist. Hier ist alles, was du wissen musst.",
@@ -345,14 +342,13 @@
     "healthcheckLabel": "Healthcheck",
     "chatLabel": "Chat mit Ben",
     "giftTitle": "100 Gratis-Credits",
-    "giftDesc": "Als Beta-Tester bekommst du 100 Credits geschenkt \u2013 das reicht für etwa 10 Pflanzen-Scans mit Healthcheck oder viele Chats mit Ben.",
+    "giftDesc": "Als Beta-Tester bekommst du 100 Credits geschenkt – das reicht für etwa 10 Pflanzen-Scans mit Healthcheck oder viele Chats mit Ben.",
     "reloadTitle": "Credits nachladen",
-    "reloadDesc": "Wenn deine Credits aufgebraucht sind, kannst du im Shop neue kaufen \u2013 als Einmalkauf oder günstiger im Monats-Abo.",
+    "reloadDesc": "Wenn deine Credits aufgebraucht sind, kannst du im Shop neue kaufen – als Einmalkauf oder günstiger im Monats-Abo.",
     "feedbackTitle": "Dein Feedback zählt!",
-    "feedbackDesc": "Als Beta-Tester hilfst du uns, die App besser zu machen. Sag uns, was dir gefällt und was fehlt \u2013 wir lesen alles!",
+    "feedbackDesc": "Als Beta-Tester hilfst du uns, die App besser zu machen. Sag uns, was dir gefällt und was fehlt – wir lesen alles!",
     "ctaButton": "Los geht's!"
   },
-
   "admin": {
     "title": "Admin Dashboard",
     "noAccess": "Kein Zugriff",
@@ -363,14 +359,12 @@
     "netMargin": "Netto-Margin",
     "activeSubscriptions": "Abos aktiv: {{active}} / {{total}}"
   },
-
   "notifications": {
     "taskDueTitle": "Aufgabe fällig!",
     "taskDueBody": "{{type}} für {{plant}} steht heute an.",
     "permissionTitle": "Benachrichtigungen",
     "permissionMessage": "Erlaube Benachrichtigungen, um Erinnerungen für deine Pflegeaufgaben zu erhalten."
   },
-
   "feedback": {
     "title": "Feedback",
     "subtitle": "Hilf uns, die App zu verbessern. Jede Rückmeldung zählt!",
@@ -387,7 +381,6 @@
     "thankYou": "Danke!",
     "successMessage": "Dein Feedback ist angekommen. Wir lesen alles!"
   },
-
   "weather": {
     "title": "Wetter",
     "humidity": "Feuchtigkeit",
@@ -399,7 +392,6 @@
     "unavailable": "Wetter nicht verfügbar",
     "tapToRetry": "Tippen zum Aktualisieren"
   },
-
   "diary": {
     "title": "Tagebuch",
     "addEntry": "Eintrag hinzufügen",
@@ -421,14 +413,12 @@
       "discovery": "Entdeckung"
     }
   },
-
   "gallery": {
     "title": "Galerie",
     "noPhotos": "Noch keine Fotos",
     "noPhotosHint": "Fotos aus dem Tagebuch erscheinen hier.",
     "photoCount": "{{current}} / {{total}}"
   },
-
   "calendar": {
     "title": "Kalender",
     "due": "Fällig",
@@ -439,7 +429,6 @@
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat"
   },
-
   "dex": {
     "title": "Pflanzen-Dex",
     "progress": "{{discovered}} / {{total}} Arten entdeckt",
@@ -467,26 +456,23 @@
     "empty": "Noch keine Arten entdeckt. Scanne deine erste Pflanze!",
     "notDiscovered": "Nicht entdeckt"
   },
-
   "ben": {
     "taskCreated": "Aufgabe erstellt",
     "recurringTaskCreated": "Wiederkehrende Aufgabe erstellt",
     "taskCreatedMessage": "{{type}} für {{plant}}, fällig am {{date}}",
     "recurringTaskCreatedMessage": "{{type}} für {{plant}}, alle {{days}} Tage"
   },
-
   "minor": {
     "calendarSoon": "📅 Kalenderansicht kommt bald!",
-    "todayTitle": "🌞 Heute \u2013 dein Pflanzentag!",
+    "todayTitle": "🌞 Heute – dein Pflanzentag!",
     "menuOverview": "🌱 Menü-Übersicht",
     "menuSubtitle": "Das Drawer-Menü sollte schon offen sein. Und wenn nicht, Pech gehabt."
   },
-
   "settings": {
     "title": "Einstellungen",
     "profileSection": "Profil",
     "changeAvatar": "Avatar ändern",
-    "avatarUpdating": "Avatar wird erstellt\u2026",
+    "avatarUpdating": "Avatar wird erstellt…",
     "profileSaved": "Profil gespeichert!",
     "profileSaveError": "Profil konnte nicht gespeichert werden.",
     "preferencesSection": "Einstellungen",

@@ -163,7 +163,8 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
           items={langChips}
           selected={language}
           onSelect={setLanguage}
-          variant="segmented"
+          variant="pills"
+          scrollable
           style={{ marginBottom: spacing.md }}
         />
       </DSCard>

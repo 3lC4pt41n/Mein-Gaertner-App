@@ -25,7 +25,7 @@ export default function AdminDashboardScreen() {
   const [totals, setTotals] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [tab, setTab] = useState('overview'); // 'overview' | 'users' | 'daily'
+  const [tab, setTab] = useState('daily'); // 'daily' | 'users'
 
   const loadData = useCallback(async () => {
     try {

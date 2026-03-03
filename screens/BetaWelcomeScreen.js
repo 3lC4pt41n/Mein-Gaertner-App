@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
+import { AI_COSTS } from '../services/pricingConfig';
 
 const { width } = Dimensions.get('window');
 
@@ -26,10 +27,10 @@ export default function BetaWelcomeScreen({ onDone }) {
         </View>
         <Text style={styles.cardText}>{t('beta.creditsDesc')}</Text>
         <View style={styles.creditTable}>
-          <CreditRow icon="camera" label={t('beta.scanLabel')} credits="12" />
-          <CreditRow icon="document-text" label={t('beta.detailsLabel')} credits="15" />
-          <CreditRow icon="heart" label={t('beta.healthcheckLabel')} credits="8" />
-          <CreditRow icon="chatbox" label={t('beta.chatLabel')} credits="3" />
+          <CreditRow icon="camera" label={t('beta.scanLabel')} credits={String(AI_COSTS.scan)} />
+          <CreditRow icon="document-text" label={t('beta.detailsLabel')} credits={String(AI_COSTS.details)} />
+          <CreditRow icon="heart" label={t('beta.healthcheckLabel')} credits={String(AI_COSTS.healthcheck)} />
+          <CreditRow icon="chatbox" label={t('beta.chatLabel')} credits={String(AI_COSTS.chat)} />
         </View>
       </View>
 

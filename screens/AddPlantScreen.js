@@ -27,6 +27,7 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
+import { AI_COSTS } from '../services/pricingConfig';
 
 // Fetch zones grouped by location for the picker
 async function fetchZonesGrouped(userId) {
@@ -418,7 +419,12 @@ export default function AddPlantScreen() {
 
           <DSCard>
             <Text style={styles.upgradeTitle}>{t('plants.optionalUpgrades')}</Text>
-            <Text style={styles.upgradeSubtitle}>{t('plants.upgradeHint')}</Text>
+            <Text style={styles.upgradeSubtitle}>
+              {t('plants.upgradeHint', {
+                details: AI_COSTS.details,
+                healthcheck: AI_COSTS.healthcheck,
+              })}
+            </Text>
 
             <DSButton
               variant="secondary"
@@ -491,9 +497,22 @@ export default function AddPlantScreen() {
                 }
               />
             ) : (
-              <Text style={{ textAlign: 'center', color: colors.textSecondary, padding: spacing.lg }}>
-                {t('home.noZones')}
-              </Text>
+              <View style={{ alignItems: 'center', padding: spacing.lg }}>
+                <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: spacing.md }}>
+                  {t('home.noZones')}
+                </Text>
+                <DSButton
+                  variant="secondary"
+                  size="sm"
+                  icon="home-outline"
+                  onPress={() => {
+                    setPickerVisible(false);
+                    navigation.navigate('Zuhause');
+                  }}
+                >
+                  {t('home.newHome')}
+                </DSButton>
+              </View>
             )}
             <DSButton variant="ghost" onPress={() => setPickerVisible(false)} style={{ marginTop: spacing.sm }}>
               {t('common.close')}

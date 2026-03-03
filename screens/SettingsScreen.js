@@ -374,7 +374,8 @@ export default function SettingsScreen({ navigation }) {
           items={langChips}
           selected={language}
           onSelect={handleLanguageChange}
-          variant="segmented"
+          variant="pills"
+          scrollable
           style={styles.languageChips}
         />
 
@@ -442,14 +443,17 @@ export default function SettingsScreen({ navigation }) {
           {t('settings.logout')}
         </DSButton>
 
-        <DSButton
-          variant="danger"
-          fullWidth
-          icon="trash-outline"
-          onPress={handleDeleteAccount}
-        >
-          {t('settings.deleteAccount')}
-        </DSButton>
+        {/* Hidden until proper backend deletion support is implemented */}
+        {false && (
+          <DSButton
+            variant="danger"
+            fullWidth
+            icon="trash-outline"
+            onPress={handleDeleteAccount}
+          >
+            {t('settings.deleteAccount')}
+          </DSButton>
+        )}
       </DSCard>
 
       {/* ========== INFO SECTION ========== */}
@@ -465,11 +469,14 @@ export default function SettingsScreen({ navigation }) {
           label={t('settings.privacyPolicy')}
           onPress={() => Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html')}
         />
-        <LinkRow
-          icon="reader-outline"
-          label={t('settings.termsOfService')}
-          onPress={() => Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html')}
-        />
+        {/* Hidden until terms.html is published */}
+        {false && (
+          <LinkRow
+            icon="reader-outline"
+            label={t('settings.termsOfService')}
+            onPress={() => Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html')}
+          />
+        )}
         <LinkRow
           icon="chatbubble-ellipses-outline"
           label={t('settings.feedback')}

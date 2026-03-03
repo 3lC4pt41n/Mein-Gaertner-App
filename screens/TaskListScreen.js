@@ -47,7 +47,7 @@ export default function TaskScreen() {
   const [error, setError] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const navigation = useNavigation();
-  const { userId } = useAuth();
+  const { userId, profile } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -67,8 +67,12 @@ export default function TaskScreen() {
     try {
       const data = await fetchTasks(userId);
       setTasks(data ?? []);
-      // Reschedule all local notification reminders for DUE tasks
-      rescheduleAllTaskReminders(data ?? []).catch(console.warn);
+      // Reschedule reminders only when notifications are enabled
+      if (profile?.notifications_enabled) {
+        rescheduleAllTaskReminders(data ?? []).catch(console.warn);
+      } else {
+        rescheduleAllTaskReminders([]).catch(console.warn);
+      }
     } catch (e) {
       setError(e.message);
     } finally {

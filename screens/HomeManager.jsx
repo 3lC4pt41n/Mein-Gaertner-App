@@ -10,15 +10,16 @@ import DSCard from '../theme/DSCard';
 import DSInput from '../theme/DSInput';
 import DSChipGroup from '../theme/DSChips';
 
-const ZONE_TYPES = [
-  { key: 'room', label: 'Room', icon: 'home-outline' },
-  { key: 'balcony', label: 'Balcony', icon: 'sunny-outline' },
-  { key: 'garden', label: 'Garden', icon: 'leaf-outline' },
-  { key: 'greenhouse', label: 'Greenhouse', icon: 'flower-outline' },
+const getZoneTypes = () => [
+  { key: 'room', label: t('home.zoneTypes.room'), icon: 'home-outline' },
+  { key: 'balcony', label: t('home.zoneTypes.balcony'), icon: 'sunny-outline' },
+  { key: 'garden', label: t('home.zoneTypes.garden'), icon: 'leaf-outline' },
+  { key: 'greenhouse', label: t('home.zoneTypes.greenhouse'), icon: 'flower-outline' },
 ];
 
 export default function HomeManager() {
   const [locations, setLocations] = useState([]);
+  const [unassignedPlants, setUnassignedPlants] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -65,6 +66,15 @@ export default function HomeManager() {
       setLocations(
         (locs || []).map((l) => ({ ...l, zones: zonesMap[l.id] || [] }))
       );
+
+      // Fetch plants without a zone assignment
+      const { data: noZonePlants } = await supabase
+        .from('plants')
+        .select('id, name, image_url')
+        .eq('user_id', userId)
+        .is('zone_id', null)
+        .order('created_at', { ascending: false });
+      setUnassignedPlants(noZonePlants || []);
     } catch (err) {
       setError(err.message);
     }
@@ -186,6 +196,8 @@ export default function HomeManager() {
     ]);
   };
 
+  const ZONE_TYPES = getZoneTypes();
+
   // ── Zone Row ────────────────────────────────────────
   const ZoneRow = ({ item, locationId }) => (
     <View style={styles.zoneRow}>
@@ -232,92 +244,118 @@ export default function HomeManager() {
   }
 
   return (
-    <FlatList
-      contentContainerStyle={styles.listContent}
-      data={locations}
-      refreshing={loading}
-      onRefresh={reload}
-      keyExtractor={(l) => l.id}
-      ListHeaderComponent={() => (
-        <DSButton
-          variant="primary"
-          icon="home-outline"
-          fullWidth
-          onPress={() => openLocationModal()}
-        >
-          {t('home.newHome')}
-        </DSButton>
-      )}
-      ListEmptyComponent={
-        !loading && (
-          <View style={styles.centerState}>
-            <Ionicons name="home-outline" size={56} color={colors.textDisabled} />
-            <Text style={styles.stateTitle}>{t('home.noZones')}</Text>
-          </View>
-        )
-      }
-      renderItem={({ item }) => (
-        <DSCard
-          variant="elevated"
-          padding="sm"
-          style={{ marginTop: spacing.md }}
-          onPress={() => setExpandedId(expandedId === item.id ? null : item.id)}
-        >
-          {/* Location Header */}
-          <View style={styles.locationHeader}>
-            <View style={styles.locationIcon}>
-              <Ionicons name="home" size={22} color={colors.primary} />
+    <>
+      <FlatList
+        contentContainerStyle={styles.listContent}
+        data={locations}
+        refreshing={loading}
+        onRefresh={reload}
+        keyExtractor={(l) => l.id}
+        ListHeaderComponent={() => (
+          <DSButton
+            variant="primary"
+            icon="home-outline"
+            fullWidth
+            onPress={() => openLocationModal()}
+          >
+            {t('home.newHome')}
+          </DSButton>
+        )}
+        ListEmptyComponent={
+          !loading && (
+            <View style={styles.centerState}>
+              <Ionicons name="home-outline" size={56} color={colors.textDisabled} />
+              <Text style={styles.stateTitle}>{t('home.noZones')}</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.locationName}>{item.name}</Text>
-              {item.address ? (
-                <Text style={styles.locationAddress}>{item.address}</Text>
-              ) : null}
-            </View>
-            <Ionicons
-              name={expandedId === item.id ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color={colors.textTertiary}
-            />
-          </View>
-
-          {/* Expanded Content */}
-          {expandedId === item.id && (
-            <View style={styles.expandedContent}>
-              {item.zones?.length ? (
-                item.zones.map((z) => <ZoneRow key={z.id} item={z} locationId={item.id} />)
-              ) : (
-                <Text style={styles.emptyTxt}>{t('home.noZones')}</Text>
-              )}
-              <View style={styles.actionRow}>
-                <DSButton
-                  variant="secondary"
-                  size="sm"
-                  icon="add-outline"
-                  onPress={() => openZoneModal(item.id)}
-                  style={{ flex: 1, marginRight: spacing.sm }}
-                >
-                  {t('home.addZone')}
-                </DSButton>
-                <DSButton
-                  variant="ghost"
-                  size="sm"
-                  icon="pencil-outline"
-                  onPress={() => openLocationModal(item)}
-                />
-                <DSButton
-                  variant="ghost"
-                  size="sm"
-                  icon="trash-outline"
-                  onPress={() => deleteLocation(item.id)}
-                  textStyle={{ color: colors.danger }}
-                />
+          )
+        }
+        renderItem={({ item }) => (
+          <DSCard
+            variant="elevated"
+            padding="sm"
+            style={{ marginTop: spacing.md }}
+            onPress={() => setExpandedId(expandedId === item.id ? null : item.id)}
+          >
+            {/* Location Header */}
+            <View style={styles.locationHeader}>
+              <View style={styles.locationIcon}>
+                <Ionicons name="home" size={22} color={colors.primary} />
               </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.locationName}>{item.name}</Text>
+                {item.address ? (
+                  <Text style={styles.locationAddress}>{item.address}</Text>
+                ) : null}
+              </View>
+              <Ionicons
+                name={expandedId === item.id ? 'chevron-up' : 'chevron-down'}
+                size={20}
+                color={colors.textTertiary}
+              />
             </View>
-          )}
-        </DSCard>
-      )}
-    >
+
+            {/* Expanded Content */}
+            {expandedId === item.id && (
+              <View style={styles.expandedContent}>
+                {item.zones?.length ? (
+                  item.zones.map((z) => <ZoneRow key={z.id} item={z} locationId={item.id} />)
+                ) : (
+                  <Text style={styles.emptyTxt}>{t('home.noZones')}</Text>
+                )}
+                <View style={styles.actionRow}>
+                  <DSButton
+                    variant="secondary"
+                    size="sm"
+                    icon="add-outline"
+                    onPress={() => openZoneModal(item.id)}
+                    style={{ flex: 1, marginRight: spacing.sm }}
+                  >
+                    {t('home.addZone')}
+                  </DSButton>
+                  <DSButton
+                    variant="ghost"
+                    size="sm"
+                    icon="pencil-outline"
+                    onPress={() => openLocationModal(item)}
+                  />
+                  <DSButton
+                    variant="ghost"
+                    size="sm"
+                    icon="trash-outline"
+                    onPress={() => deleteLocation(item.id)}
+                    textStyle={{ color: colors.danger }}
+                  />
+                </View>
+              </View>
+            )}
+          </DSCard>
+        )}
+        ListFooterComponent={
+          unassignedPlants.length > 0 ? (
+            <DSCard variant="outlined" padding="sm" style={{ marginTop: spacing.lg }}>
+              <View style={styles.locationHeader}>
+                <View style={[styles.locationIcon, { backgroundColor: colors.warningSurface }]}>
+                  <Ionicons name="help-circle-outline" size={22} color={colors.warning} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.locationName}>{t('home.unassignedPlants')}</Text>
+                  <Text style={styles.locationAddress}>
+                    {t('plants.plantsCount', { count: unassignedPlants.length })}
+                  </Text>
+                </View>
+              </View>
+              {unassignedPlants.map((p) => (
+                <View key={p.id} style={styles.zoneRow}>
+                  <View style={styles.zoneInfo}>
+                    <Ionicons name="leaf-outline" size={18} color={colors.textTertiary} />
+                    <Text style={styles.zoneText}>{p.name}</Text>
+                  </View>
+                </View>
+              ))}
+            </DSCard>
+          ) : null
+        }
+      />
       {/* ── Modal ────────────────────────────────────── */}
       <Modal
         visible={dialogVisible}
@@ -387,7 +425,7 @@ export default function HomeManager() {
           </View>
         </View>
       </Modal>
-    </FlatList>
+    </>
   );
 }
 
