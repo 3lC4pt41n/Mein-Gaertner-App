@@ -355,20 +355,22 @@ export default function AuthScreen({
   const renderRecoveryForm = () => (
     <>
       <Text style={styles.recoveryTitle}>{t('auth.newPasswordLabel')}</Text>
-      <Text>{t('auth.newPassword')}</Text>
+      <Text style={styles.label}>{t('auth.newPassword')}</Text>
       <TextInput
         secureTextEntry
         value={newPassword}
         onChangeText={setNewPassword}
         style={styles.input}
+        placeholderTextColor={colors.textTertiary}
         editable={!loading}
       />
-      <Text>{t('auth.confirmPassword')}</Text>
+      <Text style={styles.label}>{t('auth.confirmPassword')}</Text>
       <TextInput
         secureTextEntry
         value={confirmNewPassword}
         onChangeText={setConfirmNewPassword}
         style={[styles.input, { marginBottom: spacing.lg }]}
+        placeholderTextColor={colors.textTertiary}
         editable={!loading}
       />
       <DSButton onPress={handleUpdatePassword} disabled={loading} fullWidth>
@@ -379,21 +381,23 @@ export default function AuthScreen({
 
   const renderAuthForm = () => (
     <>
-      <Text>{t('auth.email')}</Text>
+      <Text style={styles.label}>{t('auth.email')}</Text>
       <TextInput
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
+        placeholderTextColor={colors.textTertiary}
         editable={!loading}
       />
-      <Text>{t('auth.password')}</Text>
+      <Text style={styles.label}>{t('auth.password')}</Text>
       <TextInput
         secureTextEntry
         value={password}
         onChangeText={setPassword}
         style={[styles.input, { marginBottom: spacing.lg }]}
+        placeholderTextColor={colors.textTertiary}
         editable={!loading}
       />
 
@@ -441,6 +445,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: spacing.lg,
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 26,
@@ -455,6 +460,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     textAlign: 'center',
     color: colors.textPrimary,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   input: {
     borderWidth: 1,

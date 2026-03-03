@@ -25,6 +25,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLoadingScreen from './components/AppLoadingScreen';
 import OfflineBanner from './components/OfflineBanner';
+import { Ionicons } from '@expo/vector-icons';
 import { t } from './i18n';
 import { colors } from './theme';
 import { supabase } from './supabase';
