@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import {
   View,
-  TextInput,
   Alert,
   Text,
   TouchableOpacity,
   Image,
   ActivityIndicator,
   ScrollView,
+  StyleSheet,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { LANGUAGE_OPTIONS, getLanguageLabel, normalizeLanguage } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
+import DSInput from '../theme/DSInput';
+import DSCard from '../theme/DSCard';
+import DSChipGroup from '../theme/DSChips';
 import { t } from '../i18n';
 
 async function createAvatarSignedUrl(path) {
   const { data, error } = await supabase.storage
     .from('chat-images')
     .createSignedUrl(path, 60 * 60 * 24 * 7);
-
   if (error) throw error;
   return data?.signedUrl || null;
 }
@@ -32,7 +35,6 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
   const [lastName, setLastName] = useState(profile?.last_name ?? '');
   const [country, setCountry] = useState(profile?.country ?? '');
   const [language, setLanguage] = useState(normalizeLanguage(profile?.language));
-  const [languageOpen, setLanguageOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [avatarPath, setAvatarPath] = useState(user?.user_metadata?.gardener_avatar_path || '');
@@ -104,13 +106,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({
-          username,
-          first_name: firstName,
-          last_name: lastName,
-          country,
-          language,
-        })
+        .update({ username, first_name: firstName, last_name: lastName, country, language })
         .eq('id', user.id);
 
       if (error) {
@@ -125,153 +121,133 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
     }
   };
 
+  const langChips = LANGUAGE_OPTIONS.map((opt) => ({
+    key: opt.code,
+    label: opt.label,
+  }));
+
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.xl }}>
-      <Text>{t('profile.username')}</Text>
-      <TextInput
-        value={username}
-        onChangeText={setUsername}
-        style={{ borderWidth: 1, marginBottom: spacing.md }}
-      />
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* ── Profile Fields ── */}
+      <DSCard variant="elevated" padding="lg">
+        <Text style={styles.heading}>{t('profile.completeProfile')}</Text>
 
-      <Text>{t('profile.firstName')}</Text>
-      <TextInput
-        value={firstName}
-        onChangeText={setFirstName}
-        style={{ borderWidth: 1, marginBottom: spacing.md }}
-      />
+        <DSInput
+          label={t('profile.username')}
+          icon="at"
+          value={username}
+          onChangeText={setUsername}
+          placeholder={t('profile.usernamePlaceholder')}
+        />
+        <DSInput
+          label={t('profile.firstName')}
+          icon="person-outline"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        <DSInput
+          label={t('profile.lastName')}
+          icon="person-outline"
+          value={lastName}
+          onChangeText={setLastName}
+        />
+        <DSInput
+          label={t('profile.country')}
+          icon="globe-outline"
+          value={country}
+          onChangeText={setCountry}
+        />
 
-      <Text>{t('profile.lastName')}</Text>
-      <TextInput
-        value={lastName}
-        onChangeText={setLastName}
-        style={{ borderWidth: 1, marginBottom: spacing.md }}
-      />
+        <Text style={styles.fieldLabel}>{t('profile.language')}</Text>
+        <DSChipGroup
+          items={langChips}
+          selected={language}
+          onSelect={setLanguage}
+          variant="segmented"
+          style={{ marginBottom: spacing.md }}
+        />
+      </DSCard>
 
-      <Text>{t('profile.country')}</Text>
-      <TextInput
-        value={country}
-        onChangeText={setCountry}
-        style={{ borderWidth: 1, marginBottom: spacing.md }}
-      />
+      {/* ── Avatar ── */}
+      <DSCard variant="elevated" padding="lg">
+        <Text style={styles.subheading}>{t('profile.avatarStep')}</Text>
 
-      <Text>{t('profile.language')}</Text>
-      <TouchableOpacity
-        onPress={() => setLanguageOpen((prev) => !prev)}
-        style={{
-          borderWidth: 1,
-          borderColor: colors.border,
-          marginBottom: spacing.sm,
-          padding: spacing.md,
-          borderRadius: radius.sm,
-          backgroundColor: colors.surface,
-        }}
-      >
-        <Text>{getLanguageLabel(language)}</Text>
-      </TouchableOpacity>
-
-      {languageOpen && (
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: radius.sm,
-            marginBottom: spacing.md,
-          }}
-        >
-          {LANGUAGE_OPTIONS.map((option) => (
-            <TouchableOpacity
-              key={option.code}
-              onPress={() => {
-                setLanguage(option.code);
-                setLanguageOpen(false);
-              }}
-              style={{
-                paddingVertical: spacing.md,
-                paddingHorizontal: spacing.md,
-                backgroundColor: language === option.code ? colors.primarySurface : colors.surface,
-                borderBottomWidth:
-                  option.code === LANGUAGE_OPTIONS[LANGUAGE_OPTIONS.length - 1].code ? 0 : 1,
-                borderBottomColor: colors.borderLight,
-              }}
-            >
-              <Text>{option.label}</Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.avatarContainer}>
+          {avatarPreviewUrl ? (
+            <Image source={{ uri: avatarPreviewUrl }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons name="person" size={48} color={colors.textTertiary} />
+            </View>
+          )}
         </View>
-      )}
 
-      <Text style={{ fontWeight: 'bold', marginTop: spacing.sm, marginBottom: spacing.sm }}>
-        {t('profile.avatarStep')}
-      </Text>
+        {generatingAvatar && (
+          <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginBottom: spacing.sm }} />
+        )}
+
+        <DSButton
+          icon="camera-outline"
+          onPress={handleCaptureAndGenerateAvatar}
+          disabled={saving || generatingAvatar}
+          fullWidth
+        >
+          {avatarPreviewUrl ? t('profile.retakeAvatar') : t('profile.avatarButton')}
+        </DSButton>
+      </DSCard>
+
+      {/* ── Save ── */}
       <DSButton
-        onPress={handleCaptureAndGenerateAvatar}
+        onPress={handleSave}
         disabled={saving || generatingAvatar}
         fullWidth
+        loading={saving}
+        icon="checkmark-circle-outline"
+        style={{ marginTop: spacing.sm }}
       >
-        {t('profile.avatarButton')}
-      </DSButton>
-
-      {generatingAvatar ? (
-        <ActivityIndicator
-          size="small"
-          color={colors.primaryLight}
-          style={{ marginTop: spacing.md }}
-        />
-      ) : null}
-
-      {avatarPreviewUrl ? (
-        <Image
-          source={{ uri: avatarPreviewUrl }}
-          style={{
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            alignSelf: 'center',
-            marginVertical: spacing.lg,
-            borderWidth: 2,
-            borderColor: colors.primaryLight,
-          }}
-        />
-      ) : (
-        <Text
-          style={{
-            textAlign: 'center',
-            color: colors.textSecondary,
-            marginTop: spacing.md,
-            marginBottom: spacing.md,
-          }}
-        >
-          {t('profile.noAvatar')}
-        </Text>
-      )}
-
-      <DSButton onPress={handleSave} disabled={saving || generatingAvatar} fullWidth>
         {t('profile.saveProfile')}
       </DSButton>
 
       {showSkip && (
-        <View style={{ marginTop: spacing.lg }}>
-          <DSButton
-            variant="secondary"
-            onPress={async () => {
-              try {
-                await supabase
-                  .from('profiles')
-                  .update({ profile_setup_skipped: true })
-                  .eq('id', user.id);
-              } catch (_e) {
-                // Best-effort — even if the flag fails, let user through
-              }
-              onDone && onDone();
-            }}
-            disabled={saving || generatingAvatar}
-            fullWidth
-          >
-            {t('common.skip')}
-          </DSButton>
-        </View>
+        <DSButton
+          variant="ghost"
+          onPress={async () => {
+            try {
+              await supabase
+                .from('profiles')
+                .update({ profile_setup_skipped: true })
+                .eq('id', user.id);
+            } catch (_e) {
+              // Best-effort
+            }
+            onDone && onDone();
+          }}
+          disabled={saving || generatingAvatar}
+          fullWidth
+          style={{ marginTop: spacing.sm }}
+        >
+          {t('common.skip')}
+        </DSButton>
       )}
+
+      <View style={{ height: spacing.xxxl }} />
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.lg },
+  heading: { fontSize: 22, fontWeight: 'bold', color: colors.textPrimary, marginBottom: spacing.lg },
+  subheading: { fontSize: 16, fontWeight: '600', color: colors.textPrimary, marginBottom: spacing.md },
+  fieldLabel: { fontSize: 14, fontWeight: '600', color: colors.textSecondary, marginBottom: spacing.sm },
+  avatarContainer: { alignItems: 'center', marginBottom: spacing.md },
+  avatar: {
+    width: 120, height: 120, borderRadius: 60,
+    borderWidth: 3, borderColor: colors.primarySurface,
+  },
+  avatarPlaceholder: {
+    width: 120, height: 120, borderRadius: 60,
+    backgroundColor: colors.borderLight, alignItems: 'center', justifyContent: 'center',
+  },
+});

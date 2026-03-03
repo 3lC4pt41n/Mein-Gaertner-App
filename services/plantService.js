@@ -14,11 +14,13 @@ function generateSlug(name) {
 }
 
 // Pflanze speichern, inkl. Details + eindeutigem Slug
-export async function savePlantToSupabase({ name, note, image, user_id, details }) {
+export async function savePlantToSupabase({ name, note, image, user_id, details, zone_id }) {
   const slug = generateSlug(name);
+  const row = { name, note, image_url: image, user_id, details, slug };
+  if (zone_id) row.zone_id = zone_id;
   const { data, error } = await supabase
     .from('plants')
-    .insert([{ name, note, image_url: image, user_id, details, slug }])
+    .insert([row])
     .select()
     .single();
   if (error) throw new Error(error.message);

@@ -1,6 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Image, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  TouchableOpacity,
+  SectionList,
+  Modal,
+  StyleSheet,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 import { savePlantToSupabase, saveHealthcheck } from '../services/plantService';
 import { uploadPlantImage } from '../services/uploadService';
 import { recognizePlant, generatePlantDetails, performHealthcheck } from '../services/aiService';
@@ -11,10 +23,45 @@ import { useNavigation } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
-import { colors, spacing, radius } from '../theme/tokens';
+import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
+import DSInput from '../theme/DSInput';
+import DSCard from '../theme/DSCard';
 
+// Fetch zones grouped by location for the picker
+async function fetchZonesGrouped(userId) {
+  const { data: locations, error: locErr } = await supabase
+    .from('locations')
+    .select('id, name')
+    .eq('user_id', userId);
+  if (locErr) throw locErr;
+  const locIds = (locations || []).map((l) => l.id);
+  if (!locIds.length) return [];
+  const { data: zones, error: zErr } = await supabase
+    .from('zones')
+    .select('id, name, type, location_id')
+    .in('location_id', locIds)
+    .order('name');
+  if (zErr) throw zErr;
+  return locations
+    .map((loc) => ({
+      title: loc.name,
+      data: (zones || []).filter((z) => z.location_id === loc.id),
+    }))
+    .filter((s) => s.data.length > 0);
+}
+
+/*
+ * AddPlantScreen — staged onboarding flow:
+ *   Step 1: Scan (photo + AI recognition) — 1 credit
+ *   Step 2: Save (name, note, zone) — free
+ *   Step 3: Optional upgrades (details, healthcheck) — extra credits, offered after save
+ */
 export default function AddPlantScreen() {
+  const navigation = useNavigation();
+  const { userId } = useAuth();
+
+  // ── Core state ──────────────────────────────
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
   const [imageUri, setImageUri] = useState(null);
@@ -22,8 +69,17 @@ export default function AddPlantScreen() {
   const [loading, setLoading] = useState(false);
   const [balance, setBalance] = useState(null);
   const [language, setLanguage] = useState('de');
-  const navigation = useNavigation();
-  const { userId } = useAuth();
+
+  // ── Step tracking ───────────────────────────
+  // 'scan' → 'save' → 'done'
+  const [step, setStep] = useState('scan');
+  const [savedPlant, setSavedPlant] = useState(null);
+
+  // ── Zone picker ─────────────────────────────
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [sections, setSections] = useState([]);
+  const [zonesLoading, setZonesLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -42,7 +98,7 @@ export default function AddPlantScreen() {
     })();
   }, []);
 
-  // Insufficent Credits Error Handler
+  // Credit error handler
   const handleCreditError = (e) => {
     if (e.code === 'INSUFFICIENT_CREDITS') {
       Alert.alert(
@@ -58,7 +114,7 @@ export default function AddPlantScreen() {
     return false;
   };
 
-  // Foto aufnehmen & Pflanze erkennen
+  // ── Step 1: Scan ────────────────────────────
   const takePhotoAndRecognize = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
@@ -79,11 +135,11 @@ export default function AddPlantScreen() {
       setLoading(true);
 
       try {
-        // Edge Function aufrufen statt direkt OpenAI
         const data = await recognizePlant(base64, language);
         setName(data.name || t('plants.noNameRecognized'));
         setNote(data.note || t('plants.noNoteAvailable'));
         if (typeof data.balance === 'number') setBalance(data.balance);
+        setStep('save');
       } catch (e) {
         if (!handleCreditError(e)) {
           Alert.alert(t('common.error'), e.message || t('plants.unknownError'));
@@ -95,15 +151,29 @@ export default function AddPlantScreen() {
     }
   };
 
-  // Details, Healthcheck holen + speichern + zur Detailansicht navigieren
-  const handleSaveAndDetails = async () => {
+  // ── Zone picker helpers ─────────────────────
+  const openZonePicker = async () => {
+    setPickerVisible(true);
+    setZonesLoading(true);
+    try {
+      const data = await fetchZonesGrouped(userId);
+      setSections(data);
+    } catch (err) {
+      console.warn('Zone load error:', err.message);
+      setSections([]);
+    }
+    setZonesLoading(false);
+  };
+
+  // ── Step 2: Save (free) ─────────────────────
+  const handleSave = async () => {
     if (!userId || !imageUri || !name) {
       Alert.alert(t('common.error'), t('plants.photoUserNameCheck'));
       return;
     }
     setLoading(true);
 
-    // Erst Bild in Supabase hochladen und signed URL holen
+    // Upload image
     let uploadedUrl = null;
     try {
       uploadedUrl = await uploadPlantImage(imageUri, userId);
@@ -113,66 +183,25 @@ export default function AddPlantScreen() {
       return;
     }
 
-    // 1. Details über Edge Function holen
-    let details = null;
-    try {
-      const detailsData = await generatePlantDetails(name, note, language);
-      details = detailsData.details;
-      if (typeof detailsData.balance === 'number') setBalance(detailsData.balance);
-    } catch (e) {
-      if (handleCreditError(e)) {
-        setLoading(false);
-        return;
-      }
-      details = null;
-      Alert.alert(t('common.warning'), t('plants.detailsWarning'));
-    }
-
-    // 2. Healthcheck über Edge Function holen
-    let healthcheck = null;
-    try {
-      const hcData = await performHealthcheck(uploadedUrl, name, language);
-      healthcheck = hcData.healthcheck;
-      if (typeof hcData.balance === 'number') setBalance(hcData.balance);
-    } catch (e) {
-      if (handleCreditError(e)) {
-        setLoading(false);
-        return;
-      }
-      healthcheck = null;
-      Alert.alert(t('common.warning'), t('plants.healthcheckWarning'));
-    }
-
-    // 3. Pflanze speichern
+    // Save plant (no AI calls — free)
     try {
       const plant = await savePlantToSupabase({
         name,
         note,
         image: uploadedUrl,
         user_id: userId,
-        details,
+        details: null,
+        ...(selectedZone ? { zone_id: selectedZone.id } : {}),
       });
 
-      // 4. Healthcheck (falls vorhanden) direkt speichern
-      if (plant?.id && healthcheck) {
-        await saveHealthcheck({
-          plant_id: plant.id,
-          user_id: userId,
-          healthscore: healthcheck.healthscore,
-          summary: healthcheck.summary,
-          table_json: healthcheck.table,
-          recommendation: healthcheck.recommendation,
-        });
-      }
-
-      // 5. Discovery-Event loggen (Score-Tracking)
+      // Discovery event
       try {
         await logDiscovery(userId, name, plant?.id);
       } catch (e) {
         console.warn('Discovery log error:', e.message);
       }
 
-      // 6. plant_added Gardening-Event loggen
+      // Gardening event
       try {
         await supabase.from('gardening_events').insert({
           user_id: userId,
@@ -185,16 +214,8 @@ export default function AddPlantScreen() {
         console.warn('plant_added event error:', e.message);
       }
 
-      setName('');
-      setNote('');
-      setImageUri(null);
-      setBase64Image(null);
-
-      // 7. Direkt zum Detail
-      navigation.navigate('MeinePflanzenTab', {
-        screen: 'PlantDetail',
-        params: { plant },
-      });
+      setSavedPlant({ ...plant, image_url: uploadedUrl });
+      setStep('done');
     } catch (err) {
       Alert.alert(t('common.error'), t('plants.saveFailedMessage', { message: err.message }));
     } finally {
@@ -202,75 +223,351 @@ export default function AddPlantScreen() {
     }
   };
 
+  // ── Step 3: Optional upgrades ───────────────
+  const handleGenerateDetails = async () => {
+    if (!savedPlant) return;
+    setLoading(true);
+    try {
+      const detailsData = await generatePlantDetails(name, note, language);
+      if (typeof detailsData.balance === 'number') setBalance(detailsData.balance);
+
+      // Update plant with details
+      await supabase
+        .from('plants')
+        .update({ details: detailsData.details })
+        .eq('id', savedPlant.id);
+
+      Alert.alert(t('common.success'), t('plants.detailsGenerated'));
+      setSavedPlant((p) => ({ ...p, details: detailsData.details }));
+    } catch (e) {
+      if (!handleCreditError(e)) {
+        Alert.alert(t('common.error'), e.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRunHealthcheck = async () => {
+    if (!savedPlant) return;
+    setLoading(true);
+    try {
+      const hcData = await performHealthcheck(savedPlant.image_url, name, language);
+      if (typeof hcData.balance === 'number') setBalance(hcData.balance);
+
+      // Save healthcheck
+      await saveHealthcheck({
+        plant_id: savedPlant.id,
+        user_id: userId,
+        healthscore: hcData.healthcheck.healthscore,
+        summary: hcData.healthcheck.summary,
+        table_json: hcData.healthcheck.table,
+        recommendation: hcData.healthcheck.recommendation,
+      });
+
+      Alert.alert(t('common.success'), t('plants.healthcheckGenerated'));
+    } catch (e) {
+      if (!handleCreditError(e)) {
+        Alert.alert(t('common.error'), e.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const goToPlantDetail = () => {
+    if (!savedPlant) return;
+    setName('');
+    setNote('');
+    setImageUri(null);
+    setBase64Image(null);
+    setSelectedZone(null);
+    setStep('scan');
+    setSavedPlant(null);
+    navigation.navigate('MeinePflanzenTab', {
+      screen: 'PlantDetail',
+      params: { plant: savedPlant },
+    });
+  };
+
+  // ── Render ──────────────────────────────────
   return (
-    <ScrollView style={{ padding: spacing.xl }}>
-      {/* Credit-Anzeige */}
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* Credit balance */}
       {balance !== null && (
-        <View
-          style={{
-            backgroundColor: balance > 20 ? colors.primarySurface : colors.warningSurface,
-            padding: spacing.md,
-            borderRadius: radius.sm,
-            marginBottom: spacing.md,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
-            {t('common.credits')}
-          </Text>
-          <Text
-            style={{
-              fontWeight: 'bold',
-              fontSize: 16,
-              color: balance > 20 ? colors.primaryLight : colors.warning,
-            }}
-          >
-            {balance}
-          </Text>
-        </View>
+        <DSCard variant="flat" padding="sm" style={styles.balanceCard}>
+          <View style={styles.balanceRow}>
+            <Ionicons name="flash" size={18} color={balance > 20 ? colors.primaryLight : colors.warning} />
+            <Text style={styles.balanceLabel}>{t('common.credits')}</Text>
+            <Text style={[styles.balanceValue, { color: balance > 20 ? colors.primaryLight : colors.warning }]}>
+              {balance}
+            </Text>
+          </View>
+        </DSCard>
       )}
 
-      <DSButton onPress={takePhotoAndRecognize} fullWidth>
-        {t('plants.scanButton')}
-      </DSButton>
-      {imageUri && (
-        <Image
-          source={{ uri: imageUri }}
-          style={{
-            width: '100%',
-            height: 200,
-            marginVertical: spacing.md,
-            borderRadius: radius.sm,
-          }}
-        />
+      {/* ── Step indicator ──────────────────── */}
+      <View style={styles.stepRow}>
+        {['scan', 'save', 'done'].map((s, i) => (
+          <View key={s} style={styles.stepItem}>
+            <View
+              style={[
+                styles.stepDot,
+                step === s && styles.stepDotActive,
+                (['save', 'done'].includes(step) && i === 0) && styles.stepDotDone,
+                (step === 'done' && i <= 1) && styles.stepDotDone,
+              ]}
+            >
+              {(step === 'done' && i <= 1) || (['save', 'done'].includes(step) && i === 0) ? (
+                <Ionicons name="checkmark" size={14} color={colors.surface} />
+              ) : (
+                <Text style={[styles.stepNum, step === s && styles.stepNumActive]}>{i + 1}</Text>
+              )}
+            </View>
+            <Text style={[styles.stepLabel, step === s && styles.stepLabelActive]}>
+              {t(`plants.step${s.charAt(0).toUpperCase() + s.slice(1)}`)}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {/* ── STEP: Scan ─────────────────────── */}
+      {step === 'scan' && (
+        <DSCard>
+          <DSButton onPress={takePhotoAndRecognize} fullWidth icon="camera-outline" disabled={loading}>
+            {t('plants.scanButton')}
+          </DSButton>
+          {loading && (
+            <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.lg }} />
+          )}
+        </DSCard>
       )}
-      <Text style={{ fontWeight: 'bold', marginTop: spacing.md }}>{t('plants.nameLabel')}</Text>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        placeholder={t('plants.namePlaceholder')}
-        style={{ borderWidth: 1, padding: spacing.sm, marginBottom: spacing.md }}
-      />
-      <Text style={{ fontWeight: 'bold' }}>{t('plants.noteLabel')}</Text>
-      <TextInput
-        multiline
-        value={note}
-        onChangeText={setNote}
-        placeholder={t('plants.notePlaceholder')}
-        style={{ borderWidth: 1, padding: spacing.sm, minHeight: 80 }}
-      />
-      <DSButton onPress={handleSaveAndDetails} disabled={!name || loading} fullWidth>
-        {t('plants.saveAndDetails')}
-      </DSButton>
-      {loading && (
-        <ActivityIndicator
-          size="large"
-          color={colors.primaryLight}
-          style={{ marginVertical: spacing.xl }}
-        />
+
+      {/* ── STEP: Save ─────────────────────── */}
+      {step === 'save' && (
+        <DSCard>
+          {imageUri && (
+            <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
+          )}
+
+          <DSInput
+            label={t('plants.nameLabel')}
+            value={name}
+            onChangeText={setName}
+            placeholder={t('plants.namePlaceholder')}
+            icon="leaf-outline"
+          />
+
+          <DSInput
+            label={t('plants.noteLabel')}
+            value={note}
+            onChangeText={setNote}
+            placeholder={t('plants.notePlaceholder')}
+            multiline
+          />
+
+          {/* Zone picker (3.2) */}
+          <Text style={styles.fieldLabel}>{t('plants.zoneOptional')}</Text>
+          <TouchableOpacity style={styles.zonePicker} onPress={openZonePicker}>
+            <Ionicons name="home-outline" size={18} color={selectedZone ? colors.primaryLight : colors.textDisabled} />
+            <Text style={[styles.zonePickerText, selectedZone && { color: colors.textPrimary }]}>
+              {selectedZone ? selectedZone.name : t('plants.selectZoneOptional')}
+            </Text>
+            <Ionicons name="chevron-down" size={18} color={colors.textTertiary} />
+          </TouchableOpacity>
+
+          <DSButton
+            onPress={handleSave}
+            disabled={!name || loading}
+            fullWidth
+            icon="checkmark-circle-outline"
+            style={{ marginTop: spacing.md }}
+          >
+            {t('plants.savePlant')}
+          </DSButton>
+
+          <DSButton
+            variant="ghost"
+            size="sm"
+            onPress={() => { setStep('scan'); setImageUri(null); setName(''); setNote(''); }}
+            fullWidth
+            style={{ marginTop: spacing.xs }}
+          >
+            {t('plants.rescan')}
+          </DSButton>
+
+          {loading && (
+            <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.lg }} />
+          )}
+        </DSCard>
       )}
+
+      {/* ── STEP: Done (optional upgrades) ── */}
+      {step === 'done' && savedPlant && (
+        <>
+          <DSCard>
+            <View style={styles.successRow}>
+              <Ionicons name="checkmark-circle" size={32} color={colors.primaryLight} />
+              <Text style={styles.successText}>{t('plants.savedSuccess')}</Text>
+            </View>
+            {savedPlant.image_url && (
+              <Image source={{ uri: savedPlant.image_url }} style={styles.previewSmall} resizeMode="cover" />
+            )}
+            <Text style={styles.savedName}>{savedPlant.name}</Text>
+          </DSCard>
+
+          <DSCard>
+            <Text style={styles.upgradeTitle}>{t('plants.optionalUpgrades')}</Text>
+            <Text style={styles.upgradeSubtitle}>{t('plants.upgradeHint')}</Text>
+
+            <DSButton
+              variant="secondary"
+              icon="document-text-outline"
+              onPress={handleGenerateDetails}
+              disabled={loading || !!savedPlant.details}
+              fullWidth
+              style={{ marginBottom: spacing.sm }}
+            >
+              {savedPlant.details ? t('plants.detailsAlready') : t('plants.generateDetails')}
+            </DSButton>
+
+            <DSButton
+              variant="secondary"
+              icon="pulse-outline"
+              onPress={handleRunHealthcheck}
+              disabled={loading}
+              fullWidth
+              style={{ marginBottom: spacing.md }}
+            >
+              {t('plants.runHealthcheck')}
+            </DSButton>
+
+            {loading && (
+              <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginBottom: spacing.sm }} />
+            )}
+
+            <DSButton onPress={goToPlantDetail} fullWidth icon="arrow-forward-outline" iconPosition="right">
+              {t('plants.viewPlant')}
+            </DSButton>
+          </DSCard>
+        </>
+      )}
+
+      {/* ── Zone Picker Modal ──────────────── */}
+      <Modal visible={pickerVisible} animationType="slide" transparent onRequestClose={() => setPickerVisible(false)}>
+        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPressOut={() => setPickerVisible(false)}>
+          <TouchableOpacity style={styles.sheet} activeOpacity={1}>
+            <Text style={styles.sheetTitle}>{t('plants.selectZone')}</Text>
+            {zonesLoading ? (
+              <ActivityIndicator size="large" color={colors.primaryLight} />
+            ) : sections.length ? (
+              <SectionList
+                sections={sections}
+                keyExtractor={(item) => item.id}
+                renderSectionHeader={({ section: { title } }) => (
+                  <Text style={styles.sectionHeader}>{title}</Text>
+                )}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.zoneRow}
+                    onPress={() => {
+                      setSelectedZone(item);
+                      setPickerVisible(false);
+                    }}
+                  >
+                    <Ionicons name="home-outline" size={22} color={colors.primaryLight} style={{ marginRight: spacing.sm }} />
+                    <Text style={styles.zoneName}>
+                      {item.name} <Text style={styles.zoneType}>({item.type})</Text>
+                    </Text>
+                    {selectedZone?.id === item.id && (
+                      <Ionicons name="checkmark" size={20} color={colors.primaryLight} style={{ marginLeft: 'auto' }} />
+                    )}
+                  </TouchableOpacity>
+                )}
+                ListEmptyComponent={
+                  <Text style={{ textAlign: 'center', color: colors.textSecondary, padding: spacing.lg }}>
+                    {t('home.noZones')}
+                  </Text>
+                }
+              />
+            ) : (
+              <Text style={{ textAlign: 'center', color: colors.textSecondary, padding: spacing.lg }}>
+                {t('home.noZones')}
+              </Text>
+            )}
+            <DSButton variant="ghost" onPress={() => setPickerVisible(false)} style={{ marginTop: spacing.sm }}>
+              {t('common.close')}
+            </DSButton>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.lg, paddingBottom: 40 },
+
+  // Balance
+  balanceCard: { marginBottom: spacing.md },
+  balanceRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  balanceLabel: { flex: 1, fontWeight: '600', color: colors.textSecondary, fontSize: 14 },
+  balanceValue: { fontWeight: 'bold', fontSize: 18 },
+
+  // Steps
+  stepRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.lg, gap: spacing.xl },
+  stepItem: { alignItems: 'center', gap: spacing.xs },
+  stepDot: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: colors.borderLight,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  stepDotActive: { backgroundColor: colors.primary },
+  stepDotDone: { backgroundColor: colors.primaryLight },
+  stepNum: { fontSize: 13, fontWeight: '600', color: colors.textTertiary },
+  stepNumActive: { color: colors.surface },
+  stepLabel: { fontSize: 12, color: colors.textTertiary },
+  stepLabelActive: { color: colors.primary, fontWeight: '600' },
+
+  // Preview
+  preview: { width: '100%', height: 200, borderRadius: radius.md, marginBottom: spacing.md },
+  previewSmall: { width: '100%', height: 140, borderRadius: radius.md, marginVertical: spacing.sm },
+
+  // Zone picker
+  fieldLabel: { fontSize: 14, fontWeight: '600', color: colors.textSecondary, marginBottom: spacing.xs },
+  zonePicker: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
+    padding: spacing.md, marginBottom: spacing.md,
+    backgroundColor: colors.surface, gap: spacing.sm,
+  },
+  zonePickerText: { flex: 1, fontSize: 14, color: colors.textDisabled },
+
+  // Success
+  successRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  successText: { fontSize: 18, fontWeight: 'bold', color: colors.textPrimary },
+  savedName: { fontSize: 16, fontWeight: '600', color: colors.textSecondary, textAlign: 'center' },
+
+  // Upgrades
+  upgradeTitle: { fontSize: 16, fontWeight: 'bold', color: colors.textPrimary, marginBottom: spacing.xs },
+  upgradeSubtitle: { fontSize: 13, color: colors.textTertiary, marginBottom: spacing.md },
+
+  // Modal
+  overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: colors.surface, padding: spacing.xl,
+    borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, maxHeight: '60%',
+  },
+  sheetTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: spacing.md, textAlign: 'center' },
+  sectionHeader: {
+    fontWeight: 'bold', fontSize: 14, backgroundColor: colors.background,
+    paddingVertical: spacing.xs, paddingHorizontal: 2, marginTop: spacing.lg, color: colors.textSecondary,
+  },
+  zoneRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.border,
+  },
+  zoneName: { fontSize: 16 },
+  zoneType: { color: colors.textTertiary, fontSize: 12 },
+});
