@@ -25,12 +25,12 @@
     "plantUnknown": "Pianta sconosciuta",
     "notLoggedIn": "Non connesso",
     "notLoggedInMessage": "Effettua il login!",
-    "nameRequired": "Il nome non può essere vuoto.",
+    "nameRequired": "Il nome non pu\u00f2 essere vuoto.",
     "networkError": "Nessuna connessione al server. Controlla la tua connessione Internet e riprova.",
     "insufficientCredits": "Credits insufficienti",
     "insufficientCreditsMessage": "Hai {{balance}} Credits, ma ne servono {{required}}.\n\nVai al Negozio per ricaricare i tuoi Credits.",
-    "cameraRequired": "È necessario l'accesso alla fotocamera.",
-    "errorBoundaryTitle": "Qualcosa è andato storto",
+    "cameraRequired": "\u00c8 necessario l'accesso alla fotocamera.",
+    "errorBoundaryTitle": "Qualcosa \u00e8 andato storto",
     "errorBoundaryMessage": "L'app ha riscontrato un errore imprevisto. Riprova.",
     "errorBoundaryRetry": "Riprova",
     "errorBoundaryDetails": "Dettagli errore"
@@ -40,7 +40,7 @@
     "home": "Casa",
     "plants": "Piante",
     "addPlant": "Aggiungi pianta",
-    "tasks": "Attività",
+    "tasks": "Attivit\u00e0",
     "calendar": "Calendario",
     "dex": "Pianta-Dex",
     "leaderboard": "Classifica",
@@ -48,7 +48,7 @@
     "shop": "Negozio",
     "plantStackTitle": "Le Mie Piante",
     "plantDetailsTitle": "Dettagli",
-    "taskTitle": "Attività",
+    "taskTitle": "Attivit\u00e0",
     "adminTitle": "Dashboard Admin"
   },
 
@@ -73,7 +73,7 @@
     "saveNewPassword": "Salva nuova password",
     "passwordFieldsRequired": "Compila entrambi i campi della password.",
     "passwordsMismatch": "Le password non corrispondono.",
-    "passwordUpdated": "La tua password è stata aggiornata con successo.",
+    "passwordUpdated": "La tua password \u00e8 stata aggiornata con successo.",
     "passwordUpdateFailed": "Impossibile aggiornare la password.",
     "emailSent": "Email inviata",
     "emailSentMessage": "Ti abbiamo inviato un link per reimpostare la password.",
@@ -127,12 +127,12 @@
     "removeZoneMessage": "Vuoi davvero rimuovere la pianta da questa zona?",
     "removeZoneSuccess": "Zona rimossa. Ora puoi assegnarne una nuova.",
     "zoneAssigned": "Pianta ora nella zona \"{{zone}}\"",
-    "scanButton": "📷 Scatta foto e identifica",
+    "scanButton": "\ud83d\udcf7 Scatta foto e identifica",
     "nameLabel": "Nome:",
     "namePlaceholder": "es. Monstera deliciosa",
     "noteLabel": "Note:",
     "notePlaceholder": "Consigli di cura da GPT",
-    "saveAndDetails": "✅ Salva pianta e mostra dettagli",
+    "saveAndDetails": "\u2705 Salva pianta e mostra dettagli",
     "noNameRecognized": "Nessun nome riconosciuto",
     "noNoteAvailable": "Nessuna nota disponibile",
     "photoUserNameCheck": "Controlla foto, nome e utente!",
@@ -146,18 +146,18 @@
   },
 
   "tasks": {
-    "title": "Attività e appuntamenti",
-    "noTasks": "Nessuna attività in sospeso",
-    "newTask": "Nuova attività",
+    "title": "Attivit\u00e0 e appuntamenti",
+    "noTasks": "Nessuna attivit\u00e0 in sospeso",
+    "newTask": "Nuova attivit\u00e0",
     "taskDone": "Fatto!",
-    "taskDoneMessage": "Attività completata ✅",
+    "taskDoneMessage": "Attivit\u00e0 completata \u2705",
     "taskSkipped": "Saltata!",
-    "taskSkippedMessage": "L'attività è stata saltata.",
+    "taskSkippedMessage": "L'attivit\u00e0 \u00e8 stata saltata.",
     "skipReason": "Saltata dall'utente",
     "manualSkipReason": "Saltata manualmente",
     "completeFailed": "Completamento non riuscito",
     "skipFailed": "Impossibile saltare",
-    "createFailed": "Creazione attività non riuscita",
+    "createFailed": "Creazione attivit\u00e0 non riuscita",
     "statusLabel": "Stato: {{state}}",
     "noteLabel": "Nota:",
     "healthcheckDetails": "Controllo salute e dettagli",
@@ -175,7 +175,7 @@
     "notePlaceholder": "es. 'Innaffiare con acqua tiepida'",
     "orEvery": "Oppure ogni",
     "daysUnit": "giorni",
-    "newTaskCreate": "Crea nuova attività",
+    "newTaskCreate": "Crea nuova attivit\u00e0",
     "dateLabel": "Data (AAAA-MM-GG):",
     "timeLabel": "Ora (HH:MM):",
     "dateTimeRequired": "Inserisci data e ora!",
@@ -197,11 +197,11 @@
   },
 
   "assistant": {
-    "placeholder": "Scrivi un messaggio a Ben …",
+    "placeholder": "Scrivi un messaggio a Ben \u2026",
     "you": "Tu",
     "ben": "Ben",
     "loadOlder": "Carica messaggi precedenti...",
-    "noAnswer": "🤔 Nessuna risposta.",
+    "noAnswer": "\ud83e\udd14 Nessuna risposta.",
     "imageMessage": "[Immagine]",
     "uploadFailed": "Caricamento non riuscito"
   },
@@ -212,9 +212,9 @@
     "shopTab": "Negozio",
     "usageTab": "Consumo",
     "subscriptionTitle": "Abbonamento mensile",
-    "subscriptionSubtitle": "33% in meno rispetto all'acquisto singolo – Credits freschi ogni mese",
+    "subscriptionSubtitle": "33% in meno rispetto all'acquisto singolo \u2013 Credits freschi ogni mese",
     "oneTimeTitle": "Acquisto singolo",
-    "oneTimeSubtitle": "Credits senza abbonamento – non scadono mai",
+    "oneTimeSubtitle": "Credits senza abbonamento \u2013 non scadono mai",
     "creditsPerMonth": "Credits/mese",
     "popular": "Popolare",
     "bestDeal": "Offerta migliore",
@@ -222,9 +222,9 @@
     "restoreSuccess": "I tuoi acquisti sono stati ripristinati.",
     "restored": "Ripristinato",
     "storeUnavailable": "Negozio non disponibile",
-    "storeUnavailableMessage": "Gli acquisti in-app non sono disponibili nell'ambiente di sviluppo.\n\nFunzionerà dopo la build con EAS e la configurazione dello Store.",
+    "storeUnavailableMessage": "Gli acquisti in-app non sono disponibili nell'ambiente di sviluppo.\n\nFunzioner\u00e0 dopo la build con EAS e la configurazione dello Store.",
     "packageNotFound": "Pacchetto \"{{name}}\" non trovato nel Negozio.",
-    "purchaseSuccess": "Acquisto riuscito! 🎉",
+    "purchaseSuccess": "Acquisto riuscito! \ud83c\udf89",
     "purchaseSuccessMessage": "{{credits}} Credits sono stati aggiunti al tuo account.",
     "purchaseSuccessButton": "Perfetto!",
     "purchaseFailed": "Acquisto non riuscito",
@@ -235,10 +235,10 @@
     "infoText": "I Credits vengono utilizzati per le funzioni IA: riconoscimento piante, controlli salute e chat con Ben. I Credits in abbonamento costano il 33% in meno e vengono ricaricati ogni mese.",
     "adminDashboard": "Dashboard Admin",
     "actionLabels": {
-      "plantScan": "🌱 Pianta riconosciuta",
-      "plantDetails": "📋 Dettagli generati",
-      "healthcheck": "💚 Controllo salute",
-      "chat": "💬 Chat con Ben"
+      "plantScan": "\ud83c\udf31 Pianta riconosciuta",
+      "plantDetails": "\ud83d\udccb Dettagli generati",
+      "healthcheck": "\ud83d\udc9a Controllo salute",
+      "chat": "\ud83d\udcac Chat con Ben"
     }
   },
 
@@ -275,9 +275,9 @@
     "noProfile": "Nessun profilo trovato.",
     "leaderboardSection": "Classifica",
     "showInRanking": "Mostra in classifica",
-    "showInRankingHint": "Il tuo punteggio sarà visibile agli altri utenti.",
+    "showInRankingHint": "Il tuo punteggio sar\u00e0 visibile agli altri utenti.",
     "displayName": "Nome visualizzato (opzionale)",
-    "displayNameHint": "Verrà mostrato al posto del tuo nome utente in classifica.",
+    "displayNameHint": "Verr\u00e0 mostrato al posto del tuo nome utente in classifica.",
     "displayNamePlaceholder": "Nome visualizzato",
     "saveError": "Impossibile salvare l'impostazione.",
     "saveProfile": "Salva profilo",
@@ -286,12 +286,12 @@
     "avatarMissing": "Avatar mancante",
     "avatarMissingMessage": "Scatta una foto e genera il tuo avatar giardiniere.",
     "avatarStep": "Ultimo passaggio: scatta una foto e crea l'avatar",
-    "avatarButton": "📷 Scatta foto e genera avatar giardiniere",
-    "avatarCreated": "Il tuo avatar giardiniere è stato creato.",
+    "avatarButton": "\ud83d\udcf7 Scatta foto e genera avatar giardiniere",
+    "avatarCreated": "Il tuo avatar giardiniere \u00e8 stato creato.",
     "avatarFailed": "Generazione avatar non riuscita.",
-    "avatarCreateError": "Impossibile creare l'avatar.",
+    "avatarCreateError": "Impossible creare l'avatar.",
     "noAvatar": "Nessun avatar creato.",
-    "cameraRequired": "L'accesso alla fotocamera è necessario per l'avatar.",
+    "cameraRequired": "L'accesso alla fotocamera \u00e8 necessario per l'avatar.",
     "photoReadError": "Impossibile leggere la foto.",
     "saveProfileError": "Errore durante il salvataggio"
   },
@@ -306,11 +306,11 @@
     "healthcheckLabel": "Controllo salute",
     "chatLabel": "Chat con Ben",
     "giftTitle": "100 Credits in regalo",
-    "giftDesc": "Come beta tester ricevi 100 Credits in regalo – sufficienti per circa 10 scansioni di piante con controllo salute o tante chat con Ben.",
+    "giftDesc": "Come beta tester ricevi 100 Credits in regalo \u2013 sufficienti per circa 10 scansioni di piante con controllo salute o tante chat con Ben.",
     "reloadTitle": "Ricarica Credits",
-    "reloadDesc": "Quando i tuoi Credits sono esauriti, puoi acquistarne di nuovi nel Negozio – come acquisto singolo o più convenienti con l'abbonamento mensile.",
+    "reloadDesc": "Quando i tuoi Credits sono esauriti, puoi acquistarne di nuovi nel Negozio \u2013 come acquisto singolo o pi\u00f9 convenienti con l'abbonamento mensile.",
     "feedbackTitle": "Il tuo feedback conta!",
-    "feedbackDesc": "Come beta tester ci aiuti a migliorare l'app. Dicci cosa ti piace e cosa manca – leggiamo tutto!",
+    "feedbackDesc": "Come beta tester ci aiuti a migliorare l'app. Dicci cosa ti piace e cosa manca \u2013 leggiamo tutto!",
     "ctaButton": "Iniziamo!"
   },
 
@@ -326,10 +326,10 @@
   },
 
   "notifications": {
-    "taskDueTitle": "Attività in scadenza!",
-    "taskDueBody": "{{type}} per {{plant}} è prevista per oggi.",
+    "taskDueTitle": "Attivit\u00e0 in scadenza!",
+    "taskDueBody": "{{type}} per {{plant}} \u00e8 prevista per oggi.",
     "permissionTitle": "Notifiche",
-    "permissionMessage": "Consenti le notifiche per ricevere promemoria sulle tue attività di cura."
+    "permissionMessage": "Consenti le notifiche per ricevere promemoria sulle tue attivit\u00e0 di cura."
   },
 
   "feedback": {
@@ -346,17 +346,17 @@
     "messageRequired": "Inserisci un messaggio.",
     "submit": "Invia feedback",
     "thankYou": "Grazie!",
-    "successMessage": "Il tuo feedback è stato ricevuto. Leggiamo tutto!"
+    "successMessage": "Il tuo feedback \u00e8 stato ricevuto. Leggiamo tutto!"
   },
 
   "weather": {
     "title": "Meteo",
-    "humidity": "Umidità",
+    "humidity": "Umidit\u00e0",
     "rain": "Pioggia",
     "frost": "Gelo",
     "heat": "Caldo",
     "noData": "Nessun dato meteo",
-    "locationRequired": "La posizione è necessaria per i dati meteo."
+    "locationRequired": "La posizione \u00e8 necessaria per i dati meteo."
   },
 
   "diary": {
@@ -368,7 +368,7 @@
     "titleLabel": "Titolo",
     "titlePlaceholder": "es. Primo fiore!",
     "noteLabel": "Nota",
-    "notePlaceholder": "Cosa è successo?",
+    "notePlaceholder": "Cosa \u00e8 successo?",
     "addPhoto": "Aggiungi foto",
     "loadMore": "Carica altro",
     "today": "Oggi",
@@ -376,7 +376,7 @@
     "types": {
       "manual": "Nota",
       "healthcheck": "Controllo salute",
-      "task": "Attività",
+      "task": "Attivit\u00e0",
       "discovery": "Scoperta"
     }
   },
@@ -413,16 +413,48 @@
   },
 
   "ben": {
-    "taskCreated": "Attività creata",
-    "recurringTaskCreated": "Attività ricorrente creata",
+    "taskCreated": "Attivit\u00e0 creata",
+    "recurringTaskCreated": "Attivit\u00e0 ricorrente creata",
     "taskCreatedMessage": "{{type}} per {{plant}}, scadenza il {{date}}",
     "recurringTaskCreatedMessage": "{{type}} per {{plant}}, ogni {{days}} giorni"
   },
 
   "minor": {
-    "calendarSoon": "📅 Vista calendario in arrivo!",
-    "todayTitle": "🌞 Oggi – la tua giornata verde!",
-    "menuOverview": "🌱 Panoramica menu",
-    "menuSubtitle": "Il menu laterale dovrebbe essere già aperto. E se non lo è, pazienza."
+    "calendarSoon": "\ud83d\udcc5 Vista calendario in arrivo!",
+    "todayTitle": "\ud83c\udf1e Oggi \u2013 la tua giornata verde!",
+    "menuOverview": "\ud83c\udf31 Panoramica menu",
+    "menuSubtitle": "Il menu laterale dovrebbe essere gi\u00e0 aperto. E se non lo \u00e8, pazienza."
+  },
+
+  "settings": {
+    "title": "Impostazioni",
+    "profileSection": "Profilo",
+    "changeAvatar": "Cambia avatar",
+    "avatarUpdating": "Creazione dell'avatar\u2026",
+    "profileSaved": "Profilo salvato!",
+    "profileSaveError": "Impossibile salvare il profilo.",
+    "preferencesSection": "Preferenze",
+    "language": "Lingua",
+    "notifications": "Notifiche",
+    "notificationsHint": "Promemoria per le attivit\u00e0 di cura",
+    "privacySection": "Privacy",
+    "showInLeaderboard": "Mostra in classifica",
+    "showInLeaderboardHint": "Altri giardinieri vedono il tuo punteggio",
+    "publicDisplayName": "Nome pubblico",
+    "publicDisplayNameHint": "Mostrato al posto del nome utente",
+    "accountSection": "Account",
+    "manageSubscription": "Gestisci abbonamento",
+    "logout": "Esci",
+    "logoutConfirmTitle": "Disconnettersi?",
+    "logoutConfirmMessage": "Sei sicuro di volerti disconnettere?",
+    "deleteAccount": "Elimina account",
+    "deleteConfirmTitle": "Eliminare l'account?",
+    "deleteConfirmMessage": "Tutti i tuoi dati (piante, diario, foto, attivit\u00e0, chat) verranno eliminati in modo permanente. Gli abbonamenti attivi devono essere cancellati separatamente nell'App Store.",
+    "deleteConfirmButton": "Elimina definitivamente",
+    "infoSection": "Info",
+    "version": "Versione",
+    "privacyPolicy": "Informativa sulla privacy",
+    "termsOfService": "Termini di servizio",
+    "feedback": "Invia feedback"
   }
 }
