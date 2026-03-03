@@ -31,7 +31,7 @@ function isNetworkError(err) {
 }
 
 function normalizePath(path) {
-  return String(path || '').replace(/^\/+/, '');
+  return String(path || '').replace(/^\/*/, '');
 }
 
 function buildRedirectUrl(path) {
