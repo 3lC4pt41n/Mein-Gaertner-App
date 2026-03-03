@@ -28,13 +28,13 @@ export default function DSCard({
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={cardStyle}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" style={cardStyle}>
         {children}
       </TouchableOpacity>
     );
   }
 
-  return <View style={cardStyle}>{children}</View>;
+  return <View accessible accessibilityRole="summary" style={cardStyle}>{children}</View>;
 }
 
 const styles = StyleSheet.create({

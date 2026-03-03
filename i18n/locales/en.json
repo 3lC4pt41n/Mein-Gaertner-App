@@ -215,7 +215,9 @@
       "weekly": "Every week",
       "biweekly": "Every 2 weeks",
       "monthly": "Every month"
-    }
+    },
+    "emptyTitle": "All done!",
+    "emptyHint": "No open tasks. Create a new one or enjoy your day off."
   },
 
   "assistant": {
@@ -225,7 +227,13 @@
     "loadOlder": "Load older messages...",
     "noAnswer": "🤔 No answer.",
     "imageMessage": "[Image]",
-    "uploadFailed": "Upload failed"
+    "uploadFailed": "Upload failed",
+    "welcomeTitle": "Hi! I'm Ben, your gardener.",
+    "welcomeHint": "Ask me anything about your plants, send me a photo, or get care tips.",
+    "suggestionIdentify": "What kind of plant is this?",
+    "suggestionHealth": "My plant has yellow leaves",
+    "suggestionCare": "How often should I water?",
+    "takePhoto": "Take photo"
   },
 
   "store": {
@@ -255,6 +263,11 @@
     "usageTitle": "Recent Usage",
     "noUsage": "No AI usage yet",
     "infoText": "Credits are used for AI features: plant identification, health checks and chatting with Ben. Subscription Credits are 33% cheaper and are topped up monthly.",
+    "perCredit": "Credit",
+    "savePercent": "{{percent}}% cheaper",
+    "costComparisonTitle": "What do AI features cost?",
+    "costDetails": "Generate care details",
+    "costChat": "Chat message",
     "adminDashboard": "Admin Dashboard",
     "actionLabels": {
       "plantScan": "🌱 Plant identified",
@@ -421,7 +434,10 @@
     "due": "Due",
     "completed": "Completed",
     "overdue": "Overdue",
-    "skipped": "Skipped"
+    "skipped": "Skipped",
+    "loadError": "Could not load tasks.",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
   },
 
   "dex": {

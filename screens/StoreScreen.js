@@ -25,8 +25,30 @@ import {
   restorePurchases,
 } from '../services/purchaseService';
 import { useNavigation } from '@react-navigation/native';
+import DSButton from '../theme/DSButton';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import i18n, { t } from '../i18n';
+
+// ─── Per-credit pricing helper ─────────────────────────────────
+function parsePrice(priceStr) {
+  const num = parseFloat(priceStr.replace(/[^0-9.,]/g, '').replace(',', '.'));
+  return isNaN(num) ? 0 : num;
+}
+
+function perCreditCent(priceStr, credits) {
+  const price = parsePrice(priceStr);
+  if (!credits || !price) return 0;
+  return (price / credits * 100).toFixed(1);
+}
+
+// Base rate = most expensive per-credit (Starter one-time) for savings calculation
+const BASE_RATE = parsePrice(ONE_TIME_PACKAGES[0]?.price) / (ONE_TIME_PACKAGES[0]?.credits || 1) * 100;
+
+function savingsPercent(priceStr, credits) {
+  const rate = parsePrice(priceStr) / (credits || 1) * 100;
+  if (!BASE_RATE || rate >= BASE_RATE) return 0;
+  return Math.round((1 - rate / BASE_RATE) * 100);
+}
 
 export default function StoreScreen({ isAdmin }) {
   const navigation = useNavigation();
@@ -232,79 +254,128 @@ export default function StoreScreen({ isAdmin }) {
           {/* ─── Abo-Pakete ──────────────────────────────────── */}
           <Text style={styles.sectionTitle}>{t('store.subscriptionTitle')}</Text>
           <Text style={styles.sectionSubtitle}>{t('store.subscriptionSubtitle')}</Text>
-          {SUBSCRIPTION_PACKAGES.map((pkg) => (
-            <TouchableOpacity
-              key={pkg.id}
-              style={[styles.packageCard, pkg.popular && styles.packageCardPopular]}
-              onPress={() => handlePurchase(pkg)}
-              disabled={purchasing !== null}
-            >
-              {pkg.popular && (
-                <View style={styles.popularBadge}>
-                  <Text style={styles.popularText}>{t('store.popular')}</Text>
+          {SUBSCRIPTION_PACKAGES.map((pkg) => {
+            const pcc = perCreditCent(pkg.price, pkg.credits);
+            const savings = savingsPercent(pkg.price, pkg.credits);
+            return (
+              <TouchableOpacity
+                key={pkg.id}
+                style={[styles.packageCard, pkg.popular && styles.packageCardPopular]}
+                onPress={() => handlePurchase(pkg)}
+                disabled={purchasing !== null}
+                accessibilityRole="button"
+                accessibilityLabel={`${pkg.name} – ${pkg.price}`}
+              >
+                {pkg.popular && (
+                  <View style={styles.popularBadge}>
+                    <Text style={styles.popularText}>{t('store.popular')}</Text>
+                  </View>
+                )}
+                <View style={styles.packageHeader}>
+                  <Text style={styles.packageName}>{pkg.name}</Text>
+                  <Text style={styles.packagePrice}>{pkg.price}</Text>
                 </View>
-              )}
-              <View style={styles.packageHeader}>
-                <Text style={styles.packageName}>{pkg.name}</Text>
-                <Text style={styles.packagePrice}>{pkg.price}</Text>
-              </View>
-              <View style={styles.packageDetails}>
-                <Text style={styles.packageCredits}>
-                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits}{' '}
-                  {t('store.creditsPerMonth')}
-                </Text>
-                <Text style={styles.packageDesc}>{pkg.description}</Text>
-              </View>
-              {purchasing === pkg.id && (
-                <ActivityIndicator
-                  size="small"
-                  color={colors.primaryLight}
-                  style={{ marginTop: spacing.sm }}
-                />
-              )}
-            </TouchableOpacity>
-          ))}
+                <View style={styles.packageDetails}>
+                  <Text style={styles.packageCredits}>
+                    <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits}{' '}
+                    {t('store.creditsPerMonth')}
+                  </Text>
+                  <Text style={styles.packageDesc}>{pkg.description}</Text>
+                </View>
+                <View style={styles.packageMeta}>
+                  <Text style={styles.perCreditText}>
+                    {pcc} ct/{t('store.perCredit')}
+                  </Text>
+                  {savings > 0 && (
+                    <View style={styles.savingsBadge}>
+                      <Text style={styles.savingsText}>{t('store.savePercent', { percent: savings })}</Text>
+                    </View>
+                  )}
+                </View>
+                {purchasing === pkg.id && (
+                  <ActivityIndicator
+                    size="small"
+                    color={colors.primaryLight}
+                    style={{ marginTop: spacing.sm }}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
 
           {/* ─── Einmalkauf-Pakete ────────────────────────────── */}
           <Text style={[styles.sectionTitle, { marginTop: spacing.xxl }]}>
             {t('store.oneTimeTitle')}
           </Text>
           <Text style={styles.sectionSubtitle}>{t('store.oneTimeSubtitle')}</Text>
-          {ONE_TIME_PACKAGES.map((pkg) => (
-            <TouchableOpacity
-              key={pkg.id}
-              style={[styles.packageCard, pkg.popular && styles.packageCardPopular]}
-              onPress={() => handlePurchase(pkg)}
-              disabled={purchasing !== null}
-            >
-              {pkg.popular && (
-                <View style={styles.popularBadge}>
-                  <Text style={styles.popularText}>{t('store.bestDeal')}</Text>
+          {ONE_TIME_PACKAGES.map((pkg) => {
+            const pcc = perCreditCent(pkg.price, pkg.credits);
+            const savings = savingsPercent(pkg.price, pkg.credits);
+            return (
+              <TouchableOpacity
+                key={pkg.id}
+                style={[styles.packageCard, pkg.popular && styles.packageCardPopular]}
+                onPress={() => handlePurchase(pkg)}
+                disabled={purchasing !== null}
+                accessibilityRole="button"
+                accessibilityLabel={`${pkg.name} – ${pkg.price}`}
+              >
+                {pkg.popular && (
+                  <View style={styles.popularBadge}>
+                    <Text style={styles.popularText}>{t('store.bestDeal')}</Text>
+                  </View>
+                )}
+                <View style={styles.packageHeader}>
+                  <Text style={styles.packageName}>{pkg.name}</Text>
+                  <Text style={styles.packagePrice}>{pkg.price}</Text>
                 </View>
-              )}
-              <View style={styles.packageHeader}>
-                <Text style={styles.packageName}>{pkg.name}</Text>
-                <Text style={styles.packagePrice}>{pkg.price}</Text>
+                <View style={styles.packageDetails}>
+                  <Text style={styles.packageCredits}>
+                    <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits}{' '}
+                    {t('store.creditsUnit')}
+                  </Text>
+                  <Text style={styles.packageDesc}>{pkg.description}</Text>
+                </View>
+                <View style={styles.packageMeta}>
+                  <Text style={styles.perCreditText}>
+                    {pcc} ct/{t('store.perCredit')}
+                  </Text>
+                  {savings > 0 && (
+                    <View style={styles.savingsBadge}>
+                      <Text style={styles.savingsText}>{t('store.savePercent', { percent: savings })}</Text>
+                    </View>
+                  )}
+                </View>
+                {purchasing === pkg.id && (
+                  <ActivityIndicator
+                    size="small"
+                    color={colors.primaryLight}
+                    style={{ marginTop: spacing.sm }}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+
+          {/* ─── Credit Cost Comparison ────────────────────────── */}
+          <View style={styles.comparisonBox}>
+            <Text style={styles.comparisonTitle}>{t('store.costComparisonTitle')}</Text>
+            {[
+              { icon: 'search-outline', label: t('store.actionLabels.plantScan'), cost: '12' },
+              { icon: 'document-text-outline', label: t('store.costDetails'), cost: '15' },
+              { icon: 'heart-outline', label: t('store.actionLabels.healthcheck'), cost: '8' },
+              { icon: 'chatbubble-outline', label: t('store.costChat'), cost: '3' },
+            ].map((item, i) => (
+              <View key={i} style={styles.comparisonRow}>
+                <Ionicons name={item.icon} size={16} color={colors.primary} />
+                <Text style={styles.comparisonLabel}>{item.label}</Text>
+                <Text style={styles.comparisonCost}>{item.cost} Cr.</Text>
               </View>
-              <View style={styles.packageDetails}>
-                <Text style={styles.packageCredits}>
-                  <Ionicons name="flash" size={14} color={colors.primaryLight} /> {pkg.credits}{' '}
-                  {t('store.creditsUnit')}
-                </Text>
-                <Text style={styles.packageDesc}>{pkg.description}</Text>
-              </View>
-              {purchasing === pkg.id && (
-                <ActivityIndicator
-                  size="small"
-                  color={colors.primaryLight}
-                  style={{ marginTop: spacing.sm }}
-                />
-              )}
-            </TouchableOpacity>
-          ))}
+            ))}
+          </View>
 
           {/* ─── Restore & Info ───────────────────────────────── */}
-          <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore}>
+          <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore} accessibilityRole="button">
             <Text style={styles.restoreText}>{t('store.restorePurchases')}</Text>
           </TouchableOpacity>
 
@@ -480,6 +551,47 @@ const styles = StyleSheet.create({
   packageDetails: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   packageCredits: { fontSize: 14, color: colors.textSecondary },
   packageDesc: { fontSize: 14, color: colors.textTertiary },
+  packageMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.borderLight,
+  },
+  perCreditText: { fontSize: 12, color: colors.textTertiary },
+  savingsBadge: {
+    backgroundColor: colors.primarySurface,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+  },
+  savingsText: { fontSize: 12, fontWeight: 'bold', color: colors.primary },
+
+  // Comparison
+  comparisonBox: {
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.xl,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    ...shadows.sm,
+  },
+  comparisonTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
+  comparisonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    gap: spacing.sm,
+  },
+  comparisonLabel: { flex: 1, fontSize: 14, color: colors.textSecondary },
+  comparisonCost: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
 
   // Restore
   restoreBtn: { alignSelf: 'center', marginTop: spacing.xl, padding: spacing.md },

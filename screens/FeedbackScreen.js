@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   KeyboardAvoidingView,
@@ -16,11 +14,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 import Constants from 'expo-constants';
+import DSButton from '../theme/DSButton';
+import DSInput from '../theme/DSInput';
+import DSChipGroup from '../theme/DSChips';
 
 const CATEGORIES = [
-  { key: 'bug', icon: 'bug-outline' },
-  { key: 'feature', icon: 'bulb-outline' },
-  { key: 'other', icon: 'chatbox-ellipses-outline' },
+  { key: 'bug', label: '', icon: 'bug-outline' },
+  { key: 'feature', label: '', icon: 'bulb-outline' },
+  { key: 'other', label: '', icon: 'chatbox-ellipses-outline' },
 ];
 
 export default function FeedbackScreen({ navigation }) {
@@ -29,6 +30,12 @@ export default function FeedbackScreen({ navigation }) {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  // Dynamic labels (need t() at render time)
+  const categoryItems = CATEGORIES.map((cat) => ({
+    ...cat,
+    label: t(`feedback.categories.${cat.key}`),
+  }));
 
   const handleSubmit = async () => {
     if (!message.trim()) {
@@ -62,12 +69,13 @@ export default function FeedbackScreen({ navigation }) {
         <Ionicons name="checkmark-circle" size={72} color={colors.primary} />
         <Text style={styles.successTitle}>{t('feedback.thankYou')}</Text>
         <Text style={styles.successMessage}>{t('feedback.successMessage')}</Text>
-        <TouchableOpacity
-          style={styles.backButton}
+        <DSButton
+          variant="primary"
           onPress={() => navigation.goBack()}
+          accessibilityLabel={t('common.done')}
         >
-          <Text style={styles.backButtonText}>{t('common.done')}</Text>
-        </TouchableOpacity>
+          {t('common.done')}
+        </DSButton>
       </View>
     );
   }
@@ -87,59 +95,38 @@ export default function FeedbackScreen({ navigation }) {
 
         {/* Category Picker */}
         <Text style={styles.label}>{t('feedback.categoryLabel')}</Text>
-        <View style={styles.categoryRow}>
-          {CATEGORIES.map((cat) => {
-            const active = category === cat.key;
-            return (
-              <TouchableOpacity
-                key={cat.key}
-                style={[styles.categoryChip, active && styles.categoryChipActive]}
-                onPress={() => setCategory(cat.key)}
-              >
-                <Ionicons
-                  name={cat.icon}
-                  size={20}
-                  color={active ? colors.surface : colors.textSecondary}
-                />
-                <Text
-                  style={[
-                    styles.categoryText,
-                    active && styles.categoryTextActive,
-                  ]}
-                >
-                  {t(`feedback.categories.${cat.key}`)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <DSChipGroup
+          items={categoryItems}
+          selected={category}
+          onSelect={setCategory}
+          variant="segmented"
+          scrollable={false}
+          style={{ marginBottom: spacing.xl }}
+        />
 
         {/* Message */}
-        <Text style={styles.label}>{t('feedback.messageLabel')}</Text>
-        <TextInput
-          style={styles.textArea}
-          multiline
-          numberOfLines={6}
-          textAlignVertical="top"
+        <DSInput
+          label={t('feedback.messageLabel')}
           placeholder={t('feedback.placeholder')}
-          placeholderTextColor={colors.textTertiary}
           value={message}
           onChangeText={setMessage}
+          multiline
+          inputStyle={{ minHeight: 140 }}
           maxLength={2000}
         />
         <Text style={styles.charCount}>{message.length} / 2000</Text>
 
         {/* Submit */}
-        <TouchableOpacity
-          style={[styles.submitButton, sending && { opacity: 0.6 }]}
+        <DSButton
+          variant="primary"
+          fullWidth
+          icon="send"
+          loading={sending}
           onPress={handleSubmit}
-          disabled={sending}
+          accessibilityLabel={t('feedback.submit')}
         >
-          <Ionicons name="send" size={18} color={colors.surface} />
-          <Text style={styles.submitText}>
-            {sending ? t('common.loading') : t('feedback.submit')}
-          </Text>
-        </TouchableOpacity>
+          {t('feedback.submit')}
+        </DSButton>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -163,71 +150,16 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
-  },
-  categoryChip: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  categoryChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  categoryText: {
-    fontSize: 13,
-    fontWeight: '600',
     color: colors.textSecondary,
-  },
-  categoryTextActive: {
-    color: colors.surface,
-  },
-  textArea: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    fontSize: 15,
-    color: colors.textPrimary,
-    backgroundColor: colors.background,
-    minHeight: 140,
+    marginBottom: spacing.sm,
   },
   charCount: {
     fontSize: 12,
     color: colors.textTertiary,
     textAlign: 'right',
-    marginTop: 4,
+    marginTop: -spacing.md,
     marginBottom: spacing.xl,
   },
-  submitButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.primary,
-    paddingVertical: 14,
-    borderRadius: radius.md,
-  },
-  submitText: {
-    color: colors.surface,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  // Success state
   successContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -248,16 +180,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: spacing.xl,
-  },
-  backButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: radius.md,
-  },
-  backButtonText: {
-    color: colors.surface,
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

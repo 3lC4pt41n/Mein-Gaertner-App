@@ -215,7 +215,9 @@
       "weekly": "Cada semana",
       "biweekly": "Cada 2 semanas",
       "monthly": "Cada mes"
-    }
+    },
+    "emptyTitle": "¡Todo listo!",
+    "emptyHint": "No hay tareas pendientes. Crea una nueva o disfruta tu día libre."
   },
 
   "assistant": {
@@ -225,7 +227,13 @@
     "loadOlder": "Cargar mensajes anteriores...",
     "noAnswer": "🤔 Sin respuesta.",
     "imageMessage": "[Imagen]",
-    "uploadFailed": "Error al subir"
+    "uploadFailed": "Error al subir",
+    "welcomeTitle": "¡Hola! Soy Ben, tu jardinero.",
+    "welcomeHint": "Pregúntame sobre tus plantas, envíame una foto o pide consejos de cuidado.",
+    "suggestionIdentify": "¿Qué planta es esta?",
+    "suggestionHealth": "Mi planta tiene hojas amarillas",
+    "suggestionCare": "¿Con qué frecuencia debo regar?",
+    "takePhoto": "Tomar foto"
   },
 
   "store": {
@@ -255,6 +263,11 @@
     "usageTitle": "Último consumo",
     "noUsage": "Aún sin uso de IA",
     "infoText": "Los Credits se usan para funciones de IA: reconocimiento de plantas, chequeos de salud y chat con Ben. Los Credits por suscripción son un 33% más baratos y se recargan cada mes.",
+    "perCredit": "Crédito",
+    "savePercent": "{{percent}}% más barato",
+    "costComparisonTitle": "¿Cuánto cuestan las funciones IA?",
+    "costDetails": "Generar detalles de cuidado",
+    "costChat": "Mensaje de chat",
     "adminDashboard": "Panel Admin",
     "actionLabels": {
       "plantScan": "🌱 Planta reconocida",
@@ -421,7 +434,10 @@
     "due": "Pendiente",
     "completed": "Completada",
     "overdue": "Atrasada",
-    "skipped": "Omitida"
+    "skipped": "Omitida",
+    "loadError": "No se pudieron cargar las tareas.",
+    "previousMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente"
   },
 
   "dex": {

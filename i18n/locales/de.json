@@ -215,7 +215,9 @@
       "weekly": "Jede Woche",
       "biweekly": "Alle 2 Wochen",
       "monthly": "Jeden Monat"
-    }
+    },
+    "emptyTitle": "Alles erledigt!",
+    "emptyHint": "Keine offenen Aufgaben. Erstelle eine neue oder genieße den freien Tag."
   },
 
   "assistant": {
@@ -225,7 +227,13 @@
     "loadOlder": "Ältere Nachrichten laden...",
     "noAnswer": "🤔 Keine Antwort.",
     "imageMessage": "[Bild]",
-    "uploadFailed": "Upload fehlgeschlagen"
+    "uploadFailed": "Upload fehlgeschlagen",
+    "welcomeTitle": "Hallo! Ich bin Ben, dein Gärtner.",
+    "welcomeHint": "Stell mir Fragen zu deinen Pflanzen, schick mir ein Foto oder lass dir Pflegetipps geben.",
+    "suggestionIdentify": "Was ist das für eine Pflanze?",
+    "suggestionHealth": "Meine Pflanze hat gelbe Blätter",
+    "suggestionCare": "Wie oft soll ich gießen?",
+    "takePhoto": "Foto aufnehmen"
   },
 
   "store": {
@@ -255,6 +263,11 @@
     "usageTitle": "Letzter Verbrauch",
     "noUsage": "Noch keine KI-Nutzung",
     "infoText": "Credits werden für KI-Funktionen verbraucht: Pflanzen-Erkennung, Healthchecks und Chat mit Ben. Abo-Credits sind 33% günstiger und werden monatlich aufgefüllt.",
+    "perCredit": "Credit",
+    "savePercent": "{{percent}}% günstiger",
+    "costComparisonTitle": "Was kosten die KI-Funktionen?",
+    "costDetails": "Pflege-Details generieren",
+    "costChat": "Chat-Nachricht",
     "adminDashboard": "Admin Dashboard",
     "actionLabels": {
       "plantScan": "🌱 Pflanze erkannt",
@@ -421,7 +434,10 @@
     "due": "Fällig",
     "completed": "Erledigt",
     "overdue": "Überfällig",
-    "skipped": "Übersprungen"
+    "skipped": "Übersprungen",
+    "loadError": "Aufgaben konnten nicht geladen werden.",
+    "previousMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat"
   },
 
   "dex": {

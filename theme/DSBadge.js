@@ -22,6 +22,9 @@ export default function DSBadge({ label, variant = 'neutral', icon, size = 'md',
 
   return (
     <View
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={label}
       style={[
         styles.base,
         {

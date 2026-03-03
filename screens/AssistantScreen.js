@@ -292,12 +292,14 @@ export default function AssistantScreen() {
         ref={flatListRef}
         keyExtractor={(_, i) => i.toString()}
         renderItem={renderItem}
-        contentContainerStyle={{ padding: spacing.md }}
+        contentContainerStyle={{ padding: spacing.md, flexGrow: 1 }}
         ListHeaderComponent={
           hasMore ? (
             <TouchableOpacity
               onPress={loadOlderMessages}
               style={{ padding: spacing.md, alignItems: 'center' }}
+              accessibilityRole="button"
+              accessibilityLabel={t('assistant.loadOlder')}
             >
               {loadingMore ? (
                 <ActivityIndicator size="small" color={colors.primaryLight} />
@@ -309,6 +311,47 @@ export default function AssistantScreen() {
             </TouchableOpacity>
           ) : null
         }
+        ListEmptyComponent={
+          !loading && (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xl }}>
+              <Image
+                source={require('../assets/avatars/ben.png')}
+                style={{ width: 80, height: 80, borderRadius: 40, marginBottom: spacing.lg }}
+              />
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.textPrimary, marginBottom: spacing.sm }}>
+                {t('assistant.welcomeTitle')}
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: spacing.lg }}>
+                {t('assistant.welcomeHint')}
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm }}>
+                {[
+                  { icon: 'leaf-outline', label: t('assistant.suggestionIdentify') },
+                  { icon: 'pulse-outline', label: t('assistant.suggestionHealth') },
+                  { icon: 'water-outline', label: t('assistant.suggestionCare') },
+                ].map((s, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() => { setInput(s.label); }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: colors.primarySurface,
+                      paddingHorizontal: spacing.md,
+                      paddingVertical: spacing.sm,
+                      borderRadius: radius.pill,
+                      gap: spacing.xs,
+                    }}
+                    accessibilityRole="button"
+                  >
+                    <Ionicons name={s.icon} size={16} color={colors.primary} />
+                    <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '500' }}>{s.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )
+        }
       />
       {loading && (
         <ActivityIndicator
@@ -318,7 +361,7 @@ export default function AssistantScreen() {
         />
       )}
       <View style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.sm }}>
-        <TouchableOpacity onPress={takeAndSendPhoto}>
+        <TouchableOpacity onPress={takeAndSendPhoto} accessibilityRole="button" accessibilityLabel={t('assistant.takePhoto')}>
           <Ionicons
             name="camera"
             size={28}

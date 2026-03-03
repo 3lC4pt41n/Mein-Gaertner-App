@@ -14,6 +14,7 @@ export default function DSInput({
   multiline = false,
   style,
   inputStyle,
+  accessibilityLabel,
   ...rest
 }) {
   const [focused, setFocused] = useState(false);
@@ -50,6 +51,7 @@ export default function DSInput({
           multiline={multiline}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
+          accessibilityLabel={accessibilityLabel || label || placeholder}
           style={[
             styles.input,
             icon && styles.inputWithIcon,

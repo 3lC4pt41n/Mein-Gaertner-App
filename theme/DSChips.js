@@ -21,6 +21,9 @@ export default function DSChipGroup({
               key={item.key}
               onPress={() => onSelect(item.key)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={item.label}
+              accessibilityState={{ selected: active }}
               style={[
                 styles.segmentedItem,
                 active && styles.segmentedActive,
@@ -54,6 +57,9 @@ export default function DSChipGroup({
         key={item.key}
         onPress={() => onSelect(item.key)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={item.label}
+        accessibilityState={{ selected: active }}
         style={[
           styles.pill,
           active ? styles.pillActive : styles.pillInactive,

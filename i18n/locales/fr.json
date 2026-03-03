@@ -215,7 +215,9 @@
       "weekly": "Chaque semaine",
       "biweekly": "Toutes les 2 semaines",
       "monthly": "Chaque mois"
-    }
+    },
+    "emptyTitle": "Tout est fait !",
+    "emptyHint": "Aucune tâche en attente. Créez-en une ou profitez de votre journée."
   },
 
   "assistant": {
@@ -225,7 +227,13 @@
     "loadOlder": "Charger les messages précédents...",
     "noAnswer": "🤔 Pas de réponse.",
     "imageMessage": "[Image]",
-    "uploadFailed": "Échec du téléversement"
+    "uploadFailed": "Échec du téléversement",
+    "welcomeTitle": "Bonjour ! Je suis Ben, votre jardinier.",
+    "welcomeHint": "Posez-moi des questions sur vos plantes, envoyez-moi une photo ou demandez des conseils d'entretien.",
+    "suggestionIdentify": "Quelle est cette plante ?",
+    "suggestionHealth": "Ma plante a des feuilles jaunes",
+    "suggestionCare": "À quelle fréquence arroser ?",
+    "takePhoto": "Prendre une photo"
   },
 
   "store": {
@@ -255,6 +263,11 @@
     "usageTitle": "Consommation récente",
     "noUsage": "Aucune utilisation IA pour le moment",
     "infoText": "Les Credits sont utilisés pour les fonctions IA : identification de plantes, bilans santé et chat avec Ben. Les Credits d'abonnement sont 33% moins chers et rechargés mensuellement.",
+    "perCredit": "Crédit",
+    "savePercent": "{{percent}}% moins cher",
+    "costComparisonTitle": "Combien coûtent les fonctions IA ?",
+    "costDetails": "Générer les détails d'entretien",
+    "costChat": "Message de chat",
     "adminDashboard": "Tableau Admin",
     "actionLabels": {
       "plantScan": "🌱 Plante identifiée",
@@ -421,7 +434,10 @@
     "due": "À faire",
     "completed": "Terminée",
     "overdue": "En retard",
-    "skipped": "Passée"
+    "skipped": "Passée",
+    "loadError": "Impossible de charger les tâches.",
+    "previousMonth": "Mois précédent",
+    "nextMonth": "Mois suivant"
   },
 
   "dex": {

@@ -53,6 +53,7 @@ export default function DSButton({
   children,
   style,
   textStyle,
+  accessibilityLabel,
 }) {
   const v = VARIANT_STYLES[variant] || VARIANT_STYLES.primary;
   const s = SIZE_STYLES[size] || SIZE_STYLES.md;
@@ -67,6 +68,9 @@ export default function DSButton({
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel || (typeof children === 'string' ? children : undefined)}
+      accessibilityState={{ disabled: isDisabled }}
       style={[
         styles.base,
         {

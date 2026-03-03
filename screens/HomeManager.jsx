@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput, Alert } from 'react-native';
-import {
-  Modal,
-  Portal,
-  Provider as PaperProvider,
-  Button,
-  Card,
-  IconButton,
-  DefaultTheme,
-} from 'react-native-paper';
+import { View, Text, FlatList, StyleSheet, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
-import { colors, spacing, radius } from '../theme/tokens';
+import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
+import DSButton from '../theme/DSButton';
+import DSCard from '../theme/DSCard';
+import DSInput from '../theme/DSInput';
+import DSChipGroup from '../theme/DSChips';
+
+const ZONE_TYPES = [
+  { key: 'room', label: 'Room', icon: 'home-outline' },
+  { key: 'balcony', label: 'Balcony', icon: 'sunny-outline' },
+  { key: 'garden', label: 'Garden', icon: 'leaf-outline' },
+  { key: 'greenhouse', label: 'Greenhouse', icon: 'flower-outline' },
+];
 
 export default function HomeManager() {
   const [locations, setLocations] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [editing, setEditing] = useState(null); // { type: 'location'|'zone', locationId, zone }
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '', address: '', type: 'room' });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const { userId } = useAuth();
 
@@ -29,23 +32,21 @@ export default function HomeManager() {
     reload();
   }, []);
 
-  // Lade Locations + Zonen (separate Queries für PostgREST-Kompatibilität)
   const reload = async () => {
     if (!userId) {
       Alert.alert(t('common.notLoggedIn'), t('common.notLoggedInMessage'));
       return;
     }
     setLoading(true);
+    setError(null);
     try {
-      const user_id = userId;
       const { data: locs, error: locErr } = await supabase
         .from('locations')
         .select('id, name, address')
-        .eq('user_id', user_id)
+        .eq('user_id', userId)
         .order('created_at');
       if (locErr) throw locErr;
 
-      // Zonen separat laden und an Locations anhängen
       const locIds = (locs || []).map((l) => l.id);
       let zonesMap = {};
       if (locIds.length > 0) {
@@ -61,18 +62,16 @@ export default function HomeManager() {
         }
       }
 
-      const merged = (locs || []).map((l) => ({
-        ...l,
-        zones: zonesMap[l.id] || [],
-      }));
-      setLocations(merged);
+      setLocations(
+        (locs || []).map((l) => ({ ...l, zones: zonesMap[l.id] || [] }))
+      );
     } catch (err) {
-      Alert.alert(t('home.loadError'), err.message);
+      setError(err.message);
     }
     setLoading(false);
   };
 
-  // Modals
+  // ── Modals ──────────────────────────────────────────
   const openLocationModal = (loc) => {
     setEditing({ type: 'location', locationId: loc?.id });
     setForm({ name: loc?.name || '', address: loc?.address || '' });
@@ -91,31 +90,25 @@ export default function HomeManager() {
     setForm({ name: '', address: '', type: 'room' });
   };
 
-  // CRUD – Locations
+  // ── CRUD ────────────────────────────────────────────
   const saveLocation = async () => {
-    if (!userId) {
-      Alert.alert(t('common.notLoggedIn'), t('common.notLoggedInMessage'));
-      return;
-    }
-    const user_id = userId;
+    if (!userId) return;
     if (!form.name.trim()) {
       Alert.alert(t('common.error'), t('common.nameRequired'));
       return;
     }
     try {
       if (editing?.locationId) {
-        // Update
         const { error } = await supabase
           .from('locations')
           .update({ name: form.name, address: form.address })
           .eq('id', editing.locationId)
-          .eq('user_id', user_id);
+          .eq('user_id', userId);
         if (error) throw error;
       } else {
-        // Insert (user_id setzen!)
         const { error } = await supabase
           .from('locations')
-          .insert([{ name: form.name, address: form.address, user_id }]);
+          .insert([{ name: form.name, address: form.address, user_id: userId }]);
         if (error) throw error;
       }
       closeModal();
@@ -125,7 +118,6 @@ export default function HomeManager() {
     }
   };
 
-  // CRUD – Zones
   const saveZone = async () => {
     if (!form.name.trim()) {
       Alert.alert(t('common.error'), t('common.nameRequired'));
@@ -133,7 +125,6 @@ export default function HomeManager() {
     }
     try {
       if (editing?.zone) {
-        // Update
         const { error } = await supabase
           .from('zones')
           .update({ name: form.name, type: form.type })
@@ -141,7 +132,6 @@ export default function HomeManager() {
           .eq('location_id', editing.locationId);
         if (error) throw error;
       } else {
-        // Insert
         const { error } = await supabase
           .from('zones')
           .insert([{ location_id: editing.locationId, name: form.name, type: form.type }]);
@@ -154,25 +144,19 @@ export default function HomeManager() {
     }
   };
 
-  // Delete – Locations
-  const deleteLocation = async (locationId) => {
+  const deleteLocation = (locationId) => {
     Alert.alert(t('home.deleteHomeTitle'), t('home.deleteHomeMessage'), [
       { text: t('common.cancel') },
       {
         text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
-          if (!userId) {
-            Alert.alert(t('common.notLoggedIn'), t('common.notLoggedInMessage'));
-            return;
-          }
           try {
-            const user_id = userId;
             const { error } = await supabase
               .from('locations')
               .delete()
               .eq('id', locationId)
-              .eq('user_id', user_id);
+              .eq('user_id', userId);
             if (error) throw error;
             reload();
           } catch (err) {
@@ -183,8 +167,7 @@ export default function HomeManager() {
     ]);
   };
 
-  // Delete – Zones
-  const deleteZone = async (zoneId) => {
+  const deleteZone = (zoneId) => {
     Alert.alert(t('home.deleteZoneTitle'), t('home.deleteZoneMessage'), [
       { text: t('common.cancel') },
       {
@@ -203,188 +186,330 @@ export default function HomeManager() {
     ]);
   };
 
-  // Zonen-Row
+  // ── Zone Row ────────────────────────────────────────
   const ZoneRow = ({ item, locationId }) => (
-    <View style={styles.zoneRow} key={item.id}>
-      <Text style={styles.zoneText}>
-        {item.name} <Text style={styles.zoneType}>({item.type})</Text>
-      </Text>
-      <View style={{ flexDirection: 'row' }}>
-        <IconButton icon="pencil" size={18} onPress={() => openZoneModal(locationId, item)} />
-        <IconButton icon="delete" size={18} onPress={() => deleteZone(item.id)} />
+    <View style={styles.zoneRow}>
+      <View style={styles.zoneInfo}>
+        <Ionicons
+          name={ZONE_TYPES.find((z) => z.key === item.type)?.icon || 'cube-outline'}
+          size={18}
+          color={colors.primary}
+        />
+        <Text style={styles.zoneText}>{item.name}</Text>
+        <Text style={styles.zoneType}>({item.type})</Text>
+      </View>
+      <View style={styles.zoneActions}>
+        <DSButton
+          variant="ghost"
+          size="sm"
+          icon="pencil-outline"
+          onPress={() => openZoneModal(locationId, item)}
+          accessibilityLabel={t('home.editZone')}
+        />
+        <DSButton
+          variant="ghost"
+          size="sm"
+          icon="trash-outline"
+          onPress={() => deleteZone(item.id)}
+          accessibilityLabel={t('common.delete')}
+        />
       </View>
     </View>
   );
 
-  // Picker für Zone-Type
-  const renderZoneTypeInput = () => (
-    <View style={{ marginBottom: spacing.md }}>
-      <Text style={{ marginBottom: spacing.xs, fontSize: 14, color: colors.textPrimary }}>
-        {t('common.type')}
-      </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-        {['room', 'balcony', 'garden', 'greenhouse'].map((type) => (
-          <Button
-            key={type}
-            mode={form.type === type ? 'contained' : 'outlined'}
-            onPress={() => setForm({ ...form, type })}
-            style={{ marginRight: spacing.xs, marginBottom: spacing.xs }}
-          >
-            {type}
-          </Button>
-        ))}
+  // ── Error State ─────────────────────────────────────
+  if (error && locations.length === 0) {
+    return (
+      <View style={styles.centerState}>
+        <Ionicons name="cloud-offline-outline" size={56} color={colors.textDisabled} />
+        <Text style={styles.stateTitle}>{t('home.loadError')}</Text>
+        <Text style={styles.stateHint}>{error}</Text>
+        <DSButton variant="primary" icon="refresh-outline" onPress={reload} style={{ marginTop: spacing.lg }}>
+          {t('common.retry')}
+        </DSButton>
       </View>
-    </View>
-  );
+    );
+  }
 
   return (
-    <PaperProvider
-      theme={{
-        ...DefaultTheme,
-        colors: { ...DefaultTheme.colors, primary: colors.primary, accent: colors.primaryLight },
-      }}
-    >
-      <FlatList
-        contentContainerStyle={{ padding: spacing.lg }}
-        data={locations}
-        refreshing={loading}
-        onRefresh={reload}
-        keyExtractor={(l) => l.id}
-        ListHeaderComponent={() => (
-          <Button mode="contained" icon="home-plus" onPress={() => openLocationModal()}>
-            {t('home.newHome')}
-          </Button>
-        )}
-        renderItem={({ item }) => (
-          <Card style={{ marginTop: spacing.lg }}>
-            <TouchableOpacity
-              onPress={() => setExpandedId(expandedId === item.id ? null : item.id)}
-            >
-              <Card.Title
-                title={item.name}
-                subtitle={item.address || undefined}
-                left={(props) => <Ionicons name="home" size={24} {...props} />}
-                right={(props) => (
-                  <Ionicons
-                    name={expandedId === item.id ? 'chevron-up' : 'chevron-down'}
-                    size={24}
-                    {...props}
-                  />
-                )}
-              />
-            </TouchableOpacity>
-            {expandedId === item.id && (
-              <Card.Content>
-                {item.zones?.length ? (
-                  item.zones.map((z) => <ZoneRow key={z.id} item={z} locationId={item.id} />)
-                ) : (
-                  <Text style={styles.emptyTxt}>{t('home.noZones')}</Text>
-                )}
-                <Button
-                  mode="outlined"
-                  icon="plus"
-                  style={{ marginTop: spacing.sm }}
+    <FlatList
+      contentContainerStyle={styles.listContent}
+      data={locations}
+      refreshing={loading}
+      onRefresh={reload}
+      keyExtractor={(l) => l.id}
+      ListHeaderComponent={() => (
+        <DSButton
+          variant="primary"
+          icon="home-outline"
+          fullWidth
+          onPress={() => openLocationModal()}
+        >
+          {t('home.newHome')}
+        </DSButton>
+      )}
+      ListEmptyComponent={
+        !loading && (
+          <View style={styles.centerState}>
+            <Ionicons name="home-outline" size={56} color={colors.textDisabled} />
+            <Text style={styles.stateTitle}>{t('home.noZones')}</Text>
+          </View>
+        )
+      }
+      renderItem={({ item }) => (
+        <DSCard
+          variant="elevated"
+          padding="sm"
+          style={{ marginTop: spacing.md }}
+          onPress={() => setExpandedId(expandedId === item.id ? null : item.id)}
+        >
+          {/* Location Header */}
+          <View style={styles.locationHeader}>
+            <View style={styles.locationIcon}>
+              <Ionicons name="home" size={22} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.locationName}>{item.name}</Text>
+              {item.address ? (
+                <Text style={styles.locationAddress}>{item.address}</Text>
+              ) : null}
+            </View>
+            <Ionicons
+              name={expandedId === item.id ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color={colors.textTertiary}
+            />
+          </View>
+
+          {/* Expanded Content */}
+          {expandedId === item.id && (
+            <View style={styles.expandedContent}>
+              {item.zones?.length ? (
+                item.zones.map((z) => <ZoneRow key={z.id} item={z} locationId={item.id} />)
+              ) : (
+                <Text style={styles.emptyTxt}>{t('home.noZones')}</Text>
+              )}
+              <View style={styles.actionRow}>
+                <DSButton
+                  variant="secondary"
+                  size="sm"
+                  icon="add-outline"
                   onPress={() => openZoneModal(item.id)}
+                  style={{ flex: 1, marginRight: spacing.sm }}
                 >
                   {t('home.addZone')}
-                </Button>
-                <Button
-                  icon="pencil"
-                  mode="outlined"
+                </DSButton>
+                <DSButton
+                  variant="ghost"
+                  size="sm"
+                  icon="pencil-outline"
                   onPress={() => openLocationModal(item)}
-                  style={{ marginTop: spacing.sm }}
-                >
-                  {t('home.editHome')}
-                </Button>
-                <Button
-                  icon="delete"
-                  mode="outlined"
+                />
+                <DSButton
+                  variant="ghost"
+                  size="sm"
+                  icon="trash-outline"
                   onPress={() => deleteLocation(item.id)}
-                  color="red"
-                  style={{ marginTop: spacing.sm }}
-                >
-                  {t('home.deleteHome')}
-                </Button>
-              </Card.Content>
-            )}
-          </Card>
-        )}
-      />
-
-      {/* Modal */}
-      <Portal>
-        <Modal
-          visible={dialogVisible}
-          onDismiss={closeModal}
-          contentContainerStyle={styles.modalBox}
-        >
-          <Text style={styles.modalTitle}>
-            {editing?.type === 'location'
-              ? editing.locationId
-                ? t('home.editHome')
-                : t('home.newHome')
-              : editing?.zone
-                ? t('home.editZone')
-                : t('home.newZone')}
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder={t('common.name')}
-            value={form.name}
-            onChangeText={(val) => setForm({ ...form, name: val })}
-          />
-          {editing?.type === 'location' && (
-            <TextInput
-              style={styles.input}
-              placeholder={t('home.addressPlaceholder')}
-              value={form.address}
-              onChangeText={(val) => setForm({ ...form, address: val })}
-            />
+                  textStyle={{ color: colors.danger }}
+                />
+              </View>
+            </View>
           )}
-          {editing?.type === 'zone' && renderZoneTypeInput()}
-          <Button
-            mode="contained"
-            onPress={editing?.type === 'location' ? saveLocation : saveZone}
-            style={{ marginTop: spacing.md }}
-          >
-            {t('common.save')}
-          </Button>
-        </Modal>
-      </Portal>
-    </PaperProvider>
+        </DSCard>
+      )}
+    >
+      {/* ── Modal ────────────────────────────────────── */}
+      <Modal
+        visible={dialogVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={closeModal}
+      >
+        <View style={styles.overlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>
+              {editing?.type === 'location'
+                ? editing.locationId
+                  ? t('home.editHome')
+                  : t('home.newHome')
+                : editing?.zone
+                  ? t('home.editZone')
+                  : t('home.newZone')}
+            </Text>
+
+            <DSInput
+              label={t('common.name')}
+              placeholder={t('common.name')}
+              value={form.name}
+              onChangeText={(val) => setForm({ ...form, name: val })}
+              icon="text-outline"
+            />
+
+            {editing?.type === 'location' && (
+              <DSInput
+                label={t('home.addressPlaceholder')}
+                placeholder={t('home.addressPlaceholder')}
+                value={form.address}
+                onChangeText={(val) => setForm({ ...form, address: val })}
+                icon="location-outline"
+              />
+            )}
+
+            {editing?.type === 'zone' && (
+              <View style={{ marginBottom: spacing.lg }}>
+                <Text style={styles.chipLabel}>{t('common.type')}</Text>
+                <DSChipGroup
+                  items={ZONE_TYPES}
+                  selected={form.type}
+                  onSelect={(key) => setForm({ ...form, type: key })}
+                  variant="segmented"
+                  scrollable={false}
+                />
+              </View>
+            )}
+
+            <View style={styles.modalActions}>
+              <DSButton
+                variant="secondary"
+                onPress={closeModal}
+                style={{ flex: 1, marginRight: spacing.sm }}
+              >
+                {t('common.cancel')}
+              </DSButton>
+              <DSButton
+                variant="primary"
+                onPress={editing?.type === 'location' ? saveLocation : saveZone}
+                style={{ flex: 1 }}
+              >
+                {t('common.save')}
+              </DSButton>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </FlatList>
   );
 }
 
 const styles = StyleSheet.create({
+  listContent: {
+    padding: spacing.lg,
+    paddingBottom: 40,
+  },
+
+  // Location card
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+  },
+  locationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  locationName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  locationAddress: {
+    fontSize: 13,
+    color: colors.textTertiary,
+    marginTop: 2,
+  },
+
+  // Expanded
+  expandedContent: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.borderLight,
+    marginTop: spacing.xs,
+    paddingTop: spacing.md,
+  },
+
+  // Zone row
   zoneRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
   },
-  zoneText: { fontSize: 14, color: colors.textPrimary },
+  zoneInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: spacing.sm,
+  },
+  zoneText: { fontSize: 14, color: colors.textPrimary, fontWeight: '500' },
   zoneType: { color: colors.textTertiary, fontSize: 12 },
-  emptyTxt: { color: colors.textTertiary, fontStyle: 'italic' },
+  zoneActions: { flexDirection: 'row' },
+
+  // Actions
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.md,
+  },
+
+  // Empty / error states
+  centerState: {
+    alignItems: 'center',
+    paddingVertical: 80,
+    paddingHorizontal: spacing.xl,
+  },
+  stateTitle: {
+    fontSize: 16,
+    color: colors.textTertiary,
+    marginTop: spacing.md,
+    textAlign: 'center',
+  },
+  stateHint: {
+    fontSize: 13,
+    color: colors.textDisabled,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+
+  emptyTxt: {
+    color: colors.textTertiary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: spacing.md,
+  },
+
+  // Modal
+  overlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+  },
   modalBox: {
     backgroundColor: colors.surface,
-    margin: spacing.lg,
-    padding: spacing.lg,
-    borderRadius: radius.md,
+    padding: spacing.xl,
+    borderRadius: radius.lg,
+    ...shadows.lg,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
     color: colors.textPrimary,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
+  chipLabel: {
     fontSize: 14,
-    color: colors.textPrimary,
-    backgroundColor: colors.surface,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    marginTop: spacing.sm,
   },
 });

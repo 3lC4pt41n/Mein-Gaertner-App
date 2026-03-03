@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchTasks } from '../services/taskService';
 import WeatherWidget from '../components/WeatherWidget';
+import DSButton from '../theme/DSButton';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import i18n, { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
@@ -75,6 +76,7 @@ export default function CalendarScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(null);
   const [dayModalVisible, setDayModalVisible] = useState(false);
+  const [error, setError] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -84,11 +86,12 @@ export default function CalendarScreen() {
 
   const loadTasks = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchTasks(userId);
       setTasks(data || []);
     } catch (e) {
-      console.warn('Calendar load error:', e.message);
+      setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -147,13 +150,13 @@ export default function CalendarScreen() {
 
       {/* Month Navigation */}
       <View style={styles.monthNav}>
-        <TouchableOpacity onPress={goToPrev} style={styles.navBtn}>
+        <TouchableOpacity onPress={goToPrev} style={styles.navBtn} accessibilityRole="button" accessibilityLabel={t('calendar.previousMonth')}>
           <Ionicons name="chevron-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.monthTitle}>
+        <Text style={styles.monthTitle} accessibilityRole="header">
           {getMonthName(year, month)} {year}
         </Text>
-        <TouchableOpacity onPress={goToNext} style={styles.navBtn}>
+        <TouchableOpacity onPress={goToNext} style={styles.navBtn} accessibilityRole="button" accessibilityLabel={t('calendar.nextMonth')}>
           <Ionicons name="chevron-forward" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
@@ -166,7 +169,21 @@ export default function CalendarScreen() {
       </View>
 
       {/* Calendar Grid */}
-      {loading ? (
+      {error && !loading ? (
+        <View style={styles.errorState}>
+          <Ionicons name="cloud-offline-outline" size={48} color={colors.textDisabled} />
+          <Text style={styles.errorTitle}>{t('calendar.loadError')}</Text>
+          <Text style={styles.errorHint}>{error}</Text>
+          <DSButton
+            variant="primary"
+            icon="refresh-outline"
+            onPress={loadTasks}
+            style={{ marginTop: spacing.lg }}
+          >
+            {t('common.retry')}
+          </DSButton>
+        </View>
+      ) : loading ? (
         <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.xxxl }} />
       ) : (
         <View style={styles.grid}>
@@ -430,5 +447,23 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: radius.sm,
     overflow: 'hidden',
+  },
+  errorState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: spacing.xl,
+  },
+  errorTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginTop: spacing.md,
+    textAlign: 'center',
+  },
+  errorHint: {
+    fontSize: 13,
+    color: colors.textDisabled,
+    marginTop: spacing.sm,
+    textAlign: 'center',
   },
 });
