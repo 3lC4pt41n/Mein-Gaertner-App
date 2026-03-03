@@ -1,13 +1,14 @@
 # Digitaler Gärtner
 
-<!-- TODO: Replace with actual screenshot/GIF of Discovery Reveal + Plant Dex -->
+**A real-world plant Pokédex for hobby gardeners.**
+
+Scan plants with your camera, let AI identify them, build your species collection, track care tasks, and compete on leaderboards — all in one app.
+
+<!-- Hero image: To add a screenshot or GIF, place the file at docs/hero.png and uncomment:
 <p align="center">
-  <img src="docs/hero-placeholder.png" alt="Digitaler Gärtner — Discovery Reveal" width="320" />
+  <img src="docs/hero.png" alt="Digitaler Gärtner — Discovery Reveal + Plant Dex" width="320" />
 </p>
-
-**A real-world plant Pokédex for hobby gardeners.** Scan plants with AI, build your collection, track care tasks, and compete on leaderboards.
-
-> **Demo:** Coming soon — [follow the repo](https://github.com/3lC4pt41n/Mein-Gaertner-App) for updates.
+-->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?logo=react)](https://reactnative.dev)
@@ -29,21 +30,21 @@
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Framework | React Native 0.81 + Expo SDK 54 |
-| Language | JavaScript (JSX) / TypeScript (Edge Functions) |
-| Backend | Supabase (PostgreSQL, Auth, Storage, Edge Functions) |
-| AI | OpenAI GPT-4o (server-side via Edge Functions) |
-| Payments | RevenueCat (iOS + Android) |
-| Weather | OpenWeather API |
-| Navigation | React Navigation 6 |
-| i18n | i18n-js (6 languages) |
-| Notifications | expo-notifications |
-| Location | expo-location |
-| Tests | Jest 30 + React Testing Library |
-| Linting | ESLint + Prettier |
-| CI/CD | GitHub Actions + EAS Build |
+| Component     | Technology                                           |
+| ------------- | ---------------------------------------------------- |
+| Framework     | React Native 0.81 + Expo SDK 54                      |
+| Language      | JavaScript (JSX) / TypeScript (Edge Functions)       |
+| Backend       | Supabase (PostgreSQL, Auth, Storage, Edge Functions) |
+| AI            | OpenAI GPT-4o (server-side via Edge Functions)       |
+| Payments      | RevenueCat (iOS + Android)                           |
+| Weather       | OpenWeather API                                      |
+| Navigation    | React Navigation 6                                   |
+| i18n          | i18n-js (6 languages)                                |
+| Notifications | expo-notifications                                   |
+| Location      | expo-location                                        |
+| Tests         | Jest 30 + React Testing Library                      |
+| Linting       | ESLint + Prettier                                    |
+| CI/CD         | GitHub Actions + EAS Build                           |
 
 ## Quick Start
 
@@ -147,13 +148,13 @@ npm run web            # Run web version
 
 The app uses a credit system for AI features:
 
-| Feature | Cost |
-|---------|------|
-| Plant Scan | 12 |
-| Details Generation | 15 |
-| Health Check | 8 |
-| Chat Message | 3 |
-| Avatar Generation | 0 |
+| Feature            | Cost |
+| ------------------ | ---- |
+| Plant Scan         | 12   |
+| Details Generation | 15   |
+| Health Check       | 8    |
+| Chat Message       | 3    |
+| Avatar Generation  | 0    |
 
 Users can purchase credits via subscriptions or one-time purchases. Beta testers receive 100 free credits.
 
@@ -214,6 +215,7 @@ npx jest --coverage
 ```
 
 10 test suites cover core logic:
+
 - Task engine (recurring, rescheduling)
 - Scoring & discovery
 - Language service

@@ -8,6 +8,7 @@ import {
   Dimensions,
   StyleSheet,
   Share,
+  Alert,
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -48,10 +49,9 @@ export default function DexDetailScreen({ route }) {
         message: `${speciesDisplayName} — ${t('dex.discoveredBy', { count: species.total_discoverers || 1 })} 🌱`,
       });
     } catch (error) {
-      // Distinguish cancellation from genuine errors
-      if (error?.code !== 'ERR_CANCELED' && error?.message !== 'User did not share') {
-        // Genuine share error — log but don't crash
-        // TODO: Consider user-facing toast for share failures
+      const cancelled = error?.code === 'ERR_CANCELED' || error?.message === 'User did not share';
+      if (!cancelled) {
+        Alert.alert(t('common.error'), t('common.shareFailed'));
       }
     }
   };
@@ -106,7 +106,9 @@ export default function DexDetailScreen({ route }) {
         </Text>
       </View>
 
-      {loading && <ActivityIndicator color={colors.primary} style={{ marginVertical: spacing.lg }} />}
+      {loading && (
+        <ActivityIndicator color={colors.primary} style={{ marginVertical: spacing.lg }} />
+      )}
 
       {/* Description */}
       {species.description ? (

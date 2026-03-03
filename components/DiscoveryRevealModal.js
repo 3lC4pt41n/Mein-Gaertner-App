@@ -10,6 +10,7 @@ import {
   Platform,
   Vibration,
   Share,
+  Alert,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,10 +21,13 @@ import { t } from '../i18n';
 /**
  * Fullscreen discovery reveal after a plant scan.
  *
- * Three tiers of celebration:
+ * Two tiers of celebration (only shown for new discoveries):
  *   1. isFirst        → "WORLD FIRST" — gold theme, strong haptic, star badge, share CTA
  *   2. isNewForUser   → "New species!"  — green theme, medium haptic, share CTA
- *   3. existing       → "Saved"         — subtle, no extra fanfare
+ *
+ * Note: This modal is only opened when the species is new for the user
+ * (see AddPlantScreen — `discovery?.isNewForUser`). If the user re-scans a
+ * known species, no reveal is shown; the normal save-success flow handles it.
  */
 export default function DiscoveryRevealModal({
   visible,
@@ -111,8 +115,8 @@ export default function DiscoveryRevealModal({
 
   const { isFirst, isNewForUser, totalDiscoverers, displayName } = discovery;
 
-  // Determine tier for styling
-  const tier = isFirst ? 'first' : isNewForUser ? 'new' : 'existing';
+  // Determine tier for styling (only two tiers — modal is not shown for known species)
+  const tier = isFirst ? 'first' : 'new';
 
   const handleShare = async () => {
     const message = isFirst
@@ -121,9 +125,9 @@ export default function DiscoveryRevealModal({
     try {
       await Share.share({ message });
     } catch (error) {
-      // Share failed (not cancelled) — ignore
-      if (error?.message !== 'User did not share') {
-        // Genuine error — silent for now
+      const cancelled = error?.code === 'ERR_CANCELED' || error?.message === 'User did not share';
+      if (!cancelled) {
+        Alert.alert(t('common.error'), t('common.shareFailed'));
       }
     }
   };
@@ -144,23 +148,19 @@ export default function DiscoveryRevealModal({
               styles.typeBadge,
               tier === 'first' && styles.typeBadgeFirst,
               tier === 'new' && styles.typeBadgeNew,
-              tier === 'existing' && styles.typeBadgeExisting,
+
               {
                 transform: [{ scale: Animated.multiply(badgeAnim, pulseAnim) }],
               },
             ]}
           >
             <Ionicons
-              name={isFirst ? 'trophy' : isNewForUser ? 'sparkles' : 'checkmark-circle'}
+              name={isFirst ? 'trophy' : 'sparkles'}
               size={isFirst ? 22 : 18}
-              color={isFirst ? colors.gold : isNewForUser ? colors.surface : colors.primaryLight}
+              color={isFirst ? colors.gold : colors.surface}
             />
             <Text style={[styles.typeBadgeText, isFirst && styles.typeBadgeTextFirst]}>
-              {isFirst
-                ? t('dex.firstDiscoveryTitle')
-                : isNewForUser
-                ? t('dex.newDiscovery')
-                : t('plants.savedSuccess')}
+              {isFirst ? t('dex.firstDiscoveryTitle') : t('dex.newDiscovery')}
             </Text>
           </Animated.View>
 
@@ -183,21 +183,14 @@ export default function DiscoveryRevealModal({
             )}
             {/* First Discoverer Crown */}
             {isFirst && (
-              <Animated.View
-                style={[
-                  styles.crownBadge,
-                  { transform: [{ scale: badgeAnim }] },
-                ]}
-              >
+              <Animated.View style={[styles.crownBadge, { transform: [{ scale: badgeAnim }] }]}>
                 <Ionicons name="star" size={28} color={colors.gold} />
               </Animated.View>
             )}
           </Animated.View>
 
           {/* Species Name */}
-          <Animated.View
-            style={{ transform: [{ translateY: slideAnim }], opacity: opacityAnim }}
-          >
+          <Animated.View style={{ transform: [{ translateY: slideAnim }], opacity: opacityAnim }}>
             <Text style={styles.speciesName}>{displayName}</Text>
 
             {/* Discoverer Count */}
@@ -212,9 +205,7 @@ export default function DiscoveryRevealModal({
             {isFirst && (
               <View style={styles.firstBadgeRow}>
                 <Ionicons name="trophy" size={22} color={colors.gold} />
-                <Text style={styles.firstBadgeText}>
-                  {t('dex.firstDiscoverer')}
-                </Text>
+                <Text style={styles.firstBadgeText}>{t('dex.firstDiscoverer')}</Text>
               </View>
             )}
           </Animated.View>
@@ -226,7 +217,7 @@ export default function DiscoveryRevealModal({
               { transform: [{ translateY: slideAnim }], opacity: opacityAnim },
             ]}
           >
-            {/* Share CTA — prominent for first/new, absent for existing */}
+            {/* Share CTA — prominent for first, secondary for new */}
             {(isFirst || isNewForUser) && (
               <DSButton
                 variant={isFirst ? 'primary' : 'secondary'}
@@ -239,7 +230,7 @@ export default function DiscoveryRevealModal({
             )}
 
             <DSButton
-              variant={isFirst || isNewForUser ? 'secondary' : 'primary'}
+              variant="secondary"
               onPress={onContinue}
               fullWidth
               icon="arrow-forward-outline"
@@ -321,11 +312,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(76, 175, 80, 0.2)',
     borderWidth: 1,
     borderColor: colors.primaryLight,
-  },
-  typeBadgeExisting: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   typeBadgeText: {
     fontSize: 16,

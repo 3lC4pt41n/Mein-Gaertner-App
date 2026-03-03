@@ -112,7 +112,10 @@ export default function AddPlantScreen() {
         t('common.insufficientCreditsMessage', { balance: e.balance, required: e.required }),
         [
           { text: t('common.cancel'), style: 'cancel' },
-          { text: t('common.buyCredits'), onPress: () => navigation.navigate('Mehr', { screen: 'ShopMain' }) },
+          {
+            text: t('common.buyCredits'),
+            onPress: () => navigation.navigate('Mehr', { screen: 'ShopMain' }),
+          },
         ]
       );
       return true;
@@ -316,9 +319,18 @@ export default function AddPlantScreen() {
       {balance !== null && (
         <DSCard variant="flat" padding="sm" style={styles.balanceCard}>
           <View style={styles.balanceRow}>
-            <Ionicons name="flash" size={18} color={balance > 20 ? colors.primaryLight : colors.warning} />
+            <Ionicons
+              name="flash"
+              size={18}
+              color={balance > 20 ? colors.primaryLight : colors.warning}
+            />
             <Text style={styles.balanceLabel}>{t('common.credits')}</Text>
-            <Text style={[styles.balanceValue, { color: balance > 20 ? colors.primaryLight : colors.warning }]}>
+            <Text
+              style={[
+                styles.balanceValue,
+                { color: balance > 20 ? colors.primaryLight : colors.warning },
+              ]}
+            >
               {balance}
             </Text>
           </View>
@@ -333,8 +345,8 @@ export default function AddPlantScreen() {
               style={[
                 styles.stepDot,
                 step === s && styles.stepDotActive,
-                (['save', 'done'].includes(step) && i === 0) && styles.stepDotDone,
-                (step === 'done' && i <= 1) && styles.stepDotDone,
+                ['save', 'done'].includes(step) && i === 0 && styles.stepDotDone,
+                step === 'done' && i <= 1 && styles.stepDotDone,
               ]}
             >
               {(step === 'done' && i <= 1) || (['save', 'done'].includes(step) && i === 0) ? (
@@ -353,11 +365,20 @@ export default function AddPlantScreen() {
       {/* ── STEP: Scan ─────────────────────── */}
       {step === 'scan' && (
         <DSCard>
-          <DSButton onPress={takePhotoAndRecognize} fullWidth icon="camera-outline" disabled={loading}>
+          <DSButton
+            onPress={takePhotoAndRecognize}
+            fullWidth
+            icon="camera-outline"
+            disabled={loading}
+          >
             {t('plants.scanButton')}
           </DSButton>
           {loading && (
-            <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.lg }} />
+            <ActivityIndicator
+              size="large"
+              color={colors.primaryLight}
+              style={{ marginTop: spacing.lg }}
+            />
           )}
         </DSCard>
       )}
@@ -388,7 +409,11 @@ export default function AddPlantScreen() {
           {/* Zone picker (3.2) */}
           <Text style={styles.fieldLabel}>{t('plants.zoneOptional')}</Text>
           <TouchableOpacity style={styles.zonePicker} onPress={openZonePicker}>
-            <Ionicons name="home-outline" size={18} color={selectedZone ? colors.primaryLight : colors.textDisabled} />
+            <Ionicons
+              name="home-outline"
+              size={18}
+              color={selectedZone ? colors.primaryLight : colors.textDisabled}
+            />
             <Text style={[styles.zonePickerText, selectedZone && { color: colors.textPrimary }]}>
               {selectedZone ? selectedZone.name : t('plants.selectZoneOptional')}
             </Text>
@@ -408,7 +433,12 @@ export default function AddPlantScreen() {
           <DSButton
             variant="ghost"
             size="sm"
-            onPress={() => { setStep('scan'); setImageUri(null); setName(''); setNote(''); }}
+            onPress={() => {
+              setStep('scan');
+              setImageUri(null);
+              setName('');
+              setNote('');
+            }}
             fullWidth
             style={{ marginTop: spacing.xs }}
           >
@@ -416,7 +446,11 @@ export default function AddPlantScreen() {
           </DSButton>
 
           {loading && (
-            <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.lg }} />
+            <ActivityIndicator
+              size="large"
+              color={colors.primaryLight}
+              style={{ marginTop: spacing.lg }}
+            />
           )}
         </DSCard>
       )}
@@ -430,7 +464,11 @@ export default function AddPlantScreen() {
               <Text style={styles.successText}>{t('plants.savedSuccess')}</Text>
             </View>
             {savedPlant.image_url && (
-              <Image source={{ uri: savedPlant.image_url }} style={styles.previewSmall} resizeMode="cover" />
+              <Image
+                source={{ uri: savedPlant.image_url }}
+                style={styles.previewSmall}
+                resizeMode="cover"
+              />
             )}
             <Text style={styles.savedName}>{savedPlant.name}</Text>
           </DSCard>
@@ -467,10 +505,19 @@ export default function AddPlantScreen() {
             </DSButton>
 
             {loading && (
-              <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginBottom: spacing.sm }} />
+              <ActivityIndicator
+                size="small"
+                color={colors.primaryLight}
+                style={{ marginBottom: spacing.sm }}
+              />
             )}
 
-            <DSButton onPress={goToPlantDetail} fullWidth icon="arrow-forward-outline" iconPosition="right">
+            <DSButton
+              onPress={goToPlantDetail}
+              fullWidth
+              icon="arrow-forward-outline"
+              iconPosition="right"
+            >
               {t('plants.viewPlant')}
             </DSButton>
           </DSCard>
@@ -478,8 +525,17 @@ export default function AddPlantScreen() {
       )}
 
       {/* ── Zone Picker Modal ──────────────── */}
-      <Modal visible={pickerVisible} animationType="slide" transparent onRequestClose={() => setPickerVisible(false)}>
-        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPressOut={() => setPickerVisible(false)}>
+      <Modal
+        visible={pickerVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setPickerVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.overlay}
+          activeOpacity={1}
+          onPressOut={() => setPickerVisible(false)}
+        >
           <TouchableOpacity style={styles.sheet} activeOpacity={1}>
             <Text style={styles.sheetTitle}>{t('plants.selectZone')}</Text>
             {zonesLoading ? (
@@ -499,12 +555,22 @@ export default function AddPlantScreen() {
                       setPickerVisible(false);
                     }}
                   >
-                    <Ionicons name="home-outline" size={22} color={colors.primaryLight} style={{ marginRight: spacing.sm }} />
+                    <Ionicons
+                      name="home-outline"
+                      size={22}
+                      color={colors.primaryLight}
+                      style={{ marginRight: spacing.sm }}
+                    />
                     <Text style={styles.zoneName}>
                       {item.name} <Text style={styles.zoneType}>({item.type})</Text>
                     </Text>
                     {selectedZone?.id === item.id && (
-                      <Ionicons name="checkmark" size={20} color={colors.primaryLight} style={{ marginLeft: 'auto' }} />
+                      <Ionicons
+                        name="checkmark"
+                        size={20}
+                        color={colors.primaryLight}
+                        style={{ marginLeft: 'auto' }}
+                      />
                     )}
                   </TouchableOpacity>
                 )}
@@ -535,7 +601,13 @@ export default function AddPlantScreen() {
               />
             ) : (
               <View style={{ alignItems: 'center', padding: spacing.lg }}>
-                <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: spacing.md }}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: colors.textSecondary,
+                    marginBottom: spacing.md,
+                  }}
+                >
                   {t('home.noZones')}
                 </Text>
                 <DSButton
@@ -551,7 +623,11 @@ export default function AddPlantScreen() {
                 </DSButton>
               </View>
             )}
-            <DSButton variant="ghost" onPress={() => setPickerVisible(false)} style={{ marginTop: spacing.sm }}>
+            <DSButton
+              variant="ghost"
+              onPress={() => setPickerVisible(false)}
+              style={{ marginTop: spacing.sm }}
+            >
               {t('common.close')}
             </DSButton>
           </TouchableOpacity>
@@ -586,12 +662,20 @@ const styles = StyleSheet.create({
   balanceValue: { fontWeight: 'bold', fontSize: 18 },
 
   // Steps
-  stepRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.lg, gap: spacing.xl },
+  stepRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+    gap: spacing.xl,
+  },
   stepItem: { alignItems: 'center', gap: spacing.xs },
   stepDot: {
-    width: 28, height: 28, borderRadius: 14,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: colors.borderLight,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stepDotActive: { backgroundColor: colors.primary },
   stepDotDone: { backgroundColor: colors.primaryLight },
@@ -605,38 +689,69 @@ const styles = StyleSheet.create({
   previewSmall: { width: '100%', height: 140, borderRadius: radius.md, marginVertical: spacing.sm },
 
   // Zone picker
-  fieldLabel: { fontSize: 14, fontWeight: '600', color: colors.textSecondary, marginBottom: spacing.xs },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
   zonePicker: {
-    flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm,
-    padding: spacing.md, marginBottom: spacing.md,
-    backgroundColor: colors.surface, gap: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface,
+    gap: spacing.sm,
   },
   zonePickerText: { flex: 1, fontSize: 14, color: colors.textDisabled },
 
   // Success
-  successRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  successRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
   successText: { fontSize: 18, fontWeight: 'bold', color: colors.textPrimary },
   savedName: { fontSize: 16, fontWeight: '600', color: colors.textSecondary, textAlign: 'center' },
 
   // Upgrades
-  upgradeTitle: { fontSize: 16, fontWeight: 'bold', color: colors.textPrimary, marginBottom: spacing.xs },
+  upgradeTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
   upgradeSubtitle: { fontSize: 13, color: colors.textTertiary, marginBottom: spacing.md },
 
   // Modal
   overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: colors.surface, padding: spacing.xl,
-    borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, maxHeight: '60%',
+    backgroundColor: colors.surface,
+    padding: spacing.xl,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    maxHeight: '60%',
   },
   sheetTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: spacing.md, textAlign: 'center' },
   sectionHeader: {
-    fontWeight: 'bold', fontSize: 14, backgroundColor: colors.background,
-    paddingVertical: spacing.xs, paddingHorizontal: 2, marginTop: spacing.lg, color: colors.textSecondary,
+    fontWeight: 'bold',
+    fontSize: 14,
+    backgroundColor: colors.background,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: 2,
+    marginTop: spacing.lg,
+    color: colors.textSecondary,
   },
   zoneRow: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
   },
   zoneName: { fontSize: 16 },
   zoneType: { color: colors.textTertiary, fontSize: 12 },

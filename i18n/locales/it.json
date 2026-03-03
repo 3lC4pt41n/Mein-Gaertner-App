@@ -36,7 +36,8 @@
     "errorBoundaryDetails": "Dettagli errore",
     "buyCredits": "Acquista Credits",
     "retry": "Riprova",
-    "share": "Condividi"
+    "share": "Condividi",
+    "shareFailed": "Condivisione fallita"
   },
   "nav": {
     "home": "Casa",

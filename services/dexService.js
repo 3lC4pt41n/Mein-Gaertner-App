@@ -10,7 +10,9 @@ export async function fetchDex(userId, filter = 'all') {
   // Get all species
   const { data: allSpecies, error: speciesError } = await supabase
     .from('species')
-    .select('id, canonical_name, first_discovered_by, first_discovered_at, image_url, description, care_summary, total_discoverers')
+    .select(
+      'id, canonical_name, first_discovered_by, first_discovered_at, image_url, description, care_summary, total_discoverers'
+    )
     .order('canonical_name', { ascending: true });
 
   if (speciesError) throw speciesError;
@@ -24,11 +26,18 @@ export async function fetchDex(userId, filter = 'all') {
   if (discError) throw discError;
 
   const discoveredMap = {};
-  for (const d of (myDiscoveries || [])) {
+  for (const d of myDiscoveries || []) {
     discoveredMap[d.species_id] = d;
   }
 
-  // Assign stable dexNumber BEFORE filtering so slot numbers never shift
+  // Assign dexNumber BEFORE filtering so slot numbers stay stable across filters.
+  //
+  // ⚠️ KNOWN LIMITATION: dexNumber is derived from alphabetical sort order of
+  // canonical_name (see .order('canonical_name') above). If a new species is added
+  // whose name sorts earlier alphabetically, all subsequent dex numbers shift.
+  // This is acceptable for the MVP but means dex numbers are NOT permanent IDs.
+  // For stable IDs, a `species.dex_number` column in the DB is needed
+  // (see HANDOFF.md → "Bekannte Tech Debt").
   let result = (allSpecies || []).map((species, idx) => ({
     ...species,
     dexNumber: idx + 1,
@@ -38,9 +47,9 @@ export async function fetchDex(userId, filter = 'all') {
   }));
 
   if (filter === 'discovered') {
-    result = result.filter(s => s.discovered);
+    result = result.filter((s) => s.discovered);
   } else if (filter === 'first') {
-    result = result.filter(s => s.isFirstDiscoverer);
+    result = result.filter((s) => s.isFirstDiscoverer);
   }
 
   return result;

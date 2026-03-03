@@ -36,7 +36,8 @@
     "errorBoundaryDetails": "Detalles del error",
     "buyCredits": "Comprar Credits",
     "retry": "Reintentar",
-    "share": "Compartir"
+    "share": "Compartir",
+    "shareFailed": "Error al compartir"
   },
   "nav": {
     "home": "Inicio",

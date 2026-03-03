@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Image,
   Share,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
@@ -210,18 +211,20 @@ export default function LeaderboardScreen() {
                     size="sm"
                     icon="share-outline"
                     onPress={async () => {
-                      const scoreName = scoreType === 'gardener'
-                        ? t('leaderboard.gardenerScore')
-                        : t('leaderboard.discoveryScore');
+                      const scoreName =
+                        scoreType === 'gardener'
+                          ? t('leaderboard.gardenerScore')
+                          : t('leaderboard.discoveryScore');
                       const scoreVal = formatScore(myStats[statsKey]?.[timeWindow] ?? 0);
                       try {
                         await Share.share({
                           message: `🌱 ${scoreName}: ${scoreVal} ${t('common.pointsFull')} | ${t('leaderboard.streakValue', { days: myStats.streak })} Streak | ${myStats.totalDiscoveries} ${t('leaderboard.discovered')} — Digitaler Gärtner`,
                         });
                       } catch (error) {
-                        // Distinguish cancellation from genuine errors
-                        if (error?.code !== 'ERR_CANCELED' && error?.message !== 'User did not share') {
-                          // Genuine share error — silent for now
+                        const cancelled =
+                          error?.code === 'ERR_CANCELED' || error?.message === 'User did not share';
+                        if (!cancelled) {
+                          Alert.alert(t('common.error'), t('common.shareFailed'));
                         }
                       }
                     }}
