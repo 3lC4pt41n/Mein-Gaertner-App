@@ -11,3 +11,4 @@ digitaler-gaertner-app-*.json
 dist/
 .claude/
 supabase/.temp/
+AUDIT_*.md
