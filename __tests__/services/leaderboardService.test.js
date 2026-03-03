@@ -55,7 +55,7 @@ describe('leaderboardService', () => {
         error: { message: 'DB error' },
       });
 
-      await expect(getMyRank('user-123')).rejects.toThrow('DB error');
+      await expect(getMyRank('user-123')).rejects.toMatchObject({ message: 'DB error' });
     });
   });
 

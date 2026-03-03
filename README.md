@@ -25,7 +25,7 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 - **6 Sprachen** -- Deutsch, English, Français, Italiano, Español, Русский
 - **Offline-Erkennung** -- Banner bei fehlender Internetverbindung
 - **Design System** -- Einheitliche UI-Tokens, wiederverwendbare Komponenten
-- **DSGVO-konform** -- Datenschutzerklaerung, Konto-Loeschung mit 30-Tage-Frist, Cascade Delete
+- **DSGVO-konform** -- Datenschutzerklaerung, Cascade Delete (Konto-Loeschung geplant, s. `featureFlags.js`)
 
 ---
 
@@ -71,13 +71,16 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 │   ├── uploadService.js          # Bild-Upload (Supabase Storage)
 │   ├── zoneService.js            # Zonen mit Locations laden
 │   ├── languageService.js        # Sprach-Normalisierung & i18n-Steuerung
-│   ├── leaderboardService.js     # Ranking-Daten & Opt-in
+│   ├── leaderboardService.js     # Ranking via Supabase RPCs (dense_rank)
+│   ├── scoringHelpers.js         # Discovery-Score & Streak-Berechnung (pure functions)
 │   ├── discoveryService.js       # Entdecker-Score (neue Pflanzenarten)
 │   ├── notificationService.js    # Push-Notifications (Permissions, Scheduling)
 │   ├── configService.js          # Konfigurationswerte aus Supabase
+│   ├── pricingConfig.js          # Single Source of Truth fuer KI-Credit-Kosten
+│   ├── featureFlags.js           # Zentralisierte Feature-Flags
 │   ├── dexService.js             # Pflanzen-Dex: fetchDex, getDexProgress, getSpeciesDetails
 │   ├── diaryService.js           # Tagebuch: Eintraege, Auto-Logging, Galerie
-│   └── weatherService.js         # Wetter: OpenWeather API, Standort-Caching, Forecast
+│   └── weatherService.js         # Wetter: OpenWeather API, Standort-Caching, Permission-Handling
 │
 ├── components/
 │   ├── ErrorBoundary.js          # Fehler-Auffangkomponente mit Retry
@@ -114,13 +117,16 @@ React Native 0.81 + Expo SDK 54 | Supabase | OpenAI GPT-4o | RevenueCat
 │       ├── it.json               # Italiano
 │       └── ru.json               # Русский
 │
-├── __tests__/                    # 89 Tests, 7 Suites
+├── __tests__/                    # 10 Suites
 │   ├── scoring.test.js           # Scoring-Algorithmus
 │   ├── taskEngine.test.js        # Task-Engine (Recurring, Catch-Up)
 │   ├── services/
 │   │   ├── languageService.test.js
 │   │   ├── aiService.test.js
-│   │   └── creditService.test.js
+│   │   ├── creditService.test.js
+│   │   ├── leaderboardService.test.js
+│   │   ├── weatherService.test.js
+│   │   └── notificationToggle.test.js
 │   ├── components/
 │   │   └── ErrorBoundary.test.js
 │   └── contexts/
@@ -203,7 +209,7 @@ Danach den QR-Code mit der Expo Go App scannen (iOS/Android).
 
 ```sh
 npm start          # Expo Dev Server starten
-npm test           # Jest Tests ausfuehren (90 Tests, 7 Suites)
+npm test           # Jest Tests ausfuehren (10 Suites)
 npm run lint       # ESLint Pruefung
 npm run lint:fix   # ESLint Auto-Fix
 npm run format     # Prettier Formatierung
@@ -259,9 +265,9 @@ Smartphone / Browser
 | KI              | OpenAI GPT-4o (via Edge Functions)            |
 | Wetter          | OpenWeather API (Forecast + Current)          |
 | Navigation      | React Navigation 6 (Bottom Tabs + Stack)      |
-| UI              | React Native Paper + eigenes Design System    |
+| UI              | Eigenes Design System (DS-Komponenten)         |
 | Payments        | RevenueCat (iOS + Android)                    |
-| i18n            | i18n-js (DE, EN, FR, IT, ES)                  |
+| i18n            | i18n-js (DE, EN, FR, IT, ES, RU)              |
 | Notifications   | expo-notifications (lokal)                    |
 | Standort        | expo-location                                 |
 | Offline         | @react-native-community/netinfo               |
@@ -275,23 +281,24 @@ Smartphone / Browser
 
 | Aktion                | Credits |
 |-----------------------|---------|
-| Pflanze scannen       | 5       |
-| Details generieren    | 3       |
-| Healthcheck           | 5       |
-| Chat mit Ben          | 1       |
-| Avatar generieren     | 10      |
+| Pflanze scannen       | 12      |
+| Details generieren    | 15      |
+| Healthcheck           | 8       |
+| Chat mit Ben          | 3       |
+| Avatar generieren     | 0       |
 
-Credits sind per Abo (33% guenstiger, monatlich aufgefuellt) oder als Einmalkauf erhaeltlich. Beta-Tester erhalten 100 Gratis-Credits.
+Quelle: `services/pricingConfig.js` (Single Source of Truth). Credits sind per Abo (33% guenstiger, monatlich aufgefuellt) oder als Einmalkauf erhaeltlich. Beta-Tester erhalten 100 Gratis-Credits.
 
 ---
 
 ## Scoring & Rangliste
 
 - **Gaertner-Score:** Punkte fuer erledigte Aufgaben (gewichtet nach Typ)
-- **Entdecker-Score:** Punkte fuer neu entdeckte Pflanzenarten
-- **Streak:** Tage in Folge mit erledigten Aufgaben
+- **Entdecker-Score:** Punkte fuer neu entdeckte Pflanzenarten (pure Functions in `scoringHelpers.js`)
+- **Streak:** Aufeinanderfolgende Tage mit Aktivitaet
 - **Zeitfenster:** Woche / Monat / Gesamt
 - **Opt-in:** Nutzer muessen die Rangliste im Profil aktivieren
+- **Architektur:** Top-N via View mit `.limit(50)`, eigener Rang und Nachbarn via serverseitige RPCs mit `dense_rank()` (kein Full-Table-Scan)
 
 ---
 
@@ -354,12 +361,15 @@ npx jest __tests__/services/languageService.test.js
 npx jest --coverage
 ```
 
-**90 Tests** in 7 Suiten:
+**10 Suiten:**
 - `taskEngine.test.js` -- Recurring Tasks, Catch-Up, Reschedule
 - `scoring.test.js` -- Punkteberechnung, Gewichtung
 - `languageService.test.js` -- Normalisierung, Aliase, Labels
 - `aiService.test.js` -- Edge-Function-Calls, 402-Handling
 - `creditService.test.js` -- Balance-Fetch, Error-Handling
+- `leaderboardService.test.js` -- RPC-Aufrufe, keine Full-Table-Scans
+- `weatherService.test.js` -- Permission-Denied-Pfad, Forecast, Tasks
+- `notificationToggle.test.js` -- Scheduling Enable/Disable
 - `ErrorBoundary.test.js` -- Fallback-UI, Retry, Details
 - `AuthContext.test.js` -- Provider, useAuth Shape, Admin-Erkennung
 
