@@ -32,7 +32,7 @@ export default function PlantGallery({ plantId }) {
       const data = await fetchGallery(plantId);
       setGallery(data);
     } catch (error) {
-      console.error('Failed to load gallery:', error);
+      // Load gallery failed
     } finally {
       setLoading(false);
     }

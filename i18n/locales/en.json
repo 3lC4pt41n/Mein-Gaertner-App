@@ -35,7 +35,8 @@
     "errorBoundaryRetry": "Try Again",
     "errorBoundaryDetails": "Error Details",
     "buyCredits": "Buy Credits",
-    "retry": "Try again"
+    "retry": "Try again",
+    "share": "Share"
   },
   "nav": {
     "home": "Home",

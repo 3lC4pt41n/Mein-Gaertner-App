@@ -35,7 +35,8 @@
     "errorBoundaryRetry": "Réessayer",
     "errorBoundaryDetails": "Détails de l'erreur",
     "buyCredits": "Acheter des Credits",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "share": "Partager"
   },
   "nav": {
     "home": "Accueil",

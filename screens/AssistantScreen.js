@@ -81,7 +81,9 @@ export default function AssistantScreen() {
         setMessages(msgs);
         setHasMore(more);
       })
-      .catch(console.error);
+      .catch(() => {
+        // Initial message load failed
+      });
   }, [user_id]);
 
   useEffect(() => {
@@ -100,7 +102,7 @@ export default function AssistantScreen() {
       setMessages((prev) => [...older, ...prev]);
       setHasMore(more);
     } catch (e) {
-      console.error('Load older messages error:', e);
+      // Load older messages failed
     } finally {
       setLoadingMore(false);
     }
@@ -180,7 +182,6 @@ export default function AssistantScreen() {
       await saveMessage(msg);
       setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
     } catch (e) {
-      console.error('[Ben] Error:', e.message, e);
       if (!handleCreditError(e)) {
         Alert.alert(t('common.error'), e.message);
       }

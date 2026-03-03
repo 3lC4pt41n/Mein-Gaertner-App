@@ -44,7 +44,7 @@ export default function DiaryTimeline({ plantId }) {
         setHasMore(more);
         setPage(pageNum);
       } catch (error) {
-        console.error('Failed to load diary entries:', error);
+        // Load diary entries failed
       } finally {
         setLoading(false);
       }

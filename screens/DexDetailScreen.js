@@ -1,9 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+  Dimensions,
+  StyleSheet,
+  Share,
+  TouchableOpacity,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchSpeciesDetail } from '../services/dexService';
+import { formatDisplayName } from '../services/discoveryService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
+import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const HERO_HEIGHT = Math.min(SCREEN_WIDTH * 0.75, 340);
 
 export default function DexDetailScreen({ route }) {
   const { speciesId, species: initialSpecies } = route.params;
@@ -17,13 +32,25 @@ export default function DexDetailScreen({ route }) {
         setLoading(true);
         const detail = await fetchSpeciesDetail(speciesId);
         setSpecies((prev) => ({ ...prev, ...detail }));
-      } catch (e) {
-        console.warn('DexDetail load error:', e.message);
+      } catch {
+        // Detail fetch failed — show what we have
       } finally {
         setLoading(false);
       }
     })();
   }, [speciesId]);
+
+  const handleShare = async () => {
+    if (!species) return;
+    const name = formatDisplayName(species.canonical_name);
+    try {
+      await Share.share({
+        message: `${name} — ${t('dex.discoveredBy', { count: species.total_discoverers || 1 })} 🌱`,
+      });
+    } catch {
+      // Share cancelled or failed — silent
+    }
+  };
 
   if (!species) {
     return (
@@ -33,9 +60,11 @@ export default function DexDetailScreen({ route }) {
     );
   }
 
+  const displayName = formatDisplayName(species.canonical_name);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Hero Image */}
+      {/* Hero Image (responsive) */}
       {species.image_url ? (
         <Image source={{ uri: species.image_url }} style={styles.heroImage} />
       ) : (
@@ -44,8 +73,18 @@ export default function DexDetailScreen({ route }) {
         </View>
       )}
 
-      {/* Name */}
-      <Text style={styles.speciesName}>{species.canonical_name}</Text>
+      {/* Name + Actions Row */}
+      <View style={styles.nameRow}>
+        <Text style={styles.speciesName}>{displayName}</Text>
+        <TouchableOpacity
+          onPress={handleShare}
+          style={styles.shareButton}
+          accessibilityRole="button"
+          accessibilityLabel="Share"
+        >
+          <Ionicons name="share-outline" size={22} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
 
       {/* First Discoverer Badge */}
       {species.isFirstDiscoverer && (
@@ -84,8 +123,11 @@ export default function DexDetailScreen({ route }) {
       {/* First Discovered By */}
       {species.first_discoverer?.username ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('dex.firstDiscoveredBy')}</Text>
-          <Text style={styles.sectionBody}>
+          <View style={styles.discovererRow}>
+            <Ionicons name="trophy" size={18} color={colors.gold} />
+            <Text style={styles.sectionTitle}>{t('dex.firstDiscoveredBy')}</Text>
+          </View>
+          <Text style={styles.discovererName}>
             {species.first_discoverer.display_name || species.first_discoverer.username}
           </Text>
         </View>
@@ -100,23 +142,34 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   heroImage: {
     width: '100%',
-    height: 280,
+    height: HERO_HEIGHT,
     resizeMode: 'cover',
     backgroundColor: colors.primarySurface,
   },
   heroPlaceholder: {
     width: '100%',
-    height: 280,
+    height: HERO_HEIGHT,
     backgroundColor: colors.primarySurface,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    gap: spacing.sm,
+  },
   speciesName: {
+    flex: 1,
     fontSize: 24,
     fontWeight: '700',
     color: colors.textPrimary,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
+  },
+  shareButton: {
+    padding: spacing.sm,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primarySurface,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -155,5 +208,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: colors.textSecondary,
+  },
+  discovererRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  discovererName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
   },
 });

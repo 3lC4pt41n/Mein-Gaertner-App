@@ -1,31 +1,73 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
+import { formatDisplayName } from '../services/discoveryService';
 
-const DexCard = ({ species, discovered, isFirstDiscoverer, onPress }) => {
+/**
+ * DexCard — A single species card in the Plant Dex grid.
+ *
+ * Shows discovered species with image, name, badges.
+ * Shows undiscovered species as locked silhouettes.
+ *
+ * @param {Object} props
+ * @param {Object} props.species - Species data
+ * @param {boolean} props.discovered - Whether user has discovered this species
+ * @param {boolean} props.isFirstDiscoverer - Whether user was first to discover
+ * @param {number} props.slotNumber - Position in the dex (1-indexed)
+ * @param {Function} props.onPress - Called with speciesId on tap
+ */
+const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }) => {
+  const [imageLoading, setImageLoading] = useState(true);
+
   const handlePress = () => {
-    if (onPress) {
+    if (onPress && discovered) {
       onPress(species.id);
     }
   };
 
+  const displayName = formatDisplayName(species.canonical_name);
+
   return (
     <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.7}
+      style={[
+        styles.card,
+        discovered && isFirstDiscoverer && styles.cardFirst,
+      ]}
+      activeOpacity={discovered ? 0.7 : 0.9}
       onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={
+        discovered
+          ? `${displayName}, ${isFirstDiscoverer ? t('dex.firstDiscoverer') : t('dex.discoverers')}`
+          : t('dex.notDiscovered')
+      }
     >
+      {/* Slot Number */}
+      <View style={styles.slotBadge}>
+        <Text style={styles.slotText}>#{slotNumber || '?'}</Text>
+      </View>
+
       {discovered ? (
         <>
           {/* Discovered Species */}
           <View style={styles.imageContainer}>
             {species.image_url ? (
-              <Image
-                source={{ uri: species.image_url }}
-                style={styles.image}
-              />
+              <>
+                {imageLoading && (
+                  <ActivityIndicator
+                    style={styles.imageLoader}
+                    size="small"
+                    color={colors.primaryLight}
+                  />
+                )}
+                <Image
+                  source={{ uri: species.image_url }}
+                  style={styles.image}
+                  onLoadEnd={() => setImageLoading(false)}
+                />
+              </>
             ) : (
               <View style={styles.imagePlaceholder}>
                 <Ionicons name="leaf" size={40} color={colors.primary} />
@@ -36,13 +78,13 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, onPress }) => {
           {/* First Discoverer Badge */}
           {isFirstDiscoverer && (
             <View style={styles.starBadge}>
-              <Ionicons name="star" size={16} color={colors.gold} />
+              <Ionicons name="star" size={14} color={colors.gold} />
             </View>
           )}
 
-          {/* Species Name */}
+          {/* Species Name (properly formatted) */}
           <Text style={styles.speciesName} numberOfLines={2}>
-            {species.canonical_name}
+            {displayName}
           </Text>
 
           {/* Discoverers Count */}
@@ -55,17 +97,17 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, onPress }) => {
         </>
       ) : (
         <>
-          {/* Undiscovered Species */}
+          {/* Undiscovered Species — Locked Silhouette */}
           <View style={styles.imageSilhouette}>
-            <Text style={styles.questionMark}>?</Text>
+            <Ionicons name="help-outline" size={36} color={colors.textDisabled} />
           </View>
 
           {/* Hidden Name */}
-          <Text style={styles.hiddenName}>---</Text>
+          <Text style={styles.hiddenName}>{t('dex.undiscovered')}</Text>
 
-          {/* Discoverers Count */}
+          {/* Not Discovered Label */}
           <View style={styles.discoverersBadge}>
-            <Ionicons name="help-circle" size={12} color={colors.textTertiary} />
+            <Ionicons name="lock-closed" size={11} color={colors.textDisabled} />
             <Text style={styles.discoverersText}>{t('dex.notDiscovered')}</Text>
           </View>
         </>
@@ -81,7 +123,31 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     overflow: 'hidden',
     ...shadows.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
+  cardFirst: {
+    borderColor: colors.gold,
+    borderWidth: 2,
+  },
+
+  /* Slot Number */
+  slotBadge: {
+    position: 'absolute',
+    top: spacing.xs,
+    left: spacing.xs,
+    zIndex: 2,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.xs + 2,
+    paddingVertical: 2,
+  },
+  slotText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.surface,
+  },
+
   /* Discovered State */
   imageContainer: {
     width: '100%',
@@ -89,8 +155,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarySurface,
     justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  },
+  imageLoader: {
+    position: 'absolute',
+    zIndex: 1,
   },
   image: {
     width: '100%',
@@ -108,43 +176,43 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.sm,
     right: spacing.sm,
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    borderWidth: 1,
+    borderColor: colors.gold,
     borderRadius: radius.sm,
     padding: spacing.xs,
-    ...shadows.sm,
   },
   speciesName: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.textPrimary,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
     textAlign: 'center',
+    minHeight: 36,
   },
+
   /* Undiscovered State */
   imageSilhouette: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#333333',
+    backgroundColor: colors.divider,
     justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  questionMark: {
-    fontSize: 48,
-    fontWeight: '300',
-    color: '#666666',
   },
   hiddenName: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: colors.textTertiary,
+    color: colors.textDisabled,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
     textAlign: 'center',
-    letterSpacing: 2,
+    minHeight: 36,
+    letterSpacing: 1,
   },
+
   /* Shared */
   discoverersBadge: {
     flexDirection: 'row',
@@ -155,7 +223,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   discoverersText: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textTertiary,
   },
 });

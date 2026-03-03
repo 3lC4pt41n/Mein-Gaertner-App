@@ -36,7 +36,12 @@ export default class ErrorBoundary extends React.Component {
           <Text style={styles.title}>{t('common.errorBoundaryTitle')}</Text>
           <Text style={styles.message}>{t('common.errorBoundaryMessage')}</Text>
 
-          <TouchableOpacity style={styles.retryButton} onPress={this.handleRetry}>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={this.handleRetry}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.errorBoundaryRetry')}
+          >
             <Ionicons name="refresh-outline" size={20} color="#fff" />
             <Text style={styles.retryText}>{t('common.errorBoundaryRetry')}</Text>
           </TouchableOpacity>
@@ -44,6 +49,8 @@ export default class ErrorBoundary extends React.Component {
           <TouchableOpacity
             style={styles.detailsToggle}
             onPress={() => this.setState((s) => ({ showDetails: !s.showDetails }))}
+            accessibilityRole="button"
+            accessibilityLabel={`${this.state.showDetails ? t('common.errorBoundaryHideDetails') : t('common.errorBoundaryShowDetails')}`}
           >
             <Text style={styles.detailsToggleText}>
               {this.state.showDetails ? '▲' : '▼'} {t('common.errorBoundaryDetails')}

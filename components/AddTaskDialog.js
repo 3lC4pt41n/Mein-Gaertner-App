@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Platform,
   Modal,
@@ -14,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { colors, spacing, radius, shadows } from '../theme';
 import DSButton from '../theme/DSButton';
+import DSInput from '../theme/DSInput';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
@@ -105,8 +105,6 @@ export default function AddTaskDialog({
         .eq('user_id', userId)
         .order('name');
       if (!error && data) setPlants(data);
-    } catch (e) {
-      console.warn('loadPlants error:', e.message);
     } finally {
       setLoadingPlants(false);
     }
@@ -329,7 +327,7 @@ export default function AddTaskDialog({
               {t('tasks.dateTimeLabel')}
             </Text>
             {Platform.OS === 'web' || !NativeDateTimePicker ? (
-              <TextInput
+              <DSInput
                 value={`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${formatLocalTime(date)}`}
                 onChangeText={(str) => {
                   const [datum, zeit] = str.split(' ');
@@ -339,14 +337,8 @@ export default function AddTaskDialog({
                   if (!year || !month || !day || hour === undefined || minute === undefined) return;
                   setDate(new Date(year, month - 1, day, hour, minute));
                 }}
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: radius.sm,
-                  padding: spacing.sm,
-                  marginBottom: spacing.md,
-                }}
                 placeholder={t('tasks.datePlaceholder')}
+                style={{ marginBottom: spacing.md }}
               />
             ) : (
               <View style={{ marginBottom: spacing.md }}>
@@ -493,19 +485,12 @@ export default function AddTaskDialog({
                   <Text style={{ color: colors.textSecondary, marginRight: 6 }}>
                     {t('tasks.orEvery')}
                   </Text>
-                  <TextInput
+                  <DSInput
                     value={customInterval}
                     onChangeText={(val) => setCustomInterval(val.replace(/[^0-9]/g, ''))}
                     placeholder={String(intervalDays)}
                     keyboardType="number-pad"
-                    style={{
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      borderRadius: radius.sm,
-                      padding: spacing.xs,
-                      width: 50,
-                      textAlign: 'center',
-                    }}
+                    style={{ width: 50 }}
                   />
                   <Text style={{ color: colors.textSecondary, marginLeft: 6 }}>
                     {t('tasks.daysUnit')}
@@ -518,18 +503,11 @@ export default function AddTaskDialog({
             <Text style={{ fontWeight: '600', marginBottom: spacing.xs }}>
               {t('tasks.noteOptional')}
             </Text>
-            <TextInput
+            <DSInput
               value={note}
               onChangeText={setNote}
               placeholder={t('tasks.notePlaceholder')}
-              style={{
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: radius.sm,
-                padding: spacing.sm,
-                minHeight: 40,
-                marginBottom: spacing.lg,
-              }}
+              style={{ marginBottom: spacing.lg, minHeight: 40 }}
               multiline
             />
 

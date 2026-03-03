@@ -8,6 +8,7 @@ import {
   StyleSheet,
   RefreshControl,
   Image,
+  Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
@@ -58,7 +59,7 @@ export default function LeaderboardScreen() {
       setMyRank(rank);
       setMyStats(stats);
     } catch (e) {
-      console.warn('Leaderboard load error:', e.message);
+      // Leaderboard load failed silently
     }
   }, [userId, timeWindow, scoreType, optedIn]);
 
@@ -204,6 +205,27 @@ export default function LeaderboardScreen() {
                       value={myStats.totalDiscoveries}
                     />
                   </View>
+                  <DSButton
+                    variant="ghost"
+                    size="sm"
+                    icon="share-outline"
+                    onPress={async () => {
+                      const scoreName = scoreType === 'gardener'
+                        ? t('leaderboard.gardenerScore')
+                        : t('leaderboard.discoveryScore');
+                      const scoreVal = formatScore(myStats[statsKey]?.[timeWindow] ?? 0);
+                      try {
+                        await Share.share({
+                          message: `🌱 ${scoreName}: ${scoreVal} ${t('common.pointsFull')} | ${t('leaderboard.streakValue', { days: myStats.streak })} Streak | ${myStats.totalDiscoveries} ${t('leaderboard.discovered')} — Digitaler Gärtner`,
+                        });
+                      } catch {
+                        // Share cancelled — silent
+                      }
+                    }}
+                    style={{ marginTop: spacing.sm, alignSelf: 'center' }}
+                  >
+                    {t('common.share') || 'Teilen'}
+                  </DSButton>
                 </View>
               )}
 
@@ -223,7 +245,7 @@ export default function LeaderboardScreen() {
                           await updateProfile({ leaderboard_opt_in: true });
                           setOptedIn(true);
                         } catch (e) {
-                          console.warn('Opt-in error:', e.message);
+                          // Opt-in failed silently
                         }
                       }}
                       style={{ marginTop: spacing.sm }}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import PropTypes from 'prop-types';
 import { colors, spacing, radius } from './tokens';
 
 const VARIANT_STYLES = {
@@ -128,3 +129,27 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
 });
+
+DSButton.propTypes = {
+  children: PropTypes.node.isRequired,
+  onPress: PropTypes.func.isRequired,
+  variant: PropTypes.oneOf(['primary', 'secondary', 'ghost', 'danger']),
+  size: PropTypes.oneOf(['sm', 'md', 'lg']),
+  fullWidth: PropTypes.bool,
+  icon: PropTypes.string,
+  iconPosition: PropTypes.oneOf(['left', 'right']),
+  loading: PropTypes.bool,
+  disabled: PropTypes.bool,
+  style: PropTypes.object,
+  textStyle: PropTypes.object,
+  accessibilityLabel: PropTypes.string,
+};
+
+DSButton.defaultProps = {
+  variant: 'primary',
+  size: 'md',
+  fullWidth: false,
+  loading: false,
+  disabled: false,
+  iconPosition: 'left',
+};

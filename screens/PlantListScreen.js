@@ -12,6 +12,7 @@ import {
   LayoutAnimation,
   UIManager,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
@@ -134,52 +135,26 @@ export default function PlantListScreen() {
   // Einzelnes Plant-Item
   const renderPlantItem = ({ item }) => (
     <TouchableOpacity onPress={() => navigation.navigate('PlantDetail', { plant: item })}>
-      <View
-        style={{
-          backgroundColor: colors.surface,
-          borderRadius: radius.lg,
-          margin: spacing.md,
-          padding: spacing.lg,
-          flexDirection: 'row',
-          alignItems: 'center',
-          ...shadows.sm,
-        }}
-      >
+      <View style={styles.plantCardContainer}>
         {item.image_url ? (
           <Image
             source={{ uri: item.image_url }}
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: radius.md,
-              marginRight: spacing.lg + 2,
-              backgroundColor: colors.border,
-            }}
+            style={styles.plantImage}
           />
         ) : (
-          <View
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: radius.md,
-              marginRight: spacing.lg + 2,
-              backgroundColor: colors.textDisabled,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+          <View style={styles.plantImagePlaceholder}>
             <Text>🌱</Text>
           </View>
         )}
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary }}>
+        <View style={styles.plantTextContainer}>
+          <Text style={styles.plantName}>
             {item.name || '?'}
           </Text>
-          <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: spacing.xs }}>
+          <Text style={styles.plantNote}>
             {item.note}
           </Text>
           {item.healthscore !== null && (
-            <Text style={{ fontSize: 12, color: colors.primary, marginTop: 2 }}>
+            <Text style={styles.plantHealthscore}>
               {t('plants.healthscoreValue', { score: item.healthscore })}
             </Text>
           )}
@@ -191,7 +166,7 @@ export default function PlantListScreen() {
   // "Alle"-Tab
   const AllRoute = () =>
     loading ? (
-      <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: 30 }} />
+      <ActivityIndicator size="large" color={colors.primaryLight} style={styles.loadingIndicator} />
     ) : (
       <FlatList
         data={allPlants}
@@ -208,16 +183,16 @@ export default function PlantListScreen() {
         }
         ListEmptyComponent={
           !loading && (
-            <View style={{ alignItems: 'center', marginTop: 80, paddingHorizontal: spacing.xl }}>
+            <View style={styles.emptyStateContainer}>
               <Ionicons name="leaf-outline" size={56} color={colors.textDisabled} />
-              <Text style={{ textAlign: 'center', color: colors.textTertiary, marginTop: spacing.md, fontSize: 16 }}>
+              <Text style={styles.emptyStateText}>
                 {t('plants.noPlants')}
               </Text>
               <DSButton
                 variant="primary"
                 icon="camera-outline"
                 onPress={() => navigation.navigate('Pflanze hinzufügen')}
-                style={{ marginTop: spacing.lg }}
+                style={styles.emptyStateButton}
               >
                 {t('plants.scanFirstPlant')}
               </DSButton>
@@ -235,111 +210,66 @@ export default function PlantListScreen() {
 
   const HomesRoute = () =>
     loading ? (
-      <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: 30 }} />
+      <ActivityIndicator size="large" color={colors.primaryLight} style={styles.loadingIndicator} />
     ) : (
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={styles.homesScrollView}>
         {grouped.length === 0 && (
-          <Text style={{ textAlign: 'center', color: colors.textTertiary, marginTop: 100 }}>
+          <Text style={styles.noLocationsText}>
             {t('plants.noLocations')}
           </Text>
         )}
         {grouped.map((location) => (
-          <View key={location.id} style={{ marginBottom: spacing.xxl }}>
-            <Text
-              style={{
-                fontSize: 22,
-                fontWeight: 'bold',
-                color: colors.textPrimary,
-                marginLeft: spacing.lg,
-                marginBottom: spacing.xs,
-              }}
-            >
+          <View key={location.id} style={styles.locationContainer}>
+            <Text style={styles.locationName}>
               {location.name}
             </Text>
             {location.zones.map((zone) => (
               <View
                 key={zone.id}
-                style={{
-                  marginLeft: spacing.md,
-                  marginBottom: 6,
-                  backgroundColor: colors.background,
-                  borderRadius: radius.sm,
-                }}
+                style={styles.zoneAccordionContainer}
               >
                 <TouchableOpacity
                   onPress={() => toggleZone(zone.id)}
-                  style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.md }}
+                  style={styles.zoneAccordionHeader}
                 >
-                  <Text
-                    style={{ fontSize: 18, fontWeight: '600', flex: 1, color: colors.textPrimary }}
-                  >
+                  <Text style={styles.zoneTitle}>
                     {zone.name}
                   </Text>
-                  <Text style={{ fontSize: 12, color: colors.textTertiary }}>
+                  <Text style={styles.zoneCount}>
                     {t('plants.plantsCount', { count: zone.plants.length })}
                   </Text>
-                  <Text style={{ marginLeft: spacing.sm, color: colors.primary }}>
+                  <Text style={styles.zoneExpandIcon}>
                     {expandedZones[zone.id] ? '▲' : '▼'}
                   </Text>
                 </TouchableOpacity>
                 {expandedZones[zone.id] && (
-                  <View style={{ marginLeft: spacing.md }}>
+                  <View style={styles.zoneContentContainer}>
                     {zone.plants.length > 0 ? (
                       zone.plants.map((plant) => (
                         <TouchableOpacity
                           key={plant.id}
                           onPress={() => navigation.navigate('PlantDetail', { plant })}
                         >
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              paddingVertical: spacing.sm,
-                              borderBottomWidth: 1,
-                              borderColor: colors.borderLight,
-                            }}
-                          >
+                          <View style={styles.zonePlantItemRow}>
                             {plant.image_url ? (
                               <Image
                                 source={{ uri: plant.image_url }}
-                                style={{
-                                  width: 50,
-                                  height: 50,
-                                  borderRadius: radius.sm,
-                                  marginRight: spacing.md,
-                                  backgroundColor: colors.border,
-                                }}
+                                style={styles.zonePlantImage}
                               />
                             ) : (
-                              <View
-                                style={{
-                                  width: 50,
-                                  height: 50,
-                                  borderRadius: radius.sm,
-                                  marginRight: spacing.md,
-                                  backgroundColor: colors.textDisabled,
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
+                              <View style={styles.zonePlantImagePlaceholder}>
                                 <Text>🌱</Text>
                               </View>
                             )}
                             <View>
-                              <Text
-                                style={{
-                                  fontSize: 18,
-                                  fontWeight: 'bold',
-                                  color: colors.textPrimary,
-                                }}
-                              >
+                              <Text style={styles.zonePlantName}>
                                 {plant.name}
                               </Text>
-                              <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                              <Text style={styles.zonePlantNote}>
                                 {plant.note}
                               </Text>
                               {plant.healthscore !== null && (
-                                <Text style={{ fontSize: 12, color: colors.primary }}>
+                                <Text style={styles.zonePlantHealthscore}>
                                   {t('plants.healthscoreValue', { score: plant.healthscore })}
                                 </Text>
                               )}
@@ -348,13 +278,7 @@ export default function PlantListScreen() {
                         </TouchableOpacity>
                       ))
                     ) : (
-                      <Text
-                        style={{
-                          color: colors.textTertiary,
-                          marginLeft: spacing.sm,
-                          marginBottom: spacing.md,
-                        }}
-                      >
+                      <Text style={styles.noZonePlantsText}>
                         {t('plants.noZonePlants')}
                       </Text>
                     )}
@@ -368,24 +292,243 @@ export default function PlantListScreen() {
     );
 
   return (
-    <TabView
-      navigationState={{ index, routes }}
-      renderScene={SceneMap({
-        all: AllRoute,
-        homes: HomesRoute,
-      })}
-      onIndexChange={setIndex}
-      initialLayout={{ width: 320 }}
-      renderTabBar={(props) => (
-        <TabBar
-          {...props}
-          indicatorStyle={{ backgroundColor: colors.primary }}
-          style={{ backgroundColor: colors.surface }}
-          labelStyle={{ color: colors.textPrimary, fontWeight: 'bold' }}
-          activeColor={colors.primary}
-          inactiveColor={colors.textTertiary}
-        />
-      )}
-    />
+    <View style={styles.screenContainer}>
+      {/* Plant Dex CTA */}
+      <TouchableOpacity
+        style={plantDexStyles.ctaBar}
+        onPress={() => navigation.navigate('PlantDex')}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t('dex.title')}
+      >
+        <View style={plantDexStyles.ctaContent}>
+          <Ionicons name="grid-outline" size={20} color={colors.primary} />
+          <Text style={plantDexStyles.ctaText}>{t('dex.title')}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+      </TouchableOpacity>
+
+      <TabView
+        navigationState={{ index, routes }}
+        renderScene={SceneMap({
+          all: AllRoute,
+          homes: HomesRoute,
+        })}
+        onIndexChange={setIndex}
+        initialLayout={{ width: 320 }}
+        renderTabBar={(props) => (
+          <TabBar
+            {...props}
+            indicatorStyle={styles.tabIndicator}
+            style={styles.tabBar}
+            labelStyle={styles.tabLabel}
+            activeColor={colors.primary}
+            inactiveColor={colors.textTertiary}
+          />
+        )}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  // Screen layout
+  screenContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  homesScrollView: {
+    flex: 1,
+  },
+
+  // Loading indicators
+  loadingIndicator: {
+    marginTop: 30,
+  },
+
+  // Plant item (all plants list)
+  plantCardContainer: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    margin: spacing.md,
+    padding: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    ...shadows.sm,
+  },
+  plantImage: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.md,
+    marginRight: spacing.lg + 2,
+    backgroundColor: colors.border,
+  },
+  plantImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.md,
+    marginRight: spacing.lg + 2,
+    backgroundColor: colors.textDisabled,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plantTextContainer: {
+    flex: 1,
+  },
+  plantName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  plantNote: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  plantHealthscore: {
+    fontSize: 12,
+    color: colors.primary,
+    marginTop: 2,
+  },
+
+  // Empty state (all plants)
+  emptyStateContainer: {
+    alignItems: 'center',
+    marginTop: 80,
+    paddingHorizontal: spacing.xl,
+  },
+  emptyStateText: {
+    textAlign: 'center',
+    color: colors.textTertiary,
+    marginTop: spacing.md,
+    fontSize: 16,
+  },
+  emptyStateButton: {
+    marginTop: spacing.lg,
+  },
+
+  // Homes tab
+  noLocationsText: {
+    textAlign: 'center',
+    color: colors.textTertiary,
+    marginTop: 100,
+  },
+  locationContainer: {
+    marginBottom: spacing.xxl,
+  },
+  locationName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginLeft: spacing.lg,
+    marginBottom: spacing.xs,
+  },
+
+  // Zone accordion
+  zoneAccordionContainer: {
+    marginLeft: spacing.md,
+    marginBottom: 6,
+    backgroundColor: colors.background,
+    borderRadius: radius.sm,
+  },
+  zoneAccordionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+  },
+  zoneTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    flex: 1,
+    color: colors.textPrimary,
+  },
+  zoneCount: {
+    fontSize: 12,
+    color: colors.textTertiary,
+  },
+  zoneExpandIcon: {
+    marginLeft: spacing.sm,
+    color: colors.primary,
+  },
+  zoneContentContainer: {
+    marginLeft: spacing.md,
+  },
+
+  // Zone plant item
+  zonePlantItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  zonePlantImage: {
+    width: 50,
+    height: 50,
+    borderRadius: radius.sm,
+    marginRight: spacing.md,
+    backgroundColor: colors.border,
+  },
+  zonePlantImagePlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: radius.sm,
+    marginRight: spacing.md,
+    backgroundColor: colors.textDisabled,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  zonePlantName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  zonePlantNote: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  zonePlantHealthscore: {
+    fontSize: 12,
+    color: colors.primary,
+  },
+  noZonePlantsText: {
+    color: colors.textTertiary,
+    marginLeft: spacing.sm,
+    marginBottom: spacing.md,
+  },
+
+  // Tab bar
+  tabIndicator: {
+    backgroundColor: colors.primary,
+  },
+  tabBar: {
+    backgroundColor: colors.surface,
+  },
+  tabLabel: {
+    color: colors.textPrimary,
+    fontWeight: 'bold',
+  },
+});
+
+const plantDexStyles = StyleSheet.create({
+  ctaBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.primarySurface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  ctaContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  ctaText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+});

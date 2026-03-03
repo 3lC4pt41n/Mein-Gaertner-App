@@ -35,7 +35,8 @@
     "errorBoundaryRetry": "Попробовать снова",
     "errorBoundaryDetails": "Подробности ошибки",
     "buyCredits": "Купить кредиты",
-    "retry": "Попробовать снова"
+    "retry": "Попробовать снова",
+    "share": "Поделиться"
   },
   "nav": {
     "home": "Дом",

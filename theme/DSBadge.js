@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import PropTypes from 'prop-types';
 import { colors, spacing, radius } from './tokens';
 
 const VARIANT_STYLES = {
@@ -55,3 +56,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+DSBadge.propTypes = {
+  label: PropTypes.string.isRequired,
+  variant: PropTypes.oneOf(['success', 'warning', 'danger', 'info', 'neutral']),
+  icon: PropTypes.string,
+  size: PropTypes.oneOf(['sm', 'md']),
+  style: PropTypes.object,
+};
+
+DSBadge.defaultProps = {
+  variant: 'neutral',
+};

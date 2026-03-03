@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import PropTypes from 'prop-types';
 import { colors, spacing, radius } from './tokens';
 
 export default function DSChipGroup({
@@ -158,3 +159,22 @@ const styles = StyleSheet.create({
     marginRight: spacing.xs,
   },
 });
+
+DSChipGroup.propTypes = {
+  items: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    value: PropTypes.string,
+    key: PropTypes.string,
+    icon: PropTypes.string,
+  })).isRequired,
+  selected: PropTypes.string,
+  onSelect: PropTypes.func,
+  variant: PropTypes.oneOf(['segmented', 'pills']),
+  scrollable: PropTypes.bool,
+  style: PropTypes.object,
+};
+
+DSChipGroup.defaultProps = {
+  variant: 'pills',
+  scrollable: true,
+};

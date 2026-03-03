@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, TouchableOpacity, Modal, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Modal, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
+import DSInput from '../theme/DSInput';
 import { t } from '../i18n';
 
 export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId }) {
@@ -33,7 +34,6 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
         setSelectedImage(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('Image picker error:', error);
       Alert.alert(t('common.error'), t('dialog.imagePickerError'));
     }
   };
@@ -58,7 +58,6 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
       resetForm();
       onClose();
     } catch (error) {
-      console.error('Save error:', error);
       Alert.alert(t('common.error'), t('dialog.saveFailed'));
     } finally {
       setSaving(false);
@@ -115,10 +114,8 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
             {/* Title Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('dialog.title')}</Text>
-              <TextInput
-                style={styles.titleInput}
+              <DSInput
                 placeholder={t('dialog.titlePlaceholder')}
-                placeholderTextColor={colors.textSecondary}
                 value={title}
                 onChangeText={setTitle}
                 editable={!saving}
@@ -130,10 +127,8 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
             {/* Note Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('dialog.note')}</Text>
-              <TextInput
-                style={styles.noteInput}
+              <DSInput
                 placeholder={t('dialog.notePlaceholder')}
-                placeholderTextColor={colors.textSecondary}
                 value={note}
                 onChangeText={setNote}
                 multiline

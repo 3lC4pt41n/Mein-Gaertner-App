@@ -1,11 +1,27 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+  StyleSheet,
+} from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { fetchDex, getDexProgress } from '../services/dexService';
 import DexCard from '../components/DexCard';
-import { colors, spacing, radius, shadows } from '../theme/tokens';
+import { colors, spacing, radius } from '../theme/tokens';
+import DSChipGroup from '../theme/DSChips';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
+
+const FILTERS = [
+  { label: 'all', value: 'all' },
+  { label: 'discovered', value: 'discovered' },
+  { label: 'first', value: 'first' },
+];
 
 const PlantDexScreen = () => {
   const { user } = useAuth();
@@ -14,12 +30,12 @@ const PlantDexScreen = () => {
   const [progress, setProgress] = useState({ total: 0, discovered: 0, firstDiscoveries: 0 });
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
   const loadDexData = useCallback(async () => {
     if (!user) return;
     try {
-      setLoading(true);
       setError(null);
       const [dexData, progressData] = await Promise.all([
         fetchDex(user.id, filter),
@@ -28,118 +44,157 @@ const PlantDexScreen = () => {
       setSpecies(dexData);
       setProgress(progressData);
     } catch (err) {
-      console.error('Error loading Dex data:', err);
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   }, [user, filter]);
 
   useFocusEffect(
     useCallback(() => {
-      loadDexData();
+      setLoading(true);
+      loadDexData().finally(() => setLoading(false));
     }, [loadDexData])
   );
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDexData();
+    setRefreshing(false);
+  };
+
   const progressPercent = progress.total > 0 ? (progress.discovered / progress.total) * 100 : 0;
 
-  const filterOptions = [
-    { label: t('dex.filters.all'), value: 'all' },
-    { label: t('dex.filters.discovered'), value: 'discovered' },
-    { label: t('dex.filters.first'), value: 'first' },
-  ];
+  const filterItems = FILTERS.map(f => ({
+    label: t(`dex.filters.${f.label}`),
+    value: f.value,
+  }));
 
-  const renderFilterChip = (option) => (
-    <TouchableOpacity
-      key={option.value}
-      style={[
-        styles.filterChip,
-        filter === option.value && styles.filterChipActive,
-      ]}
-      onPress={() => setFilter(option.value)}
-    >
-      <Text
-        style={[
-          styles.filterChipText,
-          filter === option.value && styles.filterChipTextActive,
-        ]}
-      >
-        {option.label}
-      </Text>
-    </TouchableOpacity>
+  const renderHeader = () => (
+    <View>
+      {/* Collection Header */}
+      <View style={styles.collectionHeader}>
+        <View style={styles.progressSection}>
+          {/* Main Progress */}
+          <Text style={styles.progressTitle}>
+            {progress.discovered}
+            <Text style={styles.progressTotal}> / {progress.total}</Text>
+          </Text>
+          <Text style={styles.progressSubtitle}>{t('dex.species')}</Text>
+
+          {/* Progress Bar */}
+          <View style={styles.progressBarContainer}>
+            <View
+              style={[styles.progressBar, { width: `${Math.min(progressPercent, 100)}%` }]}
+            />
+          </View>
+
+          {/* Stats Row */}
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Ionicons name="star" size={16} color={colors.gold} />
+              <Text style={styles.statValue}>{progress.firstDiscoveries}</Text>
+              <Text style={styles.statLabel}>{t('dex.filters.first')}</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Ionicons name="leaf" size={16} color={colors.primaryLight} />
+              <Text style={styles.statValue}>{progress.discovered}</Text>
+              <Text style={styles.statLabel}>{t('dex.filters.discovered')}</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Ionicons name="lock-closed" size={16} color={colors.textDisabled} />
+              <Text style={styles.statValue}>{Math.max(0, progress.total - progress.discovered)}</Text>
+              <Text style={styles.statLabel}>{t('dex.notDiscovered')}</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Filter Chips */}
+      <View style={styles.filterContainer}>
+        {filterItems.map((item) => (
+          <TouchableOpacity
+            key={item.value}
+            style={[
+              styles.filterChip,
+              filter === item.value && styles.filterChipActive,
+            ]}
+            onPress={() => setFilter(item.value)}
+          >
+            <Text
+              style={[
+                styles.filterChipText,
+                filter === item.value && styles.filterChipTextActive,
+              ]}
+            >
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
   );
 
-  const renderSpeciesGrid = () => {
-    if (loading) {
-      return (
+  if (loading && species.length === 0) {
+    return (
+      <View style={styles.container}>
+        {renderHeader()}
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      );
-    }
+      </View>
+    );
+  }
 
-    if (error) {
-      return (
+  if (error) {
+    return (
+      <View style={styles.container}>
+        {renderHeader()}
         <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.textDisabled} />
           <Text style={styles.errorText}>{t('common.error')}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadDexData}>
             <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
-      );
-    }
+      </View>
+    );
+  }
 
-    if (species.length === 0) {
-      return (
-        <View style={styles.centerContainer}>
-          <Text style={styles.emptyText}>{t('dex.empty')}</Text>
-        </View>
-      );
-    }
-
-    return (
+  return (
+    <View style={styles.container}>
       <FlatList
         data={species}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <DexCard
             species={item}
             discovered={item.discovered}
             isFirstDiscoverer={item.isFirstDiscoverer}
-            onPress={(speciesId) => navigation.navigate('DexDetail', { speciesId, species: item })}
+            slotNumber={index + 1}
+            onPress={(speciesId) =>
+              navigation.navigate('DexDetail', { speciesId, species: item })
+            }
           />
         )}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.gridContainer}
-      />
-    );
-  };
-
-  return (
-    <View style={styles.container}>
-      {/* Progress Section */}
-      <View style={styles.progressSection}>
-        <Text style={styles.progressLabel}>
-          {progress.discovered}/{progress.total} {t('dex.species')}
-        </Text>
-        <View style={styles.progressBarContainer}>
-          <View
-            style={[
-              styles.progressBar,
-              { width: `${progressPercent}%` },
-            ]}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={
+          <View style={styles.centerContainer}>
+            <Ionicons name="leaf-outline" size={48} color={colors.textDisabled} />
+            <Text style={styles.emptyText}>{t('dex.empty')}</Text>
+          </View>
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primaryLight}
           />
-        </View>
-      </View>
-
-      {/* Filter Chips */}
-      <View style={styles.filterContainer}>
-        {filterOptions.map(renderFilterChip)}
-      </View>
-
-      {/* Species Grid */}
-      {renderSpeciesGrid()}
+        }
+      />
     </View>
   );
 };
@@ -149,37 +204,85 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+
+  /* Collection Header */
+  collectionHeader: {
+    backgroundColor: colors.primarySurface,
+    paddingBottom: spacing.md,
+  },
   progressSection: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.primarySurface,
+    alignItems: 'center',
   },
-  progressLabel: {
-    fontSize: 16,
-    fontWeight: '600',
+  progressTitle: {
+    fontSize: 42,
+    fontWeight: '800',
     color: colors.primary,
-    marginBottom: spacing.sm,
+  },
+  progressTotal: {
+    fontSize: 24,
+    fontWeight: '400',
+    color: colors.textTertiary,
+  },
+  progressSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
   },
   progressBarContainer: {
-    height: 12,
+    width: '100%',
+    height: 8,
     backgroundColor: colors.border,
     borderRadius: radius.pill,
     overflow: 'hidden',
+    marginBottom: spacing.lg,
   },
   progressBar: {
     height: '100%',
     backgroundColor: colors.primary,
+    borderRadius: radius.pill,
   },
+
+  /* Stats Row */
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    paddingBottom: spacing.sm,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: colors.textTertiary,
+  },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: colors.border,
+  },
+
+  /* Filter */
   filterContainer: {
     flexDirection: 'row',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     gap: spacing.sm,
+    backgroundColor: colors.background,
   },
   filterChip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.xs + 2,
     borderRadius: radius.pill,
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -190,32 +293,38 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   filterChipText: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
     fontWeight: '500',
   },
   filterChipTextActive: {
     color: colors.surface,
+    fontWeight: '600',
   },
+
+  /* Grid */
   gridContainer: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
+    paddingBottom: spacing.xxl,
   },
   gridRow: {
     gap: spacing.md,
     marginBottom: spacing.md,
   },
+
+  /* States */
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xxxl * 2,
+    gap: spacing.md,
   },
   errorText: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: spacing.md,
   },
   retryButton: {
     paddingHorizontal: spacing.lg,

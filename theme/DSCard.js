@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 import { colors, spacing, radius, shadows } from './tokens';
 
 const PADDING_MAP = {
@@ -55,3 +56,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceSecondary,
   },
 });
+
+DSCard.propTypes = {
+  children: PropTypes.node.isRequired,
+  variant: PropTypes.oneOf(['elevated', 'outlined', 'flat']),
+  padding: PropTypes.oneOf(['none', 'sm', 'md', 'lg']),
+  onPress: PropTypes.func,
+  style: PropTypes.object,
+};
+
+DSCard.defaultProps = {
+  variant: 'elevated',
+  padding: 'md',
+};

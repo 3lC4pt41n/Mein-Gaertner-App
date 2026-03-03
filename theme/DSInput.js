@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import PropTypes from 'prop-types';
 import { colors, spacing, radius } from './tokens';
 
 export default function DSInput({
@@ -112,3 +113,25 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
 });
+
+DSInput.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.string,
+  onChangeText: PropTypes.func,
+  placeholder: PropTypes.string,
+  icon: PropTypes.string,
+  multiline: PropTypes.bool,
+  error: PropTypes.string,
+  disabled: PropTypes.bool,
+  secureTextEntry: PropTypes.bool,
+  keyboardType: PropTypes.string,
+  style: PropTypes.object,
+  inputStyle: PropTypes.object,
+  accessibilityLabel: PropTypes.string,
+};
+
+DSInput.defaultProps = {
+  multiline: false,
+  disabled: false,
+  secureTextEntry: false,
+};

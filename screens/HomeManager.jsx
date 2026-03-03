@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, Modal } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../supabase';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
+import { getDexProgress } from '../services/dexService';
 import DSButton from '../theme/DSButton';
 import DSCard from '../theme/DSCard';
 import DSInput from '../theme/DSInput';
@@ -26,8 +28,10 @@ export default function HomeManager() {
   const [form, setForm] = useState({ name: '', address: '', type: 'room' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dexProgress, setDexProgress] = useState({ total: 0, discovered: 0, firstDiscoveries: 0 });
 
   const { userId } = useAuth();
+  const navigation = useNavigation();
 
   useEffect(() => {
     reload();
@@ -75,6 +79,10 @@ export default function HomeManager() {
         .is('zone_id', null)
         .order('created_at', { ascending: false });
       setUnassignedPlants(noZonePlants || []);
+
+      // Fetch Dex progress
+      const dexData = await getDexProgress(userId);
+      setDexProgress(dexData);
     } catch (err) {
       setError(err.message);
     }
@@ -252,14 +260,37 @@ export default function HomeManager() {
         onRefresh={reload}
         keyExtractor={(l) => l.id}
         ListHeaderComponent={() => (
-          <DSButton
-            variant="primary"
-            icon="home-outline"
-            fullWidth
-            onPress={() => openLocationModal()}
-          >
-            {t('home.newHome')}
-          </DSButton>
+          <>
+            {/* Plant Dex Progress Card */}
+            <TouchableOpacity
+              style={styles.dexProgressCard}
+              onPress={() => navigation.navigate('PlantDex')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.dexCardContent}>
+                <View style={styles.dexIconContainer}>
+                  <Ionicons name="grid-outline" size={24} color={colors.primary} />
+                </View>
+                <View style={styles.dexTextContainer}>
+                  <Text style={styles.dexLabel}>{t('dex.title')}</Text>
+                  <Text style={styles.dexProgress}>
+                    {dexProgress.discovered}/{dexProgress.total} {t('dex.speciesDiscovered')}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+              </View>
+            </TouchableOpacity>
+
+            <DSButton
+              variant="primary"
+              icon="home-outline"
+              fullWidth
+              onPress={() => openLocationModal()}
+              style={{ marginTop: spacing.md }}
+            >
+              {t('home.newHome')}
+            </DSButton>
+          </>
         )}
         ListEmptyComponent={
           !loading && (
@@ -433,6 +464,44 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.lg,
     paddingBottom: 40,
+  },
+
+  // Dex Progress Card
+  dexProgressCard: {
+    backgroundColor: colors.primarySurface,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+    ...shadows.sm,
+  },
+  dexCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    gap: spacing.md,
+  },
+  dexIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.1,
+  },
+  dexTextContainer: {
+    flex: 1,
+  },
+  dexLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  dexProgress: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
 
   // Location card

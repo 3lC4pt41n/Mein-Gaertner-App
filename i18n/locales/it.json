@@ -35,7 +35,8 @@
     "errorBoundaryRetry": "Riprova",
     "errorBoundaryDetails": "Dettagli errore",
     "buyCredits": "Acquista Credits",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "share": "Condividi"
   },
   "nav": {
     "home": "Casa",

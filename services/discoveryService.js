@@ -3,28 +3,33 @@ import { supabase } from '../supabase';
 /**
  * Discovery-Event bei Pflanzenerkennung loggen.
  * Upsert in species-Tabelle + Insert in discovery_events.
+ * Returns discovery metadata for the reveal UI.
  *
  * @param {string} userId - User-ID
  * @param {string} speciesName - Erkannter Pflanzenname (canonical)
  * @param {string|null} plantId - Plant-ID nach dem Speichern
+ * @returns {Promise<Object>} { speciesId, isFirst, isNewForUser, totalDiscoverers, displayName }
  */
 export async function logDiscovery(userId, speciesName, plantId = null) {
-  if (!userId || !speciesName) return;
+  if (!userId || !speciesName) return null;
 
   const canonical = speciesName.trim().toLowerCase();
+  const displayName = formatDisplayName(speciesName);
 
   // 1. Species upsert (canonical_name ist UNIQUE)
   const { data: existing } = await supabase
     .from('species')
-    .select('id, first_discovered_by')
+    .select('id, first_discovered_by, total_discoverers')
     .eq('canonical_name', canonical)
     .maybeSingle();
 
   let speciesId;
   let isFirst = false;
+  let totalDiscoverers = 1;
 
   if (existing) {
     speciesId = existing.id;
+    totalDiscoverers = (existing.total_discoverers || 0) + 1;
   } else {
     // Neue Species – dieser User ist Erstentdecker
     const { data: newSpecies, error: insertError } = await supabase
@@ -42,10 +47,11 @@ export async function logDiscovery(userId, speciesName, plantId = null) {
       if (insertError.code === '23505') {
         const { data: retry } = await supabase
           .from('species')
-          .select('id, first_discovered_by')
+          .select('id, first_discovered_by, total_discoverers')
           .eq('canonical_name', canonical)
           .single();
         speciesId = retry.id;
+        totalDiscoverers = (retry.total_discoverers || 0) + 1;
       } else {
         throw insertError;
       }
@@ -65,10 +71,37 @@ export async function logDiscovery(userId, speciesName, plantId = null) {
       is_first: isFirst,
     });
 
-  // Duplicate ignorieren (UNIQUE constraint: 1 pro Species/User)
-  if (eventError && eventError.code !== '23505') {
-    throw eventError;
+  // Check if this is a new discovery for the user
+  let isNewForUser = true;
+  if (eventError) {
+    if (eventError.code === '23505') {
+      // Already discovered by this user — not new
+      isNewForUser = false;
+    } else {
+      throw eventError;
+    }
   }
+
+  return {
+    speciesId,
+    isFirst,
+    isNewForUser,
+    totalDiscoverers,
+    displayName,
+  };
+}
+
+/**
+ * Format a canonical species name for display.
+ * "monstera deliciosa" → "Monstera Deliciosa"
+ */
+export function formatDisplayName(name) {
+  if (!name) return '';
+  return name
+    .trim()
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 }
 
 /**

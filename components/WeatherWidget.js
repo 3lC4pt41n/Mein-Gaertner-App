@@ -82,7 +82,6 @@ const WeatherWidget = () => {
       setWeather(currentWeather);
       setWeatherTasks(tasksWeather);
     } catch (err) {
-      console.warn('Error loading weather in widget:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);

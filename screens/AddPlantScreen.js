@@ -27,6 +27,7 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
+import DiscoveryRevealModal from '../components/DiscoveryRevealModal';
 import { AI_COSTS } from '../services/pricingConfig';
 
 // Fetch zones grouped by location for the picker
@@ -82,19 +83,23 @@ export default function AddPlantScreen() {
   const [sections, setSections] = useState([]);
   const [zonesLoading, setZonesLoading] = useState(false);
 
+  // ── Discovery reveal ──────────────────────
+  const [discoveryResult, setDiscoveryResult] = useState(null);
+  const [showReveal, setShowReveal] = useState(false);
+
   useEffect(() => {
     (async () => {
       try {
         const bal = await fetchBalance();
         setBalance(bal);
       } catch (e) {
-        console.warn('Failed to fetch balance:', e.message);
+        // Balance fetch failed silently
       }
       try {
         const userLanguage = await fetchCurrentUserLanguage();
         setLanguage(userLanguage);
       } catch (e) {
-        console.warn('Failed to fetch user language:', e.message);
+        // Language fetch failed silently
       }
     })();
   }, []);
@@ -160,7 +165,6 @@ export default function AddPlantScreen() {
       const data = await fetchZonesGrouped(userId);
       setSections(data);
     } catch (err) {
-      console.warn('Zone load error:', err.message);
       setSections([]);
     }
     setZonesLoading(false);
@@ -195,11 +199,12 @@ export default function AddPlantScreen() {
         ...(selectedZone ? { zone_id: selectedZone.id } : {}),
       });
 
-      // Discovery event
+      // Discovery event — capture result for reveal
+      let discovery = null;
       try {
-        await logDiscovery(userId, name, plant?.id);
-      } catch (e) {
-        console.warn('Discovery log error:', e.message);
+        discovery = await logDiscovery(userId, name, plant?.id);
+      } catch {
+        // Discovery logging is non-critical — continue silently
       }
 
       // Gardening event
@@ -211,12 +216,18 @@ export default function AddPlantScreen() {
           points: 1.0,
           meta: { plant_name: name },
         });
-      } catch (e) {
-        console.warn('plant_added event error:', e.message);
+      } catch {
+        // Non-critical — continue silently
       }
 
       setSavedPlant({ ...plant, image_url: uploadedUrl });
       setStep('done');
+
+      // Show discovery reveal for new discoveries
+      if (discovery?.isNewForUser) {
+        setDiscoveryResult(discovery);
+        setShowReveal(true);
+      }
     } catch (err) {
       Alert.alert(t('common.error'), t('plants.saveFailedMessage', { message: err.message }));
     } finally {
@@ -285,6 +296,8 @@ export default function AddPlantScreen() {
     setSelectedZone(null);
     setStep('scan');
     setSavedPlant(null);
+    setDiscoveryResult(null);
+    setShowReveal(false);
     navigation.navigate('MeinePflanzenTab', {
       screen: 'PlantDetail',
       params: { plant: savedPlant },
@@ -539,6 +552,20 @@ export default function AddPlantScreen() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+
+      {/* Discovery Reveal */}
+      <DiscoveryRevealModal
+        visible={showReveal}
+        discovery={discoveryResult}
+        imageUri={imageUri}
+        onContinue={() => {
+          setShowReveal(false);
+        }}
+        onViewDex={() => {
+          setShowReveal(false);
+          navigation.navigate('MeinePflanzenTab', { screen: 'PlantDex' });
+        }}
+      />
     </ScrollView>
   );
 }
