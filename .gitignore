@@ -12,5 +12,6 @@ dist/
 .claude/
 supabase/.temp/
 AUDIT_*.md
+ABNAHME_*.md
 ACTION_PLAN_*.md
 PRODUCT_REVIEW_AUDIT_*.md
