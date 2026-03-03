@@ -1,6 +1,13 @@
 # Digitaler Gärtner
 
-A real-world plant Pokédex for hobby gardeners. Scan plants with AI, build your collection, track care tasks, and compete on leaderboards.
+<!-- TODO: Replace with actual screenshot/GIF of Discovery Reveal + Plant Dex -->
+<p align="center">
+  <img src="docs/hero-placeholder.png" alt="Digitaler Gärtner — Discovery Reveal" width="320" />
+</p>
+
+**A real-world plant Pokédex for hobby gardeners.** Scan plants with AI, build your collection, track care tasks, and compete on leaderboards.
+
+> **Demo:** Coming soon — [follow the repo](https://github.com/3lC4pt41n/Mein-Gaertner-App) for updates.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?logo=react)](https://reactnative.dev)

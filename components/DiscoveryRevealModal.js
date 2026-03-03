@@ -8,7 +8,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  Vibration,
+  Share,
 } from 'react-native';
+import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
@@ -17,12 +20,10 @@ import { t } from '../i18n';
 /**
  * Fullscreen discovery reveal after a plant scan.
  *
- * Props:
- * - visible: boolean
- * - discovery: { speciesId, isFirst, isNewForUser, totalDiscoverers, displayName }
- * - imageUri: string (plant photo)
- * - onContinue: () => void
- * - onViewDex: () => void
+ * Three tiers of celebration:
+ *   1. isFirst        → "WORLD FIRST" — gold theme, strong haptic, star badge, share CTA
+ *   2. isNewForUser   → "New species!"  — green theme, medium haptic, share CTA
+ *   3. existing       → "Saved"         — subtle, no extra fanfare
  */
 export default function DiscoveryRevealModal({
   visible,
@@ -35,14 +36,25 @@ export default function DiscoveryRevealModal({
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const badgeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (visible) {
-      // Reset
+    if (visible && discovery) {
+      // Reset all animations
       scaleAnim.setValue(0.3);
       opacityAnim.setValue(0);
       badgeAnim.setValue(0);
       slideAnim.setValue(40);
+      pulseAnim.setValue(1);
+
+      // Haptic feedback — stronger for first discovery
+      if (discovery.isFirst) {
+        // Triple burst for WORLD FIRST
+        Vibration.vibrate([0, 80, 60, 80, 60, 120]);
+      } else if (discovery.isNewForUser) {
+        // Double burst for new unlock
+        Vibration.vibrate([0, 60, 40, 80]);
+      }
 
       // Staggered entrance animation
       Animated.sequence([
@@ -73,13 +85,48 @@ export default function DiscoveryRevealModal({
             useNativeDriver: true,
           }),
         ]),
-      ]).start();
+      ]).start(() => {
+        // 4. Pulse animation on first discovery badge
+        if (discovery.isFirst) {
+          Animated.loop(
+            Animated.sequence([
+              Animated.timing(pulseAnim, {
+                toValue: 1.08,
+                duration: 800,
+                useNativeDriver: true,
+              }),
+              Animated.timing(pulseAnim, {
+                toValue: 1,
+                duration: 800,
+                useNativeDriver: true,
+              }),
+            ])
+          ).start();
+        }
+      });
     }
-  }, [visible]);
+  }, [visible, discovery, scaleAnim, opacityAnim, badgeAnim, slideAnim, pulseAnim]);
 
   if (!discovery) return null;
 
   const { isFirst, isNewForUser, totalDiscoverers, displayName } = discovery;
+
+  // Determine tier for styling
+  const tier = isFirst ? 'first' : isNewForUser ? 'new' : 'existing';
+
+  const handleShare = async () => {
+    const message = isFirst
+      ? `${displayName} — ${t('dex.firstDiscoveryTitle')} 🏆🌱`
+      : `${displayName} — ${t('dex.newDiscovery')} 🌱`;
+    try {
+      await Share.share({ message });
+    } catch (error) {
+      // Share failed (not cancelled) — ignore
+      if (error?.message !== 'User did not share') {
+        // Genuine error — silent for now
+      }
+    }
+  };
 
   return (
     <Modal
@@ -91,22 +138,24 @@ export default function DiscoveryRevealModal({
     >
       <Animated.View style={[styles.overlay, { opacity: opacityAnim }]}>
         <View style={styles.content}>
-          {/* Discovery Type Badge */}
+          {/* Discovery Type Badge — visually differentiated per tier */}
           <Animated.View
             style={[
               styles.typeBadge,
-              isFirst ? styles.typeBadgeFirst : styles.typeBadgeNew,
+              tier === 'first' && styles.typeBadgeFirst,
+              tier === 'new' && styles.typeBadgeNew,
+              tier === 'existing' && styles.typeBadgeExisting,
               {
-                transform: [{ scale: badgeAnim }],
+                transform: [{ scale: Animated.multiply(badgeAnim, pulseAnim) }],
               },
             ]}
           >
             <Ionicons
-              name={isFirst ? 'star' : 'sparkles'}
-              size={18}
-              color={isFirst ? colors.gold : colors.surface}
+              name={isFirst ? 'trophy' : isNewForUser ? 'sparkles' : 'checkmark-circle'}
+              size={isFirst ? 22 : 18}
+              color={isFirst ? colors.gold : isNewForUser ? colors.surface : colors.primaryLight}
             />
-            <Text style={styles.typeBadgeText}>
+            <Text style={[styles.typeBadgeText, isFirst && styles.typeBadgeTextFirst]}>
               {isFirst
                 ? t('dex.firstDiscoveryTitle')
                 : isNewForUser
@@ -115,10 +164,11 @@ export default function DiscoveryRevealModal({
             </Text>
           </Animated.View>
 
-          {/* Plant Image */}
+          {/* Plant Image — gold ring for first, green for new */}
           <Animated.View
             style={[
               styles.imageContainer,
+              isFirst && styles.imageContainerFirst,
               {
                 transform: [{ scale: scaleAnim }],
               },
@@ -131,11 +181,11 @@ export default function DiscoveryRevealModal({
                 <Ionicons name="leaf" size={60} color={colors.primary} />
               </View>
             )}
-            {/* First Discoverer Star */}
+            {/* First Discoverer Crown */}
             {isFirst && (
               <Animated.View
                 style={[
-                  styles.starBadge,
+                  styles.crownBadge,
                   { transform: [{ scale: badgeAnim }] },
                 ]}
               >
@@ -158,10 +208,10 @@ export default function DiscoveryRevealModal({
               </Text>
             </View>
 
-            {/* First Discoverer Highlight */}
+            {/* First Discoverer Highlight — more prominent */}
             {isFirst && (
               <View style={styles.firstBadgeRow}>
-                <Ionicons name="trophy" size={20} color={colors.gold} />
+                <Ionicons name="trophy" size={22} color={colors.gold} />
                 <Text style={styles.firstBadgeText}>
                   {t('dex.firstDiscoverer')}
                 </Text>
@@ -176,7 +226,20 @@ export default function DiscoveryRevealModal({
               { transform: [{ translateY: slideAnim }], opacity: opacityAnim },
             ]}
           >
+            {/* Share CTA — prominent for first/new, absent for existing */}
+            {(isFirst || isNewForUser) && (
+              <DSButton
+                variant={isFirst ? 'primary' : 'secondary'}
+                onPress={handleShare}
+                fullWidth
+                icon="share-outline"
+              >
+                {t('common.share')}
+              </DSButton>
+            )}
+
             <DSButton
+              variant={isFirst || isNewForUser ? 'secondary' : 'primary'}
               onPress={onContinue}
               fullWidth
               icon="arrow-forward-outline"
@@ -203,10 +266,30 @@ export default function DiscoveryRevealModal({
   );
 }
 
+DiscoveryRevealModal.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  discovery: PropTypes.shape({
+    speciesId: PropTypes.string,
+    isFirst: PropTypes.bool,
+    isNewForUser: PropTypes.bool,
+    totalDiscoverers: PropTypes.number,
+    displayName: PropTypes.string,
+  }),
+  imageUri: PropTypes.string,
+  onContinue: PropTypes.func.isRequired,
+  onViewDex: PropTypes.func,
+};
+
+DiscoveryRevealModal.defaultProps = {
+  discovery: null,
+  imageUri: null,
+  onViewDex: null,
+};
+
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(0, 0, 0, 0.88)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
@@ -217,7 +300,7 @@ const styles = StyleSheet.create({
     maxWidth: 360,
   },
 
-  // Type Badge
+  // Type Badge — three visual tiers
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -228,22 +311,35 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   typeBadgeFirst: {
-    backgroundColor: 'rgba(255, 215, 0, 0.2)',
-    borderWidth: 1,
+    backgroundColor: 'rgba(255, 215, 0, 0.25)',
+    borderWidth: 2,
     borderColor: colors.gold,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
   },
   typeBadgeNew: {
     backgroundColor: 'rgba(76, 175, 80, 0.2)',
     borderWidth: 1,
     borderColor: colors.primaryLight,
   },
+  typeBadgeExisting: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
   typeBadgeText: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.surface,
   },
+  typeBadgeTextFirst: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.gold,
+    letterSpacing: 0.5,
+  },
 
-  // Image
+  // Image — gold ring for first discoverers
   imageContainer: {
     width: 220,
     height: 220,
@@ -253,6 +349,13 @@ const styles = StyleSheet.create({
     borderColor: colors.primaryLight,
     marginBottom: spacing.xl,
     ...shadows.lg,
+  },
+  imageContainerFirst: {
+    borderWidth: 5,
+    borderColor: colors.gold,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
   },
   image: {
     width: '100%',
@@ -266,7 +369,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  starBadge: {
+  crownBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
@@ -299,16 +402,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    backgroundColor: 'rgba(255, 215, 0, 0.15)',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    backgroundColor: 'rgba(255, 215, 0, 0.18)',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
     borderRadius: radius.pill,
     marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.35)',
   },
   firstBadgeText: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '800',
     color: colors.gold,
+    letterSpacing: 0.3,
   },
 
   // Actions

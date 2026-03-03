@@ -41,15 +41,23 @@ ALTER FUNCTION public.is_admin()
 
 -- Leaderboard RPC functions (may already have search_path = public,
 -- upgrading to '' for stricter security)
-ALTER FUNCTION public.get_my_rank(TEXT, UUID)
-  SET search_path = '';
+-- Wrapped in exception handlers: on fresh deploy these functions are
+-- created by later migrations (20260309 / 20260313) which now include
+-- search_path = '' directly, so a missing-function error is harmless.
+DO $$ BEGIN
+  ALTER FUNCTION public.get_my_rank(TEXT, UUID) SET search_path = '';
+EXCEPTION WHEN undefined_function THEN NULL;
+END $$;
 
-ALTER FUNCTION public.get_my_neighbors(TEXT, UUID, INT)
-  SET search_path = '';
+DO $$ BEGIN
+  ALTER FUNCTION public.get_my_neighbors(TEXT, UUID, INT) SET search_path = '';
+EXCEPTION WHEN undefined_function THEN NULL;
+END $$;
 
--- Dex discoverer count trigger
-ALTER FUNCTION public.update_species_discoverer_count()
-  SET search_path = '';
+DO $$ BEGIN
+  ALTER FUNCTION public.update_species_discoverer_count() SET search_path = '';
+EXCEPTION WHEN undefined_function THEN NULL;
+END $$;
 
 
 -- ═══════════════════════════════════════════════════════════════

@@ -264,7 +264,7 @@ export default function HomeManager() {
             {/* Plant Dex Progress Card */}
             <TouchableOpacity
               style={styles.dexProgressCard}
-              onPress={() => navigation.navigate('PlantDex')}
+              onPress={() => navigation.navigate('MeinePflanzenTab', { screen: 'PlantDex' })}
               activeOpacity={0.7}
             >
               <View style={styles.dexCardContent}>
@@ -274,7 +274,7 @@ export default function HomeManager() {
                 <View style={styles.dexTextContainer}>
                   <Text style={styles.dexLabel}>{t('dex.title')}</Text>
                   <Text style={styles.dexProgress}>
-                    {dexProgress.discovered}/{dexProgress.total} {t('dex.speciesDiscovered')}
+                    {t('dex.progress', { discovered: dexProgress.discovered, total: dexProgress.total })}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />

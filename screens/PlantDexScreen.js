@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { fetchDex, getDexProgress } from '../services/dexService';
 import DexCard from '../components/DexCard';
 import { colors, spacing, radius } from '../theme/tokens';
-import DSChipGroup from '../theme/DSChips';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -165,12 +164,12 @@ const PlantDexScreen = () => {
     <View style={styles.container}>
       <FlatList
         data={species}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <DexCard
             species={item}
             discovered={item.discovered}
             isFirstDiscoverer={item.isFirstDiscoverer}
-            slotNumber={index + 1}
+            slotNumber={item.dexNumber}
             onPress={(speciesId) =>
               navigation.navigate('DexDetail', { speciesId, species: item })
             }
@@ -244,18 +243,21 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
 
-  /* Stats Row */
+  /* Stats Row — responsive: wraps on narrow screens */
   statsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
     paddingBottom: spacing.sm,
   },
   statItem: {
+    minWidth: 80,
     flex: 1,
     alignItems: 'center',
     gap: 2,
+    paddingVertical: spacing.xs,
   },
   statValue: {
     fontSize: 18,

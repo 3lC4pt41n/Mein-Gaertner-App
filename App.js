@@ -295,6 +295,7 @@ function AppContent() {
     <NavigationContainer ref={navigationRef}>
       <OfflineBanner />
       <Tab.Navigator
+        initialRouteName="MeinePflanzenTab"
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
             let iconName;

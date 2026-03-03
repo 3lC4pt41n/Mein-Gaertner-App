@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
@@ -227,5 +228,25 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
   },
 });
+
+DexCard.propTypes = {
+  species: PropTypes.shape({
+    id: PropTypes.string,
+    canonical_name: PropTypes.string,
+    image_url: PropTypes.string,
+    total_discoverers: PropTypes.number,
+  }).isRequired,
+  discovered: PropTypes.bool,
+  isFirstDiscoverer: PropTypes.bool,
+  slotNumber: PropTypes.number,
+  onPress: PropTypes.func,
+};
+
+DexCard.defaultProps = {
+  discovered: false,
+  isFirstDiscoverer: false,
+  slotNumber: null,
+  onPress: null,
+};
 
 export default DexCard;

@@ -203,8 +203,13 @@ export default function AddPlantScreen() {
       let discovery = null;
       try {
         discovery = await logDiscovery(userId, name, plant?.id);
-      } catch {
-        // Discovery logging is non-critical — continue silently
+      } catch (discoveryError) {
+        // Discovery logging is non-critical — plant is saved, reveal just won't show.
+        // Error is intentionally not surfaced to user but logged for diagnostics.
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.warn('[AddPlant] Discovery logging failed:', discoveryError?.message);
+        }
       }
 
       // Gardening event

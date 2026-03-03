@@ -218,8 +218,11 @@ export default function LeaderboardScreen() {
                         await Share.share({
                           message: `🌱 ${scoreName}: ${scoreVal} ${t('common.pointsFull')} | ${t('leaderboard.streakValue', { days: myStats.streak })} Streak | ${myStats.totalDiscoveries} ${t('leaderboard.discovered')} — Digitaler Gärtner`,
                         });
-                      } catch {
-                        // Share cancelled — silent
+                      } catch (error) {
+                        // Distinguish cancellation from genuine errors
+                        if (error?.code !== 'ERR_CANCELED' && error?.message !== 'User did not share') {
+                          // Genuine share error — silent for now
+                        }
                       }
                     }}
                     style={{ marginTop: spacing.sm, alignSelf: 'center' }}

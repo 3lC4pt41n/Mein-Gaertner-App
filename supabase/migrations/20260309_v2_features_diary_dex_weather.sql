@@ -80,7 +80,10 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS location_lon DOUBLE PRECISI
 
 -- Function to update the discoverer count whenever a discovery event is recorded
 CREATE OR REPLACE FUNCTION public.update_species_discoverer_count()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
 BEGIN
   UPDATE public.species
   SET total_discoverers = (
@@ -91,7 +94,7 @@ BEGIN
   WHERE id = NEW.species_id;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Drop existing trigger if it exists and create new one
 DROP TRIGGER IF EXISTS trg_update_discoverer_count ON public.discovery_events;

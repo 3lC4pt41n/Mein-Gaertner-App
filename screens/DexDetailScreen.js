@@ -42,13 +42,17 @@ export default function DexDetailScreen({ route }) {
 
   const handleShare = async () => {
     if (!species) return;
-    const name = formatDisplayName(species.canonical_name);
+    const speciesDisplayName = formatDisplayName(species.canonical_name);
     try {
       await Share.share({
-        message: `${name} — ${t('dex.discoveredBy', { count: species.total_discoverers || 1 })} 🌱`,
+        message: `${speciesDisplayName} — ${t('dex.discoveredBy', { count: species.total_discoverers || 1 })} 🌱`,
       });
-    } catch {
-      // Share cancelled or failed — silent
+    } catch (error) {
+      // Distinguish cancellation from genuine errors
+      if (error?.code !== 'ERR_CANCELED' && error?.message !== 'User did not share') {
+        // Genuine share error — log but don't crash
+        // TODO: Consider user-facing toast for share failures
+      }
     }
   };
 

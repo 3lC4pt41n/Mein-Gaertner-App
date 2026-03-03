@@ -28,8 +28,10 @@ export async function fetchDex(userId, filter = 'all') {
     discoveredMap[d.species_id] = d;
   }
 
-  let result = (allSpecies || []).map(species => ({
+  // Assign stable dexNumber BEFORE filtering so slot numbers never shift
+  let result = (allSpecies || []).map((species, idx) => ({
     ...species,
+    dexNumber: idx + 1,
     discovered: !!discoveredMap[species.id],
     isFirstDiscoverer: discoveredMap[species.id]?.is_first || false,
     discoveredAt: discoveredMap[species.id]?.created_at || null,
