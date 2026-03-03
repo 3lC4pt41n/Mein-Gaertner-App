@@ -197,7 +197,7 @@
   },
 
   "assistant": {
-    "placeholder": "Schreib Ben eine Nachricht …",
+    "placeholder": "Schreib Ben eine Nachricht \u2026",
     "you": "Du",
     "ben": "Ben",
     "loadOlder": "Ältere Nachrichten laden...",
@@ -212,9 +212,9 @@
     "shopTab": "Shop",
     "usageTab": "Verbrauch",
     "subscriptionTitle": "Monatliches Abo",
-    "subscriptionSubtitle": "33% günstiger als Einmalkauf – jeden Monat frische Credits",
+    "subscriptionSubtitle": "33% günstiger als Einmalkauf \u2013 jeden Monat frische Credits",
     "oneTimeTitle": "Einmalkauf",
-    "oneTimeSubtitle": "Credits ohne Abo – nie ablaufend",
+    "oneTimeSubtitle": "Credits ohne Abo \u2013 nie ablaufend",
     "creditsPerMonth": "Credits/Monat",
     "popular": "Beliebt",
     "bestDeal": "Bestes Angebot",
@@ -306,11 +306,11 @@
     "healthcheckLabel": "Healthcheck",
     "chatLabel": "Chat mit Ben",
     "giftTitle": "100 Gratis-Credits",
-    "giftDesc": "Als Beta-Tester bekommst du 100 Credits geschenkt – das reicht für etwa 10 Pflanzen-Scans mit Healthcheck oder viele Chats mit Ben.",
+    "giftDesc": "Als Beta-Tester bekommst du 100 Credits geschenkt \u2013 das reicht für etwa 10 Pflanzen-Scans mit Healthcheck oder viele Chats mit Ben.",
     "reloadTitle": "Credits nachladen",
-    "reloadDesc": "Wenn deine Credits aufgebraucht sind, kannst du im Shop neue kaufen – als Einmalkauf oder günstiger im Monats-Abo.",
+    "reloadDesc": "Wenn deine Credits aufgebraucht sind, kannst du im Shop neue kaufen \u2013 als Einmalkauf oder günstiger im Monats-Abo.",
     "feedbackTitle": "Dein Feedback zählt!",
-    "feedbackDesc": "Als Beta-Tester hilfst du uns, die App besser zu machen. Sag uns, was dir gefällt und was fehlt – wir lesen alles!",
+    "feedbackDesc": "Als Beta-Tester hilfst du uns, die App besser zu machen. Sag uns, was dir gefällt und was fehlt \u2013 wir lesen alles!",
     "ctaButton": "Los geht's!"
   },
 
@@ -421,8 +421,40 @@
 
   "minor": {
     "calendarSoon": "📅 Kalenderansicht kommt bald!",
-    "todayTitle": "🌞 Heute – dein Pflanzentag!",
+    "todayTitle": "🌞 Heute \u2013 dein Pflanzentag!",
     "menuOverview": "🌱 Menü-Übersicht",
     "menuSubtitle": "Das Drawer-Menü sollte schon offen sein. Und wenn nicht, Pech gehabt."
+  },
+
+  "settings": {
+    "title": "Einstellungen",
+    "profileSection": "Profil",
+    "changeAvatar": "Avatar ändern",
+    "avatarUpdating": "Avatar wird erstellt\u2026",
+    "profileSaved": "Profil gespeichert!",
+    "profileSaveError": "Profil konnte nicht gespeichert werden.",
+    "preferencesSection": "Einstellungen",
+    "language": "Sprache",
+    "notifications": "Benachrichtigungen",
+    "notificationsHint": "Erinnerungen für Pflegeaufgaben",
+    "privacySection": "Datenschutz",
+    "showInLeaderboard": "In Rangliste anzeigen",
+    "showInLeaderboardHint": "Andere Gärtner sehen deinen Score",
+    "publicDisplayName": "Öffentlicher Anzeigename",
+    "publicDisplayNameHint": "Wird statt deinem Benutzernamen angezeigt",
+    "accountSection": "Konto",
+    "manageSubscription": "Abonnement verwalten",
+    "logout": "Abmelden",
+    "logoutConfirmTitle": "Abmelden?",
+    "logoutConfirmMessage": "Möchtest du dich wirklich abmelden?",
+    "deleteAccount": "Konto löschen",
+    "deleteConfirmTitle": "Konto löschen?",
+    "deleteConfirmMessage": "Alle deine Daten (Pflanzen, Tagebuch, Fotos, Aufgaben, Chat) werden unwiderruflich gelöscht. Aktive Abos müssen separat im App Store gekündigt werden.",
+    "deleteConfirmButton": "Endgültig löschen",
+    "infoSection": "Über die App",
+    "version": "Version",
+    "privacyPolicy": "Datenschutzerklärung",
+    "termsOfService": "Nutzungsbedingungen",
+    "feedback": "Feedback geben"
   }
 }

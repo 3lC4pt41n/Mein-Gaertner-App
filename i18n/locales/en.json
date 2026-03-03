@@ -197,7 +197,7 @@
   },
 
   "assistant": {
-    "placeholder": "Write Ben a message …",
+    "placeholder": "Write Ben a message \u2026",
     "you": "You",
     "ben": "Ben",
     "loadOlder": "Load older messages...",
@@ -212,9 +212,9 @@
     "shopTab": "Shop",
     "usageTab": "Usage",
     "subscriptionTitle": "Monthly Subscription",
-    "subscriptionSubtitle": "33% cheaper than one-time purchase – fresh Credits every month",
+    "subscriptionSubtitle": "33% cheaper than one-time purchase \u2013 fresh Credits every month",
     "oneTimeTitle": "One-Time Purchase",
-    "oneTimeSubtitle": "Credits without a subscription – never expire",
+    "oneTimeSubtitle": "Credits without a subscription \u2013 never expire",
     "creditsPerMonth": "Credits/month",
     "popular": "Popular",
     "bestDeal": "Best Deal",
@@ -306,11 +306,11 @@
     "healthcheckLabel": "Health Check",
     "chatLabel": "Chat with Ben",
     "giftTitle": "100 Free Credits",
-    "giftDesc": "As a beta tester, you get 100 free Credits – enough for about 10 plant scans with health checks or plenty of chats with Ben.",
+    "giftDesc": "As a beta tester, you get 100 free Credits \u2013 enough for about 10 plant scans with health checks or plenty of chats with Ben.",
     "reloadTitle": "Top Up Credits",
-    "reloadDesc": "When your Credits run out, you can buy more in the Shop – as a one-time purchase or cheaper with a monthly subscription.",
+    "reloadDesc": "When your Credits run out, you can buy more in the Shop \u2013 as a one-time purchase or cheaper with a monthly subscription.",
     "feedbackTitle": "Your Feedback Matters!",
-    "feedbackDesc": "As a beta tester, you're helping us improve the app. Tell us what you like and what's missing – we read everything!",
+    "feedbackDesc": "As a beta tester, you're helping us improve the app. Tell us what you like and what's missing \u2013 we read everything!",
     "ctaButton": "Let's go!"
   },
 
@@ -421,8 +421,40 @@
 
   "minor": {
     "calendarSoon": "📅 Calendar view coming soon!",
-    "todayTitle": "🌞 Today – your plant day!",
+    "todayTitle": "🌞 Today \u2013 your plant day!",
     "menuOverview": "🌱 Menu Overview",
     "menuSubtitle": "The drawer menu should already be open. And if not, tough luck."
+  },
+
+  "settings": {
+    "title": "Settings",
+    "profileSection": "Profile",
+    "changeAvatar": "Change avatar",
+    "avatarUpdating": "Creating avatar\u2026",
+    "profileSaved": "Profile saved!",
+    "profileSaveError": "Could not save profile.",
+    "preferencesSection": "Preferences",
+    "language": "Language",
+    "notifications": "Notifications",
+    "notificationsHint": "Reminders for care tasks",
+    "privacySection": "Privacy",
+    "showInLeaderboard": "Show in leaderboard",
+    "showInLeaderboardHint": "Other gardeners can see your score",
+    "publicDisplayName": "Public display name",
+    "publicDisplayNameHint": "Shown instead of your username",
+    "accountSection": "Account",
+    "manageSubscription": "Manage subscription",
+    "logout": "Log out",
+    "logoutConfirmTitle": "Log out?",
+    "logoutConfirmMessage": "Are you sure you want to log out?",
+    "deleteAccount": "Delete account",
+    "deleteConfirmTitle": "Delete account?",
+    "deleteConfirmMessage": "All your data (plants, diary, photos, tasks, chat) will be permanently deleted. Active subscriptions must be cancelled separately in the App Store.",
+    "deleteConfirmButton": "Delete permanently",
+    "infoSection": "About",
+    "version": "Version",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "feedback": "Give feedback"
   }
 }
