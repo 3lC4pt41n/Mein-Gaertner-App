@@ -488,9 +488,28 @@ export default function PlantDetailScreen({ route }) {
                   </TouchableOpacity>
                 )}
                 ListEmptyComponent={
-                  <Text style={{ textAlign: 'center', color: colors.textSecondary }}>
-                    {t('home.noZones')}
-                  </Text>
+                  <View style={{ alignItems: 'center', padding: spacing.lg }}>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        color: colors.textSecondary,
+                        marginBottom: spacing.md,
+                      }}
+                    >
+                      {t('home.noZones')}
+                    </Text>
+                    <DSButton
+                      variant="secondary"
+                      size="sm"
+                      icon="home-outline"
+                      onPress={() => {
+                        setPickerVisible(false);
+                        navigation.navigate('Zuhause');
+                      }}
+                    >
+                      {t('home.newHome')}
+                    </DSButton>
+                  </View>
                 }
               />
             ) : (

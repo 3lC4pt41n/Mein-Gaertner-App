@@ -41,10 +41,8 @@ export const colors = {
   chatUserBubble: '#DCF8C6',
   chatBotBubble: '#F1F0F0',
 
-  // Aliases used across components — keep in sync
-  white: '#FFFFFF',
-  black: '#000000',
-  text: '#222222',
+  // Removed aliases (white → surface, text → textPrimary, black → literal '#000000')
+  // Components now use canonical tokens only.
 };
 
 export const spacing = {

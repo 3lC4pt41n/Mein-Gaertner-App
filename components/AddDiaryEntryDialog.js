@@ -173,7 +173,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
               <Ionicons
                 name={selectedImage ? 'camera' : 'add-circle'}
                 size={20}
-                color={selectedImage ? colors.primary : colors.white}
+                color={selectedImage ? colors.primary : colors.surface}
               />
               <Text
                 style={[
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   dialogContainer: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     maxHeight: '90%',
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.textPrimary,
   },
   headerButton: {
     padding: spacing.sm,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
   titleInput: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontSize: 16,
-    color: colors.text,
+    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   noteInput: {
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontSize: 14,
-    color: colors.text,
+    color: colors.textPrimary,
     minHeight: 100,
     textAlignVertical: 'top',
     marginBottom: spacing.xs,
@@ -298,14 +298,14 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   photoButtonSecondary: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.primary,
   },
   photoButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.white,
+    color: colors.surface,
     marginLeft: spacing.sm,
   },
   photoButtonTextSecondary: {

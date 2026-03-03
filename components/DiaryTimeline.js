@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   entryContainer: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   entryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   entryDate: {
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   },
   entryNote: {
     fontSize: 14,
-    color: colors.text,
+    color: colors.textPrimary,
     lineHeight: 20,
     marginBottom: spacing.md,
   },

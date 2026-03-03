@@ -122,7 +122,7 @@ export default function PlantGallery({ plantId }) {
               style={styles.closeButton}
               onPress={() => setSelectedImage(null)}
             >
-              <Ionicons name="close" size={28} color={colors.white} />
+              <Ionicons name="close" size={28} color={colors.surface} />
             </TouchableOpacity>
             <Text style={styles.modalCounter}>
               {selectedIndex + 1} / {gallery.length}
@@ -160,7 +160,7 @@ export default function PlantGallery({ plantId }) {
               <Ionicons
                 name="chevron-back"
                 size={28}
-                color={selectedIndex === 0 ? colors.textSecondary : colors.white}
+                color={selectedIndex === 0 ? colors.textSecondary : colors.surface}
               />
             </TouchableOpacity>
 
@@ -175,7 +175,7 @@ export default function PlantGallery({ plantId }) {
               <Ionicons
                 name="chevron-forward"
                 size={28}
-                color={selectedIndex === gallery.length - 1 ? colors.textSecondary : colors.white}
+                color={selectedIndex === gallery.length - 1 ? colors.textSecondary : colors.surface}
               />
             </TouchableOpacity>
           </View>
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: colors.black || '#000',
+    backgroundColor: '#000000',
     justifyContent: 'center',
   },
   modalHeader: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   modalCounter: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.white,
+    color: colors.surface,
   },
   imageContainer: {
     flex: 1,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.white,
+    color: colors.surface,
     marginBottom: spacing.xs,
   },
   modalDate: {

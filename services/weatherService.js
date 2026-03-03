@@ -19,6 +19,7 @@ const CACHE_KEY_WEATHER = '@weather_current';
 const CACHE_KEY_FORECAST = '@weather_forecast';
 const CACHE_KEY_LOCATION = '@user_location';
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const LOCATION_TTL = 30 * 60 * 1000; // 30 minutes
 
 /**
  * Check if cached data is still valid
@@ -37,7 +38,7 @@ export const requestLocationPermission = async () => {
 
     if (status !== 'granted') {
       console.warn('Location permission denied');
-      return null;
+      return { denied: true };
     }
 
     const location = await Location.getCurrentPositionAsync({
@@ -70,8 +71,10 @@ const getLocation = async () => {
   try {
     const cached = await AsyncStorage.getItem(CACHE_KEY_LOCATION);
     if (cached) {
-      const { latitude, longitude } = JSON.parse(cached);
-      return { latitude, longitude };
+      const { latitude, longitude, timestamp } = JSON.parse(cached);
+      if (timestamp && Date.now() - timestamp < LOCATION_TTL) {
+        return { latitude, longitude };
+      }
     }
 
     return await requestLocationPermission();
@@ -188,7 +191,7 @@ export const getCurrentWeather = async () => {
 
     // Get location
     const location = await getLocation();
-    if (!location) {
+    if (!location || location.denied) {
       console.warn('No location available for weather');
       return null;
     }
