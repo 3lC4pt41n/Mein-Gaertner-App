@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
+import DSButton from '../theme/DSButton';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -493,9 +494,28 @@ export default function PlantDetailScreen({ route }) {
                 }
               />
             ) : (
-              <Text style={{ textAlign: 'center', color: colors.textSecondary }}>
-                {t('home.noZones')}
-              </Text>
+              <View style={{ alignItems: 'center', padding: spacing.lg }}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: colors.textSecondary,
+                    marginBottom: spacing.md,
+                  }}
+                >
+                  {t('home.noZones')}
+                </Text>
+                <DSButton
+                  variant="secondary"
+                  size="sm"
+                  icon="home-outline"
+                  onPress={() => {
+                    setPickerVisible(false);
+                    navigation.navigate('Zuhause');
+                  }}
+                >
+                  {t('home.newHome')}
+                </DSButton>
+              </View>
             )}
             {savingZone && (
               <ActivityIndicator

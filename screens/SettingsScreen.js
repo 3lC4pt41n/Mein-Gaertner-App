@@ -29,6 +29,11 @@ import { LANGUAGE_OPTIONS, normalizeLanguage, applyLanguage } from '../services/
 import { generateGardenerAvatar } from '../services/aiService';
 import { openManageSubscriptions } from '../services/purchaseService';
 import { rescheduleAllTaskReminders } from '../services/notificationService';
+import { fetchTasks } from '../services/taskService';
+
+// ---------- Feature Flags ---------------------------------------------
+const SHOW_ACCOUNT_DELETION = false;
+const SHOW_TERMS_LINK = false;
 
 // ---------- Helpers ---------------------------------------------------
 
@@ -387,7 +392,14 @@ export default function SettingsScreen({ navigation }) {
             setNotificationsEnabled(val);
             try {
               await updateProfile({ notifications_enabled: val });
-              if (!val) {
+
+              if (!user?.id) return;
+
+              if (val) {
+                // Re-schedule reminders for all due tasks when notifications enabled
+                const tasks = await fetchTasks(user.id);
+                await rescheduleAllTaskReminders(tasks ?? []);
+              } else {
                 // Cancel all scheduled reminders when notifications disabled
                 await rescheduleAllTaskReminders([]);
               }
@@ -443,8 +455,7 @@ export default function SettingsScreen({ navigation }) {
           {t('settings.logout')}
         </DSButton>
 
-        {/* Hidden until proper backend deletion support is implemented */}
-        {false && (
+        {SHOW_ACCOUNT_DELETION ? (
           <DSButton
             variant="danger"
             fullWidth
@@ -453,7 +464,7 @@ export default function SettingsScreen({ navigation }) {
           >
             {t('settings.deleteAccount')}
           </DSButton>
-        )}
+        ) : null}
       </DSCard>
 
       {/* ========== INFO SECTION ========== */}
@@ -469,14 +480,13 @@ export default function SettingsScreen({ navigation }) {
           label={t('settings.privacyPolicy')}
           onPress={() => Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html')}
         />
-        {/* Hidden until terms.html is published */}
-        {false && (
+        {SHOW_TERMS_LINK ? (
           <LinkRow
             icon="reader-outline"
             label={t('settings.termsOfService')}
             onPress={() => Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html')}
           />
-        )}
+        ) : null}
         <LinkRow
           icon="chatbubble-ellipses-outline"
           label={t('settings.feedback')}

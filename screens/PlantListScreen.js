@@ -282,71 +282,72 @@ export default function PlantListScreen() {
                     {expandedZones[zone.id] ? '▲' : '▼'}
                   </Text>
                 </TouchableOpacity>
-                {expandedZones[zone.id] && zone.plants.length > 0 && (
+                {expandedZones[zone.id] && (
                   <View style={{ marginLeft: spacing.md }}>
-                    {zone.plants.map((plant) => (
-                      <TouchableOpacity
-                        key={plant.id}
-                        onPress={() => navigation.navigate('PlantDetail', { plant })}
-                      >
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            paddingVertical: spacing.sm,
-                            borderBottomWidth: 1,
-                            borderColor: colors.borderLight,
-                          }}
+                    {zone.plants.length > 0 ? (
+                      zone.plants.map((plant) => (
+                        <TouchableOpacity
+                          key={plant.id}
+                          onPress={() => navigation.navigate('PlantDetail', { plant })}
                         >
-                          {plant.image_url ? (
-                            <Image
-                              source={{ uri: plant.image_url }}
-                              style={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: radius.sm,
-                                marginRight: spacing.md,
-                                backgroundColor: colors.border,
-                              }}
-                            />
-                          ) : (
-                            <View
-                              style={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: radius.sm,
-                                marginRight: spacing.md,
-                                backgroundColor: colors.textDisabled,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <Text>🌱</Text>
-                            </View>
-                          )}
-                          <View>
-                            <Text
-                              style={{
-                                fontSize: 18,
-                                fontWeight: 'bold',
-                                color: colors.textPrimary,
-                              }}
-                            >
-                              {plant.name}
-                            </Text>
-                            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-                              {plant.note}
-                            </Text>
-                            {plant.healthscore !== null && (
-                              <Text style={{ fontSize: 12, color: colors.primary }}>
-                                {t('plants.healthscoreValue', { score: plant.healthscore })}
-                              </Text>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              paddingVertical: spacing.sm,
+                              borderBottomWidth: 1,
+                              borderColor: colors.borderLight,
+                            }}
+                          >
+                            {plant.image_url ? (
+                              <Image
+                                source={{ uri: plant.image_url }}
+                                style={{
+                                  width: 50,
+                                  height: 50,
+                                  borderRadius: radius.sm,
+                                  marginRight: spacing.md,
+                                  backgroundColor: colors.border,
+                                }}
+                              />
+                            ) : (
+                              <View
+                                style={{
+                                  width: 50,
+                                  height: 50,
+                                  borderRadius: radius.sm,
+                                  marginRight: spacing.md,
+                                  backgroundColor: colors.textDisabled,
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <Text>🌱</Text>
+                              </View>
                             )}
+                            <View>
+                              <Text
+                                style={{
+                                  fontSize: 18,
+                                  fontWeight: 'bold',
+                                  color: colors.textPrimary,
+                                }}
+                              >
+                                {plant.name}
+                              </Text>
+                              <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                                {plant.note}
+                              </Text>
+                              {plant.healthscore !== null && (
+                                <Text style={{ fontSize: 12, color: colors.primary }}>
+                                  {t('plants.healthscoreValue', { score: plant.healthscore })}
+                                </Text>
+                              )}
+                            </View>
                           </View>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
-                    {zone.plants.length === 0 && (
+                        </TouchableOpacity>
+                      ))
+                    ) : (
                       <Text
                         style={{
                           color: colors.textTertiary,
