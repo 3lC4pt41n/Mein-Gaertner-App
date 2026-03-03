@@ -1,6 +1,7 @@
-// App.js – Hauptnavigation mit RevenueCat + Credit Store
+// App.js \u2013 Hauptnavigation mit RevenueCat + Credit Store
 // -----------------------------------------------------------
 import React, { useEffect, useRef } from 'react';
+import { TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -21,6 +22,7 @@ import LeaderboardScreen from './screens/LeaderboardScreen';
 import FeedbackScreen from './screens/FeedbackScreen';
 import CalendarScreen from './screens/CalendarScreen';
 import PlantDexScreen from './screens/PlantDexScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLoadingScreen from './components/AppLoadingScreen';
@@ -104,6 +106,35 @@ function ShopStack({ isAdmin }) {
   );
 }
 
+// ---------- Home Stack (Home + Settings) -------------
+function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="HomeMain"
+        component={HomeManager}
+        options={({ navigation }) => ({
+          title: t('nav.home'),
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Settings')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={{ marginRight: 12 }}
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: t('settings.title') }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 // ---------- App Content (uses AuthContext) ---------
 function AppContent() {
   const {
@@ -126,7 +157,7 @@ function AppContent() {
     registerForPushNotifications(user.id, supabase).catch(console.warn);
   }, [user?.id]);
 
-  // --- Handle notification tap → navigate to Tasks tab ---
+  // --- Handle notification tap \u2192 navigate to Tasks tab ---
   useEffect(() => {
     const subscription = addNotificationResponseListener(() => {
       // Navigate to the Tasks tab when a task reminder is tapped
@@ -187,12 +218,12 @@ function AppContent() {
             let iconName;
             if (route.name === "Zuhause") iconName = "home-outline";
             else if (route.name === "MeinePflanzenTab") iconName = "leaf-outline";
-            else if (route.name === "Pflanze hinzufügen") iconName = "add-circle-outline";
+            else if (route.name === "Pflanze hinzuf\u00fcgen") iconName = "add-circle-outline";
             else if (route.name === "Aufgaben") iconName = "clipboard-outline";
             else if (route.name === "Kalender") iconName = "calendar-outline";
             else if (route.name === "Pflanzen-Dex") iconName = "albums-outline";
             else if (route.name === "Rangliste") iconName = "trophy-outline";
-            else if (route.name === "Mein Gärtner") iconName = "chatbox-ellipses-outline";
+            else if (route.name === "Mein G\u00e4rtner") iconName = "chatbox-ellipses-outline";
             else if (route.name === "Shop") iconName = "flash-outline";
             return <Ionicons name={iconName} size={size} color={color} />;
           },
@@ -203,9 +234,10 @@ function AppContent() {
       >
         <Tab.Screen
           name="Zuhause"
-          component={HomeManager}
           options={{ title: t('nav.home'), tabBarLabel: t('nav.home') }}
-        />
+        >
+          {() => <HomeStack />}
+        </Tab.Screen>
         <Tab.Screen
           name="MeinePflanzenTab"
           options={{ title: t('nav.plants'), tabBarLabel: t('nav.plants') }}
@@ -213,7 +245,7 @@ function AppContent() {
           {() => <PlantStack />}
         </Tab.Screen>
         <Tab.Screen
-          name="Pflanze hinzufügen"
+          name="Pflanze hinzuf\u00fcgen"
           component={AddPlantScreen}
           options={{ title: t('nav.addPlant'), tabBarLabel: t('nav.addPlant') }}
         />
@@ -239,7 +271,7 @@ function AppContent() {
           options={{ title: t('nav.leaderboard'), tabBarLabel: t('nav.leaderboard') }}
         />
         <Tab.Screen
-          name="Mein Gärtner"
+          name="Mein G\u00e4rtner"
           component={AssistantScreen}
           options={{ title: t('nav.assistant'), tabBarLabel: t('nav.assistant') }}
         />

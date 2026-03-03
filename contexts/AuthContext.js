@@ -107,6 +107,24 @@ export function AuthProvider({ children }) {
     setShowWelcome(false);
   }, [user?.id]);
 
+  // --- Sign Out ---
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+  }, []);
+
+  // --- Update Profile (partial updates) ---
+  const updateProfile = useCallback(async (updates) => {
+    if (!user?.id) throw new Error('No user logged in');
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id);
+    if (error) throw error;
+    await refreshProfile();
+  }, [user?.id, refreshProfile]);
+
   const value = {
     user,
     profile,
@@ -119,6 +137,8 @@ export function AuthProvider({ children }) {
     handlePasswordRecoveryComplete,
     refreshProfile,
     dismissWelcome,
+    signOut,
+    updateProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
