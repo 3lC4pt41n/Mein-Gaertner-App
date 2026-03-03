@@ -202,7 +202,7 @@ export default function SettingsScreen({ navigation }) {
     try {
       await updateProfile({ language: code });
     } catch {
-      // Silently fail – language already applied locally
+      // Silently fail \u2013 language already applied locally
     }
   };
 
