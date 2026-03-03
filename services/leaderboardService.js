@@ -50,60 +50,41 @@ export async function getLeaderboard(timeWindow = 'week', type = 'gardener', lim
 
 /**
  * Eigenen Rang ermitteln.
- * Uses the same dense_rank logic as getLeaderboard so ties are consistent.
+ * Uses a server-side RPC with dense_rank() — no full-table-scan.
  */
 export async function getMyRank(userId, timeWindow = 'week', type = 'gardener') {
   const scoreCol = SCORE_COLUMNS[type]?.[timeWindow] || SCORE_COLUMNS.gardener.week;
 
-  // Fetch full leaderboard and use the same dense_rank logic as getLeaderboard
-  // so that ranks are always consistent between the list and "your rank" display.
-  const { data, error } = await supabase
-    .from('leaderboard_public')
-    .select('user_id, ' + scoreCol)
-    .order(scoreCol, { ascending: false });
+  const { data, error } = await supabase.rpc('get_my_rank', {
+    p_score_column: scoreCol,
+    p_user_id: userId,
+  });
 
   if (error) throw error;
-  if (!data || data.length === 0) return null;
-
-  const ranked = assignDenseRanks(data, scoreCol);
-  const myEntry = ranked.find((e) => e.user_id === userId);
-  if (!myEntry) return null;
+  if (!data) return null;
 
   return {
-    rank: myEntry.rank,
-    score: myEntry.score,
-    total: ranked.length,
+    rank: data.rank,
+    score: data.score,
+    total: data.total,
   };
 }
 
 /**
  * Nachbarn im Ranking (±range Plätze um eigenen Rang).
- * Uses dense_rank for consistency with getLeaderboard.
+ * Uses a server-side RPC with dense_rank() — no full-table-scan.
  */
 export async function getMyNeighbors(userId, timeWindow = 'week', type = 'gardener', range = 5) {
   const scoreCol = SCORE_COLUMNS[type]?.[timeWindow] || SCORE_COLUMNS.gardener.week;
 
-  // Fetch full ranked list and assign dense ranks
-  const { data: allData, error: rankError } = await supabase
-    .from('leaderboard_public')
-    .select('*')
-    .order(scoreCol, { ascending: false });
+  const { data, error } = await supabase.rpc('get_my_neighbors', {
+    p_score_column: scoreCol,
+    p_user_id: userId,
+    p_range: range,
+  });
 
-  if (rankError) throw rankError;
-  if (!allData || allData.length === 0) return [];
-
-  const ranked = assignDenseRanks(allData, scoreCol);
-
-  const userIndex = ranked.findIndex((e) => e.user_id === userId);
-  if (userIndex === -1) return [];
-
-  const start = Math.max(0, userIndex - range);
-  const end = Math.min(ranked.length, userIndex + range + 1);
-
-  return ranked.slice(start, end).map((entry) => ({
-    ...entry,
-    isMe: entry.user_id === userId,
-  }));
+  if (error) throw error;
+  return data || [];
 }
 
 /**
