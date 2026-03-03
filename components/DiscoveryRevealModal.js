@@ -7,7 +7,6 @@ import {
   Animated,
   StyleSheet,
   TouchableOpacity,
-  Platform,
   Vibration,
   Share,
   Alert,
@@ -291,7 +290,7 @@ const styles = StyleSheet.create({
     maxWidth: 360,
   },
 
-  // Type Badge — three visual tiers
+  // Type Badge — two visual tiers (first / new)
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',

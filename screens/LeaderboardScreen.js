@@ -12,7 +12,6 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../supabase';
 import { getLeaderboard, getMyRank, getMyStats } from '../services/leaderboardService';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';

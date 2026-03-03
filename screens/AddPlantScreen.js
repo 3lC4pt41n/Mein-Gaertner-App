@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -23,7 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
-import { colors, spacing, radius, shadows } from '../theme/tokens';
+import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
@@ -210,7 +210,6 @@ export default function AddPlantScreen() {
         // Discovery logging is non-critical — plant is saved, reveal just won't show.
         // Error is intentionally not surfaced to user but logged for diagnostics.
         if (__DEV__) {
-          // eslint-disable-next-line no-console
           console.warn('[AddPlant] Discovery logging failed:', discoveryError?.message);
         }
       }

@@ -62,14 +62,12 @@ export async function logDiscovery(userId, speciesName, plantId = null) {
   }
 
   // 2. Discovery-Event loggen (max 1 pro Species/User durch UNIQUE INDEX)
-  const { error: eventError } = await supabase
-    .from('discovery_events')
-    .insert({
-      user_id: userId,
-      species_id: speciesId,
-      plant_id: plantId,
-      is_first: isFirst,
-    });
+  const { error: eventError } = await supabase.from('discovery_events').insert({
+    user_id: userId,
+    species_id: speciesId,
+    plant_id: plantId,
+    is_first: isFirst,
+  });
 
   // Check if this is a new discovery for the user
   let isNewForUser = true;
@@ -100,7 +98,7 @@ export function formatDisplayName(name) {
   return name
     .trim()
     .split(/\s+/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
 
@@ -129,6 +127,6 @@ export async function fetchDiscoveryStats(userId) {
 
   return {
     totalDiscoveries: data.length,
-    firstDiscoveries: data.filter(d => d.is_first).length,
+    firstDiscoveries: data.filter((d) => d.is_first).length,
   };
 }

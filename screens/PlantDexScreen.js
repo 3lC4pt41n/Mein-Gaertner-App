@@ -62,7 +62,7 @@ const PlantDexScreen = () => {
 
   const progressPercent = progress.total > 0 ? (progress.discovered / progress.total) * 100 : 0;
 
-  const filterItems = FILTERS.map(f => ({
+  const filterItems = FILTERS.map((f) => ({
     label: t(`dex.filters.${f.label}`),
     value: f.value,
   }));
@@ -81,9 +81,7 @@ const PlantDexScreen = () => {
 
           {/* Progress Bar */}
           <View style={styles.progressBarContainer}>
-            <View
-              style={[styles.progressBar, { width: `${Math.min(progressPercent, 100)}%` }]}
-            />
+            <View style={[styles.progressBar, { width: `${Math.min(progressPercent, 100)}%` }]} />
           </View>
 
           {/* Stats Row */}
@@ -102,7 +100,9 @@ const PlantDexScreen = () => {
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Ionicons name="lock-closed" size={16} color={colors.textDisabled} />
-              <Text style={styles.statValue}>{Math.max(0, progress.total - progress.discovered)}</Text>
+              <Text style={styles.statValue}>
+                {Math.max(0, progress.total - progress.discovered)}
+              </Text>
               <Text style={styles.statLabel}>{t('dex.notDiscovered')}</Text>
             </View>
           </View>
@@ -114,17 +114,11 @@ const PlantDexScreen = () => {
         {filterItems.map((item) => (
           <TouchableOpacity
             key={item.value}
-            style={[
-              styles.filterChip,
-              filter === item.value && styles.filterChipActive,
-            ]}
+            style={[styles.filterChip, filter === item.value && styles.filterChipActive]}
             onPress={() => setFilter(item.value)}
           >
             <Text
-              style={[
-                styles.filterChipText,
-                filter === item.value && styles.filterChipTextActive,
-              ]}
+              style={[styles.filterChipText, filter === item.value && styles.filterChipTextActive]}
             >
               {item.label}
             </Text>
@@ -170,9 +164,7 @@ const PlantDexScreen = () => {
             discovered={item.discovered}
             isFirstDiscoverer={item.isFirstDiscoverer}
             slotNumber={item.dexNumber}
-            onPress={(speciesId) =>
-              navigation.navigate('DexDetail', { speciesId, species: item })
-            }
+            onPress={(speciesId) => navigation.navigate('DexDetail', { speciesId, species: item })}
           />
         )}
         keyExtractor={(item) => item.id}
