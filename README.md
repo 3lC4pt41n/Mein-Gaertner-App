@@ -24,7 +24,7 @@ Scan plants with your camera, let AI identify them, build your species collectio
 - **AI Health Check** — Get a plant health score (0-100) via image analysis
 - **Weather Integration** — Location-based weather data drives automatic care task suggestions
 - **Leaderboard** — Compete with other gardeners on weekly, monthly, and all-time rankings
-- **AI Gardener Assistant** — Chat with "Ben," your AI gardener with image analysis and function calling
+- **AI Gardener Assistant** — Chat with "Ben," your AI gardener with image analysis and function calling (main tab: "Mein Gärtner")
 - **6 Languages** — German, English, French, Italian, Spanish, Russian
 - **Additional Features** — Plant diary with photos, push notifications, avatar generation, credit system
 
@@ -35,7 +35,7 @@ Scan plants with your camera, let AI identify them, build your species collectio
 | Framework     | React Native 0.81 + Expo SDK 54                      |
 | Language      | JavaScript (JSX) / TypeScript (Edge Functions)       |
 | Backend       | Supabase (PostgreSQL, Auth, Storage, Edge Functions) |
-| AI            | OpenAI GPT-4o (server-side via Edge Functions)       |
+| AI            | OpenAI GPT-4o + DALL-E 2 (server-side via Edge Functions) |
 | Payments      | RevenueCat (iOS + Android)                           |
 | Weather       | OpenWeather API                                      |
 | Navigation    | React Navigation 6                                   |
@@ -188,8 +188,8 @@ Functions are deployed without JWT verification but validate all requests via cu
 Trigger builds by tagging a release:
 
 ```bash
-git tag v1.2.0
-git push origin v1.2.0
+git tag v1.3.0
+git push origin v1.3.0
 # Automatically builds and submits to app stores via GitHub Actions
 ```
 
