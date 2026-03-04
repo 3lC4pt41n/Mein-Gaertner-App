@@ -88,18 +88,37 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
     }
   };
 
-  const renderGalleryItem = ({ item, index }) => (
-    <TouchableOpacity
-      style={styles.galleryItem}
-      onPress={() => handleImagePress(item, index)}
-      activeOpacity={0.8}
-    >
-      <Image source={{ uri: item.image_url }} style={styles.galleryImage} resizeMode="cover" />
-      <View style={styles.badgeContainer}>
-        <Text style={styles.badge}>{typeBadges[item.type] || '📌'}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  // Galerie-Daten + "Foto hinzufügen"-Tile am Ende
+  const gridData = onAddPhoto
+    ? [...gallery, { id: '__add__', _isAddTile: true }]
+    : gallery;
+
+  const renderGalleryItem = ({ item, index }) => {
+    if (item._isAddTile) {
+      return (
+        <TouchableOpacity
+          style={[styles.galleryItem, styles.addTile]}
+          onPress={onAddPhoto}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="camera-outline" size={28} color={colors.primary} />
+          <Text style={styles.addTileText}>{t('gallery.addPhoto')}</Text>
+        </TouchableOpacity>
+      );
+    }
+    return (
+      <TouchableOpacity
+        style={styles.galleryItem}
+        onPress={() => handleImagePress(item, index)}
+        activeOpacity={0.8}
+      >
+        <Image source={{ uri: item.image_url }} style={styles.galleryImage} resizeMode="cover" />
+        <View style={styles.badgeContainer}>
+          <Text style={styles.badge}>{typeBadges[item.type] || '📌'}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (
@@ -127,7 +146,7 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
   return (
     <>
       <FlatList
-        data={gallery}
+        data={gridData}
         renderItem={renderGalleryItem}
         keyExtractor={(item) => item.id.toString()}
         numColumns={COLUMNS}
@@ -261,6 +280,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
     marginTop: spacing.lg,
+  },
+  addTile: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+  },
+  addTileText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.primary,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   modalContainer: {
     flex: 1,
