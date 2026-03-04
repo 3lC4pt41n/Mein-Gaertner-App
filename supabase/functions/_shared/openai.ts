@@ -121,9 +121,14 @@ export async function callOpenAIImageEdit(params: {
   const model = params.model || 'dall-e-2';
   const imageBytes = base64ToBytes(params.image_base64);
 
-  // dall-e-2 /v1/images/edits only accepts PNG – convert from JPEG/any format
+  // dall-e-2 /v1/images/edits only accepts PNG < 4 MB – convert & resize
   const decoded = await Image.decode(imageBytes);
-  const pngBytes = await decoded.encode();
+  const maxDim = 1024;
+  const resized =
+    decoded.width > maxDim || decoded.height > maxDim
+      ? decoded.resize(maxDim, Image.RESIZE_AUTO)
+      : decoded;
+  const pngBytes = await resized.encode();
   const file = new File([pngBytes], 'user-photo.png', { type: 'image/png' });
 
   const formData = new FormData();
