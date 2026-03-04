@@ -83,7 +83,7 @@ export async function logDiscovery(userId, speciesName, plantId = null) {
   // 3. Credit-Belohnung für Neuentdeckungen
   let creditsAwarded = 0;
   if (isNewForUser) {
-    creditsAwarded = isFirst ? 50 : 25;
+    creditsAwarded = isFirst ? 50 : 10;
     try {
       await supabase.rpc('refund_credits', {
         p_user_id: userId,
