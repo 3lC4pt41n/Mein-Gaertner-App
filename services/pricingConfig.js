@@ -8,4 +8,5 @@ export const AI_COSTS = {
   details: 15,
   healthcheck: 8,
   chat: 3,
+  avatar: 20,
 };

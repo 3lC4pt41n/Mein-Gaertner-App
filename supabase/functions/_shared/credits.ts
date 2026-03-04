@@ -6,6 +6,7 @@ export const CREDIT_COSTS: Record<string, number> = {
   plant_details: 15, // Detail-Generierung (~$0.10-0.15)
   healthcheck: 8, // Einzelner Healthcheck (~$0.03-0.08)
   chat: 3, // Chat-Nachricht (~$0.01-0.03)
+  avatar: 20, // Gärtner-Avatar: GPT-4o Vision + DALL-E 3 (~$0.08-0.12)
 };
 
 // Atomare Credit-Lastschrift: check + deduct in einem DB-Statement

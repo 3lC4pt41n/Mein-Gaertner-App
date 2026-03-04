@@ -3,7 +3,7 @@
 // POST Body: { base64: string, language?: string }
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { corsHeaders, getUserIdFromAuth, logUsage } from '../_shared/credits.ts';
+import { corsHeaders, getUserIdFromAuth, logUsage, CREDIT_COSTS, deductCreditsAtomic, refundCredits } from '../_shared/credits.ts';
 import { getLanguagePromptName, getUserLanguage } from '../_shared/language.ts';
 import { callOpenAI, callOpenAIImageGenerate } from '../_shared/openai.ts';
 import { validateBase64, validateLanguage, validationErrorResponse } from '../_shared/validate.ts';
@@ -14,6 +14,11 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  let serviceClient: any;
+  let userId: string | undefined;
+  let creditsDeducted = false;
+  const cost = CREDIT_COSTS.avatar;
+
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -23,8 +28,8 @@ serve(async (req) => {
       });
     }
 
-    const serviceClient = getServiceClient();
-    const userId = await getUserIdFromAuth(serviceClient, authHeader);
+    serviceClient = getServiceClient();
+    userId = await getUserIdFromAuth(serviceClient, authHeader);
     const { base64, language: requestedLanguage } = await req.json();
 
     // Input-Validierung
@@ -44,6 +49,28 @@ serve(async (req) => {
     const rateLimitResp = await checkRateLimit(serviceClient, userId, 'avatar');
     if (rateLimitResp) return rateLimitResp;
 
+    // Credits atomar abziehen (check + deduct in einem DB-Statement)
+    let newBalance: number;
+    try {
+      newBalance = await deductCreditsAtomic(serviceClient, userId, cost);
+      creditsDeducted = true;
+    } catch (e: any) {
+      if (e.code === 'INSUFFICIENT_CREDITS') {
+        return new Response(
+          JSON.stringify({
+            error: 'Nicht genügend Credits',
+            balance: e.balance,
+            required: e.required,
+          }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+      throw e;
+    }
+
     const resolvedLanguage = await getUserLanguage(serviceClient, userId, language);
     const languagePromptName = getLanguagePromptName(resolvedLanguage);
 
@@ -56,7 +83,7 @@ serve(async (req) => {
       messages: [
         {
           role: 'system',
-          content: `You are a portrait description assistant. Describe the person in the photo in vivid detail for an illustrator. Focus on: approximate age range, gender presentation, skin tone, hair color/style/length, facial hair, eye color, face shape, glasses, distinctive features (freckles, dimples, etc.), and expression. Be specific and visual. Output ONLY the description, no preamble.`,
+          content: `You are a portrait description assistant. Describe ONLY the person's face and head for an illustrator. Focus strictly on: approximate age, gender, skin tone, hair color and style, facial hair if any, eye color, face shape, glasses if worn, and distinctive facial features (freckles, dimples, scars, etc.). Do NOT describe clothing, pose, background, or mood. Be concise and specific. Output ONLY the description, no preamble.`,
         },
         {
           role: 'user',
@@ -79,18 +106,22 @@ serve(async (req) => {
       size: '1024x1024',
       quality: 'standard',
       style: 'natural',
-      prompt: `Create a warm, friendly illustrated avatar portrait of a gardener with the following appearance:
+      prompt: `Illustrated avatar portrait of a gardener. The person looks like this:
 
 ${personDescription}
 
-Style rules:
-- Clean digital illustration style, slightly stylized but recognizable.
-- Portrait composition: head and shoulders, centered, soft neutral or garden-themed background.
-- The person is wearing casual gardening attire (e.g. sun hat, apron, gloves, or holding a small plant).
-- Warm, inviting expression. Friendly and app-appropriate.
-- No text, no logo, no watermark, no extra people.
-- Visual language and cultural details should feel natural for ${languagePromptName}.
-- Output one polished avatar illustration.`,
+MANDATORY outfit and props — always include ALL of these:
+- A worn, earth-toned gardening apron over a simple shirt.
+- Sturdy gardening gloves (one hand holding a small terracotta pot with a green seedling).
+- A classic wide-brim straw sun hat.
+
+Composition and style — follow exactly:
+- Head-and-shoulders portrait, centered, looking at the viewer with a warm smile.
+- Background: a lush green garden with soft bokeh (blurred leaves, flowers, sunlight).
+- Art style: clean digital illustration, Pixar-inspired, slightly stylized but the face must be clearly recognizable from the description above.
+- Warm golden-hour lighting from the left side.
+- No text, no logo, no watermark, no extra people, no speech bubbles.
+- Square 1:1 format, suitable as a round app avatar.`,
     });
 
     const bucket = 'chat-images';
@@ -117,7 +148,7 @@ Style rules:
       prompt_tokens: visionResult.prompt_tokens,
       completion_tokens: visionResult.completion_tokens,
       total_tokens: visionResult.total_tokens,
-      cost_credits: 0,
+      cost_credits: cost,
       openai_cost_usd: visionResult.cost_usd,
       model: `${visionResult.model}+${imageResult.model}`,
       metadata: { language: resolvedLanguage },
@@ -127,12 +158,17 @@ Style rules:
       JSON.stringify({
         avatar_path: avatarPath,
         avatar_url: urlData.signedUrl,
+        new_balance: newBalance,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (e: any) {
+    // Refund bei fehlgeschlagenem API-Call (Credits wurden bereits abgezogen)
+    if (creditsDeducted && serviceClient && userId) {
+      await refundCredits(serviceClient, userId, cost);
+    }
     return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
