@@ -117,7 +117,7 @@ export async function callOpenAIImageEdit(params: {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) throw new Error('OPENAI_API_KEY nicht konfiguriert');
 
-  const model = params.model || 'gpt-image-1';
+  const model = params.model || 'dall-e-2';
   const imageBytes = base64ToBytes(params.image_base64);
   const file = new File([imageBytes], 'user-photo.jpg', { type: 'image/jpeg' });
 

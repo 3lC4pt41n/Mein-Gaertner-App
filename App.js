@@ -70,34 +70,33 @@ function PlantStack() {
   );
 }
 
-// ---------- Task Stack (Tasks + Detail + Calendar) --------
-function TaskStack() {
+// ---------- Assistant Stack (Chat tab) --------
+function AssistantTabStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="TaskList" component={TaskListScreen} options={{ headerShown: false }} />
       <Stack.Screen
-        name="TaskDetail"
-        component={TaskDetailScreen}
-        options={{ title: t('nav.taskTitle') }}
-      />
-      <Stack.Screen
-        name="Calendar"
-        component={CalendarScreen}
-        options={{ title: t('nav.calendar') }}
+        name="AssistantMain"
+        component={AssistantScreen}
+        options={{ title: t('nav.assistant') }}
       />
     </Stack.Navigator>
   );
 }
 
-// ---------- More Stack (Assistant, Shop, Leaderboard, etc.) ---
+// ---------- More Stack (Tasks, Shop, Leaderboard, etc.) ---
 function MoreStack({ isAdmin }) {
   return (
     <Stack.Navigator>
       <Stack.Screen name="MoreMain" component={MoreScreen} options={{ title: t('nav.more') }} />
       <Stack.Screen
-        name="AssistantMain"
-        component={AssistantScreen}
-        options={{ title: t('nav.assistant') }}
+        name="TasksMain"
+        component={TaskListScreen}
+        options={{ title: t('nav.tasks') }}
+      />
+      <Stack.Screen
+        name="TaskDetail"
+        component={TaskDetailScreen}
+        options={{ title: t('nav.taskTitle') }}
       />
       <Stack.Screen name="ShopMain" options={{ title: t('nav.shop') }}>
         {(props) => <StoreScreen {...props} isAdmin={isAdmin} />}
@@ -222,11 +221,11 @@ function AppContent() {
     registerForPushNotifications(user.id, supabase).catch(console.warn);
   }, [user?.id, profile?.notifications_enabled]);
 
-  // --- Handle notification tap → navigate to Tasks tab ---
+  // --- Handle notification tap → navigate to Tasks via Mehr tab ---
   useEffect(() => {
     const subscription = addNotificationResponseListener(() => {
       if (navigationRef.current) {
-        navigationRef.current.navigate('Aufgaben');
+        navigationRef.current.navigate('Mehr', { screen: 'TasksMain' });
       }
     });
     return () => subscription.remove();
@@ -276,7 +275,7 @@ function AppContent() {
             if (route.name === 'Zuhause') iconName = 'home-outline';
             else if (route.name === 'MeinePflanzenTab') iconName = 'leaf-outline';
             else if (route.name === 'Pflanze hinzufügen') iconName = 'add';
-            else if (route.name === 'Aufgaben') iconName = 'clipboard-outline';
+            else if (route.name === 'MeinGärtnerTab') iconName = 'chatbubble-ellipses-outline';
             else if (route.name === 'Mehr') iconName = 'ellipsis-horizontal';
             return <Ionicons name={iconName} size={size} color={color} />;
           },
@@ -305,10 +304,10 @@ function AppContent() {
           }}
         />
         <Tab.Screen
-          name="Aufgaben"
-          options={{ title: t('nav.tasks'), tabBarLabel: t('nav.tasks') }}
+          name="MeinGärtnerTab"
+          options={{ title: t('nav.assistant'), tabBarLabel: t('nav.assistant') }}
         >
-          {() => <TaskStack />}
+          {() => <AssistantTabStack />}
         </Tab.Screen>
         <Tab.Screen name="Mehr" options={{ title: t('nav.more'), tabBarLabel: t('nav.more') }}>
           {() => <MoreStack isAdmin={isAdmin} />}

@@ -6,7 +6,7 @@ import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
 const MENU_ITEMS = [
-  { key: 'assistant', icon: 'chatbox-ellipses-outline', screen: 'AssistantMain' },
+  { key: 'tasks', icon: 'clipboard-outline', screen: 'TasksMain' },
   { key: 'shop', icon: 'flash-outline', screen: 'ShopMain' },
   { key: 'leaderboard', icon: 'trophy-outline', screen: 'LeaderboardMain' },
   { key: 'calendar', icon: 'calendar-outline', screen: 'CalendarMain' },
@@ -19,7 +19,7 @@ export default function MoreScreen({ navigation }) {
 
   const getLabel = (key) => {
     const labels = {
-      assistant: t('nav.assistant'),
+      tasks: t('nav.tasks'),
       shop: t('nav.shop'),
       leaderboard: t('nav.leaderboard'),
       calendar: t('nav.calendar'),
