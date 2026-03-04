@@ -130,6 +130,11 @@
     "startHealthcheck": "Iniciar chequeo de salud",
     "healthcheckDone": "¡Chequeo de salud completado!",
     "noImageForHealthcheck": "No hay foto disponible para el chequeo de salud.",
+    "healthcheckPhotoTitle": "Foto para el diagnóstico",
+    "healthcheckPhotoMessage": "¿Qué foto usar para el diagnóstico?",
+    "useLatestPhoto": "Foto actual",
+    "takeNewPhoto": "Tomar nueva foto",
+    "healthcheckPhoto": "Foto diagnóstico",
     "noDetails": "No hay detalles disponibles.",
     "assignedTo": "Asignada: {{zone}}",
     "changeZone": "Cambiar zona",
@@ -479,6 +484,19 @@
     "todayTitle": "🌞 Hoy – ¡tu día de plantas!",
     "menuOverview": "🌱 Vista general del menú",
     "menuSubtitle": "El menú lateral ya debería estar abierto. Y si no lo está, mala suerte."
+  },
+  "dialog": {
+    "newEntry": "Nueva entrada",
+    "title": "Título",
+    "titlePlaceholder": "ej. ¡Primera floración!",
+    "note": "Nota",
+    "notePlaceholder": "¿Qué pasó?",
+    "addPhoto": "Añadir foto",
+    "changePhoto": "Cambiar foto",
+    "cameraPermissionNeeded": "Se requiere acceso a la cámara.",
+    "imagePickerError": "No se pudo cargar la foto.",
+    "titleRequired": "Por favor ingresa un título.",
+    "saveFailed": "Error al guardar."
   },
   "settings": {
     "title": "Ajustes",

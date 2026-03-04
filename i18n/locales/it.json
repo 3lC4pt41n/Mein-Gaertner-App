@@ -130,6 +130,11 @@
     "startHealthcheck": "Avvia controllo salute",
     "healthcheckDone": "Controllo salute completato!",
     "noImageForHealthcheck": "Nessuna foto disponibile per il controllo salute.",
+    "healthcheckPhotoTitle": "Foto per il controllo",
+    "healthcheckPhotoMessage": "Quale foto utilizzare per il controllo salute?",
+    "useLatestPhoto": "Foto attuale",
+    "takeNewPhoto": "Scatta nuova foto",
+    "healthcheckPhoto": "Foto controllo",
     "noDetails": "Nessun dettaglio disponibile.",
     "assignedTo": "Assegnata: {{zone}}",
     "changeZone": "Cambia zona",
@@ -479,6 +484,19 @@
     "todayTitle": "🌞 Oggi – la tua giornata verde!",
     "menuOverview": "🌱 Panoramica menu",
     "menuSubtitle": "Il menu laterale dovrebbe essere già aperto. E se non lo è, pazienza."
+  },
+  "dialog": {
+    "newEntry": "Nuova voce",
+    "title": "Titolo",
+    "titlePlaceholder": "es. Prima fioritura!",
+    "note": "Nota",
+    "notePlaceholder": "Cosa è successo?",
+    "addPhoto": "Aggiungi foto",
+    "changePhoto": "Cambia foto",
+    "cameraPermissionNeeded": "È richiesto l'accesso alla fotocamera.",
+    "imagePickerError": "Impossibile caricare la foto.",
+    "titleRequired": "Inserisci un titolo.",
+    "saveFailed": "Salvataggio fallito."
   },
   "settings": {
     "title": "Impostazioni",

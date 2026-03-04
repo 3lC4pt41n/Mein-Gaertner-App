@@ -130,6 +130,11 @@
     "startHealthcheck": "Start health check",
     "healthcheckDone": "Health check complete!",
     "noImageForHealthcheck": "No photo available for health check.",
+    "healthcheckPhotoTitle": "Photo for healthcheck",
+    "healthcheckPhotoMessage": "Which photo should be used for the healthcheck?",
+    "useLatestPhoto": "Latest photo",
+    "takeNewPhoto": "Take new photo",
+    "healthcheckPhoto": "Healthcheck photo",
     "noDetails": "No details available.",
     "assignedTo": "Assigned to: {{zone}}",
     "changeZone": "Change Zone",
@@ -479,6 +484,19 @@
     "todayTitle": "🌞 Today – your plant day!",
     "menuOverview": "🌱 Menu Overview",
     "menuSubtitle": "The drawer menu should already be open. And if not, tough luck."
+  },
+  "dialog": {
+    "newEntry": "New entry",
+    "title": "Title",
+    "titlePlaceholder": "e.g. First bloom!",
+    "note": "Note",
+    "notePlaceholder": "What happened?",
+    "addPhoto": "Add photo",
+    "changePhoto": "Change photo",
+    "cameraPermissionNeeded": "Camera access is required.",
+    "imagePickerError": "Could not load photo.",
+    "titleRequired": "Please enter a title.",
+    "saveFailed": "Save failed."
   },
   "settings": {
     "title": "Settings",

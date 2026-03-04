@@ -14,9 +14,10 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
 import { fetchLatestHealthcheck } from '../services/plantService';
-import { addDiaryEntry } from '../services/diaryService';
+import { addDiaryEntry, fetchGallery } from '../services/diaryService';
 import DiaryTimeline from '../components/DiaryTimeline';
 import PlantGallery from '../components/PlantGallery';
 import AddDiaryEntryDialog from '../components/AddDiaryEntryDialog';
@@ -26,6 +27,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { generatePlantDetails, performHealthcheck } from '../services/aiService';
+import { uploadPlantImage } from '../services/uploadService';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -101,6 +103,7 @@ export default function PlantDetailScreen({ route }) {
   const [healthcheck, setHealthcheck] = useState(null);
   const [loading, setLoading] = useState(true);
   const [runningHealthcheck, setRunningHealthcheck] = useState(false);
+  const [galleryKey, setGalleryKey] = useState(0);
 
   // --- Zone-Picker States ---
   const [sections, setSections] = useState([]);
@@ -163,22 +166,110 @@ export default function PlantDetailScreen({ route }) {
     }
   };
 
+  // Healthcheck mit Foto-Auswahl: letztes Galerie-Foto oder neues Foto
   const handleStartHealthcheck = async () => {
-    if (!plant.image_url) {
-      Alert.alert(t('common.error'), t('plants.noImageForHealthcheck'));
-      return;
-    }
-    setRunningHealthcheck(true);
+    // Neuestes Galerie-Foto suchen
+    let latestImageUrl = null;
     try {
-      const result = await performHealthcheck(plant.image_url, plant.name);
-      if (result) {
-        setHealthcheck(result);
-        Alert.alert(t('common.success'), t('plants.healthcheckDone'));
+      const photos = await fetchGallery(plant.id);
+      if (photos.length > 0) latestImageUrl = photos[0].image_url;
+    } catch { /* ignore */ }
+    // Fallback: Original-Pflanzenfoto
+    if (!latestImageUrl) latestImageUrl = plant.image_url;
+
+    const runWithPhoto = async (imageUrl) => {
+      setRunningHealthcheck(true);
+      try {
+        const result = await performHealthcheck(imageUrl, plant.name);
+        if (result) {
+          setHealthcheck(result);
+          Alert.alert(t('common.success'), t('plants.healthcheckDone'));
+        }
+      } catch (e) {
+        Alert.alert(t('common.error'), e.message);
+      } finally {
+        setRunningHealthcheck(false);
       }
+    };
+
+    const takeNewPhoto = async () => {
+      try {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(t('common.error'), t('common.cameraRequired'));
+          return;
+        }
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+        if (result.canceled) return;
+        const uri = result.assets[0].uri;
+        // Foto hochladen + als Galerie-Eintrag speichern
+        const imageUrl = await uploadPlantImage(uri, userId);
+        await supabase.from('plant_diary').insert({
+          plant_id: plant.id,
+          user_id: userId,
+          type: 'healthcheck',
+          title: t('plants.healthcheckPhoto'),
+          note: '',
+          image_url: imageUrl,
+        });
+        setGalleryKey((k) => k + 1);
+        setDiaryKey((k) => k + 1);
+        // Healthcheck mit dem neuen Foto
+        await runWithPhoto(imageUrl);
+      } catch (e) {
+        Alert.alert(t('common.error'), e.message);
+      }
+    };
+
+    if (latestImageUrl) {
+      Alert.alert(
+        t('plants.healthcheckPhotoTitle'),
+        t('plants.healthcheckPhotoMessage'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('plants.useLatestPhoto'), onPress: () => runWithPhoto(latestImageUrl) },
+          { text: t('plants.takeNewPhoto'), onPress: takeNewPhoto },
+        ]
+      );
+    } else {
+      // Kein Foto vorhanden — direkt neues aufnehmen
+      takeNewPhoto();
+    }
+  };
+
+  // Galerie: Foto direkt hinzufügen (ohne Tagebuch-Dialog)
+  const handleAddGalleryPhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(t('common.error'), t('feedback.galleryPermission'));
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const uri = result.assets[0].uri;
+      const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' });
+      await addDiaryEntry({
+        plant_id: plant.id,
+        user_id: userId,
+        title: `${plant.name} – ${today}`,
+        note: '',
+        imageUri: uri,
+      });
+      setGalleryKey((k) => k + 1);
+      setDiaryKey((k) => k + 1);
     } catch (e) {
       Alert.alert(t('common.error'), e.message);
-    } finally {
-      setRunningHealthcheck(false);
     }
   };
 
@@ -403,9 +494,10 @@ export default function PlantDetailScreen({ route }) {
       )}
       {tab === 'gallery' && (
         <PlantGallery
+          key={galleryKey}
           plantId={plant.id}
           plantImageUrl={plant.image_url}
-          onAddPhoto={() => setShowDiaryDialog(true)}
+          onAddPhoto={handleAddGalleryPhoto}
         />
       )}
 
@@ -711,7 +803,6 @@ const styles = StyleSheet.create({
   },
   tabChipActive: {
     backgroundColor: colors.primary,
-    elevation: 2,
   },
   tabChipText: {
     color: colors.textPrimary,

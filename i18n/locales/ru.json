@@ -130,6 +130,11 @@
     "startHealthcheck": "Начать проверку здоровья",
     "healthcheckDone": "Проверка здоровья завершена!",
     "noImageForHealthcheck": "Нет фото для проверки здоровья.",
+    "healthcheckPhotoTitle": "Фото для проверки",
+    "healthcheckPhotoMessage": "Какое фото использовать для проверки здоровья?",
+    "useLatestPhoto": "Текущее фото",
+    "takeNewPhoto": "Сделать новое фото",
+    "healthcheckPhoto": "Фото проверки",
     "noDetails": "Подробности недоступны.",
     "assignedTo": "Назначено: {{zone}}",
     "changeZone": "Сменить зону",
@@ -479,6 +484,19 @@
     "todayTitle": "🌞 Сегодня – ваш день растений!",
     "menuOverview": "🌱 Обзор меню",
     "menuSubtitle": "Боковое меню уже должно быть открыто. А если нет – ну что ж."
+  },
+  "dialog": {
+    "newEntry": "Новая запись",
+    "title": "Заголовок",
+    "titlePlaceholder": "напр. Первое цветение!",
+    "note": "Заметка",
+    "notePlaceholder": "Что произошло?",
+    "addPhoto": "Добавить фото",
+    "changePhoto": "Изменить фото",
+    "cameraPermissionNeeded": "Требуется доступ к камере.",
+    "imagePickerError": "Не удалось загрузить фото.",
+    "titleRequired": "Пожалуйста, введите заголовок.",
+    "saveFailed": "Ошибка сохранения."
   },
   "settings": {
     "title": "Настройки",

@@ -130,6 +130,11 @@
     "startHealthcheck": "Healthcheck starten",
     "healthcheckDone": "Healthcheck abgeschlossen!",
     "noImageForHealthcheck": "Kein Foto vorhanden für den Healthcheck.",
+    "healthcheckPhotoTitle": "Foto für Healthcheck",
+    "healthcheckPhotoMessage": "Welches Foto soll für den Healthcheck verwendet werden?",
+    "useLatestPhoto": "Aktuelles Foto",
+    "takeNewPhoto": "Neues Foto aufnehmen",
+    "healthcheckPhoto": "Healthcheck-Foto",
     "noDetails": "Keine Details verfügbar.",
     "assignedTo": "Zugewiesen: {{zone}}",
     "changeZone": "Zone wechseln",
@@ -479,6 +484,19 @@
     "todayTitle": "🌞 Heute – dein Pflanzentag!",
     "menuOverview": "🌱 Menü-Übersicht",
     "menuSubtitle": "Das Drawer-Menü sollte schon offen sein. Und wenn nicht, Pech gehabt."
+  },
+  "dialog": {
+    "newEntry": "Neuer Eintrag",
+    "title": "Titel",
+    "titlePlaceholder": "z.B. Erste Blüte!",
+    "note": "Notiz",
+    "notePlaceholder": "Was ist passiert?",
+    "addPhoto": "Foto hinzufügen",
+    "changePhoto": "Foto ändern",
+    "cameraPermissionNeeded": "Kamerazugriff wird benötigt.",
+    "imagePickerError": "Foto konnte nicht geladen werden.",
+    "titleRequired": "Bitte gib einen Titel ein.",
+    "saveFailed": "Speichern fehlgeschlagen."
   },
   "settings": {
     "title": "Einstellungen",
