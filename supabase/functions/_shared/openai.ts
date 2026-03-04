@@ -1,4 +1,5 @@
 // Shared OpenAI Helper für alle Edge Functions
+import { Image } from 'https://deno.land/x/imagescript@1.3.0/mod.ts';
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_IMAGE_EDIT_URL = 'https://api.openai.com/v1/images/edits';
@@ -119,7 +120,11 @@ export async function callOpenAIImageEdit(params: {
 
   const model = params.model || 'dall-e-2';
   const imageBytes = base64ToBytes(params.image_base64);
-  const file = new File([imageBytes], 'user-photo.jpg', { type: 'image/jpeg' });
+
+  // dall-e-2 /v1/images/edits only accepts PNG – convert from JPEG/any format
+  const decoded = await Image.decode(imageBytes);
+  const pngBytes = await decoded.encode();
+  const file = new File([pngBytes], 'user-photo.png', { type: 'image/png' });
 
   const formData = new FormData();
   formData.append('model', model);
