@@ -1,6 +1,6 @@
 import { supabase } from '../supabase';
 import { Platform } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Buffer } from 'buffer'; // npm install buffer
 
 // Pflanzenbild hochladen (Bucket: plant-images)

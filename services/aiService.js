@@ -13,10 +13,18 @@ async function callEdgeFunction(functionName, body) {
   });
 
   if (error) {
-    // Supabase FunctionsHttpError enthält den Response
+    // Supabase FunctionsHttpError: error.context kann ein Response-Objekt,
+    // ein String oder bereits ein Objekt sein (je nach SDK-Version).
     let parsed;
     try {
-      parsed = typeof error.context === 'string' ? JSON.parse(error.context) : error.context;
+      if (error.context && typeof error.context.json === 'function') {
+        // Response-Objekt (Supabase JS v2) – Body als JSON lesen
+        parsed = await error.context.json();
+      } else if (typeof error.context === 'string') {
+        parsed = JSON.parse(error.context);
+      } else {
+        parsed = error.context;
+      }
     } catch {
       parsed = null;
     }
@@ -38,7 +46,13 @@ async function callEdgeFunction(functionName, body) {
       throw err;
     }
 
-    throw new Error(parsed?.error || error.message || `Fehler bei ${functionName}`);
+    // Benutzerfreundliche Fallback-Meldung statt rohem SDK-Text
+    const userMsg =
+      parsed?.error ||
+      (error.message && !error.message.includes('non-2xx')
+        ? error.message
+        : `Fehler bei ${functionName} – bitte versuche es erneut.`);
+    throw new Error(userMsg);
   }
 
   return data;
