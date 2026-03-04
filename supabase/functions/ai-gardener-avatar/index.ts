@@ -1,10 +1,11 @@
 // Edge Function: User-Foto -> persoenlicher Gaertner-Avatar
+// 2-Step Pipeline: GPT-4o Vision describes the person, DALL-E 3 generates the avatar
 // POST Body: { base64: string, language?: string }
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { corsHeaders, getUserIdFromAuth, logUsage } from '../_shared/credits.ts';
 import { getLanguagePromptName, getUserLanguage } from '../_shared/language.ts';
-import { callOpenAIImageEdit } from '../_shared/openai.ts';
+import { callOpenAI, callOpenAIImageGenerate } from '../_shared/openai.ts';
 import { validateBase64, validateLanguage, validationErrorResponse } from '../_shared/validate.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 
@@ -46,17 +47,50 @@ serve(async (req) => {
     const resolvedLanguage = await getUserLanguage(serviceClient, userId, language);
     const languagePromptName = getLanguagePromptName(resolvedLanguage);
 
-    const imageResult = await callOpenAIImageEdit({
-      image_base64: base64,
+    // ----- Step 1: GPT-4o Vision — describe the person -----
+    const normalizedBase64 = base64.includes(',') ? base64.split(',')[1] : base64;
+    const visionResult = await callOpenAI({
+      model: 'gpt-4o',
+      max_tokens: 500,
+      temperature: 0.3,
+      messages: [
+        {
+          role: 'system',
+          content: `You are a portrait description assistant. Describe the person in the photo in vivid detail for an illustrator. Focus on: approximate age range, gender presentation, skin tone, hair color/style/length, facial hair, eye color, face shape, glasses, distinctive features (freckles, dimples, etc.), and expression. Be specific and visual. Output ONLY the description, no preamble.`,
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${normalizedBase64}`, detail: 'low' },
+            },
+            { type: 'text', text: 'Describe this person for an illustrator.' },
+          ],
+        },
+      ],
+    });
+
+    const personDescription = visionResult.content;
+
+    // ----- Step 2: DALL-E 3 — generate illustrated gardener avatar -----
+    const imageResult = await callOpenAIImageGenerate({
+      model: 'dall-e-3',
       size: '1024x1024',
-      prompt: `Create a clean illustrated avatar of this person as a friendly modern gardener.
+      quality: 'standard',
+      style: 'natural',
+      prompt: `Create a warm, friendly illustrated avatar portrait of a gardener with the following appearance:
+
+${personDescription}
+
 Style rules:
-- Portrait, head and shoulders, centered, neutral background.
-- Keep facial identity and key traits recognizable.
-- Make it friendly, warm and app-appropriate.
+- Clean digital illustration style, slightly stylized but recognizable.
+- Portrait composition: head and shoulders, centered, soft neutral or garden-themed background.
+- The person is wearing casual gardening attire (e.g. sun hat, apron, gloves, or holding a small plant).
+- Warm, inviting expression. Friendly and app-appropriate.
 - No text, no logo, no watermark, no extra people.
-- Output one final polished avatar image only.
-- Visual language and details should feel natural for ${languagePromptName}.`,
+- Visual language and cultural details should feel natural for ${languagePromptName}.
+- Output one polished avatar illustration.`,
     });
 
     const bucket = 'chat-images';
@@ -80,12 +114,12 @@ Style rules:
     await logUsage(serviceClient, {
       user_id: userId,
       action: 'avatar',
-      prompt_tokens: 0,
-      completion_tokens: 0,
-      total_tokens: 0,
+      prompt_tokens: visionResult.prompt_tokens,
+      completion_tokens: visionResult.completion_tokens,
+      total_tokens: visionResult.total_tokens,
       cost_credits: 0,
-      openai_cost_usd: 0,
-      model: imageResult.model,
+      openai_cost_usd: visionResult.cost_usd,
+      model: `${visionResult.model}+${imageResult.model}`,
       metadata: { language: resolvedLanguage },
     });
 

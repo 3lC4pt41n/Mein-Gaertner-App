@@ -1,8 +1,7 @@
 // Shared OpenAI Helper für alle Edge Functions
-import { Image } from 'https://deno.land/x/imagescript@1.3.0/mod.ts';
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-const OPENAI_IMAGE_EDIT_URL = 'https://api.openai.com/v1/images/edits';
+const OPENAI_IMAGE_GEN_URL = 'https://api.openai.com/v1/images/generations';
 
 // GPT-4o Preise (Stand Feb 2026 – ggf. anpassen)
 const PRICING: Record<string, { input: number; output: number }> = {
@@ -26,7 +25,7 @@ export interface OpenAIResponse {
   }>;
 }
 
-export interface OpenAIImageEditResponse {
+export interface OpenAIImageResponse {
   image_bytes: Uint8Array;
   model: string;
 }
@@ -109,41 +108,37 @@ export async function callOpenAI(params: {
   return response;
 }
 
-export async function callOpenAIImageEdit(params: {
-  image_base64: string;
+/**
+ * Generate an image with DALL-E 3 via /v1/images/generations.
+ * Returns the raw image bytes (PNG) and model name.
+ */
+export async function callOpenAIImageGenerate(params: {
   prompt: string;
   model?: string;
-  size?: '512x512' | '1024x1024';
-}): Promise<OpenAIImageEditResponse> {
+  size?: '1024x1024' | '1024x1792' | '1792x1024';
+  quality?: 'standard' | 'hd';
+  style?: 'vivid' | 'natural';
+}): Promise<OpenAIImageResponse> {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) throw new Error('OPENAI_API_KEY nicht konfiguriert');
 
-  const model = params.model || 'dall-e-2';
-  const imageBytes = base64ToBytes(params.image_base64);
+  const model = params.model || 'dall-e-3';
 
-  // dall-e-2 /v1/images/edits only accepts PNG < 4 MB – convert & resize
-  const decoded = await Image.decode(imageBytes);
-  const maxDim = 1024;
-  const resized =
-    decoded.width > maxDim || decoded.height > maxDim
-      ? decoded.resize(maxDim, Image.RESIZE_AUTO)
-      : decoded;
-  const pngBytes = await resized.encode();
-  const file = new File([pngBytes], 'user-photo.png', { type: 'image/png' });
-
-  const formData = new FormData();
-  formData.append('model', model);
-  formData.append('prompt', params.prompt);
-  formData.append('size', params.size || '1024x1024');
-  formData.append('response_format', 'b64_json');
-  formData.append('image', file);
-
-  const res = await fetch(OPENAI_IMAGE_EDIT_URL, {
+  const res = await fetch(OPENAI_IMAGE_GEN_URL, {
     method: 'POST',
     headers: {
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: formData,
+    body: JSON.stringify({
+      model,
+      prompt: params.prompt,
+      n: 1,
+      size: params.size || '1024x1024',
+      quality: params.quality || 'standard',
+      style: params.style || 'natural',
+      response_format: 'b64_json',
+    }),
   });
 
   const json = await res.json();
@@ -154,7 +149,7 @@ export async function callOpenAIImageEdit(params: {
 
   const outputBase64 = json.data?.[0]?.b64_json;
   if (!outputBase64) {
-    throw new Error('OpenAI Error: Kein Avatar-Bild erhalten');
+    throw new Error('OpenAI Error: Kein Bild erhalten');
   }
 
   return {
