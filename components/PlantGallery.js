@@ -26,7 +26,7 @@ const typeBadges = {
   discovery: '🌱',
 };
 
-export default function PlantGallery({ plantId }) {
+export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
   const [gallery, setGallery] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -39,8 +39,22 @@ export default function PlantGallery({ plantId }) {
   const loadGallery = async () => {
     try {
       setLoading(true);
-      const data = await fetchGallery(plantId);
-      setGallery(data);
+      const diaryPhotos = await fetchGallery(plantId);
+      // Pflanzenbild als erstes Galerie-Element hinzufügen
+      const allPhotos = [...(diaryPhotos || [])];
+      if (plantImageUrl) {
+        const hasMainPhoto = allPhotos.some((p) => p.image_url === plantImageUrl);
+        if (!hasMainPhoto) {
+          allPhotos.unshift({
+            id: 'plant-main',
+            title: t('gallery.plantPhoto'),
+            image_url: plantImageUrl,
+            created_at: new Date().toISOString(),
+            type: 'discovery',
+          });
+        }
+      }
+      setGallery(allPhotos);
     } catch (_error) {
       // Load gallery failed
     } finally {
@@ -100,6 +114,12 @@ export default function PlantGallery({ plantId }) {
       <View style={styles.emptyContainer}>
         <Ionicons name="image-outline" size={48} color={colors.textSecondary} />
         <Text style={styles.emptyText}>{t('gallery.noPhotos')}</Text>
+        {onAddPhoto && (
+          <TouchableOpacity style={styles.addPhotoBtn} onPress={onAddPhoto}>
+            <Ionicons name="camera-outline" size={18} color={colors.surface} style={{ marginRight: spacing.xs }} />
+            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>{t('gallery.addPhoto')}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -232,6 +252,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  addPhotoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    marginTop: spacing.lg,
   },
   modalContainer: {
     flex: 1,

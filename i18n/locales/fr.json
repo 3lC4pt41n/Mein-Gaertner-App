@@ -127,6 +127,9 @@
     "tabHealth": "Bilan santé",
     "healthLabel": "Santé",
     "noHealthcheck": "Aucun bilan santé disponible.",
+    "startHealthcheck": "Lancer le bilan santé",
+    "healthcheckDone": "Bilan santé terminé !",
+    "noImageForHealthcheck": "Aucune photo disponible pour le bilan santé.",
     "noDetails": "Aucun détail disponible.",
     "assignedTo": "Assignée à : {{zone}}",
     "changeZone": "Changer de zone",
@@ -424,7 +427,9 @@
     "title": "Galerie",
     "noPhotos": "Pas encore de photos",
     "noPhotosHint": "Les photos du journal apparaîtront ici.",
-    "photoCount": "{{current}} / {{total}}"
+    "photoCount": "{{current}} / {{total}}",
+    "addPhoto": "Ajouter une photo",
+    "plantPhoto": "Photo de la plante"
   },
   "calendar": {
     "title": "Calendrier",

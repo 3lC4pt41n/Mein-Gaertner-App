@@ -25,7 +25,7 @@ import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
-import { generatePlantDetails } from '../services/aiService';
+import { generatePlantDetails, performHealthcheck } from '../services/aiService';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -100,6 +100,7 @@ export default function PlantDetailScreen({ route }) {
   const details = plantDetails || {};
   const [healthcheck, setHealthcheck] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [runningHealthcheck, setRunningHealthcheck] = useState(false);
 
   // --- Zone-Picker States ---
   const [sections, setSections] = useState([]);
@@ -159,6 +160,25 @@ export default function PlantDetailScreen({ route }) {
       Alert.alert(t('common.error'), e.message);
     } finally {
       setGeneratingDetails(false);
+    }
+  };
+
+  const handleStartHealthcheck = async () => {
+    if (!plant.image_url) {
+      Alert.alert(t('common.error'), t('plants.noImageForHealthcheck'));
+      return;
+    }
+    setRunningHealthcheck(true);
+    try {
+      const result = await performHealthcheck(plant.image_url, plant.name);
+      if (result) {
+        setHealthcheck(result);
+        Alert.alert(t('common.success'), t('plants.healthcheckDone'));
+      }
+    } catch (e) {
+      Alert.alert(t('common.error'), e.message);
+    } finally {
+      setRunningHealthcheck(false);
     }
   };
 
@@ -381,7 +401,13 @@ export default function PlantDetailScreen({ route }) {
           <DiaryTimeline key={diaryKey} plantId={plant.id} />
         </View>
       )}
-      {tab === 'gallery' && <PlantGallery plantId={plant.id} />}
+      {tab === 'gallery' && (
+        <PlantGallery
+          plantId={plant.id}
+          plantImageUrl={plant.image_url}
+          onAddPhoto={() => setShowDiaryDialog(true)}
+        />
+      )}
 
       {/* Tab Content (care, health, overview) */}
       {tab !== 'diary' && tab !== 'gallery' && (
@@ -442,9 +468,20 @@ export default function PlantDetailScreen({ route }) {
                 </Text>
               </View>
             ) : (
-              <Text style={{ color: colors.textDisabled, textAlign: 'center' }}>
-                {t('plants.noHealthcheck')}
-              </Text>
+              <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
+                <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
+                  {t('plants.noHealthcheck')}
+                </Text>
+                <DSButton
+                  variant="primary"
+                  icon="fitness-outline"
+                  onPress={handleStartHealthcheck}
+                  disabled={runningHealthcheck}
+                  size="sm"
+                >
+                  {runningHealthcheck ? t('common.loading') : t('plants.startHealthcheck')}
+                </DSButton>
+              </View>
             )
           ) : details[tab] ? (
             <View>

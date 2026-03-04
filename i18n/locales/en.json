@@ -127,6 +127,9 @@
     "tabHealth": "Health",
     "healthLabel": "Health",
     "noHealthcheck": "No health check available.",
+    "startHealthcheck": "Start health check",
+    "healthcheckDone": "Health check complete!",
+    "noImageForHealthcheck": "No photo available for health check.",
     "noDetails": "No details available.",
     "assignedTo": "Assigned to: {{zone}}",
     "changeZone": "Change Zone",
@@ -424,7 +427,9 @@
     "title": "Gallery",
     "noPhotos": "No photos yet",
     "noPhotosHint": "Photos from the diary will appear here.",
-    "photoCount": "{{current}} / {{total}}"
+    "photoCount": "{{current}} / {{total}}",
+    "addPhoto": "Add photo",
+    "plantPhoto": "Plant photo"
   },
   "calendar": {
     "title": "Calendar",

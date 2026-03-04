@@ -124,9 +124,12 @@
     "tabGallery": "Galerie",
     "tabCare": "Pflege",
     "tabExtras": "Extras",
-    "tabHealth": "Health",
-    "healthLabel": "Health",
+    "tabHealth": "Gesundheit",
+    "healthLabel": "Gesundheit",
     "noHealthcheck": "Kein Healthcheck vorhanden.",
+    "startHealthcheck": "Healthcheck starten",
+    "healthcheckDone": "Healthcheck abgeschlossen!",
+    "noImageForHealthcheck": "Kein Foto vorhanden für den Healthcheck.",
     "noDetails": "Keine Details verfügbar.",
     "assignedTo": "Zugewiesen: {{zone}}",
     "changeZone": "Zone wechseln",
@@ -424,7 +427,9 @@
     "title": "Galerie",
     "noPhotos": "Noch keine Fotos",
     "noPhotosHint": "Fotos aus dem Tagebuch erscheinen hier.",
-    "photoCount": "{{current}} / {{total}}"
+    "photoCount": "{{current}} / {{total}}",
+    "addPhoto": "Foto hinzufügen",
+    "plantPhoto": "Pflanzenfoto"
   },
   "calendar": {
     "title": "Kalender",

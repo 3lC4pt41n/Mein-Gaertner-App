@@ -127,6 +127,9 @@
     "tabHealth": "Controllo salute",
     "healthLabel": "Salute",
     "noHealthcheck": "Nessun controllo salute disponibile.",
+    "startHealthcheck": "Avvia controllo salute",
+    "healthcheckDone": "Controllo salute completato!",
+    "noImageForHealthcheck": "Nessuna foto disponibile per il controllo salute.",
     "noDetails": "Nessun dettaglio disponibile.",
     "assignedTo": "Assegnata: {{zone}}",
     "changeZone": "Cambia zona",
@@ -424,7 +427,9 @@
     "title": "Galleria",
     "noPhotos": "Ancora nessuna foto",
     "noPhotosHint": "Le foto dal diario appariranno qui.",
-    "photoCount": "{{current}} / {{total}}"
+    "photoCount": "{{current}} / {{total}}",
+    "addPhoto": "Aggiungi foto",
+    "plantPhoto": "Foto della pianta"
   },
   "calendar": {
     "title": "Calendario",

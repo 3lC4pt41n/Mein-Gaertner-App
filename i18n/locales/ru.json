@@ -127,6 +127,9 @@
     "tabHealth": "Проверка здоровья",
     "healthLabel": "Здоровье",
     "noHealthcheck": "Проверка здоровья недоступна.",
+    "startHealthcheck": "Начать проверку здоровья",
+    "healthcheckDone": "Проверка здоровья завершена!",
+    "noImageForHealthcheck": "Нет фото для проверки здоровья.",
     "noDetails": "Подробности недоступны.",
     "assignedTo": "Назначено: {{zone}}",
     "changeZone": "Сменить зону",
@@ -424,7 +427,9 @@
     "title": "Галерея",
     "noPhotos": "Фото пока нет",
     "noPhotosHint": "Фото из дневника появятся здесь.",
-    "photoCount": "{{current}} / {{total}}"
+    "photoCount": "{{current}} / {{total}}",
+    "addPhoto": "Добавить фото",
+    "plantPhoto": "Фото растения"
   },
   "calendar": {
     "title": "Календарь",
