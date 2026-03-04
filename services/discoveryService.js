@@ -80,12 +80,29 @@ export async function logDiscovery(userId, speciesName, plantId = null) {
     }
   }
 
+  // 3. Credit-Belohnung für Neuentdeckungen
+  let creditsAwarded = 0;
+  if (isNewForUser) {
+    creditsAwarded = isFirst ? 50 : 25;
+    try {
+      await supabase.rpc('refund_credits', {
+        p_user_id: userId,
+        p_amount: creditsAwarded,
+      });
+    } catch (creditError) {
+      // Non-critical — Entdeckung trotzdem gültig
+      console.warn('Discovery credit award failed:', creditError);
+      creditsAwarded = 0;
+    }
+  }
+
   return {
     speciesId,
     isFirst,
     isNewForUser,
     totalDiscoverers,
     displayName,
+    creditsAwarded,
   };
 }
 

@@ -112,7 +112,7 @@ export default function DiscoveryRevealModal({
 
   if (!discovery) return null;
 
-  const { isFirst, isNewForUser, totalDiscoverers, displayName } = discovery;
+  const { isFirst, isNewForUser, totalDiscoverers, displayName, creditsAwarded } = discovery;
 
   // Determine tier for styling (only two tiers — modal is not shown for known species)
   const tier = isFirst ? 'first' : 'new';
@@ -200,6 +200,16 @@ export default function DiscoveryRevealModal({
               </Text>
             </View>
 
+            {/* Credit Reward */}
+            {creditsAwarded > 0 && (
+              <View style={styles.creditRewardRow}>
+                <Ionicons name="diamond" size={18} color={colors.accent || '#FFD700'} />
+                <Text style={styles.creditRewardText}>
+                  +{creditsAwarded} {t('common.credits')}
+                </Text>
+              </View>
+            )}
+
             {/* First Discoverer Highlight — more prominent */}
             {isFirst && (
               <View style={styles.firstBadgeRow}>
@@ -264,6 +274,7 @@ DiscoveryRevealModal.propTypes = {
     isNewForUser: PropTypes.bool,
     totalDiscoverers: PropTypes.number,
     displayName: PropTypes.string,
+    creditsAwarded: PropTypes.number,
   }),
   imageUri: PropTypes.string,
   onContinue: PropTypes.func.isRequired,
@@ -399,6 +410,25 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '800',
     color: colors.gold,
+    letterSpacing: 0.3,
+  },
+
+  // Credit Reward
+  creditRewardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    marginBottom: spacing.md,
+  },
+  creditRewardText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FFD700',
     letterSpacing: 0.3,
   },
 
