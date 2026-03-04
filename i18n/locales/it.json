@@ -381,7 +381,10 @@
     "messageRequired": "Inserisci un messaggio.",
     "submit": "Invia feedback",
     "thankYou": "Grazie!",
-    "successMessage": "Il tuo feedback è stato ricevuto. Leggiamo tutto!"
+    "successMessage": "Il tuo feedback è stato ricevuto. Leggiamo tutto!",
+    "attachScreenshot": "Allega screenshot",
+    "removeScreenshot": "Rimuovi",
+    "galleryPermission": "È necessario l'accesso alle foto per allegare uno screenshot."
   },
   "weather": {
     "title": "Meteo",

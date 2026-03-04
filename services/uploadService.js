@@ -64,6 +64,34 @@ export async function uploadChatImage(uri, user_id) {
   return fileName; // Stabiler Pfad, Signed URL wird on-demand generiert
 }
 
+// Feedback-Screenshot hochladen (Bucket: plant-images, Prefix: feedback/)
+// Gibt den Storage-Pfad zurueck (Signed URL wird bei Bedarf generiert)
+export async function uploadFeedbackImage(uri, user_id) {
+  const bucket = 'plant-images';
+  const fileExt = uri.split('.').pop().split('?')[0];
+  const fileName = `feedback/fb_${user_id}_${Date.now()}.${fileExt || 'jpg'}`;
+  let fileData,
+    contentType = 'image/jpeg';
+
+  if (Platform.OS === 'web') {
+    const res = await fetch(uri);
+    fileData = await res.blob();
+    contentType = fileData.type || 'image/jpeg';
+  } else {
+    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+    fileData = Buffer.from(base64, 'base64');
+    contentType = 'image/jpeg';
+  }
+
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(fileName, fileData, { contentType, upsert: true });
+
+  if (error) throw error;
+
+  return fileName;
+}
+
 // Signed URL fuer ein Chat-Bild generieren (1 Stunde gueltig)
 export async function getChatImageUrl(imagePath) {
   if (!imagePath) return null;

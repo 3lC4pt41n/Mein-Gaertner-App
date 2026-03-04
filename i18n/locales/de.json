@@ -381,7 +381,10 @@
     "messageRequired": "Bitte gib eine Nachricht ein.",
     "submit": "Feedback senden",
     "thankYou": "Danke!",
-    "successMessage": "Dein Feedback ist angekommen. Wir lesen alles!"
+    "successMessage": "Dein Feedback ist angekommen. Wir lesen alles!",
+    "attachScreenshot": "Screenshot anhängen",
+    "removeScreenshot": "Entfernen",
+    "galleryPermission": "Zugriff auf Fotos wird benötigt, um einen Screenshot anzuhängen."
   },
   "weather": {
     "title": "Wetter",

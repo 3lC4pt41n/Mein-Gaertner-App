@@ -381,7 +381,10 @@
     "messageRequired": "Veuillez entrer un message.",
     "submit": "Envoyer le commentaire",
     "thankYou": "Merci !",
-    "successMessage": "Votre commentaire a été reçu. Nous lisons tout !"
+    "successMessage": "Votre commentaire a été reçu. Nous lisons tout !",
+    "attachScreenshot": "Joindre une capture d'écran",
+    "removeScreenshot": "Supprimer",
+    "galleryPermission": "L'accès aux photos est nécessaire pour joindre une capture d'écran."
   },
   "weather": {
     "title": "Météo",

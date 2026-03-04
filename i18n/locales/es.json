@@ -381,7 +381,10 @@
     "messageRequired": "Introduce un mensaje.",
     "submit": "Enviar comentario",
     "thankYou": "¡Gracias!",
-    "successMessage": "Tu comentario ha sido recibido. ¡Leemos todo!"
+    "successMessage": "Tu comentario ha sido recibido. ¡Leemos todo!",
+    "attachScreenshot": "Adjuntar captura de pantalla",
+    "removeScreenshot": "Eliminar",
+    "galleryPermission": "Se necesita acceso a las fotos para adjuntar una captura de pantalla."
   },
   "weather": {
     "title": "Tiempo",

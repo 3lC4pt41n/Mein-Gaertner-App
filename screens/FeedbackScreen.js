@@ -7,8 +7,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing } from '../theme/tokens';
@@ -17,6 +20,7 @@ import Constants from 'expo-constants';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSChipGroup from '../theme/DSChips';
+import { uploadFeedbackImage } from '../services/uploadService';
 
 const CATEGORIES = [
   { key: 'bug', label: '', icon: 'bug-outline' },
@@ -28,6 +32,7 @@ export default function FeedbackScreen({ navigation }) {
   const { userId } = useAuth();
   const [category, setCategory] = useState('bug');
   const [message, setMessage] = useState('');
+  const [screenshotUri, setScreenshotUri] = useState(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -36,6 +41,24 @@ export default function FeedbackScreen({ navigation }) {
     ...cat,
     label: t(`feedback.categories.${cat.key}`),
   }));
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(t('common.error'), t('feedback.galleryPermission'));
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: false,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      setScreenshotUri(result.assets[0].uri);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!message.trim()) {
@@ -48,18 +71,31 @@ export default function FeedbackScreen({ navigation }) {
     }
 
     setSending(true);
-    const { error } = await supabase.from('feedback').insert({
-      user_id: userId,
-      category,
-      message: message.trim(),
-      app_version: Constants.expoConfig?.version ?? null,
-    });
-    setSending(false);
+    try {
+      let screenshotPath = null;
 
-    if (error) {
-      Alert.alert(t('common.error'), error.message);
-    } else {
-      setSent(true);
+      // Screenshot hochladen falls vorhanden
+      if (screenshotUri) {
+        screenshotPath = await uploadFeedbackImage(screenshotUri, userId);
+      }
+
+      const { error } = await supabase.from('feedback').insert({
+        user_id: userId,
+        category,
+        message: message.trim(),
+        app_version: Constants.expoConfig?.version ?? null,
+        screenshot_path: screenshotPath,
+      });
+
+      if (error) {
+        Alert.alert(t('common.error'), error.message);
+      } else {
+        setSent(true);
+      }
+    } catch (e) {
+      Alert.alert(t('common.error'), e.message);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -116,6 +152,25 @@ export default function FeedbackScreen({ navigation }) {
         />
         <Text style={styles.charCount}>{message.length} / 2000</Text>
 
+        {/* Screenshot */}
+        {screenshotUri ? (
+          <View style={styles.screenshotContainer}>
+            <Image source={{ uri: screenshotUri }} style={styles.screenshotPreview} />
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => setScreenshotUri(null)}
+              accessibilityLabel={t('feedback.removeScreenshot')}
+            >
+              <Ionicons name="close-circle" size={26} color={colors.error} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.attachButton} onPress={handlePickImage}>
+            <Ionicons name="image-outline" size={20} color={colors.primary} />
+            <Text style={styles.attachText}>{t('feedback.attachScreenshot')}</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Submit */}
         <DSButton
           variant="primary"
@@ -158,7 +213,42 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     textAlign: 'right',
     marginTop: -spacing.md,
+    marginBottom: spacing.lg,
+  },
+  attachButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    borderStyle: 'dashed',
     marginBottom: spacing.xl,
+  },
+  attachText: {
+    fontSize: 14,
+    color: colors.primary,
+    marginLeft: spacing.sm,
+  },
+  screenshotContainer: {
+    position: 'relative',
+    alignSelf: 'flex-start',
+    marginBottom: spacing.xl,
+  },
+  screenshotPreview: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    backgroundColor: colors.surfaceAlt,
+  },
+  removeButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: colors.surface,
+    borderRadius: 13,
   },
   successContainer: {
     flex: 1,
