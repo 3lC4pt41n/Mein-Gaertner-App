@@ -3,15 +3,11 @@
     "name": "Digitaler Gärtner",
     "slug": "digitaler-gaertner",
     "scheme": "digitalergaertner",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "platforms": ["ios", "android", "web"],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,9 +16,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.elcaptain.digitalergaertner",

@@ -28,7 +28,9 @@ const SUPABASE_WEATHER_PROXY = `${SUPABASE_URL}/functions/v1/weather-proxy`;
  * Get current session token for authenticated requests
  */
 const getAuthHeaders = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session?.access_token) return {};
   return { Authorization: `Bearer ${session.access_token}` };
 };
@@ -258,11 +260,7 @@ export const getWeatherForecast = async (days = 5) => {
     }
 
     // Fetch from API
-    const forecast = await fetchForecastFromAPI(
-      location.latitude,
-      location.longitude,
-      days
-    );
+    const forecast = await fetchForecastFromAPI(location.latitude, location.longitude, days);
 
     if (forecast) {
       // Cache the result
@@ -300,9 +298,7 @@ export const getWeatherForTasks = async () => {
     const isFrosty = temperature < 2;
     const isHot = temperature > 30;
 
-    const rainForecast24h = forecast
-      ? forecast[0]?.rain_mm || 0
-      : weather.rain_mm;
+    const rainForecast24h = forecast ? forecast[0]?.rain_mm || 0 : weather.rain_mm;
 
     return {
       isRainy,
@@ -322,10 +318,7 @@ export const getWeatherForTasks = async () => {
  */
 export const clearWeatherCache = async () => {
   try {
-    await AsyncStorage.multiRemove([
-      CACHE_KEY_WEATHER,
-      CACHE_KEY_FORECAST,
-    ]);
+    await AsyncStorage.multiRemove([CACHE_KEY_WEATHER, CACHE_KEY_FORECAST]);
   } catch (error) {
     console.warn('Error clearing weather cache:', error.message);
   }

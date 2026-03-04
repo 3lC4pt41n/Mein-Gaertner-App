@@ -5,7 +5,12 @@ supabase.auth.getSession = jest.fn().mockResolvedValue({
   data: { session: { access_token: 'mock-token' } },
 });
 
-const { recognizePlant, generatePlantDetails, performHealthcheck, chatWithBen } = require('../../services/aiService');
+const {
+  recognizePlant,
+  generatePlantDetails,
+  performHealthcheck,
+  chatWithBen,
+} = require('../../services/aiService');
 
 describe('aiService', () => {
   beforeEach(() => {

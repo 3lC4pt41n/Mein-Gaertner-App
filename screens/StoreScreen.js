@@ -10,12 +10,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  fetchBalance,
-  fetchSubscription,
-  fetchUsageHistory,
-  fetchTransactions,
-} from '../services/creditService';
+import { fetchBalance, fetchSubscription, fetchUsageHistory } from '../services/creditService';
 import {
   ONE_TIME_PACKAGES,
   SUBSCRIPTION_PACKAGES,
@@ -25,7 +20,6 @@ import {
   restorePurchases,
 } from '../services/purchaseService';
 import { useNavigation } from '@react-navigation/native';
-import DSButton from '../theme/DSButton';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import i18n, { t } from '../i18n';
 import { AI_COSTS } from '../services/pricingConfig';
@@ -39,14 +33,15 @@ function parsePrice(priceStr) {
 function perCreditCent(priceStr, credits) {
   const price = parsePrice(priceStr);
   if (!credits || !price) return 0;
-  return (price / credits * 100).toFixed(1);
+  return ((price / credits) * 100).toFixed(1);
 }
 
 // Base rate = most expensive per-credit (Starter one-time) for savings calculation
-const BASE_RATE = parsePrice(ONE_TIME_PACKAGES[0]?.price) / (ONE_TIME_PACKAGES[0]?.credits || 1) * 100;
+const BASE_RATE =
+  (parsePrice(ONE_TIME_PACKAGES[0]?.price) / (ONE_TIME_PACKAGES[0]?.credits || 1)) * 100;
 
 function savingsPercent(priceStr, credits) {
-  const rate = parsePrice(priceStr) / (credits || 1) * 100;
+  const rate = (parsePrice(priceStr) / (credits || 1)) * 100;
   if (!BASE_RATE || rate >= BASE_RATE) return 0;
   return Math.round((1 - rate / BASE_RATE) * 100);
 }
@@ -289,7 +284,9 @@ export default function StoreScreen({ isAdmin }) {
                   </Text>
                   {savings > 0 && (
                     <View style={styles.savingsBadge}>
-                      <Text style={styles.savingsText}>{t('store.savePercent', { percent: savings })}</Text>
+                      <Text style={styles.savingsText}>
+                        {t('store.savePercent', { percent: savings })}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -343,7 +340,9 @@ export default function StoreScreen({ isAdmin }) {
                   </Text>
                   {savings > 0 && (
                     <View style={styles.savingsBadge}>
-                      <Text style={styles.savingsText}>{t('store.savePercent', { percent: savings })}</Text>
+                      <Text style={styles.savingsText}>
+                        {t('store.savePercent', { percent: savings })}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -362,10 +361,26 @@ export default function StoreScreen({ isAdmin }) {
           <View style={styles.comparisonBox}>
             <Text style={styles.comparisonTitle}>{t('store.costComparisonTitle')}</Text>
             {[
-              { icon: 'search-outline', label: t('store.actionLabels.plantScan'), cost: String(AI_COSTS.scan) },
-              { icon: 'document-text-outline', label: t('store.costDetails'), cost: String(AI_COSTS.details) },
-              { icon: 'heart-outline', label: t('store.actionLabels.healthcheck'), cost: String(AI_COSTS.healthcheck) },
-              { icon: 'chatbubble-outline', label: t('store.costChat'), cost: String(AI_COSTS.chat) },
+              {
+                icon: 'search-outline',
+                label: t('store.actionLabels.plantScan'),
+                cost: String(AI_COSTS.scan),
+              },
+              {
+                icon: 'document-text-outline',
+                label: t('store.costDetails'),
+                cost: String(AI_COSTS.details),
+              },
+              {
+                icon: 'heart-outline',
+                label: t('store.actionLabels.healthcheck'),
+                cost: String(AI_COSTS.healthcheck),
+              },
+              {
+                icon: 'chatbubble-outline',
+                label: t('store.costChat'),
+                cost: String(AI_COSTS.chat),
+              },
             ].map((item, i) => (
               <View key={i} style={styles.comparisonRow}>
                 <Ionicons name={item.icon} size={16} color={colors.primary} />
@@ -376,7 +391,11 @@ export default function StoreScreen({ isAdmin }) {
           </View>
 
           {/* ─── Restore & Info ───────────────────────────────── */}
-          <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore} accessibilityRole="button">
+          <TouchableOpacity
+            style={styles.restoreBtn}
+            onPress={handleRestore}
+            accessibilityRole="button"
+          >
             <Text style={styles.restoreText}>{t('store.restorePurchases')}</Text>
           </TouchableOpacity>
 
@@ -417,20 +436,14 @@ export default function StoreScreen({ isAdmin }) {
       )}
 
       {/* ─── Feedback (Beta) ──────────────────────────────── */}
-      <TouchableOpacity
-        style={styles.adminBtn}
-        onPress={() => navigation.navigate('FeedbackMain')}
-      >
+      <TouchableOpacity style={styles.adminBtn} onPress={() => navigation.navigate('FeedbackMain')}>
         <Ionicons name="chatbox-ellipses-outline" size={16} color={colors.primary} />
         <Text style={[styles.adminBtnText, { color: colors.primary }]}>{t('feedback.title')}</Text>
       </TouchableOpacity>
 
       {/* ─── Admin Dashboard (nur für Admins) ─────────────── */}
       {isAdmin && (
-        <TouchableOpacity
-          style={styles.adminBtn}
-          onPress={() => navigation.navigate('AdminMain')}
-        >
+        <TouchableOpacity style={styles.adminBtn} onPress={() => navigation.navigate('AdminMain')}>
           <Ionicons name="stats-chart" size={16} color={colors.textTertiary} />
           <Text style={styles.adminBtnText}>{t('store.adminDashboard')}</Text>
         </TouchableOpacity>

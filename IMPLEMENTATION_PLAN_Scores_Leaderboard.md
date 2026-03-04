@@ -9,6 +9,7 @@
 ## Phase 1 – Datenmodell & Migrationen (Woche 1)
 
 ### 1.1 Neue Tabelle: `species`
+
 Zentrale Referenztabelle für Pflanzenarten (Deduplizierung der KI-Erkennung).
 
 ```sql
@@ -24,6 +25,7 @@ CREATE TABLE public.species (
 **Kontext:** Aktuell speichert `AddPlantScreen` Pflanzennamen als Freitext via `aiService.js`. Die Species-Tabelle normalisiert diese Daten und ermöglicht "First Discovery"-Tracking.
 
 ### 1.2 Neue Tabelle: `discovery_events`
+
 Append-only Event-Log für jede Pflanzenentdeckung.
 
 ```sql
@@ -41,6 +43,7 @@ CREATE UNIQUE INDEX idx_discovery_user_species_day
 ```
 
 ### 1.3 Neue Tabelle: `gardening_events`
+
 Append-only Event-Log für alle Pflegeaktionen.
 
 ```sql
@@ -61,6 +64,7 @@ CREATE INDEX idx_gardening_user_created ON public.gardening_events (user_id, cre
 ```
 
 ### 1.4 Erweiterung: `profiles`-Tabelle
+
 Neue Felder für Leaderboard-Opt-in (bestehende Tabelle erweitern).
 
 ```sql
@@ -73,6 +77,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS leaderboard_visibility text
 **Privacy-by-Default:** `leaderboard_opt_in = false` und `visibility = 'private'` als Standard (Art. 25 DSGVO).
 
 ### 1.5 RLS-Policies
+
 ```sql
 -- discovery_events: User sieht nur eigene
 ALTER TABLE public.discovery_events ENABLE ROW LEVEL SECURITY;
@@ -119,6 +124,7 @@ GROUP BY p.id, p.public_display_name, p.username, p.gardener_avatar_path;
 ```
 
 ### 1.7 Migrationsdatei
+
 Erstellen als: `supabase/migrations/20260302_scores_and_leaderboard.sql`
 Enthält alle obigen Statements in einer Transaktion.
 
@@ -146,6 +152,7 @@ Ablauf:
 ```
 
 **Betroffene Dateien:**
+
 - `services/discoveryService.js` (NEU)
 - `screens/AddPlantScreen.js` (Aufruf nach Plant-Save ergänzen)
 
@@ -154,20 +161,24 @@ Ablauf:
 **Aufgabe:** Bei Task-Completion automatisch `gardening_event` loggen.
 
 **Punkteberechnung (im Service):**
+
 - Task on time: `+1.0 × weight` (gießen=1, düngen=2, umtopfen=3)
 - Task late: `+0.4 × weight`
 - Task skipped: `-0.6 × weight`
 
 **Betroffene Dateien:**
+
 - `services/taskService.js` (bestehend, `completeTask` erweitern)
 
 ### 2.3 Erweiterung: Healthcheck-Events
 
 **Aufgabe:** Bei jedem Healthcheck-Log ein `gardening_event` mit:
+
 - Basispunkte: `+0.2` pro Check
 - Bonus: `+0.05 × max(0, deltaHealthscore)`
 
 **Betroffene Dateien:**
+
 - `services/plantService.js` (bestehend, Healthcheck-Funktion erweitern)
 - Alternativ: Edge Function `ai-healthcheck/index.ts` (serverseitig)
 
@@ -184,6 +195,7 @@ Funktionen:
 ```
 
 **Betroffene Dateien:**
+
 - `services/leaderboardService.js` (NEU)
 
 ### 2.5 Erweiterung: Profil-Settings für Opt-in
@@ -191,6 +203,7 @@ Funktionen:
 **Aufgabe:** Profil um Leaderboard-Felder ergänzen.
 
 **Betroffene Dateien:**
+
 - `screens/DrawerProfileScreen.js` (Toggle "Im Ranking anzeigen" + Display-Name)
 - `screens/ProfileCompleteScreen.js` (optional: Opt-in bei Ersteinrichtung anbieten)
 
@@ -201,6 +214,7 @@ Funktionen:
 ### 3.1 Neuer Screen: `screens/LeaderboardScreen.js`
 
 **Layout-Konzept:**
+
 ```
 ┌─────────────────────────────────┐
 │  🏆  Rangliste                  │
@@ -225,6 +239,7 @@ Funktionen:
 ```
 
 **Features:**
+
 - Zeitfenster-Tabs: Woche / Monat / Gesamt
 - Score-Typ-Tabs: Gärtner-Score / Entdecker-Score
 - Top-N Liste (z.B. Top 50)
@@ -238,12 +253,14 @@ Funktionen:
 **Option B:** Erreichbar über Drawer-Menü oder Home-Screen
 
 **Betroffene Dateien:**
+
 - `App.js` (neuen Tab oder Stack-Screen ergänzen)
 - `screens/LeaderboardScreen.js` (NEU)
 
 ### 3.3 Persönliche Statistiken (kein Opt-in nötig)
 
 Auch ohne Leaderboard-Opt-in sieht jede:r User eigene Stats:
+
 - Gesamtpunkte (Gärtner + Entdecker)
 - Aktuelle Streak (aufeinanderfolgende Tage mit Aktivität)
 - Aufgabenquote (on-time / gesamt)
@@ -256,11 +273,13 @@ Auch ohne Leaderboard-Opt-in sieht jede:r User eigene Stats:
 ### 4.1 Unit Tests
 
 **Score-Berechnung (pure functions):**
+
 - `calculateGardeningPoints(eventType, taskWeight)` → erwartete Punkte
 - `calculateDiscoveryPoints(discovered, discoveredFirst, beta)` → erwartete Punkte
 - Edge Cases: leere Daten, negative Scores, Überlauf
 
 **Betroffene Dateien:**
+
 - `__tests__/scoreCalculation.test.js` (NEU)
 - `__tests__/discoveryService.test.js` (NEU)
 - `__tests__/leaderboardService.test.js` (NEU)
@@ -283,6 +302,7 @@ Auch ohne Leaderboard-Opt-in sieht jede:r User eigene Stats:
 ## Phase 5 – Beta-Rollout & Monitoring (Woche 5)
 
 ### 5.1 Staged Rollout
+
 1. Intern testen (Team)
 2. Migration auf Supabase Production deployen
 3. Edge Functions deployen (falls Score-Logik serverseitig)
@@ -290,13 +310,16 @@ Auch ohne Leaderboard-Opt-in sieht jede:r User eigene Stats:
 5. Monitoring aktivieren
 
 ### 5.2 Monitoring
+
 - DB: Query-Latenzen der Leaderboard-View (Index-Checks)
 - App: Error Boundary um LeaderboardScreen
 - Abuse: Rate-Limit auf Discovery-Events (max 1 pro Species/Tag)
 - Alerts: Ungewöhnliche Score-Spikes (> 3σ vom Durchschnitt)
 
 ### 5.3 Kill-Switch
+
 Feature-Flag in `configService.js` oder Supabase-Config:
+
 - `leaderboard_enabled: boolean` → UI zeigt/versteckt den Tab
 - Ermöglicht schnelles Abschalten bei Problemen
 
@@ -304,33 +327,35 @@ Feature-Flag in `configService.js` oder Supabase-Config:
 
 ## Zusammenfassung: Betroffene Dateien
 
-| Datei | Aktion | Phase |
-|-------|--------|-------|
-| `supabase/migrations/20260302_scores_and_leaderboard.sql` | NEU | 1 |
-| `services/discoveryService.js` | NEU | 2 |
-| `services/leaderboardService.js` | NEU | 2 |
-| `services/taskService.js` | ERWEITERN | 2 |
-| `services/plantService.js` | ERWEITERN | 2 |
-| `screens/LeaderboardScreen.js` | NEU | 3 |
-| `screens/DrawerProfileScreen.js` | ERWEITERN | 2 |
-| `screens/AddPlantScreen.js` | ERWEITERN | 2 |
-| `App.js` | ERWEITERN (Navigation) | 3 |
-| `services/languageService.js` | ERWEITERN (i18n-Keys) | 3 |
-| `__tests__/scoreCalculation.test.js` | NEU | 4 |
-| `__tests__/discoveryService.test.js` | NEU | 4 |
-| `__tests__/leaderboardService.test.js` | NEU | 4 |
+| Datei                                                     | Aktion                 | Phase |
+| --------------------------------------------------------- | ---------------------- | ----- |
+| `supabase/migrations/20260302_scores_and_leaderboard.sql` | NEU                    | 1     |
+| `services/discoveryService.js`                            | NEU                    | 2     |
+| `services/leaderboardService.js`                          | NEU                    | 2     |
+| `services/taskService.js`                                 | ERWEITERN              | 2     |
+| `services/plantService.js`                                | ERWEITERN              | 2     |
+| `screens/LeaderboardScreen.js`                            | NEU                    | 3     |
+| `screens/DrawerProfileScreen.js`                          | ERWEITERN              | 2     |
+| `screens/AddPlantScreen.js`                               | ERWEITERN              | 2     |
+| `App.js`                                                  | ERWEITERN (Navigation) | 3     |
+| `services/languageService.js`                             | ERWEITERN (i18n-Keys)  | 3     |
+| `__tests__/scoreCalculation.test.js`                      | NEU                    | 4     |
+| `__tests__/discoveryService.test.js`                      | NEU                    | 4     |
+| `__tests__/leaderboardService.test.js`                    | NEU                    | 4     |
 
 ---
 
 ## Score-Formeln (Referenz)
 
 ### Discovery Points
+
 ```
 DiscoveryPoints(user, window) = discovered(user, window) + β × discovered_first(user, window)
 β = 5 (jede Erstentdeckung bringt 5 Bonuspunkte)
 ```
 
 ### Gardener Score
+
 ```
 Task on time:    +1.0 × task_weight
 Task late:       +0.4 × task_weight
@@ -341,6 +366,7 @@ Task-Gewichte: gießen=1, düngen=2, umtopfen=3
 ```
 
 ### Zeitfenster
+
 - **Woche:** Rolling 7 Tage
 - **Monat:** Rolling 30 Tage
 - **Gesamt:** All-time

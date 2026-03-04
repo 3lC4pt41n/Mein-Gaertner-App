@@ -62,7 +62,7 @@ export default function DSButton({
 
   const bgColor = isDisabled ? v.disabledBg : v.bg;
   const txtColor = isDisabled ? v.disabledText : v.text;
-  const borderColor = isDisabled ? (v.disabledBorder || null) : v.border;
+  const borderColor = isDisabled ? v.disabledBorder || null : v.border;
 
   return (
     <TouchableOpacity
@@ -70,7 +70,9 @@ export default function DSButton({
       disabled={isDisabled}
       activeOpacity={0.7}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel || (typeof children === 'string' ? children : undefined)}
+      accessibilityLabel={
+        accessibilityLabel || (typeof children === 'string' ? children : undefined)
+      }
       accessibilityState={{ disabled: isDisabled }}
       style={[
         styles.base,

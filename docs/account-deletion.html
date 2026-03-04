@@ -1,129 +1,244 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Konto löschen – Digitaler Gärtner</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
-        .container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
-        .card { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h1 { color: #2e7d32; margin-bottom: 8px; font-size: 24px; }
-        h2 { color: #333; margin-top: 24px; margin-bottom: 12px; font-size: 18px; }
-        p { margin-bottom: 16px; }
-        .icon { font-size: 48px; margin-bottom: 16px; }
-        .steps { background: #f1f8e9; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .steps ol { padding-left: 20px; }
-        .steps li { margin-bottom: 8px; }
-        .email-link { color: #2e7d32; font-weight: 600; }
-        .warning { background: #fff3e0; border-left: 4px solid #ff9800; padding: 16px; border-radius: 4px; margin: 20px 0; }
-        .data-list { background: #fafafa; border-radius: 8px; padding: 16px; margin: 12px 0; }
-        .data-list ul { padding-left: 20px; }
-        .data-list li { margin-bottom: 4px; }
-        .footer { text-align: center; margin-top: 24px; color: #888; font-size: 14px; }
-        .lang-switch { text-align: right; margin-bottom: 16px; }
-        .lang-switch a { color: #2e7d32; text-decoration: none; font-weight: 500; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2e7d32;
+        margin-bottom: 8px;
+        font-size: 24px;
+      }
+      h2 {
+        color: #333;
+        margin-top: 24px;
+        margin-bottom: 12px;
+        font-size: 18px;
+      }
+      p {
+        margin-bottom: 16px;
+      }
+      .icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+      .steps {
+        background: #f1f8e9;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .steps ol {
+        padding-left: 20px;
+      }
+      .steps li {
+        margin-bottom: 8px;
+      }
+      .email-link {
+        color: #2e7d32;
+        font-weight: 600;
+      }
+      .warning {
+        background: #fff3e0;
+        border-left: 4px solid #ff9800;
+        padding: 16px;
+        border-radius: 4px;
+        margin: 20px 0;
+      }
+      .data-list {
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 12px 0;
+      }
+      .data-list ul {
+        padding-left: 20px;
+      }
+      .data-list li {
+        margin-bottom: 4px;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 24px;
+        color: #888;
+        font-size: 14px;
+      }
+      .lang-switch {
+        text-align: right;
+        margin-bottom: 16px;
+      }
+      .lang-switch a {
+        color: #2e7d32;
+        text-decoration: none;
+        font-weight: 500;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="card">
-            <div class="lang-switch"><a href="#" onclick="toggleLang(); return false;" id="langToggle">🇬🇧 English</a></div>
-
-            <div id="de">
-                <div class="icon">🌱</div>
-                <h1>Konto & Daten löschen</h1>
-                <p>Du kannst jederzeit die Löschung deines Kontos und aller zugehörigen Daten bei „Digitaler Gärtner" anfordern.</p>
-
-                <h2>So löschst du dein Konto</h2>
-                <div class="steps">
-                    <ol>
-                        <li>Öffne die App und gehe zu <strong>Einstellungen</strong> (Zahnrad-Symbol)</li>
-                        <li>Scrolle nach unten und tippe auf <strong>„Konto löschen"</strong></li>
-                        <li>Bestätige die Löschung</li>
-                    </ol>
-                    <p style="margin-top: 12px; margin-bottom: 0;">Alternativ: Sende eine E-Mail an <a href="mailto:timergenthaler@gmail.com?subject=Kontolöschung%20Digitaler%20Gärtner" class="email-link">timergenthaler@gmail.com</a> mit dem Betreff „Kontolöschung".</p>
-                </div>
-
-                <h2>Welche Daten werden gelöscht?</h2>
-                <div class="data-list">
-                    <ul>
-                        <li>Dein Benutzerprofil (E-Mail-Adresse, Name)</li>
-                        <li>Alle deine Pflanzen und Pflegedaten</li>
-                        <li>Tagebucheinträge und Fotos</li>
-                        <li>Aufgaben und Erinnerungen</li>
-                        <li>Chat-Verlauf mit Ben (KI-Assistent)</li>
-                        <li>Entdeckungen im Pflanzen-Dex</li>
-                        <li>Standortdaten</li>
-                    </ul>
-                </div>
-
-                <div class="warning">
-                    <strong>Hinweis:</strong> Die Kontolöschung ist endgültig und kann nicht rückgängig gemacht werden. Alle deine Daten werden innerhalb von 30 Tagen vollständig von unseren Servern entfernt. Aktive Abonnements müssen separat über den Google Play Store oder Apple App Store gekündigt werden.
-                </div>
-
-                <h2>Aufbewahrungsdauer</h2>
-                <p>Nach der Löschungsanfrage werden deine Daten innerhalb von 30 Tagen vollständig und unwiderruflich gelöscht. Anonymisierte, aggregierte Nutzungsstatistiken können zu Analysezwecken aufbewahrt werden.</p>
-            </div>
-
-            <div id="en" style="display: none;">
-                <div class="icon">🌱</div>
-                <h1>Delete Account & Data</h1>
-                <p>You can request the deletion of your account and all associated data from "Digitaler Gärtner" at any time.</p>
-
-                <h2>How to delete your account</h2>
-                <div class="steps">
-                    <ol>
-                        <li>Open the app and go to <strong>Settings</strong> (gear icon)</li>
-                        <li>Scroll down and tap <strong>"Delete Account"</strong></li>
-                        <li>Confirm the deletion</li>
-                    </ol>
-                    <p style="margin-top: 12px; margin-bottom: 0;">Alternatively: Send an email to <a href="mailto:timergenthaler@gmail.com?subject=Account%20Deletion%20Digitaler%20Gärtner" class="email-link">timergenthaler@gmail.com</a> with the subject "Account Deletion".</p>
-                </div>
-
-                <h2>What data will be deleted?</h2>
-                <div class="data-list">
-                    <ul>
-                        <li>Your user profile (email address, name)</li>
-                        <li>All your plants and care data</li>
-                        <li>Diary entries and photos</li>
-                        <li>Tasks and reminders</li>
-                        <li>Chat history with Ben (AI assistant)</li>
-                        <li>Plant-Dex discoveries</li>
-                        <li>Location data</li>
-                    </ul>
-                </div>
-
-                <div class="warning">
-                    <strong>Note:</strong> Account deletion is permanent and cannot be undone. All your data will be completely removed from our servers within 30 days. Active subscriptions must be cancelled separately through the Google Play Store or Apple App Store.
-                </div>
-
-                <h2>Retention period</h2>
-                <p>After the deletion request, your data will be completely and irreversibly deleted within 30 days. Anonymized, aggregated usage statistics may be retained for analytics purposes.</p>
-            </div>
-
-            <div class="footer">
-                <p>© 2026 Digitaler Gärtner – Tim Ergenthaler</p>
-            </div>
+      <div class="card">
+        <div class="lang-switch">
+          <a
+            href="#"
+            onclick="
+              toggleLang();
+              return false;
+            "
+            id="langToggle"
+            >🇬🇧 English</a
+          >
         </div>
+
+        <div id="de">
+          <div class="icon">🌱</div>
+          <h1>Konto & Daten löschen</h1>
+          <p>
+            Du kannst jederzeit die Löschung deines Kontos und aller zugehörigen Daten bei
+            „Digitaler Gärtner" anfordern.
+          </p>
+
+          <h2>So löschst du dein Konto</h2>
+          <div class="steps">
+            <ol>
+              <li>Öffne die App und gehe zu <strong>Einstellungen</strong> (Zahnrad-Symbol)</li>
+              <li>Scrolle nach unten und tippe auf <strong>„Konto löschen"</strong></li>
+              <li>Bestätige die Löschung</li>
+            </ol>
+            <p style="margin-top: 12px; margin-bottom: 0">
+              Alternativ: Sende eine E-Mail an
+              <a
+                href="mailto:timergenthaler@gmail.com?subject=Kontolöschung%20Digitaler%20Gärtner"
+                class="email-link"
+                >timergenthaler@gmail.com</a
+              >
+              mit dem Betreff „Kontolöschung".
+            </p>
+          </div>
+
+          <h2>Welche Daten werden gelöscht?</h2>
+          <div class="data-list">
+            <ul>
+              <li>Dein Benutzerprofil (E-Mail-Adresse, Name)</li>
+              <li>Alle deine Pflanzen und Pflegedaten</li>
+              <li>Tagebucheinträge und Fotos</li>
+              <li>Aufgaben und Erinnerungen</li>
+              <li>Chat-Verlauf mit Ben (KI-Assistent)</li>
+              <li>Entdeckungen im Pflanzen-Dex</li>
+              <li>Standortdaten</li>
+            </ul>
+          </div>
+
+          <div class="warning">
+            <strong>Hinweis:</strong> Die Kontolöschung ist endgültig und kann nicht rückgängig
+            gemacht werden. Alle deine Daten werden innerhalb von 30 Tagen vollständig von unseren
+            Servern entfernt. Aktive Abonnements müssen separat über den Google Play Store oder
+            Apple App Store gekündigt werden.
+          </div>
+
+          <h2>Aufbewahrungsdauer</h2>
+          <p>
+            Nach der Löschungsanfrage werden deine Daten innerhalb von 30 Tagen vollständig und
+            unwiderruflich gelöscht. Anonymisierte, aggregierte Nutzungsstatistiken können zu
+            Analysezwecken aufbewahrt werden.
+          </p>
+        </div>
+
+        <div id="en" style="display: none">
+          <div class="icon">🌱</div>
+          <h1>Delete Account & Data</h1>
+          <p>
+            You can request the deletion of your account and all associated data from "Digitaler
+            Gärtner" at any time.
+          </p>
+
+          <h2>How to delete your account</h2>
+          <div class="steps">
+            <ol>
+              <li>Open the app and go to <strong>Settings</strong> (gear icon)</li>
+              <li>Scroll down and tap <strong>"Delete Account"</strong></li>
+              <li>Confirm the deletion</li>
+            </ol>
+            <p style="margin-top: 12px; margin-bottom: 0">
+              Alternatively: Send an email to
+              <a
+                href="mailto:timergenthaler@gmail.com?subject=Account%20Deletion%20Digitaler%20Gärtner"
+                class="email-link"
+                >timergenthaler@gmail.com</a
+              >
+              with the subject "Account Deletion".
+            </p>
+          </div>
+
+          <h2>What data will be deleted?</h2>
+          <div class="data-list">
+            <ul>
+              <li>Your user profile (email address, name)</li>
+              <li>All your plants and care data</li>
+              <li>Diary entries and photos</li>
+              <li>Tasks and reminders</li>
+              <li>Chat history with Ben (AI assistant)</li>
+              <li>Plant-Dex discoveries</li>
+              <li>Location data</li>
+            </ul>
+          </div>
+
+          <div class="warning">
+            <strong>Note:</strong> Account deletion is permanent and cannot be undone. All your data
+            will be completely removed from our servers within 30 days. Active subscriptions must be
+            cancelled separately through the Google Play Store or Apple App Store.
+          </div>
+
+          <h2>Retention period</h2>
+          <p>
+            After the deletion request, your data will be completely and irreversibly deleted within
+            30 days. Anonymized, aggregated usage statistics may be retained for analytics purposes.
+          </p>
+        </div>
+
+        <div class="footer">
+          <p>© 2026 Digitaler Gärtner – Tim Ergenthaler</p>
+        </div>
+      </div>
     </div>
 
     <script>
-        function toggleLang() {
-            const de = document.getElementById('de');
-            const en = document.getElementById('en');
-            const toggle = document.getElementById('langToggle');
-            if (de.style.display !== 'none') {
-                de.style.display = 'none';
-                en.style.display = 'block';
-                toggle.textContent = '🇩🇪 Deutsch';
-            } else {
-                de.style.display = 'block';
-                en.style.display = 'none';
-                toggle.textContent = '🇬🇧 English';
-            }
+      function toggleLang() {
+        const de = document.getElementById('de');
+        const en = document.getElementById('en');
+        const toggle = document.getElementById('langToggle');
+        if (de.style.display !== 'none') {
+          de.style.display = 'none';
+          en.style.display = 'block';
+          toggle.textContent = '🇩🇪 Deutsch';
+        } else {
+          de.style.display = 'block';
+          en.style.display = 'none';
+          toggle.textContent = '🇬🇧 English';
         }
+      }
     </script>
-</body>
+  </body>
 </html>

@@ -20,9 +20,19 @@ describe('Notification toggle behavior', () => {
   describe('when notifications are enabled', () => {
     it('reschedules reminders for DUE tasks', async () => {
       const tasks = [
-        { id: 't1', state: 'DUE', title: 'Water plant', due_at: new Date(Date.now() + 3600000).toISOString() },
+        {
+          id: 't1',
+          state: 'DUE',
+          title: 'Water plant',
+          due_at: new Date(Date.now() + 3600000).toISOString(),
+        },
         { id: 't2', state: 'DONE', title: 'Completed task' },
-        { id: 't3', state: 'DUE', title: 'Fertilize', due_at: new Date(Date.now() + 7200000).toISOString() },
+        {
+          id: 't3',
+          state: 'DUE',
+          title: 'Fertilize',
+          due_at: new Date(Date.now() + 7200000).toISOString(),
+        },
       ];
 
       Notifications.scheduleNotificationAsync.mockResolvedValue('notif-id');

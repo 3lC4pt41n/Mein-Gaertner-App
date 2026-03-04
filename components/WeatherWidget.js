@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Linking, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Linking,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getCurrentWeather, getWeatherForTasks } from '../services/weatherService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -32,24 +40,24 @@ const getWeatherIcon = (iconCode, description) => {
 
   // Map description to icon if code mapping fails
   const descriptionMap = {
-    'Sunny': 'sunny',
-    'Clear': 'sunny',
+    Sunny: 'sunny',
+    Clear: 'sunny',
     'Partly cloudy': 'partly-sunny',
-    'Cloudy': 'cloudy',
-    'Overcast': 'cloudy',
-    'Rainy': 'rainy',
-    'Rain': 'rainy',
+    Cloudy: 'cloudy',
+    Overcast: 'cloudy',
+    Rainy: 'rainy',
+    Rain: 'rainy',
     'Light rain': 'rainy',
     'Heavy rain': 'rainy',
-    'Thunderstorm': 'thunderstorm',
-    'Thunderstorms': 'thunderstorm',
-    'Snow': 'snow',
+    Thunderstorm: 'thunderstorm',
+    Thunderstorms: 'thunderstorm',
+    Snow: 'snow',
     'Light snow': 'snow',
     'Heavy snow': 'snow',
-    'Sleet': 'snow',
-    'Fog': 'water',
-    'Mist': 'water',
-    'Haze': 'water',
+    Sleet: 'snow',
+    Fog: 'water',
+    Mist: 'water',
+    Haze: 'water',
   };
 
   return iconMap[iconCode] || descriptionMap[description] || 'cloud';
@@ -59,12 +67,10 @@ const WeatherWidget = () => {
   const [weather, setWeather] = useState(null);
   const [weatherTasks, setWeatherTasks] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [denied, setDenied] = useState(false);
 
   const loadWeather = async () => {
     setLoading(true);
-    setError(null);
     setDenied(false);
     try {
       const [currentWeather, tasksWeather] = await Promise.all([
@@ -81,8 +87,8 @@ const WeatherWidget = () => {
 
       setWeather(currentWeather);
       setWeatherTasks(tasksWeather);
-    } catch (err) {
-      setError(err.message);
+    } catch (_err) {
+      // Weather load failed silently
     } finally {
       setLoading(false);
     }

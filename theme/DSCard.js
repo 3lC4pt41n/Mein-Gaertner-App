@@ -9,14 +9,8 @@ const PADDING_MAP = {
   lg: spacing.xl,
 };
 
-export default function DSCard({
-  variant = 'elevated',
-  padding = 'md',
-  onPress,
-  children,
-  style,
-}) {
-  const pad = typeof padding === 'number' ? padding : (PADDING_MAP[padding] || PADDING_MAP.md);
+export default function DSCard({ variant = 'elevated', padding = 'md', onPress, children, style }) {
+  const pad = typeof padding === 'number' ? padding : PADDING_MAP[padding] || PADDING_MAP.md;
 
   const cardStyle = [
     styles.base,
@@ -29,13 +23,22 @@ export default function DSCard({
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" style={cardStyle}>
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        style={cardStyle}
+      >
         {children}
       </TouchableOpacity>
     );
   }
 
-  return <View accessible accessibilityRole="summary" style={cardStyle}>{children}</View>;
+  return (
+    <View accessible accessibilityRole="summary" style={cardStyle}>
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

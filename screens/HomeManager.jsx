@@ -67,9 +67,7 @@ export default function HomeManager() {
         }
       }
 
-      setLocations(
-        (locs || []).map((l) => ({ ...l, zones: zonesMap[l.id] || [] }))
-      );
+      setLocations((locs || []).map((l) => ({ ...l, zones: zonesMap[l.id] || [] })));
 
       // Fetch plants without a zone assignment
       const { data: noZonePlants } = await supabase
@@ -244,7 +242,12 @@ export default function HomeManager() {
         <Ionicons name="cloud-offline-outline" size={56} color={colors.textDisabled} />
         <Text style={styles.stateTitle}>{t('home.loadError')}</Text>
         <Text style={styles.stateHint}>{error}</Text>
-        <DSButton variant="primary" icon="refresh-outline" onPress={reload} style={{ marginTop: spacing.lg }}>
+        <DSButton
+          variant="primary"
+          icon="refresh-outline"
+          onPress={reload}
+          style={{ marginTop: spacing.lg }}
+        >
           {t('common.retry')}
         </DSButton>
       </View>
@@ -274,7 +277,10 @@ export default function HomeManager() {
                 <View style={styles.dexTextContainer}>
                   <Text style={styles.dexLabel}>{t('dex.title')}</Text>
                   <Text style={styles.dexProgress}>
-                    {t('dex.progress', { discovered: dexProgress.discovered, total: dexProgress.total })}
+                    {t('dex.progress', {
+                      discovered: dexProgress.discovered,
+                      total: dexProgress.total,
+                    })}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
@@ -314,9 +320,7 @@ export default function HomeManager() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.locationName}>{item.name}</Text>
-                {item.address ? (
-                  <Text style={styles.locationAddress}>{item.address}</Text>
-                ) : null}
+                {item.address ? <Text style={styles.locationAddress}>{item.address}</Text> : null}
               </View>
               <Ionicons
                 name={expandedId === item.id ? 'chevron-up' : 'chevron-down'}
@@ -388,12 +392,7 @@ export default function HomeManager() {
         }
       />
       {/* ── Modal ────────────────────────────────────── */}
-      <Modal
-        visible={dialogVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={closeModal}
-      >
+      <Modal visible={dialogVisible} animationType="slide" transparent onRequestClose={closeModal}>
         <View style={styles.overlay}>
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>

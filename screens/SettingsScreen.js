@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../i18n';
-import { colors, spacing, radius, shadows } from '../theme/tokens';
+import { colors, spacing } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
@@ -78,7 +78,12 @@ function LinkRow({ icon, label, onPress }) {
   return (
     <TouchableOpacity style={styles.linkRow} onPress={onPress} activeOpacity={0.6}>
       <View style={styles.linkRowLeft}>
-        <Ionicons name={icon} size={18} color={colors.textSecondary} style={{ marginRight: spacing.md }} />
+        <Ionicons
+          name={icon}
+          size={18}
+          color={colors.textSecondary}
+          style={{ marginRight: spacing.md }}
+        />
         <Text style={styles.linkLabel}>{label}</Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
@@ -129,7 +134,10 @@ export default function SettingsScreen({ navigation }) {
   // --- Avatar URL ---
   useEffect(() => {
     const path = user?.user_metadata?.gardener_avatar_path;
-    if (!path) { setAvatarUrl(null); return; }
+    if (!path) {
+      setAvatarUrl(null);
+      return;
+    }
     createAvatarSignedUrl(path)
       .then(setAvatarUrl)
       .catch(() => setAvatarUrl(null));
@@ -193,7 +201,7 @@ export default function SettingsScreen({ navigation }) {
       });
       setDirty(false);
       Alert.alert(t('common.success'), t('settings.profileSaved'));
-    } catch (error) {
+    } catch (_error) {
       Alert.alert(t('common.error'), t('settings.profileSaveError'));
     } finally {
       setSaving(false);
@@ -228,23 +236,19 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      t('settings.logoutConfirmTitle'),
-      t('settings.logoutConfirmMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('settings.logout'),
-          onPress: async () => {
-            try {
-              await signOut();
-            } catch (error) {
-              Alert.alert(t('common.error'), error.message);
-            }
-          },
+    Alert.alert(t('settings.logoutConfirmTitle'), t('settings.logoutConfirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('settings.logout'),
+        onPress: async () => {
+          try {
+            await signOut();
+          } catch (error) {
+            Alert.alert(t('common.error'), error.message);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleManageSubscription = async () => {
@@ -256,7 +260,10 @@ export default function SettingsScreen({ navigation }) {
   };
 
   // --- Helpers ---
-  const markDirty = (setter) => (val) => { setter(val); setDirty(true); };
+  const markDirty = (setter) => (val) => {
+    setter(val);
+    setDirty(true);
+  };
 
   const langChips = LANGUAGE_OPTIONS.map((opt) => ({
     key: opt.code,
@@ -273,7 +280,9 @@ export default function SettingsScreen({ navigation }) {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+      }
     >
       {/* ========== PROFILE SECTION ========== */}
       <DSCard variant="elevated" padding="lg">
@@ -281,7 +290,11 @@ export default function SettingsScreen({ navigation }) {
 
         {/* Avatar */}
         <View style={styles.avatarContainer}>
-          <TouchableOpacity onPress={handleAvatarChange} disabled={generatingAvatar} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleAvatarChange}
+            disabled={generatingAvatar}
+            activeOpacity={0.7}
+          >
             <View style={styles.avatarWrapper}>
               {avatarUrl ? (
                 <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
@@ -425,7 +438,6 @@ export default function SettingsScreen({ navigation }) {
         >
           {t('settings.logout')}
         </DSButton>
-
       </DSCard>
 
       {/* ========== INFO SECTION ========== */}
@@ -439,13 +451,17 @@ export default function SettingsScreen({ navigation }) {
         <LinkRow
           icon="document-text-outline"
           label={t('settings.privacyPolicy')}
-          onPress={() => Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html')}
+          onPress={() =>
+            Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html')
+          }
         />
         {SHOW_TERMS_LINK ? (
           <LinkRow
             icon="reader-outline"
             label={t('settings.termsOfService')}
-            onPress={() => Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html')}
+            onPress={() =>
+              Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html')
+            }
           />
         ) : null}
         <LinkRow

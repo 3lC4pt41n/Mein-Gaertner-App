@@ -1,135 +1,248 @@
-{{ $lang := "de" }}{{ if .Data.language }}{{ $lang = .Data.language }}{{ end }}
-{{ $subtitle := "Dein smarter Pflanzenbegleiter" }}
-{{ $title := "Konto aktivieren" }}
-{{ $desc := "Willkommen im Garten. Bitte bestätige deine E-Mail-Adresse, um dein Konto zu aktivieren." }}
-{{ $note := "Dieser Link ist zeitlich begrenzt." }}
-{{ $cta := "Konto aktivieren" }}
-{{ $fallback := "Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:" }}
-{{ $footer := "Du hast kein Konto erstellt? Dann ignoriere diese E-Mail." }}
-{{ $outside := "Wenn du diese E-Mail unerwartet erhalten hast, musst du nichts tun." }}
-{{ if eq $lang "en" }}
-  {{ $subtitle = "Your smart plant companion" }}
-  {{ $title = "Activate Account" }}
-  {{ $desc = "Welcome to the garden. Please confirm your email address to activate your account." }}
-  {{ $note = "This link is time-limited." }}
-  {{ $cta = "Activate Account" }}
-  {{ $fallback = "If the button doesn't work, copy this link into your browser:" }}
-  {{ $footer = "Didn't create an account? Just ignore this email." }}
-  {{ $outside = "If you received this email unexpectedly, no action is required." }}
-{{ else if eq $lang "fr" }}
-  {{ $subtitle = "Ton compagnon végétal intelligent" }}
-  {{ $title = "Activer le compte" }}
-  {{ $desc = "Bienvenue au jardin. Confirme ton adresse e-mail pour activer ton compte." }}
-  {{ $note = "Ce lien est limité dans le temps." }}
-  {{ $cta = "Activer le compte" }}
-  {{ $fallback = "Si le bouton ne fonctionne pas, copie ce lien dans ton navigateur :" }}
-  {{ $footer = "Tu n'as pas créé de compte ? Ignore cet e-mail." }}
-  {{ $outside = "Si tu as reçu cet e-mail par erreur, aucune action n'est requise." }}
-{{ else if eq $lang "it" }}
-  {{ $subtitle = "Il tuo compagno verde intelligente" }}
-  {{ $title = "Attiva account" }}
-  {{ $desc = "Benvenuto nel giardino. Conferma il tuo indirizzo e-mail per attivare il tuo account." }}
-  {{ $note = "Questo link è a tempo limitato." }}
-  {{ $cta = "Attiva account" }}
-  {{ $fallback = "Se il pulsante non funziona, copia questo link nel tuo browser:" }}
-  {{ $footer = "Non hai creato un account? Ignora questa e-mail." }}
-  {{ $outside = "Se hai ricevuto questa e-mail per errore, non devi fare nulla." }}
-{{ else if eq $lang "es" }}
-  {{ $subtitle = "Tu compañero vegetal inteligente" }}
-  {{ $title = "Activar cuenta" }}
-  {{ $desc = "Bienvenido al jardín. Confirma tu dirección de correo electrónico para activar tu cuenta." }}
-  {{ $note = "Este enlace tiene un tiempo limitado." }}
-  {{ $cta = "Activar cuenta" }}
-  {{ $fallback = "Si el botón no funciona, copia este enlace en tu navegador:" }}
-  {{ $footer = "¿No creaste una cuenta? Ignora este correo." }}
-  {{ $outside = "Si recibiste este correo inesperadamente, no necesitas hacer nada." }}
-{{ else if eq $lang "ru" }}
-  {{ $subtitle = "Ваш умный помощник для растений" }}
-  {{ $title = "Активировать аккаунт" }}
-  {{ $desc = "Добро пожаловать в сад. Подтвердите свой адрес электронной почты, чтобы активировать аккаунт." }}
-  {{ $note = "Эта ссылка ограничена по времени." }}
-  {{ $cta = "Активировать аккаунт" }}
-  {{ $fallback = "Если кнопка не работает, скопируйте эту ссылку в браузер:" }}
-  {{ $footer = "Вы не создавали аккаунт? Просто проигнорируйте это письмо." }}
-  {{ $outside = "Если вы получили это письмо по ошибке, никаких действий не требуется." }}
-{{ end }}
-<!DOCTYPE html>
+{{ $lang := "de" }}{{ if .Data.language }}{{ $lang = .Data.language }}{{ end }} {{ $subtitle :=
+"Dein smarter Pflanzenbegleiter" }} {{ $title := "Konto aktivieren" }} {{ $desc := "Willkommen im
+Garten. Bitte bestätige deine E-Mail-Adresse, um dein Konto zu aktivieren." }} {{ $note := "Dieser
+Link ist zeitlich begrenzt." }} {{ $cta := "Konto aktivieren" }} {{ $fallback := "Falls der Button
+nicht funktioniert, kopiere diesen Link in deinen Browser:" }} {{ $footer := "Du hast kein Konto
+erstellt? Dann ignoriere diese E-Mail." }} {{ $outside := "Wenn du diese E-Mail unerwartet erhalten
+hast, musst du nichts tun." }} {{ if eq $lang "en" }} {{ $subtitle = "Your smart plant companion" }}
+{{ $title = "Activate Account" }} {{ $desc = "Welcome to the garden. Please confirm your email
+address to activate your account." }} {{ $note = "This link is time-limited." }} {{ $cta = "Activate
+Account" }} {{ $fallback = "If the button doesn't work, copy this link into your browser:" }} {{
+$footer = "Didn't create an account? Just ignore this email." }} {{ $outside = "If you received this
+email unexpectedly, no action is required." }} {{ else if eq $lang "fr" }} {{ $subtitle = "Ton
+compagnon végétal intelligent" }} {{ $title = "Activer le compte" }} {{ $desc = "Bienvenue au
+jardin. Confirme ton adresse e-mail pour activer ton compte." }} {{ $note = "Ce lien est limité dans
+le temps." }} {{ $cta = "Activer le compte" }} {{ $fallback = "Si le bouton ne fonctionne pas, copie
+ce lien dans ton navigateur :" }} {{ $footer = "Tu n'as pas créé de compte ? Ignore cet e-mail." }}
+{{ $outside = "Si tu as reçu cet e-mail par erreur, aucune action n'est requise." }} {{ else if eq
+$lang "it" }} {{ $subtitle = "Il tuo compagno verde intelligente" }} {{ $title = "Attiva account" }}
+{{ $desc = "Benvenuto nel giardino. Conferma il tuo indirizzo e-mail per attivare il tuo account."
+}} {{ $note = "Questo link è a tempo limitato." }} {{ $cta = "Attiva account" }} {{ $fallback = "Se
+il pulsante non funziona, copia questo link nel tuo browser:" }} {{ $footer = "Non hai creato un
+account? Ignora questa e-mail." }} {{ $outside = "Se hai ricevuto questa e-mail per errore, non devi
+fare nulla." }} {{ else if eq $lang "es" }} {{ $subtitle = "Tu compañero vegetal inteligente" }} {{
+$title = "Activar cuenta" }} {{ $desc = "Bienvenido al jardín. Confirma tu dirección de correo
+electrónico para activar tu cuenta." }} {{ $note = "Este enlace tiene un tiempo limitado." }} {{
+$cta = "Activar cuenta" }} {{ $fallback = "Si el botón no funciona, copia este enlace en tu
+navegador:" }} {{ $footer = "¿No creaste una cuenta? Ignora este correo." }} {{ $outside = "Si
+recibiste este correo inesperadamente, no necesitas hacer nada." }} {{ else if eq $lang "ru" }} {{
+$subtitle = "Ваш умный помощник для растений" }} {{ $title = "Активировать аккаунт" }} {{ $desc =
+"Добро пожаловать в сад. Подтвердите свой адрес электронной почты, чтобы активировать аккаунт." }}
+{{ $note = "Эта ссылка ограничена по времени." }} {{ $cta = "Активировать аккаунт" }} {{ $fallback =
+"Если кнопка не работает, скопируйте эту ссылку в браузер:" }} {{ $footer = "Вы не создавали
+аккаунт? Просто проигнорируйте это письмо." }} {{ $outside = "Если вы получили это письмо по ошибке,
+никаких действий не требуется." }} {{ end }}
+<!doctype html>
 <html lang="{{ $lang }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Digitaler Gärtner</title>
   </head>
-  <body style="margin:0;padding:0;background-color:#f5f5f7;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f7;padding:32px 16px;">
+  <body style="margin: 0; padding: 0; background-color: #f5f5f7">
+    <table
+      role="presentation"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background-color: #f5f5f7; padding: 32px 16px"
+    >
       <tr>
         <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e5e5ea;border-radius:14px;overflow:hidden;">
+          <table
+            role="presentation"
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              max-width: 560px;
+              background: #ffffff;
+              border: 1px solid #e5e5ea;
+              border-radius: 14px;
+              overflow: hidden;
+            "
+          >
             <!-- Header -->
             <tr>
-              <td style="padding:28px 28px 18px;text-align:left;">
-                <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1d1d1f;font-size:14px;letter-spacing:-0.01em;">
-                  <span style="font-size:18px;vertical-align:-2px;">🌱</span>
-                  <span style="font-weight:600;margin-left:8px;">Digitaler Gärtner</span>
+              <td style="padding: 28px 28px 18px; text-align: left">
+                <div
+                  style="
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    color: #1d1d1f;
+                    font-size: 14px;
+                    letter-spacing: -0.01em;
+                  "
+                >
+                  <span style="font-size: 18px; vertical-align: -2px">🌱</span>
+                  <span style="font-weight: 600; margin-left: 8px">Digitaler Gärtner</span>
                 </div>
-                <div style="margin-top:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6e6e73;font-size:13px;">
+                <div
+                  style="
+                    margin-top: 6px;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    color: #6e6e73;
+                    font-size: 13px;
+                  "
+                >
                   {{ $subtitle }}
                 </div>
               </td>
             </tr>
 
-            <tr><td style="padding:0 28px;"><hr style="border:none;border-top:1px solid #e5e5ea;margin:0;" /></td></tr>
+            <tr>
+              <td style="padding: 0 28px">
+                <hr style="border: none; border-top: 1px solid #e5e5ea; margin: 0" />
+              </td>
+            </tr>
 
             <!-- Body -->
             <tr>
-              <td style="padding:22px 28px 10px;">
-                <h1 style="margin:0 0 10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1d1d1f;font-size:22px;line-height:1.25;letter-spacing:-0.02em;">
+              <td style="padding: 22px 28px 10px">
+                <h1
+                  style="
+                    margin: 0 0 10px;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    color: #1d1d1f;
+                    font-size: 22px;
+                    line-height: 1.25;
+                    letter-spacing: -0.02em;
+                  "
+                >
                   {{ $title }}
                 </h1>
-                <p style="margin:0 0 14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1d1d1f;font-size:16px;line-height:1.6;">
+                <p
+                  style="
+                    margin: 0 0 14px;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    color: #1d1d1f;
+                    font-size: 16px;
+                    line-height: 1.6;
+                  "
+                >
                   {{ $desc }}
                 </p>
-                <p style="margin:0 0 18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6e6e73;font-size:14px;line-height:1.6;">
+                <p
+                  style="
+                    margin: 0 0 18px;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    color: #6e6e73;
+                    font-size: 14px;
+                    line-height: 1.6;
+                  "
+                >
                   {{ $note }}
                 </p>
 
                 <!-- CTA -->
-                <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 10px;">
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="margin: 8px 0 10px"
+                >
                   <tr>
                     <td align="left">
-                      <a href="{{ .ConfirmationURL }}"
-                         style="display:inline-block;background:#2E7D32;color:#ffffff;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;padding:12px 18px;border-radius:10px;">
+                      <a
+                        href="{{ .ConfirmationURL }}"
+                        style="
+                          display: inline-block;
+                          background: #2e7d32;
+                          color: #ffffff;
+                          text-decoration: none;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                            sans-serif;
+                          font-size: 15px;
+                          font-weight: 600;
+                          padding: 12px 18px;
+                          border-radius: 10px;
+                        "
+                      >
                         {{ $cta }}
                       </a>
                     </td>
                   </tr>
                 </table>
 
-                <p style="margin:16px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6e6e73;font-size:12px;line-height:1.6;">
+                <p
+                  style="
+                    margin: 16px 0 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    color: #6e6e73;
+                    font-size: 12px;
+                    line-height: 1.6;
+                  "
+                >
                   {{ $fallback }}<br />
-                  <a href="{{ .ConfirmationURL }}" style="color:#2E7D32;text-decoration:none;word-break:break-all;">{{ .ConfirmationURL }}</a>
+                  <a
+                    href="{{ .ConfirmationURL }}"
+                    style="color: #2e7d32; text-decoration: none; word-break: break-all"
+                    >{{ .ConfirmationURL }}</a
+                  >
                 </p>
               </td>
             </tr>
 
-            <tr><td style="padding:18px 28px;"><hr style="border:none;border-top:1px solid #e5e5ea;margin:0;" /></td></tr>
+            <tr>
+              <td style="padding: 18px 28px">
+                <hr style="border: none; border-top: 1px solid #e5e5ea; margin: 0" />
+              </td>
+            </tr>
 
             <!-- Footer -->
             <tr>
-              <td style="padding:0 28px 26px;">
-                <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6e6e73;font-size:12px;line-height:1.6;">
+              <td style="padding: 0 28px 26px">
+                <p
+                  style="
+                    margin: 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    color: #6e6e73;
+                    font-size: 12px;
+                    line-height: 1.6;
+                  "
+                >
                   {{ $footer }}
                 </p>
-                <p style="margin:10px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#9b9ba0;font-size:11px;">
+                <p
+                  style="
+                    margin: 10px 0 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+                      sans-serif;
+                    color: #9b9ba0;
+                    font-size: 11px;
+                  "
+                >
                   &copy; 2026 Digitaler Gärtner
                 </p>
               </td>
             </tr>
           </table>
 
-          <div style="height:18px;line-height:18px;font-size:18px;">&nbsp;</div>
+          <div style="height: 18px; line-height: 18px; font-size: 18px">&nbsp;</div>
 
-          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#9b9ba0;font-size:11px;">
+          <div
+            style="
+              font-family:
+                -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+              color: #9b9ba0;
+              font-size: 11px;
+            "
+          >
             {{ $outside }}
           </div>
         </td>

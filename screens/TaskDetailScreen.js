@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { fetchTask, completeTask, skipTask } from '../services/taskService';
-import { colors, spacing, radius, shadows } from '../theme/tokens';
+import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 
 export default function TaskDetailScreen({ route, navigation }) {
@@ -179,7 +179,12 @@ export default function TaskDetailScreen({ route, navigation }) {
             paddingVertical: spacing.md,
             paddingHorizontal: spacing.xl + 10,
           }}
-          onPress={() => navigation.navigate('MeinePflanzenTab', { screen: 'PlantDetail', params: { plant: task.plant } })}
+          onPress={() =>
+            navigation.navigate('MeinePflanzenTab', {
+              screen: 'PlantDetail',
+              params: { plant: task.plant },
+            })
+          }
         >
           <Ionicons
             name="pulse"

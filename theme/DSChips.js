@@ -25,10 +25,7 @@ export default function DSChipGroup({
               accessibilityRole="button"
               accessibilityLabel={item.label}
               accessibilityState={{ selected: active }}
-              style={[
-                styles.segmentedItem,
-                active && styles.segmentedActive,
-              ]}
+              style={[styles.segmentedItem, active && styles.segmentedActive]}
             >
               {item.icon && (
                 <Ionicons
@@ -38,10 +35,7 @@ export default function DSChipGroup({
                   style={styles.chipIcon}
                 />
               )}
-              <Text style={[
-                styles.segmentedText,
-                active && styles.segmentedTextActive,
-              ]}>
+              <Text style={[styles.segmentedText, active && styles.segmentedTextActive]}>
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -61,10 +55,7 @@ export default function DSChipGroup({
         accessibilityRole="button"
         accessibilityLabel={item.label}
         accessibilityState={{ selected: active }}
-        style={[
-          styles.pill,
-          active ? styles.pillActive : styles.pillInactive,
-        ]}
+        style={[styles.pill, active ? styles.pillActive : styles.pillInactive]}
       >
         {item.icon && (
           <Ionicons
@@ -74,10 +65,7 @@ export default function DSChipGroup({
             style={styles.chipIcon}
           />
         )}
-        <Text style={[
-          styles.pillText,
-          active ? styles.pillTextActive : styles.pillTextInactive,
-        ]}>
+        <Text style={[styles.pillText, active ? styles.pillTextActive : styles.pillTextInactive]}>
           {item.label}
         </Text>
       </TouchableOpacity>
@@ -161,12 +149,14 @@ const styles = StyleSheet.create({
 });
 
 DSChipGroup.propTypes = {
-  items: PropTypes.arrayOf(PropTypes.shape({
-    label: PropTypes.string.isRequired,
-    value: PropTypes.string,
-    key: PropTypes.string,
-    icon: PropTypes.string,
-  })).isRequired,
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      value: PropTypes.string,
+      key: PropTypes.string,
+      icon: PropTypes.string,
+    })
+  ).isRequired,
   selected: PropTypes.string,
   onSelect: PropTypes.func,
   variant: PropTypes.oneOf(['segmented', 'pills']),

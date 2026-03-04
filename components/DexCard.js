@@ -32,10 +32,7 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }
 
   return (
     <TouchableOpacity
-      style={[
-        styles.card,
-        discovered && isFirstDiscoverer && styles.cardFirst,
-      ]}
+      style={[styles.card, discovered && isFirstDiscoverer && styles.cardFirst]}
       activeOpacity={discovered ? 0.7 : 0.9}
       onPress={handlePress}
       accessibilityRole="button"
@@ -91,9 +88,7 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }
           {/* Discoverers Count */}
           <View style={styles.discoverersBadge}>
             <Ionicons name="people" size={12} color={colors.textTertiary} />
-            <Text style={styles.discoverersText}>
-              {species.total_discoverers || 1}
-            </Text>
+            <Text style={styles.discoverersText}>{species.total_discoverers || 1}</Text>
           </View>
         </>
       ) : (

@@ -10,9 +10,7 @@ export async function saveMessage({ user_id, sender, content, image_path, image_
   } else if (image_url) {
     row.image_url = image_url; // Backward compat fuer alte Aufrufe
   }
-  const { error } = await supabase
-    .from("messages")
-    .insert([row]);
+  const { error } = await supabase.from('messages').insert([row]);
   if (error) throw error;
 }
 
@@ -37,9 +35,9 @@ async function resolveImageUrls(messages) {
 // before: ISO-Timestamp, laedt nur Messages aelter als dieser Zeitpunkt
 export async function fetchMessages(user_id, { before = null, limit = PAGE_SIZE } = {}) {
   let query = supabase
-    .from("messages")
+    .from('messages')
     .select('*')
-    .eq("user_id", user_id)
+    .eq('user_id', user_id)
     .order('created_at', { ascending: false })
     .limit(limit);
 

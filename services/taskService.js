@@ -1,22 +1,20 @@
 import { supabase } from '../supabase';
 import { addAutoDiaryEntry } from './diaryService';
-import { getTaskWeight, calcTaskPoints, calcSkipPoints, computeNextDueAt } from './scoringHelpers';
+import { getTaskWeight, computeNextDueAt } from './scoringHelpers';
 
 // Re-export for backwards compatibility and tests
 export { getTaskWeight, calcTaskPoints, calcSkipPoints, computeNextDueAt } from './scoringHelpers';
 
 // ── Gardening-Event loggen (intern) ────────────────────────
 async function logGardeningEvent({ userId, eventType, plantId, taskId, points, meta = {} }) {
-  const { error } = await supabase
-    .from('gardening_events')
-    .insert({
-      user_id: userId,
-      event_type: eventType,
-      plant_id: plantId,
-      task_id: taskId,
-      points,
-      meta,
-    });
+  const { error } = await supabase.from('gardening_events').insert({
+    user_id: userId,
+    event_type: eventType,
+    plant_id: plantId,
+    task_id: taskId,
+    points,
+    meta,
+  });
   if (error) console.warn('gardening_event log error:', error.message);
 }
 
@@ -71,18 +69,28 @@ export async function createTask({ plant_id, user_id, type, due_at, note }) {
  * 1. Task-Template erstellen (oder update bei conflict)
  * 2. Ersten Task sofort anlegen
  */
-export async function createRecurringTask({ plant_id, user_id, type, due_at, note, interval_days }) {
+export async function createRecurringTask({
+  plant_id,
+  user_id,
+  type,
+  due_at,
+  note,
+  interval_days,
+}) {
   // 1. Template anlegen (UNIQUE auf user_id+plant_id+type)
   const { data: tpl, error: tplError } = await supabase
     .from('task_templates')
-    .upsert({
-      user_id,
-      plant_id,
-      type,
-      interval_days,
-      next_due_at: due_at,
-      active: true,
-    }, { onConflict: 'user_id,plant_id,type' })
+    .upsert(
+      {
+        user_id,
+        plant_id,
+        type,
+        interval_days,
+        next_due_at: due_at,
+        active: true,
+      },
+      { onConflict: 'user_id,plant_id,type' }
+    )
     .select()
     .single();
   if (tplError) throw tplError;
@@ -91,16 +99,18 @@ export async function createRecurringTask({ plant_id, user_id, type, due_at, not
   const dedupeKey = `${tpl.id}:${new Date(due_at).toISOString().slice(0, 10)}`;
   const { data: task, error: taskError } = await supabase
     .from('tasks')
-    .insert([{
-      plant_id,
-      user_id,
-      type,
-      due_at,
-      note: note || `Alle ${interval_days} Tage`,
-      state: 'DUE',
-      template_id: tpl.id,
-      dedupe_key: dedupeKey,
-    }])
+    .insert([
+      {
+        plant_id,
+        user_id,
+        type,
+        due_at,
+        note: note || `Alle ${interval_days} Tage`,
+        state: 'DUE',
+        template_id: tpl.id,
+        dedupe_key: dedupeKey,
+      },
+    ])
     .select()
     .single();
 
@@ -113,11 +123,7 @@ export async function createRecurringTask({ plant_id, user_id, type, due_at, not
  * Task löschen
  */
 export async function deleteTask(id, user_id) {
-  const { error } = await supabase
-    .from('tasks')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', user_id);
+  const { error } = await supabase.from('tasks').delete().eq('id', id).eq('user_id', user_id);
   if (error) throw error;
 }
 
@@ -185,7 +191,7 @@ export async function completeTask(task, user_id) {
       title: `${task.type} erledigt`,
       note: task.note || null,
       meta: { task_type: task.type, late: isLate },
-    }).catch(e => console.warn('Diary auto-entry error:', e.message));
+    }).catch((e) => console.warn('Diary auto-entry error:', e.message));
   }
 
   // 5. Auto-Rescheduling bei Recurring Tasks
@@ -198,7 +204,7 @@ export async function completeTask(task, user_id) {
  * Task als übersprungen markieren (mit Grund).
  * Bei wiederkehrenden Tasks: trotzdem nächsten Task erstellen.
  */
-export async function skipTask(task, user_id, reason = "") {
+export async function skipTask(task, user_id, reason = '') {
   // Only skip if still DUE (idempotent — prevents double-scoring)
   const { data: updated, error } = await supabase
     .from('tasks')
@@ -262,18 +268,16 @@ async function rescheduleFromTemplate(templateId, completedDueAt, userId) {
     const dedupeKey = `${templateId}:${nextDueIso.slice(0, 10)}`;
 
     // 3. Nächsten Task idempotent anlegen
-    const { error: insertError } = await supabase
-      .from('tasks')
-      .insert({
-        user_id: userId,
-        plant_id: tpl.plant_id,
-        type: tpl.type,
-        due_at: nextDueIso,
-        state: 'DUE',
-        template_id: templateId,
-        dedupe_key: dedupeKey,
-        note: `Alle ${tpl.interval_days} Tage`,
-      });
+    const { error: insertError } = await supabase.from('tasks').insert({
+      user_id: userId,
+      plant_id: tpl.plant_id,
+      type: tpl.type,
+      due_at: nextDueIso,
+      state: 'DUE',
+      template_id: templateId,
+      dedupe_key: dedupeKey,
+      note: `Alle ${tpl.interval_days} Tage`,
+    });
 
     // 23505 = duplicate key → schon vorhanden (OK)
     if (insertError && insertError.code !== '23505') {
@@ -281,11 +285,7 @@ async function rescheduleFromTemplate(templateId, completedDueAt, userId) {
     }
 
     // 4. Template next_due_at aktualisieren
-    await supabase
-      .from('task_templates')
-      .update({ next_due_at: nextDueIso })
-      .eq('id', templateId);
-
+    await supabase.from('task_templates').update({ next_due_at: nextDueIso }).eq('id', templateId);
   } catch (e) {
     console.warn('rescheduleFromTemplate error:', e.message);
   }
@@ -321,18 +321,16 @@ export async function catchUpMissedTasks(userId) {
 
       // Überfälligen Task nachlegen
       const dedupeKey = `${tpl.id}:${new Date(tpl.next_due_at).toISOString().slice(0, 10)}`;
-      const { error: insertError } = await supabase
-        .from('tasks')
-        .insert({
-          user_id: userId,
-          plant_id: tpl.plant_id,
-          type: tpl.type,
-          due_at: tpl.next_due_at,
-          state: 'DUE',
-          template_id: tpl.id,
-          dedupe_key: dedupeKey,
-          note: `Alle ${tpl.interval_days} Tage`,
-        });
+      const { error: insertError } = await supabase.from('tasks').insert({
+        user_id: userId,
+        plant_id: tpl.plant_id,
+        type: tpl.type,
+        due_at: tpl.next_due_at,
+        state: 'DUE',
+        template_id: tpl.id,
+        dedupe_key: dedupeKey,
+        note: `Alle ${tpl.interval_days} Tage`,
+      });
 
       if (insertError && insertError.code !== '23505') {
         console.warn('CatchUp insert error:', insertError.message);

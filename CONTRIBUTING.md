@@ -112,14 +112,15 @@ All user-facing strings must be translatable:
 
 ```javascript
 // ❌ Bad
-<Text>Plant found!</Text>
+<Text>Plant found!</Text>;
 
 // ✅ Good
 import i18n from '../i18n';
-<Text>{i18n.t('plant_found')}</Text>
+<Text>{i18n.t('plant_found')}</Text>;
 ```
 
 Add keys to all language files in `i18n/locales/`:
+
 - `i18n/locales/de.json`
 - `i18n/locales/en.json`
 - `i18n/locales/fr.json`
@@ -135,12 +136,11 @@ Use design system components for consistency:
 // ✅ Use DS components
 import { DSButton, DSCard, DSBadge, DSInput } from '../theme';
 
-<DSButton onPress={handlePress}>
-  Scan Plant
-</DSButton>
+<DSButton onPress={handlePress}>Scan Plant</DSButton>;
 ```
 
 Available components in `theme/`:
+
 - `DSButton` — Consistent buttons
 - `DSCard` — Card containers
 - `DSBadge` — Status badges
@@ -163,6 +163,7 @@ chore: Update dependencies
 Format: `type: description`
 
 Types:
+
 - `feat` — New feature
 - `fix` — Bug fix
 - `docs` — Documentation
@@ -201,6 +202,7 @@ Keep descriptions under 72 characters.
 ## Testing
 
 Tests are required for:
+
 - Bug fixes (prevent regression)
 - New features (verify functionality)
 - Complex logic (scoring, tasks, etc.)
@@ -217,6 +219,7 @@ npm test -- --coverage
 ```
 
 Test locations:
+
 - `__tests__/` — Main test suites
 - `__tests__/services/` — Service tests
 - `__tests__/components/` — Component tests
@@ -244,6 +247,7 @@ describe('creditService', () => {
 ## Areas to Contribute
 
 ### High Priority
+
 - Performance optimizations
 - Test coverage (we aim for >80%)
 - i18n translations (especially Russian and Italian)
@@ -251,6 +255,7 @@ describe('creditService', () => {
 - Accessibility improvements
 
 ### Nice to Have
+
 - Feature improvements
 - UI polish
 - Documentation enhancements
@@ -266,6 +271,7 @@ describe('creditService', () => {
 ## Recognition
 
 Contributors are recognized in:
+
 - Commit history
 - Project README (for significant contributions)
 - Release notes

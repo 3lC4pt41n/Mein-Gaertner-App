@@ -14,14 +14,8 @@ export function AuthProvider({ children }) {
   const [showWelcome, setShowWelcome] = useState(false);
   const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false);
 
-  const handlePasswordRecoveryDetected = useCallback(
-    () => setPasswordRecoveryMode(true),
-    []
-  );
-  const handlePasswordRecoveryComplete = useCallback(
-    () => setPasswordRecoveryMode(false),
-    []
-  );
+  const handlePasswordRecoveryDetected = useCallback(() => setPasswordRecoveryMode(true), []);
+  const handlePasswordRecoveryComplete = useCallback(() => setPasswordRecoveryMode(false), []);
 
   // --- Auth State Listener ---
   useEffect(() => {
@@ -86,11 +80,7 @@ export function AuthProvider({ children }) {
   // --- Refresh Profile (callable from screens after profile edits) ---
   const refreshProfile = useCallback(async () => {
     if (!user?.id) return;
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
     if (data) {
       setProfile(data);
       if (data.language) {
@@ -115,15 +105,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   // --- Update Profile (partial updates) ---
-  const updateProfile = useCallback(async (updates) => {
-    if (!user?.id) throw new Error('No user logged in');
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id);
-    if (error) throw error;
-    await refreshProfile();
-  }, [user?.id, refreshProfile]);
+  const updateProfile = useCallback(
+    async (updates) => {
+      if (!user?.id) throw new Error('No user logged in');
+      const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
+      if (error) throw error;
+      await refreshProfile();
+    },
+    [user?.id, refreshProfile]
+  );
 
   const value = {
     user,

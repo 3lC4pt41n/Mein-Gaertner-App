@@ -109,11 +109,7 @@ describe('Discovery-Score', () => {
   });
 
   test('nur normale Entdeckungen: 1 Punkt pro Event', () => {
-    const events = [
-      { is_first: false },
-      { is_first: false },
-      { is_first: false },
-    ];
+    const events = [{ is_first: false }, { is_first: false }, { is_first: false }];
     expect(calcDiscoveryScore(events)).toBe(3);
   });
 
@@ -124,9 +120,9 @@ describe('Discovery-Score', () => {
 
   test('Mix aus normalen und Erstentdeckungen', () => {
     const events = [
-      { is_first: true },   // 1 + 5 = 6
-      { is_first: false },  // 1
-      { is_first: true },   // 1 + 5 = 6
+      { is_first: true }, // 1 + 5 = 6
+      { is_first: false }, // 1
+      { is_first: true }, // 1 + 5 = 6
     ];
     // 3 (Anzahl) + 5*2 (Erstentdeckungen) = 13
     expect(calcDiscoveryScore(events)).toBe(13);

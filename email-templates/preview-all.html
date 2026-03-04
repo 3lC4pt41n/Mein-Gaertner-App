@@ -1,177 +1,580 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>E-Mail Template Vorschau – Digitaler Gärtner</title>
-  <style>
-    body { margin: 0; padding: 40px 20px; background: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .preview-section { max-width: 600px; margin: 0 auto 60px; }
-    .preview-label { background: #333; color: #fff; padding: 10px 20px; border-radius: 8px 8px 0 0; font-size: 14px; font-weight: 600; }
-    .preview-label span { color: #8f8; font-family: monospace; margin-left: 8px; font-weight: 400; }
-    .preview-frame { border: 1px solid #ccc; border-radius: 0 0 8px 8px; overflow: hidden; }
-  </style>
-</head>
-<body>
-  <h1 style="text-align:center;color:#333;margin-bottom:40px;">📧 E-Mail Templates – Digitaler Gärtner</h1>
-  <p style="text-align:center;color:#666;margin-bottom:50px;max-width:600px;margin-left:auto;margin-right:auto;">
-    Vorschau aller 5 Supabase Auth E-Mail-Templates.<br>
-    Kopiere den HTML-Code aus den einzelnen Dateien in die Supabase-Einstellungen unter<br>
-    <strong>Authentication → Email Templates</strong>.
-  </p>
+  <head>
+    <meta charset="utf-8" />
+    <title>E-Mail Template Vorschau – Digitaler Gärtner</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 40px 20px;
+        background: #e0e0e0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      .preview-section {
+        max-width: 600px;
+        margin: 0 auto 60px;
+      }
+      .preview-label {
+        background: #333;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px 8px 0 0;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .preview-label span {
+        color: #8f8;
+        font-family: monospace;
+        margin-left: 8px;
+        font-weight: 400;
+      }
+      .preview-frame {
+        border: 1px solid #ccc;
+        border-radius: 0 0 8px 8px;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center; color: #333; margin-bottom: 40px">
+      📧 E-Mail Templates – Digitaler Gärtner
+    </h1>
+    <p
+      style="
+        text-align: center;
+        color: #666;
+        margin-bottom: 50px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      "
+    >
+      Vorschau aller 5 Supabase Auth E-Mail-Templates.<br />
+      Kopiere den HTML-Code aus den einzelnen Dateien in die Supabase-Einstellungen unter<br />
+      <strong>Authentication → Email Templates</strong>.
+    </p>
 
-  <!-- 1. Confirm Signup -->
-  <div class="preview-section">
-    <div class="preview-label">1. Confirm Signup <span>confirm-signup.html</span></div>
-    <div class="preview-frame">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f7f4;padding:40px 20px;">
-        <tr><td align="center">
-          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            <tr><td style="background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);padding:36px 40px;text-align:center;">
-              <div style="font-size:36px;margin-bottom:8px;">🌱</div>
-              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Digitaler Gärtner</h1>
-            </td></tr>
-            <tr><td style="padding:36px 40px 20px;">
-              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:20px;font-weight:600;">Willkommen im Garten! 🌿</h2>
-              <p style="margin:0 0 16px;color:#4a4a4a;font-size:15px;line-height:1.6;">Schön, dass du dabei bist! Bitte bestätige deine E-Mail-Adresse, um dein Konto zu aktivieren und deinen digitalen Garten anzulegen.</p>
-              <p style="margin:0 0 28px;color:#4a4a4a;font-size:15px;line-height:1.6;">Klicke einfach auf den Button – es dauert nur einen Moment:</p>
-              <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-                <a href="#" style="display:inline-block;background-color:#2d7a3a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 36px;border-radius:10px;">✓ E-Mail bestätigen</a>
-              </td></tr></table>
-            </td></tr>
-            <tr><td style="padding:8px 40px 32px;"><p style="margin:0;color:#999;font-size:12px;text-align:center;">Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br><a href="#" style="color:#2d7a3a;">{{ .ConfirmationURL }}</a></p></td></tr>
-            <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e8efe8;margin:0;"></td></tr>
-            <tr><td style="padding:24px 40px 32px;text-align:center;">
-              <p style="margin:0 0 4px;color:#b0b0b0;font-size:12px;">Du hast kein Konto erstellt? Dann ignoriere diese E-Mail einfach.</p>
-              <p style="margin:0;color:#c8c8c8;font-size:11px;">© 2026 Digitaler Gärtner</p>
-            </td></tr>
-          </table>
-        </td></tr>
-      </table>
+    <!-- 1. Confirm Signup -->
+    <div class="preview-section">
+      <div class="preview-label">1. Confirm Signup <span>confirm-signup.html</span></div>
+      <div class="preview-frame">
+        <table
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          style="background-color: #f4f7f4; padding: 40px 20px"
+        >
+          <tr>
+            <td align="center">
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  max-width: 520px;
+                  background-color: #ffffff;
+                  border-radius: 16px;
+                  overflow: hidden;
+                  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+                "
+              >
+                <tr>
+                  <td
+                    style="
+                      background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);
+                      padding: 36px 40px;
+                      text-align: center;
+                    "
+                  >
+                    <div style="font-size: 36px; margin-bottom: 8px">🌱</div>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700">
+                      Digitaler Gärtner
+                    </h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 36px 40px 20px">
+                    <h2 style="margin: 0 0 16px; color: #1a1a1a; font-size: 20px; font-weight: 600">
+                      Willkommen im Garten! 🌿
+                    </h2>
+                    <p style="margin: 0 0 16px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Schön, dass du dabei bist! Bitte bestätige deine E-Mail-Adresse, um dein Konto
+                      zu aktivieren und deinen digitalen Garten anzulegen.
+                    </p>
+                    <p style="margin: 0 0 28px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Klicke einfach auf den Button – es dauert nur einen Moment:
+                    </p>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center">
+                          <a
+                            href="#"
+                            style="
+                              display: inline-block;
+                              background-color: #2d7a3a;
+                              color: #ffffff;
+                              text-decoration: none;
+                              font-size: 15px;
+                              font-weight: 600;
+                              padding: 14px 36px;
+                              border-radius: 10px;
+                            "
+                            >✓ E-Mail bestätigen</a
+                          >
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 40px 32px">
+                    <p style="margin: 0; color: #999; font-size: 12px; text-align: center">
+                      Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br /><a
+                        href="#"
+                        style="color: #2d7a3a"
+                        >{{ .ConfirmationURL }}</a
+                      >
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px">
+                    <hr style="border: none; border-top: 1px solid #e8efe8; margin: 0" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 24px 40px 32px; text-align: center">
+                    <p style="margin: 0 0 4px; color: #b0b0b0; font-size: 12px">
+                      Du hast kein Konto erstellt? Dann ignoriere diese E-Mail einfach.
+                    </p>
+                    <p style="margin: 0; color: #c8c8c8; font-size: 11px">
+                      © 2026 Digitaler Gärtner
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <!-- 2. Reset Password -->
-  <div class="preview-section">
-    <div class="preview-label">2. Reset Password <span>reset-password.html</span></div>
-    <div class="preview-frame">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f7f4;padding:40px 20px;">
-        <tr><td align="center">
-          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            <tr><td style="background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);padding:36px 40px;text-align:center;">
-              <div style="font-size:36px;margin-bottom:8px;">🌱</div>
-              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Digitaler Gärtner</h1>
-            </td></tr>
-            <tr><td style="padding:36px 40px 20px;">
-              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:20px;font-weight:600;">Passwort zurücksetzen 🔑</h2>
-              <p style="margin:0 0 16px;color:#4a4a4a;font-size:15px;line-height:1.6;">Du hast angefordert, dein Passwort zurückzusetzen. Kein Problem – das passiert den Besten!</p>
-              <p style="margin:0 0 28px;color:#4a4a4a;font-size:15px;line-height:1.6;">Klicke auf den Button, um ein neues Passwort zu wählen:</p>
-              <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-                <a href="#" style="display:inline-block;background-color:#2d7a3a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 36px;border-radius:10px;">🔑 Neues Passwort wählen</a>
-              </td></tr></table>
-            </td></tr>
-            <tr><td style="padding:8px 40px 32px;"><p style="margin:0;color:#999;font-size:12px;text-align:center;">Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br><a href="#" style="color:#2d7a3a;">{{ .ConfirmationURL }}</a></p></td></tr>
-            <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e8efe8;margin:0;"></td></tr>
-            <tr><td style="padding:24px 40px 32px;text-align:center;">
-              <p style="margin:0 0 4px;color:#b0b0b0;font-size:12px;">Du hast diese Anfrage nicht gestellt? Ignoriere diese E-Mail – dein Passwort bleibt unverändert.</p>
-              <p style="margin:0;color:#c8c8c8;font-size:11px;">© 2026 Digitaler Gärtner</p>
-            </td></tr>
-          </table>
-        </td></tr>
-      </table>
+    <!-- 2. Reset Password -->
+    <div class="preview-section">
+      <div class="preview-label">2. Reset Password <span>reset-password.html</span></div>
+      <div class="preview-frame">
+        <table
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          style="background-color: #f4f7f4; padding: 40px 20px"
+        >
+          <tr>
+            <td align="center">
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  max-width: 520px;
+                  background-color: #ffffff;
+                  border-radius: 16px;
+                  overflow: hidden;
+                  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+                "
+              >
+                <tr>
+                  <td
+                    style="
+                      background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);
+                      padding: 36px 40px;
+                      text-align: center;
+                    "
+                  >
+                    <div style="font-size: 36px; margin-bottom: 8px">🌱</div>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700">
+                      Digitaler Gärtner
+                    </h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 36px 40px 20px">
+                    <h2 style="margin: 0 0 16px; color: #1a1a1a; font-size: 20px; font-weight: 600">
+                      Passwort zurücksetzen 🔑
+                    </h2>
+                    <p style="margin: 0 0 16px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Du hast angefordert, dein Passwort zurückzusetzen. Kein Problem – das passiert
+                      den Besten!
+                    </p>
+                    <p style="margin: 0 0 28px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Klicke auf den Button, um ein neues Passwort zu wählen:
+                    </p>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center">
+                          <a
+                            href="#"
+                            style="
+                              display: inline-block;
+                              background-color: #2d7a3a;
+                              color: #ffffff;
+                              text-decoration: none;
+                              font-size: 15px;
+                              font-weight: 600;
+                              padding: 14px 36px;
+                              border-radius: 10px;
+                            "
+                            >🔑 Neues Passwort wählen</a
+                          >
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 40px 32px">
+                    <p style="margin: 0; color: #999; font-size: 12px; text-align: center">
+                      Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br /><a
+                        href="#"
+                        style="color: #2d7a3a"
+                        >{{ .ConfirmationURL }}</a
+                      >
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px">
+                    <hr style="border: none; border-top: 1px solid #e8efe8; margin: 0" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 24px 40px 32px; text-align: center">
+                    <p style="margin: 0 0 4px; color: #b0b0b0; font-size: 12px">
+                      Du hast diese Anfrage nicht gestellt? Ignoriere diese E-Mail – dein Passwort
+                      bleibt unverändert.
+                    </p>
+                    <p style="margin: 0; color: #c8c8c8; font-size: 11px">
+                      © 2026 Digitaler Gärtner
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <!-- 3. Magic Link -->
-  <div class="preview-section">
-    <div class="preview-label">3. Magic Link <span>magic-link.html</span></div>
-    <div class="preview-frame">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f7f4;padding:40px 20px;">
-        <tr><td align="center">
-          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            <tr><td style="background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);padding:36px 40px;text-align:center;">
-              <div style="font-size:36px;margin-bottom:8px;">🌱</div>
-              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Digitaler Gärtner</h1>
-            </td></tr>
-            <tr><td style="padding:36px 40px 20px;">
-              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:20px;font-weight:600;">Dein Anmelde-Link ✨</h2>
-              <p style="margin:0 0 16px;color:#4a4a4a;font-size:15px;line-height:1.6;">Du möchtest dich anmelden? Hier ist dein persönlicher Link – ein Klick genügt!</p>
-              <p style="margin:0 0 28px;color:#4a4a4a;font-size:15px;line-height:1.6;">Dieser Link ist nur einmal gültig und läuft nach kurzer Zeit ab:</p>
-              <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-                <a href="#" style="display:inline-block;background-color:#2d7a3a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 36px;border-radius:10px;">✨ Jetzt anmelden</a>
-              </td></tr></table>
-            </td></tr>
-            <tr><td style="padding:8px 40px 32px;"><p style="margin:0;color:#999;font-size:12px;text-align:center;">Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br><a href="#" style="color:#2d7a3a;">{{ .ConfirmationURL }}</a></p></td></tr>
-            <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e8efe8;margin:0;"></td></tr>
-            <tr><td style="padding:24px 40px 32px;text-align:center;">
-              <p style="margin:0 0 4px;color:#b0b0b0;font-size:12px;">Du hast diese Anmeldung nicht angefordert? Ignoriere diese E-Mail einfach.</p>
-              <p style="margin:0;color:#c8c8c8;font-size:11px;">© 2026 Digitaler Gärtner</p>
-            </td></tr>
-          </table>
-        </td></tr>
-      </table>
+    <!-- 3. Magic Link -->
+    <div class="preview-section">
+      <div class="preview-label">3. Magic Link <span>magic-link.html</span></div>
+      <div class="preview-frame">
+        <table
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          style="background-color: #f4f7f4; padding: 40px 20px"
+        >
+          <tr>
+            <td align="center">
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  max-width: 520px;
+                  background-color: #ffffff;
+                  border-radius: 16px;
+                  overflow: hidden;
+                  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+                "
+              >
+                <tr>
+                  <td
+                    style="
+                      background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);
+                      padding: 36px 40px;
+                      text-align: center;
+                    "
+                  >
+                    <div style="font-size: 36px; margin-bottom: 8px">🌱</div>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700">
+                      Digitaler Gärtner
+                    </h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 36px 40px 20px">
+                    <h2 style="margin: 0 0 16px; color: #1a1a1a; font-size: 20px; font-weight: 600">
+                      Dein Anmelde-Link ✨
+                    </h2>
+                    <p style="margin: 0 0 16px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Du möchtest dich anmelden? Hier ist dein persönlicher Link – ein Klick genügt!
+                    </p>
+                    <p style="margin: 0 0 28px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Dieser Link ist nur einmal gültig und läuft nach kurzer Zeit ab:
+                    </p>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center">
+                          <a
+                            href="#"
+                            style="
+                              display: inline-block;
+                              background-color: #2d7a3a;
+                              color: #ffffff;
+                              text-decoration: none;
+                              font-size: 15px;
+                              font-weight: 600;
+                              padding: 14px 36px;
+                              border-radius: 10px;
+                            "
+                            >✨ Jetzt anmelden</a
+                          >
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 40px 32px">
+                    <p style="margin: 0; color: #999; font-size: 12px; text-align: center">
+                      Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br /><a
+                        href="#"
+                        style="color: #2d7a3a"
+                        >{{ .ConfirmationURL }}</a
+                      >
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px">
+                    <hr style="border: none; border-top: 1px solid #e8efe8; margin: 0" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 24px 40px 32px; text-align: center">
+                    <p style="margin: 0 0 4px; color: #b0b0b0; font-size: 12px">
+                      Du hast diese Anmeldung nicht angefordert? Ignoriere diese E-Mail einfach.
+                    </p>
+                    <p style="margin: 0; color: #c8c8c8; font-size: 11px">
+                      © 2026 Digitaler Gärtner
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <!-- 4. Change Email -->
-  <div class="preview-section">
-    <div class="preview-label">4. Change Email Address <span>change-email.html</span></div>
-    <div class="preview-frame">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f7f4;padding:40px 20px;">
-        <tr><td align="center">
-          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            <tr><td style="background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);padding:36px 40px;text-align:center;">
-              <div style="font-size:36px;margin-bottom:8px;">🌱</div>
-              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Digitaler Gärtner</h1>
-            </td></tr>
-            <tr><td style="padding:36px 40px 20px;">
-              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:20px;font-weight:600;">E-Mail-Adresse ändern 📬</h2>
-              <p style="margin:0 0 16px;color:#4a4a4a;font-size:15px;line-height:1.6;">Du möchtest deine E-Mail-Adresse aktualisieren. Bitte bestätige die Änderung, indem du auf den Button klickst:</p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;"><tr><td align="center">
-                <a href="#" style="display:inline-block;background-color:#2d7a3a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 36px;border-radius:10px;">📬 E-Mail-Änderung bestätigen</a>
-              </td></tr></table>
-            </td></tr>
-            <tr><td style="padding:8px 40px 32px;"><p style="margin:0;color:#999;font-size:12px;text-align:center;">Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br><a href="#" style="color:#2d7a3a;">{{ .ConfirmationURL }}</a></p></td></tr>
-            <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e8efe8;margin:0;"></td></tr>
-            <tr><td style="padding:24px 40px 32px;text-align:center;">
-              <p style="margin:0 0 4px;color:#b0b0b0;font-size:12px;">Du hast diese Änderung nicht angefordert? Ignoriere diese E-Mail – deine Adresse bleibt unverändert.</p>
-              <p style="margin:0;color:#c8c8c8;font-size:11px;">© 2026 Digitaler Gärtner</p>
-            </td></tr>
-          </table>
-        </td></tr>
-      </table>
+    <!-- 4. Change Email -->
+    <div class="preview-section">
+      <div class="preview-label">4. Change Email Address <span>change-email.html</span></div>
+      <div class="preview-frame">
+        <table
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          style="background-color: #f4f7f4; padding: 40px 20px"
+        >
+          <tr>
+            <td align="center">
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  max-width: 520px;
+                  background-color: #ffffff;
+                  border-radius: 16px;
+                  overflow: hidden;
+                  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+                "
+              >
+                <tr>
+                  <td
+                    style="
+                      background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);
+                      padding: 36px 40px;
+                      text-align: center;
+                    "
+                  >
+                    <div style="font-size: 36px; margin-bottom: 8px">🌱</div>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700">
+                      Digitaler Gärtner
+                    </h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 36px 40px 20px">
+                    <h2 style="margin: 0 0 16px; color: #1a1a1a; font-size: 20px; font-weight: 600">
+                      E-Mail-Adresse ändern 📬
+                    </h2>
+                    <p style="margin: 0 0 16px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Du möchtest deine E-Mail-Adresse aktualisieren. Bitte bestätige die Änderung,
+                      indem du auf den Button klickst:
+                    </p>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 12px">
+                      <tr>
+                        <td align="center">
+                          <a
+                            href="#"
+                            style="
+                              display: inline-block;
+                              background-color: #2d7a3a;
+                              color: #ffffff;
+                              text-decoration: none;
+                              font-size: 15px;
+                              font-weight: 600;
+                              padding: 14px 36px;
+                              border-radius: 10px;
+                            "
+                            >📬 E-Mail-Änderung bestätigen</a
+                          >
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 40px 32px">
+                    <p style="margin: 0; color: #999; font-size: 12px; text-align: center">
+                      Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br /><a
+                        href="#"
+                        style="color: #2d7a3a"
+                        >{{ .ConfirmationURL }}</a
+                      >
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px">
+                    <hr style="border: none; border-top: 1px solid #e8efe8; margin: 0" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 24px 40px 32px; text-align: center">
+                    <p style="margin: 0 0 4px; color: #b0b0b0; font-size: 12px">
+                      Du hast diese Änderung nicht angefordert? Ignoriere diese E-Mail – deine
+                      Adresse bleibt unverändert.
+                    </p>
+                    <p style="margin: 0; color: #c8c8c8; font-size: 11px">
+                      © 2026 Digitaler Gärtner
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <!-- 5. Invite User -->
-  <div class="preview-section">
-    <div class="preview-label">5. Invite User <span>invite-user.html</span></div>
-    <div class="preview-frame">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f7f4;padding:40px 20px;">
-        <tr><td align="center">
-          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            <tr><td style="background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);padding:36px 40px;text-align:center;">
-              <div style="font-size:36px;margin-bottom:8px;">🌱</div>
-              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Digitaler Gärtner</h1>
-            </td></tr>
-            <tr><td style="padding:36px 40px 20px;">
-              <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:20px;font-weight:600;">Du wurdest eingeladen! 🎉</h2>
-              <p style="margin:0 0 16px;color:#4a4a4a;font-size:15px;line-height:1.6;">Du wurdest eingeladen, den <strong>Digitalen Gärtner</strong> zu nutzen – dein smarter Begleiter für einen grüneren Garten.</p>
-              <p style="margin:0 0 28px;color:#4a4a4a;font-size:15px;line-height:1.6;">Klicke auf den Button, um dein Konto einzurichten und loszulegen:</p>
-              <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-                <a href="#" style="display:inline-block;background-color:#2d7a3a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 36px;border-radius:10px;">🌿 Einladung annehmen</a>
-              </td></tr></table>
-            </td></tr>
-            <tr><td style="padding:8px 40px 32px;"><p style="margin:0;color:#999;font-size:12px;text-align:center;">Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br><a href="#" style="color:#2d7a3a;">{{ .ConfirmationURL }}</a></p></td></tr>
-            <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e8efe8;margin:0;"></td></tr>
-            <tr><td style="padding:24px 40px 32px;text-align:center;">
-              <p style="margin:0 0 4px;color:#b0b0b0;font-size:12px;">Du kennst den Digitalen Gärtner nicht? Dann ignoriere diese E-Mail einfach.</p>
-              <p style="margin:0;color:#c8c8c8;font-size:11px;">© 2026 Digitaler Gärtner</p>
-            </td></tr>
-          </table>
-        </td></tr>
-      </table>
+    <!-- 5. Invite User -->
+    <div class="preview-section">
+      <div class="preview-label">5. Invite User <span>invite-user.html</span></div>
+      <div class="preview-frame">
+        <table
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          style="background-color: #f4f7f4; padding: 40px 20px"
+        >
+          <tr>
+            <td align="center">
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  max-width: 520px;
+                  background-color: #ffffff;
+                  border-radius: 16px;
+                  overflow: hidden;
+                  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+                "
+              >
+                <tr>
+                  <td
+                    style="
+                      background: linear-gradient(135deg, #2d7a3a 0%, #4caf50 100%);
+                      padding: 36px 40px;
+                      text-align: center;
+                    "
+                  >
+                    <div style="font-size: 36px; margin-bottom: 8px">🌱</div>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700">
+                      Digitaler Gärtner
+                    </h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 36px 40px 20px">
+                    <h2 style="margin: 0 0 16px; color: #1a1a1a; font-size: 20px; font-weight: 600">
+                      Du wurdest eingeladen! 🎉
+                    </h2>
+                    <p style="margin: 0 0 16px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Du wurdest eingeladen, den <strong>Digitalen Gärtner</strong> zu nutzen – dein
+                      smarter Begleiter für einen grüneren Garten.
+                    </p>
+                    <p style="margin: 0 0 28px; color: #4a4a4a; font-size: 15px; line-height: 1.6">
+                      Klicke auf den Button, um dein Konto einzurichten und loszulegen:
+                    </p>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center">
+                          <a
+                            href="#"
+                            style="
+                              display: inline-block;
+                              background-color: #2d7a3a;
+                              color: #ffffff;
+                              text-decoration: none;
+                              font-size: 15px;
+                              font-weight: 600;
+                              padding: 14px 36px;
+                              border-radius: 10px;
+                            "
+                            >🌿 Einladung annehmen</a
+                          >
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 40px 32px">
+                    <p style="margin: 0; color: #999; font-size: 12px; text-align: center">
+                      Button funktioniert nicht? Kopiere diesen Link in deinen Browser:<br /><a
+                        href="#"
+                        style="color: #2d7a3a"
+                        >{{ .ConfirmationURL }}</a
+                      >
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px">
+                    <hr style="border: none; border-top: 1px solid #e8efe8; margin: 0" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 24px 40px 32px; text-align: center">
+                    <p style="margin: 0 0 4px; color: #b0b0b0; font-size: 12px">
+                      Du kennst den Digitalen Gärtner nicht? Dann ignoriere diese E-Mail einfach.
+                    </p>
+                    <p style="margin: 0; color: #c8c8c8; font-size: 11px">
+                      © 2026 Digitaler Gärtner
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-  </div>
-
-</body>
+  </body>
 </html>

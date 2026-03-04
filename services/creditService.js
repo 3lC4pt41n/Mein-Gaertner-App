@@ -2,8 +2,10 @@ import { supabase } from '../supabase';
 
 // Aktuelles Credit-Guthaben laden
 export async function fetchBalance() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Nicht eingeloggt");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('Nicht eingeloggt');
 
   const { data, error } = await supabase
     .from('credit_balances')
@@ -17,8 +19,10 @@ export async function fetchBalance() {
 
 // Abo-Status laden
 export async function fetchSubscription() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Nicht eingeloggt");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('Nicht eingeloggt');
 
   const { data, error } = await supabase
     .from('subscriptions')
@@ -32,8 +36,10 @@ export async function fetchSubscription() {
 
 // Usage-History laden (letzte N Einträge)
 export async function fetchUsageHistory(limit = 50) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Nicht eingeloggt");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('Nicht eingeloggt');
 
   const { data, error } = await supabase
     .from('usage_log')
@@ -48,8 +54,10 @@ export async function fetchUsageHistory(limit = 50) {
 
 // Transaktions-History laden
 export async function fetchTransactions(limit = 50) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Nicht eingeloggt");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('Nicht eingeloggt');
 
   const { data, error } = await supabase
     .from('transactions')

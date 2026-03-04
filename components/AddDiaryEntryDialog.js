@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Modal, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Modal,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSInput from '../theme/DSInput';
 import { t } from '../i18n';
 
-export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId }) {
+export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId: _plantId }) {
   const [title, setTitle] = useState('');
   const [note, setNote] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
@@ -16,10 +25,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
     try {
       const { status } = await ImagePicker.requestCameraPermissions();
       if (status !== 'granted') {
-        Alert.alert(
-          t('common.permissionDenied'),
-          t('dialog.cameraPermissionNeeded')
-        );
+        Alert.alert(t('common.permissionDenied'), t('dialog.cameraPermissionNeeded'));
         return;
       }
 
@@ -33,7 +39,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
       if (!result.cancelled) {
         setSelectedImage(result.assets[0].uri);
       }
-    } catch (error) {
+    } catch (_error) {
       Alert.alert(t('common.error'), t('dialog.imagePickerError'));
     }
   };
@@ -57,7 +63,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
       });
       resetForm();
       onClose();
-    } catch (error) {
+    } catch (_error) {
       Alert.alert(t('common.error'), t('dialog.saveFailed'));
     } finally {
       setSaving(false);
@@ -76,21 +82,12 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleCancel}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleCancel}>
       <View style={styles.overlay}>
         <View style={styles.dialogContainer}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handleCancel}
-              disabled={saving}
-            >
+            <TouchableOpacity style={styles.headerButton} onPress={handleCancel} disabled={saving}>
               <Text style={styles.headerButtonText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
             <Text style={styles.headerTitle}>{t('dialog.newEntry')}</Text>
@@ -158,10 +155,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
 
             {/* Photo Button */}
             <TouchableOpacity
-              style={[
-                styles.photoButton,
-                selectedImage && styles.photoButtonSecondary,
-              ]}
+              style={[styles.photoButton, selectedImage && styles.photoButtonSecondary]}
               onPress={handlePickImage}
               disabled={saving}
             >
@@ -171,10 +165,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId 
                 color={selectedImage ? colors.primary : colors.surface}
               />
               <Text
-                style={[
-                  styles.photoButtonText,
-                  selectedImage && styles.photoButtonTextSecondary,
-                ]}
+                style={[styles.photoButtonText, selectedImage && styles.photoButtonTextSecondary]}
               >
                 {selectedImage ? t('dialog.changePhoto') : t('dialog.addPhoto')}
               </Text>

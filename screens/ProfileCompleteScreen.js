@@ -1,20 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Alert,
-  Text,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { View, Alert, Text, Image, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
-import { LANGUAGE_OPTIONS, getLanguageLabel, normalizeLanguage } from '../services/languageService';
+import { LANGUAGE_OPTIONS, normalizeLanguage } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
-import { colors, spacing, radius } from '../theme/tokens';
+import { colors, spacing } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
@@ -184,7 +175,11 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
         </View>
 
         {generatingAvatar && (
-          <ActivityIndicator size="small" color={colors.primaryLight} style={{ marginBottom: spacing.sm }} />
+          <ActivityIndicator
+            size="small"
+            color={colors.primaryLight}
+            style={{ marginBottom: spacing.sm }}
+          />
         )}
 
         <DSButton
@@ -239,16 +234,38 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg },
-  heading: { fontSize: 22, fontWeight: 'bold', color: colors.textPrimary, marginBottom: spacing.lg },
-  subheading: { fontSize: 16, fontWeight: '600', color: colors.textPrimary, marginBottom: spacing.md },
-  fieldLabel: { fontSize: 14, fontWeight: '600', color: colors.textSecondary, marginBottom: spacing.sm },
+  heading: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
+  },
+  subheading: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
   avatarContainer: { alignItems: 'center', marginBottom: spacing.md },
   avatar: {
-    width: 120, height: 120, borderRadius: 60,
-    borderWidth: 3, borderColor: colors.primarySurface,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: colors.primarySurface,
   },
   avatarPlaceholder: {
-    width: 120, height: 120, borderRadius: 60,
-    backgroundColor: colors.borderLight, alignItems: 'center', justifyContent: 'center',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.borderLight,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

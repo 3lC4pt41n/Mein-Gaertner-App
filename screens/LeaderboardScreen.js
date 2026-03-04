@@ -58,7 +58,7 @@ export default function LeaderboardScreen() {
       setLeaderboard(board);
       setMyRank(rank);
       setMyStats(stats);
-    } catch (e) {
+    } catch (_e) {
       // Leaderboard load failed silently
     }
   }, [userId, timeWindow, scoreType, optedIn]);
@@ -249,7 +249,7 @@ export default function LeaderboardScreen() {
                         try {
                           await updateProfile({ leaderboard_opt_in: true });
                           setOptedIn(true);
-                        } catch (e) {
+                        } catch (_e) {
                           // Opt-in failed silently
                         }
                       }}

@@ -8,17 +8,13 @@ export function estimateTokens(text: string): number {
 
 // Waehlt die neuesten Messages die ins Token-Budget passen
 // Messages muessen chronologisch sortiert sein (aelteste zuerst)
-export function selectMessagesWithinBudget(
-  messages: any[],
-  budgetTokens: number
-): any[] {
+export function selectMessagesWithinBudget(messages: any[], budgetTokens: number): any[] {
   const reversed = [...messages].reverse(); // neueste zuerst
   const selected: any[] = [];
   let usedTokens = 0;
 
   for (const msg of reversed) {
-    const content =
-      typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content);
+    const content = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
     // ~85 Tokens Overhead pro Bild (Vision Token)
     const msgTokens = estimateTokens(content) + (msg.image_path ? 85 : 0);
     if (usedTokens + msgTokens > budgetTokens) break;

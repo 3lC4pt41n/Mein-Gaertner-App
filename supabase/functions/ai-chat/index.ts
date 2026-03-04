@@ -162,8 +162,15 @@ function buildTools() {
         parameters: {
           type: 'object',
           properties: {
-            plant_name: { type: 'string', description: 'Name of the plant (must match an existing plant)' },
-            task_type: { type: 'string', enum: ['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges'], description: 'Type of task' },
+            plant_name: {
+              type: 'string',
+              description: 'Name of the plant (must match an existing plant)',
+            },
+            task_type: {
+              type: 'string',
+              enum: ['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges'],
+              description: 'Type of task',
+            },
             due_date: { type: 'string', description: 'Due date in ISO format (YYYY-MM-DD)' },
             note: { type: 'string', description: 'Optional note for the task' },
           },
@@ -179,8 +186,15 @@ function buildTools() {
         parameters: {
           type: 'object',
           properties: {
-            plant_name: { type: 'string', description: 'Name of the plant (must match an existing plant)' },
-            task_type: { type: 'string', enum: ['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges'], description: 'Type of task' },
+            plant_name: {
+              type: 'string',
+              description: 'Name of the plant (must match an existing plant)',
+            },
+            task_type: {
+              type: 'string',
+              enum: ['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges'],
+              description: 'Type of task',
+            },
             interval_days: { type: 'number', description: 'Interval in days between tasks' },
             note: { type: 'string', description: 'Optional note for the task' },
           },
@@ -208,7 +222,9 @@ async function handleToolCall(
   );
 
   if (!plant) {
-    return JSON.stringify({ error: `Plant "${args.plant_name}" not found. Available plants: ${plants.map((p: any) => p.name).join(', ')}` });
+    return JSON.stringify({
+      error: `Plant "${args.plant_name}" not found. Available plants: ${plants.map((p: any) => p.name).join(', ')}`,
+    });
   }
 
   if (fn.name === 'create_task') {
@@ -227,7 +243,12 @@ async function handleToolCall(
       .single();
 
     if (error) return JSON.stringify({ error: error.message });
-    return JSON.stringify({ success: true, task_type: args.task_type, plant_name: plant.name, due_date: args.due_date });
+    return JSON.stringify({
+      success: true,
+      task_type: args.task_type,
+      plant_name: plant.name,
+      due_date: args.due_date,
+    });
   }
 
   if (fn.name === 'create_recurring_task') {
@@ -236,14 +257,17 @@ async function handleToolCall(
     // Upsert template
     const { data: tpl, error: tplError } = await serviceClient
       .from('task_templates')
-      .upsert({
-        user_id: userId,
-        plant_id: plant.id,
-        type: args.task_type,
-        interval_days: args.interval_days,
-        next_due_at: dueAt,
-        active: true,
-      }, { onConflict: 'user_id,plant_id,type' })
+      .upsert(
+        {
+          user_id: userId,
+          plant_id: plant.id,
+          type: args.task_type,
+          interval_days: args.interval_days,
+          next_due_at: dueAt,
+          active: true,
+        },
+        { onConflict: 'user_id,plant_id,type' }
+      )
       .select()
       .single();
 
@@ -251,20 +275,23 @@ async function handleToolCall(
 
     // Create first task
     const dedupeKey = `${tpl.id}:${new Date(dueAt).toISOString().slice(0, 10)}`;
-    await serviceClient
-      .from('tasks')
-      .insert({
-        plant_id: plant.id,
-        user_id: userId,
-        type: args.task_type,
-        due_at: dueAt,
-        state: 'DUE',
-        template_id: tpl.id,
-        dedupe_key: dedupeKey,
-        note: args.note || `Alle ${args.interval_days} Tage`,
-      });
+    await serviceClient.from('tasks').insert({
+      plant_id: plant.id,
+      user_id: userId,
+      type: args.task_type,
+      due_at: dueAt,
+      state: 'DUE',
+      template_id: tpl.id,
+      dedupe_key: dedupeKey,
+      note: args.note || `Alle ${args.interval_days} Tage`,
+    });
 
-    return JSON.stringify({ success: true, task_type: args.task_type, plant_name: plant.name, interval_days: args.interval_days });
+    return JSON.stringify({
+      success: true,
+      task_type: args.task_type,
+      plant_name: plant.name,
+      interval_days: args.interval_days,
+    });
   }
 
   return JSON.stringify({ error: 'Unknown function' });

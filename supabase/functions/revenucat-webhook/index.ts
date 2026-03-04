@@ -1,45 +1,45 @@
 // Edge Function: RevenueCat Webhook
 // Wird von RevenueCat aufgerufen bei Kauf, Abo-Erneuerung, Kündigung etc.
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { getServiceClient } from "../_shared/supabase-client.ts";
-import { corsHeaders } from "../_shared/credits.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { getServiceClient } from '../_shared/supabase-client.ts';
+import { corsHeaders } from '../_shared/credits.ts';
 
 // Credit-Pakete (müssen mit RevenueCat Product IDs übereinstimmen)
 const PACKAGES: Record<string, { credits: number; type: string }> = {
   // Einmalkauf
-  "credits_starter": { credits: 500, type: "one_time" },
-  "credits_standard": { credits: 1500, type: "one_time" },
-  "credits_pro": { credits: 5000, type: "one_time" },
+  credits_starter: { credits: 500, type: 'one_time' },
+  credits_standard: { credits: 1500, type: 'one_time' },
+  credits_pro: { credits: 5000, type: 'one_time' },
   // Abo (monatliche Credits)
-  "sub_hobby": { credits: 300, type: "subscription_renewal" },
-  "sub_gaertner": { credits: 1000, type: "subscription_renewal" },
-  "sub_profi": { credits: 3000, type: "subscription_renewal" },
+  sub_hobby: { credits: 300, type: 'subscription_renewal' },
+  sub_gaertner: { credits: 1000, type: 'subscription_renewal' },
+  sub_profi: { credits: 3000, type: 'subscription_renewal' },
 };
 
 // Abo-Plan Mapping
 const SUB_PLANS: Record<string, string> = {
-  "sub_hobby": "hobby",
-  "sub_gaertner": "gaertner",
-  "sub_profi": "profi",
+  sub_hobby: 'hobby',
+  sub_gaertner: 'gaertner',
+  sub_profi: 'profi',
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     // RevenueCat Webhook Auth prüfen
-    const WEBHOOK_SECRET = Deno.env.get("REVENUCAT_WEBHOOK_SECRET");
+    const WEBHOOK_SECRET = Deno.env.get('REVENUCAT_WEBHOOK_SECRET');
     if (!WEBHOOK_SECRET) {
-      throw new Error("REVENUCAT_WEBHOOK_SECRET is not configured");
+      throw new Error('REVENUCAT_WEBHOOK_SECRET is not configured');
     }
 
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get('Authorization');
     if (authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -47,9 +47,9 @@ serve(async (req) => {
     const event = body.event;
 
     if (!event) {
-      return new Response(JSON.stringify({ error: "No event" }), {
+      return new Response(JSON.stringify({ error: 'No event' }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -62,45 +62,44 @@ serve(async (req) => {
 
     // Events die Credits gutschreiben
     if (
-      eventType === "INITIAL_PURCHASE" ||
-      eventType === "RENEWAL" ||
-      eventType === "NON_RENEWING_PURCHASE"
+      eventType === 'INITIAL_PURCHASE' ||
+      eventType === 'RENEWAL' ||
+      eventType === 'NON_RENEWING_PURCHASE'
     ) {
       const pkg = PACKAGES[productId];
       if (!pkg) {
         console.warn(`Unbekanntes Produkt: ${productId}`);
         return new Response(JSON.stringify({ ok: true, skipped: true }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
       // Credits gutschreiben (idempotent via RPC)
-      const { data: result, error } = await serviceClient.rpc(
-        "credit_purchase",
-        {
-          p_user_id: appUserId,
-          p_provider_transaction_id: event.transaction_id || event.id,
-          p_package: productId,
-          p_credits: pkg.credits,
-          p_amount_eur: event.price || 0,
-          p_type: pkg.type,
-        }
-      );
+      const { data: result, error } = await serviceClient.rpc('credit_purchase', {
+        p_user_id: appUserId,
+        p_provider_transaction_id: event.transaction_id || event.id,
+        p_package: productId,
+        p_credits: pkg.credits,
+        p_amount_eur: event.price || 0,
+        p_type: pkg.type,
+      });
 
       if (error) {
         throw error;
       }
 
       if (!result) {
-        console.log(`Duplicate webhook for transaction ${event.transaction_id || event.id}, skipping credit application`);
+        console.log(
+          `Duplicate webhook for transaction ${event.transaction_id || event.id}, skipping credit application`
+        );
       }
 
       // Abo-Status aktualisieren (falls Abo)
       if (SUB_PLANS[productId]) {
-        await serviceClient.from("subscriptions").upsert({
+        await serviceClient.from('subscriptions').upsert({
           user_id: appUserId,
           plan: SUB_PLANS[productId],
-          status: "active",
+          status: 'active',
           current_period_start: event.period_start
             ? new Date(event.period_start * 1000).toISOString()
             : new Date().toISOString(),
@@ -115,26 +114,23 @@ serve(async (req) => {
     }
 
     // Abo-Kündigung
-    if (eventType === "CANCELLATION" || eventType === "EXPIRATION") {
+    if (eventType === 'CANCELLATION' || eventType === 'EXPIRATION') {
       await serviceClient
-        .from("subscriptions")
-        .update({ status: eventType === "EXPIRATION" ? "expired" : "cancelled" })
-        .eq("user_id", appUserId);
+        .from('subscriptions')
+        .update({ status: eventType === 'EXPIRATION' ? 'expired' : 'cancelled' })
+        .eq('user_id', appUserId);
 
       console.log(`Abo ${eventType} für User ${appUserId}`);
     }
 
     return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e: any) {
-    console.error("Webhook Error:", e);
-    return new Response(
-      JSON.stringify({ error: e.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    console.error('Webhook Error:', e);
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

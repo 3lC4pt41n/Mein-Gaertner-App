@@ -1,9 +1,6 @@
 import { supabase } from '../../supabase';
 
-const {
-  getMyRank,
-  getMyNeighbors,
-} = require('../../services/leaderboardService');
+const { getMyRank, getMyNeighbors } = require('../../services/leaderboardService');
 
 describe('leaderboardService', () => {
   beforeEach(() => {

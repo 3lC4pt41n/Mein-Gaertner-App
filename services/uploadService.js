@@ -8,7 +8,8 @@ export async function uploadPlantImage(uri, user_id) {
   const bucket = 'plant-images';
   const fileExt = uri.split('.').pop().split('?')[0];
   const fileName = `plant_${user_id}_${Date.now()}.${fileExt || 'jpg'}`;
-  let fileData, contentType = 'image/jpeg';
+  let fileData,
+    contentType = 'image/jpeg';
 
   if (Platform.OS === 'web') {
     const res = await fetch(uri);
@@ -20,15 +21,13 @@ export async function uploadPlantImage(uri, user_id) {
     contentType = 'image/jpeg';
   }
 
-  const { error } = await supabase
-    .storage
+  const { error } = await supabase.storage
     .from(bucket)
     .upload(fileName, fileData, { contentType, upsert: true });
 
   if (error) throw error;
 
-  const { data: urlData, error: urlError } = await supabase
-    .storage
+  const { data: urlData, error: urlError } = await supabase.storage
     .from(bucket)
     .createSignedUrl(fileName, 60 * 60 * 24 * 7);
 
@@ -43,7 +42,8 @@ export async function uploadChatImage(uri, user_id) {
   const bucket = 'chat-images';
   const fileExt = uri.split('.').pop().split('?')[0];
   const fileName = `chat_${user_id}_${Date.now()}.${fileExt || 'jpg'}`;
-  let fileData, contentType = 'image/jpeg';
+  let fileData,
+    contentType = 'image/jpeg';
 
   if (Platform.OS === 'web') {
     const res = await fetch(uri);
@@ -55,8 +55,7 @@ export async function uploadChatImage(uri, user_id) {
     contentType = 'image/jpeg';
   }
 
-  const { error } = await supabase
-    .storage
+  const { error } = await supabase.storage
     .from(bucket)
     .upload(fileName, fileData, { contentType, upsert: true });
 
@@ -68,8 +67,7 @@ export async function uploadChatImage(uri, user_id) {
 // Signed URL fuer ein Chat-Bild generieren (1 Stunde gueltig)
 export async function getChatImageUrl(imagePath) {
   if (!imagePath) return null;
-  const { data, error } = await supabase
-    .storage
+  const { data, error } = await supabase.storage
     .from('chat-images')
     .createSignedUrl(imagePath, 60 * 60);
   if (error) return null;

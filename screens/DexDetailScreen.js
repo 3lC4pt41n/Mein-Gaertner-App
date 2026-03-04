@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { fetchSpeciesDetail } from '../services/dexService';
 import { formatDisplayName } from '../services/discoveryService';
 import { colors, spacing, radius } from '../theme/tokens';
-import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

@@ -1,6 +1,6 @@
 {
   "name": "digitaler-gaertner",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "index.js",
   "scripts": {
     "start": "expo start --dev-client",
@@ -53,6 +53,7 @@
     "eslint-config-expo": "^55.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.0",
     "jest": "^30.2.0",
     "prettier": "^3.8.1",
     "react-test-renderer": "19.1.0",

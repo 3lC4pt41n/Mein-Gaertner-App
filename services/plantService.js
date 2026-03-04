@@ -18,11 +18,7 @@ export async function savePlantToSupabase({ name, note, image, user_id, details,
   const slug = generateSlug(name);
   const row = { name, note, image_url: image, user_id, details, slug };
   if (zone_id) row.zone_id = zone_id;
-  const { data, error } = await supabase
-    .from('plants')
-    .insert([row])
-    .select()
-    .single();
+  const { data, error } = await supabase.from('plants').insert([row]).select().single();
   if (error) throw new Error(error.message);
   return data;
 }
@@ -97,7 +93,7 @@ export async function saveHealthcheck({
     note: summary,
     image_url: null,
     meta: { healthscore, delta },
-  }).catch(e => console.warn('Diary auto-entry error:', e.message));
+  }).catch((e) => console.warn('Diary auto-entry error:', e.message));
 
   return data;
 }

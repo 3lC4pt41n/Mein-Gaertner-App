@@ -18,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchPlants, fetchHealthchecks } from '../services/plantService';
+import { fetchPlants } from '../services/plantService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
@@ -63,11 +63,6 @@ async function getPlantsWithHealthscores(userId) {
   }));
 
   return plantsWithScores;
-}
-
-// Dummy Service: Alle Pflanzen flach
-async function getAllPlants(userId) {
-  return getPlantsWithHealthscores(userId);
 }
 
 // Dummy Service: Pflanzen gruppiert nach location > zones > plants
@@ -137,22 +132,15 @@ export default function PlantListScreen() {
     <TouchableOpacity onPress={() => navigation.navigate('PlantDetail', { plant: item })}>
       <View style={styles.plantCardContainer}>
         {item.image_url ? (
-          <Image
-            source={{ uri: item.image_url }}
-            style={styles.plantImage}
-          />
+          <Image source={{ uri: item.image_url }} style={styles.plantImage} />
         ) : (
           <View style={styles.plantImagePlaceholder}>
             <Text>🌱</Text>
           </View>
         )}
         <View style={styles.plantTextContainer}>
-          <Text style={styles.plantName}>
-            {item.name || '?'}
-          </Text>
-          <Text style={styles.plantNote}>
-            {item.note}
-          </Text>
+          <Text style={styles.plantName}>{item.name || '?'}</Text>
+          <Text style={styles.plantNote}>{item.note}</Text>
           {item.healthscore !== null && (
             <Text style={styles.plantHealthscore}>
               {t('plants.healthscoreValue', { score: item.healthscore })}
@@ -185,9 +173,7 @@ export default function PlantListScreen() {
           !loading && (
             <View style={styles.emptyStateContainer}>
               <Ionicons name="leaf-outline" size={56} color={colors.textDisabled} />
-              <Text style={styles.emptyStateText}>
-                {t('plants.noPlants')}
-              </Text>
+              <Text style={styles.emptyStateText}>{t('plants.noPlants')}</Text>
               <DSButton
                 variant="primary"
                 icon="camera-outline"
@@ -214,33 +200,22 @@ export default function PlantListScreen() {
     ) : (
       <ScrollView style={styles.homesScrollView}>
         {grouped.length === 0 && (
-          <Text style={styles.noLocationsText}>
-            {t('plants.noLocations')}
-          </Text>
+          <Text style={styles.noLocationsText}>{t('plants.noLocations')}</Text>
         )}
         {grouped.map((location) => (
           <View key={location.id} style={styles.locationContainer}>
-            <Text style={styles.locationName}>
-              {location.name}
-            </Text>
+            <Text style={styles.locationName}>{location.name}</Text>
             {location.zones.map((zone) => (
-              <View
-                key={zone.id}
-                style={styles.zoneAccordionContainer}
-              >
+              <View key={zone.id} style={styles.zoneAccordionContainer}>
                 <TouchableOpacity
                   onPress={() => toggleZone(zone.id)}
                   style={styles.zoneAccordionHeader}
                 >
-                  <Text style={styles.zoneTitle}>
-                    {zone.name}
-                  </Text>
+                  <Text style={styles.zoneTitle}>{zone.name}</Text>
                   <Text style={styles.zoneCount}>
                     {t('plants.plantsCount', { count: zone.plants.length })}
                   </Text>
-                  <Text style={styles.zoneExpandIcon}>
-                    {expandedZones[zone.id] ? '▲' : '▼'}
-                  </Text>
+                  <Text style={styles.zoneExpandIcon}>{expandedZones[zone.id] ? '▲' : '▼'}</Text>
                 </TouchableOpacity>
                 {expandedZones[zone.id] && (
                   <View style={styles.zoneContentContainer}>
@@ -262,12 +237,8 @@ export default function PlantListScreen() {
                               </View>
                             )}
                             <View>
-                              <Text style={styles.zonePlantName}>
-                                {plant.name}
-                              </Text>
-                              <Text style={styles.zonePlantNote}>
-                                {plant.note}
-                              </Text>
+                              <Text style={styles.zonePlantName}>{plant.name}</Text>
+                              <Text style={styles.zonePlantNote}>{plant.note}</Text>
                               {plant.healthscore !== null && (
                                 <Text style={styles.zonePlantHealthscore}>
                                   {t('plants.healthscoreValue', { score: plant.healthscore })}
@@ -278,9 +249,7 @@ export default function PlantListScreen() {
                         </TouchableOpacity>
                       ))
                     ) : (
-                      <Text style={styles.noZonePlantsText}>
-                        {t('plants.noZonePlants')}
-                      </Text>
+                      <Text style={styles.noZonePlantsText}>{t('plants.noZonePlants')}</Text>
                     )}
                   </View>
                 )}

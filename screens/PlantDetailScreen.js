@@ -136,7 +136,7 @@ export default function PlantDetailScreen({ route }) {
     try {
       await addDiaryEntry({ plant_id: plant.id, user_id: userId, title, note, imageUri });
       setShowDiaryDialog(false);
-      setDiaryKey(prev => prev + 1); // refresh diary
+      setDiaryKey((prev) => prev + 1); // refresh diary
       Alert.alert(t('common.success'), t('diary.entrySaved'));
     } catch (e) {
       Alert.alert(t('common.error'), e.message);
@@ -145,7 +145,7 @@ export default function PlantDetailScreen({ route }) {
 
   // Aktuelle Zone inkl. Location-Namen laden (ohne PostgREST-Join)
   async function fetchAssignedZone() {
-    const { data: zone, error } = await supabase
+    const { data: zone } = await supabase
       .from('zones')
       .select('id, name, type, location_id')
       .eq('id', plant.zone_id)
@@ -351,7 +351,12 @@ export default function PlantDetailScreen({ route }) {
             style={[styles.zoneBtn, { alignSelf: 'center', marginBottom: spacing.md }]}
             onPress={() => setShowDiaryDialog(true)}
           >
-            <Ionicons name="add" size={18} color={colors.surface} style={{ marginRight: spacing.xs }} />
+            <Ionicons
+              name="add"
+              size={18}
+              color={colors.surface}
+              style={{ marginRight: spacing.xs }}
+            />
             <Text style={{ color: colors.surface, fontWeight: 'bold' }}>{t('diary.addEntry')}</Text>
           </TouchableOpacity>
           <DiaryTimeline key={diaryKey} plantId={plant.id} />
@@ -361,82 +366,82 @@ export default function PlantDetailScreen({ route }) {
 
       {/* Tab Content (care, health, overview) */}
       {tab !== 'diary' && tab !== 'gallery' && (
-      <View style={styles.card}>
-        {tab === 'health' ? (
-          loading ? (
-            <ActivityIndicator color={colors.primaryLight} />
-          ) : healthcheck ? (
-            <View>
-              <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
-              <Text
-                style={{
-                  textAlign: 'center',
-                  fontSize: 18,
-                  marginBottom: spacing.sm,
-                  color: colors.textSecondary,
-                }}
-              >
-                {healthcheck.summary}
-              </Text>
-              <View style={{ marginBottom: spacing.lg }}>
-                {Array.isArray(healthcheck.table_json) &&
-                  healthcheck.table_json.map((row, idx) => (
-                    <View
-                      key={idx}
-                      style={{
-                        borderBottomWidth: idx === healthcheck.table_json.length - 1 ? 0 : 1,
-                        borderBottomColor: colors.border,
-                        paddingVertical: spacing.sm,
-                      }}
-                    >
-                      <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
-                        {row.Kriterium}{' '}
-                        <Text style={{ color: colors.primaryLight }}>{row.Bewertung}/100</Text>
-                      </Text>
-                      <Text style={{ fontSize: 14, color: colors.textSecondary }}>
-                        Beobachtung:{' '}
-                        <Text style={{ color: colors.textPrimary }}>{row.Beobachtung}</Text>
-                      </Text>
-                      {row.Begründung && (
-                        <Text style={{ fontSize: 12, color: colors.textTertiary }}>
-                          Grund: {row.Begründung}
+        <View style={styles.card}>
+          {tab === 'health' ? (
+            loading ? (
+              <ActivityIndicator color={colors.primaryLight} />
+            ) : healthcheck ? (
+              <View>
+                <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 18,
+                    marginBottom: spacing.sm,
+                    color: colors.textSecondary,
+                  }}
+                >
+                  {healthcheck.summary}
+                </Text>
+                <View style={{ marginBottom: spacing.lg }}>
+                  {Array.isArray(healthcheck.table_json) &&
+                    healthcheck.table_json.map((row, idx) => (
+                      <View
+                        key={idx}
+                        style={{
+                          borderBottomWidth: idx === healthcheck.table_json.length - 1 ? 0 : 1,
+                          borderBottomColor: colors.border,
+                          paddingVertical: spacing.sm,
+                        }}
+                      >
+                        <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
+                          {row.Kriterium}{' '}
+                          <Text style={{ color: colors.primaryLight }}>{row.Bewertung}/100</Text>
                         </Text>
-                      )}
-                    </View>
-                  ))}
+                        <Text style={{ fontSize: 14, color: colors.textSecondary }}>
+                          Beobachtung:{' '}
+                          <Text style={{ color: colors.textPrimary }}>{row.Beobachtung}</Text>
+                        </Text>
+                        {row.Begründung && (
+                          <Text style={{ fontSize: 12, color: colors.textTertiary }}>
+                            Grund: {row.Begründung}
+                          </Text>
+                        )}
+                      </View>
+                    ))}
+                </View>
+                <Text
+                  style={{
+                    fontStyle: 'italic',
+                    color: colors.info,
+                    fontWeight: 'bold',
+                    fontSize: 14,
+                    textAlign: 'center',
+                  }}
+                >
+                  {healthcheck.recommendation}
+                </Text>
               </View>
-              <Text
-                style={{
-                  fontStyle: 'italic',
-                  color: colors.info,
-                  fontWeight: 'bold',
-                  fontSize: 14,
-                  textAlign: 'center',
-                }}
-              >
-                {healthcheck.recommendation}
+            ) : (
+              <Text style={{ color: colors.textDisabled, textAlign: 'center' }}>
+                {t('plants.noHealthcheck')}
               </Text>
+            )
+          ) : details[tab] ? (
+            <View>
+              {Object.entries(details[tab]).map(([k, v]) => (
+                <View key={k} style={{ marginBottom: spacing.md }}>
+                  <Text style={{ fontWeight: 'bold', color: colors.textPrimary, fontSize: 14 }}>
+                    {k}
+                  </Text>
+                  <Text style={{ marginLeft: spacing.xs, color: colors.textSecondary }}>{v}</Text>
+                </View>
+              ))}
             </View>
           ) : (
-            <Text style={{ color: colors.textDisabled, textAlign: 'center' }}>
-              {t('plants.noHealthcheck')}
-            </Text>
-          )
-        ) : details[tab] ? (
-          <View>
-            {Object.entries(details[tab]).map(([k, v]) => (
-              <View key={k} style={{ marginBottom: spacing.md }}>
-                <Text style={{ fontWeight: 'bold', color: colors.textPrimary, fontSize: 14 }}>
-                  {k}
-                </Text>
-                <Text style={{ marginLeft: spacing.xs, color: colors.textSecondary }}>{v}</Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={{ color: colors.textDisabled }}>{t('plants.noDetails')}</Text>
-        )}
-      </View>
+            <Text style={{ color: colors.textDisabled }}>{t('plants.noDetails')}</Text>
+          )}
+        </View>
       )}
 
       {/* Add Diary Entry Dialog */}

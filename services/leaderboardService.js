@@ -25,8 +25,16 @@ export { calcDiscoveryScore, calcStreak } from './scoringHelpers';
 
 // Score-Spalten-Mapping für Zeitfenster + Typ
 const SCORE_COLUMNS = {
-  gardener: { week: 'gardener_score_week', month: 'gardener_score_month', all: 'gardener_score_all' },
-  discovery: { week: 'discovery_points_week', month: 'discovery_points_month', all: 'discovery_points_all' },
+  gardener: {
+    week: 'gardener_score_week',
+    month: 'gardener_score_month',
+    all: 'gardener_score_all',
+  },
+  discovery: {
+    week: 'discovery_points_week',
+    month: 'discovery_points_month',
+    all: 'discovery_points_all',
+  },
 };
 
 /**
@@ -141,8 +149,12 @@ export async function getMyStats(userId) {
 
   // Discovery Scores
   const discoveryAll = calcDiscoveryScore(discoveryData);
-  const discoveryWeek = calcDiscoveryScore(discoveryData.filter((e) => new Date(e.created_at) > weekAgo));
-  const discoveryMonth = calcDiscoveryScore(discoveryData.filter((e) => new Date(e.created_at) > monthAgo));
+  const discoveryWeek = calcDiscoveryScore(
+    discoveryData.filter((e) => new Date(e.created_at) > weekAgo)
+  );
+  const discoveryMonth = calcDiscoveryScore(
+    discoveryData.filter((e) => new Date(e.created_at) > monthAgo)
+  );
 
   // Streak berechnen (aufeinanderfolgende Tage mit Aktivität)
   const allDates = [

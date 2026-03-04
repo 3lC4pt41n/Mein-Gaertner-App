@@ -20,29 +20,20 @@ export default function DSInput({
 }) {
   const [focused, setFocused] = useState(false);
 
-  const borderColor = error
-    ? colors.danger
-    : focused
-    ? colors.primary
-    : colors.border;
+  const borderColor = error ? colors.danger : focused ? colors.primary : colors.border;
 
   return (
     <View style={[styles.container, style]}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <View style={[
-        styles.inputWrapper,
-        { borderColor },
-        disabled && styles.disabled,
-        multiline && styles.multiline,
-      ]}>
-        {icon && (
-          <Ionicons
-            name={icon}
-            size={18}
-            color={colors.textTertiary}
-            style={styles.icon}
-          />
-        )}
+      <View
+        style={[
+          styles.inputWrapper,
+          { borderColor },
+          disabled && styles.disabled,
+          multiline && styles.multiline,
+        ]}
+      >
+        {icon && <Ionicons name={icon} size={18} color={colors.textTertiary} style={styles.icon} />}
         <TextInput
           value={value}
           onChangeText={onChangeText}

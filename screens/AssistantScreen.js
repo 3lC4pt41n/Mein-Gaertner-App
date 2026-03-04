@@ -101,7 +101,7 @@ export default function AssistantScreen() {
       });
       setMessages((prev) => [...older, ...prev]);
       setHasMore(more);
-    } catch (e) {
+    } catch (_e) {
       // Load older messages failed
     } finally {
       setLoadingMore(false);
@@ -116,7 +116,10 @@ export default function AssistantScreen() {
         t('common.insufficientCreditsMessage', { balance: e.balance, required: e.required }),
         [
           { text: t('common.cancel'), style: 'cancel' },
-          { text: t('common.buyCredits'), onPress: () => navigation.navigate('Mehr', { screen: 'ShopMain' }) },
+          {
+            text: t('common.buyCredits'),
+            onPress: () => navigation.navigate('Mehr', { screen: 'ShopMain' }),
+          },
         ]
       );
       return true;
@@ -269,21 +272,21 @@ export default function AssistantScreen() {
         >
           <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.credits')}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          {balance <= 10 && (
-            <TouchableOpacity onPress={() => navigation.navigate('Mehr', { screen: 'ShopMain' })}>
-              <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>
-                {t('common.buyCredits')}
-              </Text>
-            </TouchableOpacity>
-          )}
-          <Text
-            style={{
-              fontWeight: 'bold',
-              color: balance > 10 ? colors.primary : colors.warning,
-            }}
-          >
-            {balance}
-          </Text>
+            {balance <= 10 && (
+              <TouchableOpacity onPress={() => navigation.navigate('Mehr', { screen: 'ShopMain' })}>
+                <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>
+                  {t('common.buyCredits')}
+                </Text>
+              </TouchableOpacity>
+            )}
+            <Text
+              style={{
+                fontWeight: 'bold',
+                color: balance > 10 ? colors.primary : colors.warning,
+              }}
+            >
+              {balance}
+            </Text>
           </View>
         </View>
       )}
@@ -314,18 +317,47 @@ export default function AssistantScreen() {
         }
         ListEmptyComponent={
           !loading && (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xl }}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingHorizontal: spacing.xl,
+              }}
+            >
               <Image
                 source={require('../assets/avatars/ben.png')}
                 style={{ width: 80, height: 80, borderRadius: 40, marginBottom: spacing.lg }}
               />
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.textPrimary, marginBottom: spacing.sm }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: colors.textPrimary,
+                  marginBottom: spacing.sm,
+                }}
+              >
                 {t('assistant.welcomeTitle')}
               </Text>
-              <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: spacing.lg }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: colors.textSecondary,
+                  textAlign: 'center',
+                  lineHeight: 20,
+                  marginBottom: spacing.lg,
+                }}
+              >
                 {t('assistant.welcomeHint')}
               </Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  gap: spacing.sm,
+                }}
+              >
                 {[
                   { icon: 'leaf-outline', label: t('assistant.suggestionIdentify') },
                   { icon: 'pulse-outline', label: t('assistant.suggestionHealth') },
@@ -333,7 +365,9 @@ export default function AssistantScreen() {
                 ].map((s, i) => (
                   <TouchableOpacity
                     key={i}
-                    onPress={() => { setInput(s.label); }}
+                    onPress={() => {
+                      setInput(s.label);
+                    }}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -346,7 +380,9 @@ export default function AssistantScreen() {
                     accessibilityRole="button"
                   >
                     <Ionicons name={s.icon} size={16} color={colors.primary} />
-                    <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '500' }}>{s.label}</Text>
+                    <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '500' }}>
+                      {s.label}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -362,7 +398,11 @@ export default function AssistantScreen() {
         />
       )}
       <View style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.sm }}>
-        <TouchableOpacity onPress={takeAndSendPhoto} accessibilityRole="button" accessibilityLabel={t('assistant.takePhoto')}>
+        <TouchableOpacity
+          onPress={takeAndSendPhoto}
+          accessibilityRole="button"
+          accessibilityLabel={t('assistant.takePhoto')}
+        >
           <Ionicons
             name="camera"
             size={28}

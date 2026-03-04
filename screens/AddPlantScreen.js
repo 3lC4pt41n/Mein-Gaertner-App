@@ -67,7 +67,7 @@ export default function AddPlantScreen() {
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
   const [imageUri, setImageUri] = useState(null);
-  const [base64Image, setBase64Image] = useState(null);
+  const [, setBase64Image] = useState(null);
   const [loading, setLoading] = useState(false);
   const [balance, setBalance] = useState(null);
   const [language, setLanguage] = useState('de');
@@ -92,13 +92,13 @@ export default function AddPlantScreen() {
       try {
         const bal = await fetchBalance();
         setBalance(bal);
-      } catch (e) {
+      } catch (_e) {
         // Balance fetch failed silently
       }
       try {
         const userLanguage = await fetchCurrentUserLanguage();
         setLanguage(userLanguage);
-      } catch (e) {
+      } catch (_e) {
         // Language fetch failed silently
       }
     })();
@@ -167,7 +167,7 @@ export default function AddPlantScreen() {
     try {
       const data = await fetchZonesGrouped(userId);
       setSections(data);
-    } catch (err) {
+    } catch (_err) {
       setSections([]);
     }
     setZonesLoading(false);

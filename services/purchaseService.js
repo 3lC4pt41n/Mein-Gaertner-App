@@ -1,6 +1,5 @@
 import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
-import { supabase } from '../supabase';
 
 // ─── RevenueCat API Keys ────────────────────────────────────────
 // Echte Store Keys (aus RevenueCat Dashboard, konfiguriert 27.02.2026)

@@ -1,4 +1,8 @@
-import { normalizeLanguage, getLanguageLabel, LANGUAGE_OPTIONS } from '../../services/languageService';
+import {
+  normalizeLanguage,
+  getLanguageLabel,
+  LANGUAGE_OPTIONS,
+} from '../../services/languageService';
 
 describe('normalizeLanguage', () => {
   it('returns "de" for null/undefined/empty input', () => {

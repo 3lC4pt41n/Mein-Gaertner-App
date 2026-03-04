@@ -1,11 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { AI_COSTS } from '../services/pricingConfig';
-
-const { width } = Dimensions.get('window');
 
 export default function BetaWelcomeScreen({ onDone }) {
   return (
@@ -28,8 +26,16 @@ export default function BetaWelcomeScreen({ onDone }) {
         <Text style={styles.cardText}>{t('beta.creditsDesc')}</Text>
         <View style={styles.creditTable}>
           <CreditRow icon="camera" label={t('beta.scanLabel')} credits={String(AI_COSTS.scan)} />
-          <CreditRow icon="document-text" label={t('beta.detailsLabel')} credits={String(AI_COSTS.details)} />
-          <CreditRow icon="heart" label={t('beta.healthcheckLabel')} credits={String(AI_COSTS.healthcheck)} />
+          <CreditRow
+            icon="document-text"
+            label={t('beta.detailsLabel')}
+            credits={String(AI_COSTS.details)}
+          />
+          <CreditRow
+            icon="heart"
+            label={t('beta.healthcheckLabel')}
+            credits={String(AI_COSTS.healthcheck)}
+          />
           <CreditRow icon="chatbox" label={t('beta.chatLabel')} credits={String(AI_COSTS.chat)} />
         </View>
       </View>

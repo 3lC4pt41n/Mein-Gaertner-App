@@ -1,11 +1,12 @@
 import js from '@eslint/js';
 import prettierPlugin from 'eslint-plugin-prettier';
+import reactPlugin from 'eslint-plugin-react';
 
 export default [
   js.configs.recommended,
 
   {
-    plugins: { prettier: prettierPlugin },
+    plugins: { prettier: prettierPlugin, react: reactPlugin },
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -52,8 +53,13 @@ export default [
     },
     rules: {
       'prettier/prettier': 'warn',
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^React$' }],
+      'no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^React$', caughtErrorsIgnorePattern: '^_' },
+      ],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'react/jsx-uses-react': 'error',
+      'react/jsx-uses-vars': 'error',
     },
   },
 

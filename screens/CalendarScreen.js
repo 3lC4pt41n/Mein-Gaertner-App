@@ -13,7 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { fetchTasks } from '../services/taskService';
 import WeatherWidget from '../components/WeatherWidget';
 import DSButton from '../theme/DSButton';
-import { colors, spacing, radius, shadows } from '../theme/tokens';
+import { colors, spacing, radius } from '../theme/tokens';
 import i18n, { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -109,12 +109,16 @@ export default function CalendarScreen() {
   const days = getMonthDays(year, month);
 
   const goToPrev = () => {
-    if (month === 0) { setMonth(11); setYear(y => y - 1); }
-    else setMonth(m => m - 1);
+    if (month === 0) {
+      setMonth(11);
+      setYear((y) => y - 1);
+    } else setMonth((m) => m - 1);
   };
   const goToNext = () => {
-    if (month === 11) { setMonth(0); setYear(y => y + 1); }
-    else setMonth(m => m + 1);
+    if (month === 11) {
+      setMonth(0);
+      setYear((y) => y + 1);
+    } else setMonth((m) => m + 1);
   };
 
   const openDay = (day) => {
@@ -122,17 +126,17 @@ export default function CalendarScreen() {
     setDayModalVisible(true);
   };
 
-  const dayTasks = selectedDay ? (tasksByDate[toDateKey(selectedDay)] || []) : [];
+  const dayTasks = selectedDay ? tasksByDate[toDateKey(selectedDay)] || [] : [];
 
   // Dot colors for a day
   const getDayDots = (day) => {
     const key = toDateKey(day);
     const dayTasks = tasksByDate[key] || [];
     if (dayTasks.length === 0) return [];
-    const hasCompleted = dayTasks.some(t => t.state === 'COMPLETED');
-    const hasOverdue = dayTasks.some(t => t.state === 'DUE' && new Date(t.due_at) < new Date());
-    const hasDue = dayTasks.some(t => t.state === 'DUE');
-    const hasSkipped = dayTasks.some(t => t.state === 'SKIPPED');
+    const hasCompleted = dayTasks.some((t) => t.state === 'COMPLETED');
+    const hasOverdue = dayTasks.some((t) => t.state === 'DUE' && new Date(t.due_at) < new Date());
+    const hasDue = dayTasks.some((t) => t.state === 'DUE');
+    const hasSkipped = dayTasks.some((t) => t.state === 'SKIPPED');
 
     const dots = [];
     if (hasCompleted) dots.push(colors.success);
@@ -150,13 +154,23 @@ export default function CalendarScreen() {
 
       {/* Month Navigation */}
       <View style={styles.monthNav}>
-        <TouchableOpacity onPress={goToPrev} style={styles.navBtn} accessibilityRole="button" accessibilityLabel={t('calendar.previousMonth')}>
+        <TouchableOpacity
+          onPress={goToPrev}
+          style={styles.navBtn}
+          accessibilityRole="button"
+          accessibilityLabel={t('calendar.previousMonth')}
+        >
           <Ionicons name="chevron-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={styles.monthTitle} accessibilityRole="header">
           {getMonthName(year, month)} {year}
         </Text>
-        <TouchableOpacity onPress={goToNext} style={styles.navBtn} accessibilityRole="button" accessibilityLabel={t('calendar.nextMonth')}>
+        <TouchableOpacity
+          onPress={goToNext}
+          style={styles.navBtn}
+          accessibilityRole="button"
+          accessibilityLabel={t('calendar.nextMonth')}
+        >
           <Ionicons name="chevron-forward" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
@@ -164,7 +178,9 @@ export default function CalendarScreen() {
       {/* Day-of-week headers */}
       <View style={styles.dowRow}>
         {getDowHeaders().map((d, i) => (
-          <Text key={i} style={styles.dowText}>{d}</Text>
+          <Text key={i} style={styles.dowText}>
+            {d}
+          </Text>
         ))}
       </View>
 
@@ -184,7 +200,11 @@ export default function CalendarScreen() {
           </DSButton>
         </View>
       ) : loading ? (
-        <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.xxxl }} />
+        <ActivityIndicator
+          size="large"
+          color={colors.primaryLight}
+          style={{ marginTop: spacing.xxxl }}
+        />
       ) : (
         <View style={styles.grid}>
           {days.map((day, idx) => {
@@ -201,10 +221,7 @@ export default function CalendarScreen() {
             return (
               <TouchableOpacity
                 key={key}
-                style={[
-                  styles.dayCell,
-                  isToday && styles.todayCell,
-                ]}
+                style={[styles.dayCell, isToday && styles.todayCell]}
                 onPress={() => count > 0 && openDay(day)}
                 activeOpacity={count > 0 ? 0.6 : 1}
               >
@@ -264,10 +281,17 @@ export default function CalendarScreen() {
         >
           <TouchableOpacity style={styles.sheet} activeOpacity={1}>
             <Text style={styles.sheetTitle}>
-              {selectedDay && selectedDay.toLocaleDateString(i18n.locale || 'de', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {selectedDay &&
+                selectedDay.toLocaleDateString(i18n.locale || 'de', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                })}
             </Text>
             {dayTasks.length === 0 ? (
-              <Text style={{ textAlign: 'center', color: colors.textTertiary }}>{t('tasks.noTasks')}</Text>
+              <Text style={{ textAlign: 'center', color: colors.textTertiary }}>
+                {t('tasks.noTasks')}
+              </Text>
             ) : (
               <FlatList
                 data={dayTasks}
@@ -276,15 +300,19 @@ export default function CalendarScreen() {
                   <View style={styles.taskRow}>
                     <Ionicons
                       name={
-                        item.state === 'COMPLETED' ? 'checkmark-circle' :
-                        item.state === 'SKIPPED' ? 'remove-circle' :
-                        'ellipse-outline'
+                        item.state === 'COMPLETED'
+                          ? 'checkmark-circle'
+                          : item.state === 'SKIPPED'
+                            ? 'remove-circle'
+                            : 'ellipse-outline'
                       }
                       size={20}
                       color={
-                        item.state === 'COMPLETED' ? colors.success :
-                        item.state === 'SKIPPED' ? colors.warning :
-                        colors.primaryLight
+                        item.state === 'COMPLETED'
+                          ? colors.success
+                          : item.state === 'SKIPPED'
+                            ? colors.warning
+                            : colors.primaryLight
                       }
                       style={{ marginRight: spacing.sm }}
                     />
@@ -293,20 +321,32 @@ export default function CalendarScreen() {
                         {item.type}
                       </Text>
                       <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-                        {item.plant?.name || '?'} – {new Date(item.due_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {item.plant?.name || '?'} –{' '}
+                        {new Date(item.due_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </Text>
                     </View>
-                    <Text style={[
-                      styles.stateBadge,
-                      {
-                        backgroundColor: item.state === 'COMPLETED' ? colors.primarySurface :
-                          item.state === 'SKIPPED' ? colors.warningSurface :
-                          colors.infoSurface,
-                        color: item.state === 'COMPLETED' ? colors.primary :
-                          item.state === 'SKIPPED' ? colors.warning :
-                          colors.info,
-                      }
-                    ]}>
+                    <Text
+                      style={[
+                        styles.stateBadge,
+                        {
+                          backgroundColor:
+                            item.state === 'COMPLETED'
+                              ? colors.primarySurface
+                              : item.state === 'SKIPPED'
+                                ? colors.warningSurface
+                                : colors.infoSurface,
+                          color:
+                            item.state === 'COMPLETED'
+                              ? colors.primary
+                              : item.state === 'SKIPPED'
+                                ? colors.warning
+                                : colors.info,
+                        },
+                      ]}
+                    >
                       {item.state}
                     </Text>
                   </View>

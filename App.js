@@ -60,11 +60,7 @@ function PlantStack() {
         component={TaskDetailScreen}
         options={{ title: t('nav.taskTitle') }}
       />
-      <Stack.Screen
-        name="PlantDex"
-        component={PlantDexScreen}
-        options={{ title: t('nav.dex') }}
-      />
+      <Stack.Screen name="PlantDex" component={PlantDexScreen} options={{ title: t('nav.dex') }} />
       <Stack.Screen
         name="DexDetail"
         component={DexDetailScreen}
@@ -78,11 +74,7 @@ function PlantStack() {
 function TaskStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="TaskList"
-        component={TaskListScreen}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="TaskList" component={TaskListScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="TaskDetail"
         component={TaskDetailScreen}
@@ -101,20 +93,13 @@ function TaskStack() {
 function MoreStack({ isAdmin }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="MoreMain"
-        component={MoreScreen}
-        options={{ title: t('nav.more') }}
-      />
+      <Stack.Screen name="MoreMain" component={MoreScreen} options={{ title: t('nav.more') }} />
       <Stack.Screen
         name="AssistantMain"
         component={AssistantScreen}
         options={{ title: t('nav.assistant') }}
       />
-      <Stack.Screen
-        name="ShopMain"
-        options={{ title: t('nav.shop') }}
-      >
+      <Stack.Screen name="ShopMain" options={{ title: t('nav.shop') }}>
         {(props) => <StoreScreen {...props} isAdmin={isAdmin} />}
       </Stack.Screen>
       <Stack.Screen
@@ -189,9 +174,7 @@ function AddPlantTabButton({ children, onPress }) {
       accessibilityRole="button"
       accessibilityLabel={t('nav.addPlant')}
     >
-      <View style={tabButtonStyles.button}>
-        {children}
-      </View>
+      <View style={tabButtonStyles.button}>{children}</View>
     </TouchableOpacity>
   );
 }
@@ -262,28 +245,19 @@ function AppContent() {
   }
 
   if (!user) {
-    return (
-      <AuthScreen onPasswordRecoveryDetected={handlePasswordRecoveryDetected} />
-    );
+    return <AuthScreen onPasswordRecoveryDetected={handlePasswordRecoveryDetected} />;
   }
 
   const profileIncomplete =
     !profile?.profile_setup_skipped &&
     (!profile?.username ||
-    !profile?.first_name ||
-    !profile?.last_name ||
-    !profile?.country ||
-    !profile?.language);
+      !profile?.first_name ||
+      !profile?.last_name ||
+      !profile?.country ||
+      !profile?.language);
 
   if (profileIncomplete) {
-    return (
-      <ProfileCompleteScreen
-        user={user}
-        profile={profile}
-        onDone={refreshProfile}
-        showSkip
-      />
-    );
+    return <ProfileCompleteScreen user={user} profile={profile} onDone={refreshProfile} showSkip />;
   }
 
   if (showWelcome) {
@@ -311,10 +285,7 @@ function AppContent() {
           headerShown: false,
         })}
       >
-        <Tab.Screen
-          name="Zuhause"
-          options={{ title: t('nav.home'), tabBarLabel: t('nav.home') }}
-        >
+        <Tab.Screen name="Zuhause" options={{ title: t('nav.home'), tabBarLabel: t('nav.home') }}>
           {() => <HomeStack />}
         </Tab.Screen>
         <Tab.Screen
@@ -329,9 +300,7 @@ function AppContent() {
           options={{
             title: t('nav.addPlant'),
             tabBarLabel: () => null,
-            tabBarIcon: ({ size }) => (
-              <Ionicons name="add" size={size + 4} color="#FFFFFF" />
-            ),
+            tabBarIcon: ({ size }) => <Ionicons name="add" size={size + 4} color="#FFFFFF" />,
             tabBarButton: (props) => <AddPlantTabButton {...props} />,
           }}
         />
@@ -341,10 +310,7 @@ function AppContent() {
         >
           {() => <TaskStack />}
         </Tab.Screen>
-        <Tab.Screen
-          name="Mehr"
-          options={{ title: t('nav.more'), tabBarLabel: t('nav.more') }}
-        >
+        <Tab.Screen name="Mehr" options={{ title: t('nav.more'), tabBarLabel: t('nav.more') }}>
           {() => <MoreStack isAdmin={isAdmin} />}
         </Tab.Screen>
       </Tab.Navigator>

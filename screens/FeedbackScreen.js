@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { colors, spacing, radius } from '../theme/tokens';
+import { colors, spacing } from '../theme/tokens';
 import { t } from '../i18n';
 import Constants from 'expo-constants';
 import DSButton from '../theme/DSButton';

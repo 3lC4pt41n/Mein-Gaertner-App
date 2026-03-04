@@ -1,10 +1,9 @@
 // Input-Validierung fuer Edge Functions
 // Schuetzt vor Missbrauch und ueberdimensionierten Requests
 
-const SUPABASE_STORAGE_PATTERN =
-  /^https:\/\/[a-z]+\.supabase\.co\/storage\/v1\//;
+const SUPABASE_STORAGE_PATTERN = /^https:\/\/[a-z]+\.supabase\.co\/storage\/v1\//;
 
-const ALLOWED_LANGUAGES = ["de", "en", "fr", "it", "es", "ru"];
+const ALLOWED_LANGUAGES = ['de', 'en', 'fr', 'it', 'es', 'ru'];
 
 export interface ValidationError {
   field: string;
@@ -15,10 +14,10 @@ export interface ValidationError {
 export function validateText(
   text: string | undefined,
   maxLength: number,
-  fieldName = "text"
+  fieldName = 'text'
 ): ValidationError | null {
   if (!text) return null; // Optional ist ok
-  if (typeof text !== "string") {
+  if (typeof text !== 'string') {
     return { field: fieldName, message: `${fieldName} muss ein String sein` };
   }
   if (text.length > maxLength) {
@@ -31,23 +30,21 @@ export function validateText(
 }
 
 // Validiert Bild-URL: muss Supabase Storage oder data:image sein
-export function validateImageUrl(
-  url: string | undefined
-): ValidationError | null {
+export function validateImageUrl(url: string | undefined): ValidationError | null {
   if (!url) return null;
-  if (typeof url !== "string") {
-    return { field: "image_url", message: "image_url muss ein String sein" };
+  if (typeof url !== 'string') {
+    return { field: 'image_url', message: 'image_url muss ein String sein' };
   }
   // Supabase Storage URLs oder data:image/... erlauben
-  if (!SUPABASE_STORAGE_PATTERN.test(url) && !url.startsWith("data:image/")) {
+  if (!SUPABASE_STORAGE_PATTERN.test(url) && !url.startsWith('data:image/')) {
     return {
-      field: "image_url",
-      message: "image_url muss eine Supabase-Storage-URL sein",
+      field: 'image_url',
+      message: 'image_url muss eine Supabase-Storage-URL sein',
     };
   }
   // Max 10 MB fuer data URLs
-  if (url.startsWith("data:image/") && url.length > 10_000_000) {
-    return { field: "image_url", message: "Bild darf maximal 10 MB gross sein" };
+  if (url.startsWith('data:image/') && url.length > 10_000_000) {
+    return { field: 'image_url', message: 'Bild darf maximal 10 MB gross sein' };
   }
   return null;
 }
@@ -58,42 +55,37 @@ export function validateBase64(
   maxBytes = 10_000_000
 ): ValidationError | null {
   if (!base64) return null;
-  if (typeof base64 !== "string") {
-    return { field: "base64", message: "base64 muss ein String sein" };
+  if (typeof base64 !== 'string') {
+    return { field: 'base64', message: 'base64 muss ein String sein' };
   }
   if (base64.length > maxBytes) {
-    return { field: "base64", message: "Bild darf maximal 10 MB gross sein" };
+    return { field: 'base64', message: 'Bild darf maximal 10 MB gross sein' };
   }
   return null;
 }
 
 // Validiert Sprache: muss in erlaubter Liste sein
-export function validateLanguage(
-  lang: string | undefined
-): string {
-  if (!lang || !ALLOWED_LANGUAGES.includes(lang)) return "de";
+export function validateLanguage(lang: string | undefined): string {
+  if (!lang || !ALLOWED_LANGUAGES.includes(lang)) return 'de';
   return lang;
 }
 
 // Sammelt alle Validierungsfehler und gibt 400 Response zurueck
-export function validationErrorResponse(
-  errors: (ValidationError | null)[]
-): Response | null {
+export function validationErrorResponse(errors: (ValidationError | null)[]): Response | null {
   const actual = errors.filter(Boolean) as ValidationError[];
   if (actual.length === 0) return null;
 
   return new Response(
     JSON.stringify({
-      error: "Ungültige Eingabe",
+      error: 'Ungültige Eingabe',
       details: actual,
     }),
     {
       status: 400,
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers":
-          "authorization, x-client-info, apikey, content-type",
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
       },
     }
   );

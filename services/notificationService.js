@@ -70,13 +70,9 @@ export async function registerForPushNotifications(userId, supabase) {
 
     // Use user-scoped cache key
     const userPushTokenKey = `${PUSH_TOKEN_KEY_PREFIX}${userId}`;
-    const storedToken = await AsyncStorage.getItem(userPushTokenKey);
 
-    // Always write token for the active account, even if cached token matches
-    await supabase
-      .from('profiles')
-      .update({ push_token: token })
-      .eq('id', userId);
+    // Always write token for the active account
+    await supabase.from('profiles').update({ push_token: token }).eq('id', userId);
     await AsyncStorage.setItem(userPushTokenKey, token);
 
     return token;
@@ -129,10 +125,7 @@ export async function scheduleTaskReminder(task) {
     });
 
     // Store the notification ID for later cancellation
-    await AsyncStorage.setItem(
-      `${NOTIFICATION_ID_PREFIX}${task.id}`,
-      notificationId
-    );
+    await AsyncStorage.setItem(`${NOTIFICATION_ID_PREFIX}${task.id}`, notificationId);
   } catch (e) {
     console.warn('scheduleTaskReminder error:', e.message);
   }
@@ -144,9 +137,7 @@ export async function scheduleTaskReminder(task) {
  */
 export async function cancelTaskReminder(taskId) {
   try {
-    const notificationId = await AsyncStorage.getItem(
-      `${NOTIFICATION_ID_PREFIX}${taskId}`
-    );
+    const notificationId = await AsyncStorage.getItem(`${NOTIFICATION_ID_PREFIX}${taskId}`);
     if (notificationId) {
       await Notifications.cancelScheduledNotificationAsync(notificationId);
       await AsyncStorage.removeItem(`${NOTIFICATION_ID_PREFIX}${taskId}`);
@@ -169,9 +160,7 @@ export async function rescheduleAllTaskReminders(tasks) {
 
     // Clear all stored notification IDs
     const allKeys = await AsyncStorage.getAllKeys();
-    const notificationKeys = allKeys.filter((k) =>
-      k.startsWith(NOTIFICATION_ID_PREFIX)
-    );
+    const notificationKeys = allKeys.filter((k) => k.startsWith(NOTIFICATION_ID_PREFIX));
     if (notificationKeys.length > 0) {
       await AsyncStorage.multiRemove(notificationKeys);
     }

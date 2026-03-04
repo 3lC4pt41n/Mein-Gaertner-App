@@ -6,11 +6,11 @@
 // ── Task-Gewichte für Punkteberechnung ─────────────────────
 // Schlüssel = die deutschen Strings, die in der DB gespeichert werden
 export const TASK_WEIGHTS = {
-  'Gießen': 1,
-  'Düngen': 2,
-  'Umtopfen': 3,
-  'Healthcheck': 1,
-  'Sonstiges': 1,
+  Gießen: 1,
+  Düngen: 2,
+  Umtopfen: 3,
+  Healthcheck: 1,
+  Sonstiges: 1,
 };
 
 /**
@@ -61,7 +61,7 @@ export function calcHealthcheckPoints(currentScore, prevScore) {
  * @returns {number} Discovery-Score (1 Punkt pro Event + 5 Bonus für is_first)
  */
 export function calcDiscoveryScore(events) {
-  return events.length + 5 * events.filter(e => e.is_first).length;
+  return events.length + 5 * events.filter((e) => e.is_first).length;
 }
 
 /**
@@ -83,7 +83,7 @@ export function computeNextDueAt(baseDueAt, intervalDays) {
 }
 
 export function calcStreak(dates) {
-  const uniqueDates = [...new Set(dates.map(d => new Date(d).toISOString().slice(0, 10)))]
+  const uniqueDates = [...new Set(dates.map((d) => new Date(d).toISOString().slice(0, 10)))]
     .sort()
     .reverse();
 

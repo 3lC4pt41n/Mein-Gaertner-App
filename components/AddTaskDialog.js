@@ -234,7 +234,13 @@ export default function AddTaskDialog({
                   <ActivityIndicator style={{ padding: spacing.lg }} color={colors.primaryLight} />
                 ) : plants.length === 0 ? (
                   <View style={{ padding: spacing.md, alignItems: 'center' }}>
-                    <Text style={{ color: colors.textDisabled, textAlign: 'center', marginBottom: spacing.sm }}>
+                    <Text
+                      style={{
+                        color: colors.textDisabled,
+                        textAlign: 'center',
+                        marginBottom: spacing.sm,
+                      }}
+                    >
                       {t('tasks.noPlants')}
                     </Text>
                     <DSButton

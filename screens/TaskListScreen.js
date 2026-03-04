@@ -20,7 +20,7 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AddTaskDialog from '../components/AddTaskDialog';
 import WeatherWidget from '../components/WeatherWidget';
-import { colors, spacing, radius, shadows, typography } from '../theme/tokens';
+import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
@@ -235,29 +235,33 @@ export default function TaskScreen() {
           </DSButton>
         </View>
       ) : (
-      <FlatList
-        data={tasks}
-        keyExtractor={(item) => item.id?.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={{ padding: spacing.lg, paddingBottom: 100 }}
-        ListEmptyComponent={
-          !loading && (
-            <View style={styles.emptyState}>
-              <Ionicons name="checkmark-done-circle-outline" size={56} color={colors.textDisabled} />
-              <Text style={styles.emptyTitle}>{t('tasks.emptyTitle')}</Text>
-              <Text style={styles.emptyHint}>{t('tasks.emptyHint')}</Text>
-              <DSButton
-                variant="secondary"
-                icon="add-outline"
-                onPress={() => setShowAddDialog(true)}
-                style={{ marginTop: spacing.lg }}
-              >
-                {t('tasks.newTask')}
-              </DSButton>
-            </View>
-          )
-        }
-      />
+        <FlatList
+          data={tasks}
+          keyExtractor={(item) => item.id?.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={{ padding: spacing.lg, paddingBottom: 100 }}
+          ListEmptyComponent={
+            !loading && (
+              <View style={styles.emptyState}>
+                <Ionicons
+                  name="checkmark-done-circle-outline"
+                  size={56}
+                  color={colors.textDisabled}
+                />
+                <Text style={styles.emptyTitle}>{t('tasks.emptyTitle')}</Text>
+                <Text style={styles.emptyHint}>{t('tasks.emptyHint')}</Text>
+                <DSButton
+                  variant="secondary"
+                  icon="add-outline"
+                  onPress={() => setShowAddDialog(true)}
+                  style={{ marginTop: spacing.lg }}
+                >
+                  {t('tasks.newTask')}
+                </DSButton>
+              </View>
+            )
+          }
+        />
       )}
       <TouchableOpacity style={styles.fab} onPress={() => setShowAddDialog(true)}>
         <Ionicons name="add" size={36} color={colors.surface} />

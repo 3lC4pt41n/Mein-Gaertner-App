@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchDiaryEntries } from '../services/diaryService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -30,11 +38,11 @@ export default function DiaryTimeline({ plantId }) {
     async (pageNum) => {
       try {
         setLoading(true);
-        const { entries: newEntries, total: totalCount, hasMore: more } = await fetchDiaryEntries(
-          plantId,
-          pageNum,
-          20
-        );
+        const {
+          entries: newEntries,
+          total: totalCount,
+          hasMore: more,
+        } = await fetchDiaryEntries(plantId, pageNum, 20);
         if (pageNum === 0) {
           setEntries(newEntries);
         } else {
@@ -43,7 +51,7 @@ export default function DiaryTimeline({ plantId }) {
         setTotal(totalCount);
         setHasMore(more);
         setPage(pageNum);
-      } catch (error) {
+      } catch (_error) {
         // Load diary entries failed
       } finally {
         setLoading(false);
@@ -108,10 +116,7 @@ export default function DiaryTimeline({ plantId }) {
       {item.image_url && (
         <Image
           source={{ uri: item.image_url }}
-          style={[
-            styles.entryImage,
-            item.type === 'manual' && styles.entryImageLarge,
-          ]}
+          style={[styles.entryImage, item.type === 'manual' && styles.entryImageLarge]}
           resizeMode="cover"
         />
       )}

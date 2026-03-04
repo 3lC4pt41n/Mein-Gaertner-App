@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, Modal, Dimensions, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  FlatList,
+  TouchableOpacity,
+  Modal,
+  Dimensions,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchGallery } from '../services/diaryService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -31,7 +41,7 @@ export default function PlantGallery({ plantId }) {
       setLoading(true);
       const data = await fetchGallery(plantId);
       setGallery(data);
-    } catch (error) {
+    } catch (_error) {
       // Load gallery failed
     } finally {
       setLoading(false);
@@ -70,11 +80,7 @@ export default function PlantGallery({ plantId }) {
       onPress={() => handleImagePress(item, index)}
       activeOpacity={0.8}
     >
-      <Image
-        source={{ uri: item.image_url }}
-        style={styles.galleryImage}
-        resizeMode="cover"
-      />
+      <Image source={{ uri: item.image_url }} style={styles.galleryImage} resizeMode="cover" />
       <View style={styles.badgeContainer}>
         <Text style={styles.badge}>{typeBadges[item.type] || '📌'}</Text>
       </View>
@@ -118,10 +124,7 @@ export default function PlantGallery({ plantId }) {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setSelectedImage(null)}
-            >
+            <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedImage(null)}>
               <Ionicons name="close" size={28} color={colors.surface} />
             </TouchableOpacity>
             <Text style={styles.modalCounter}>
@@ -150,10 +153,7 @@ export default function PlantGallery({ plantId }) {
 
           <View style={styles.navigationContainer}>
             <TouchableOpacity
-              style={[
-                styles.navButton,
-                selectedIndex === 0 && styles.navButtonDisabled,
-              ]}
+              style={[styles.navButton, selectedIndex === 0 && styles.navButtonDisabled]}
               onPress={handlePrevious}
               disabled={selectedIndex === 0}
             >
