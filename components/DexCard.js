@@ -68,7 +68,7 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }
               </>
             ) : (
               <View style={styles.imagePlaceholder}>
-                <Ionicons name="leaf" size={40} color={colors.primary} />
+                <Ionicons name="leaf" size={32} color={colors.primary} />
               </View>
             )}
           </View>
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   imagePlaceholder: {
     width: '100%',
-    height: '100%',
+    aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.primarySurface,

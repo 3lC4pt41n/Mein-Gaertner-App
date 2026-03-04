@@ -25,6 +25,7 @@ import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
+import { generatePlantDetails } from '../services/aiService';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -94,7 +95,9 @@ export default function PlantDetailScreen({ route }) {
   const [tab, setTab] = useState('overview');
   const [showDiaryDialog, setShowDiaryDialog] = useState(false);
   const [diaryKey, setDiaryKey] = useState(0); // to refresh diary after new entry
-  const details = plant.details || {};
+  const [plantDetails, setPlantDetails] = useState(plant.details || null);
+  const [generatingDetails, setGeneratingDetails] = useState(false);
+  const details = plantDetails || {};
   const [healthcheck, setHealthcheck] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -140,6 +143,22 @@ export default function PlantDetailScreen({ route }) {
       Alert.alert(t('common.success'), t('diary.entrySaved'));
     } catch (e) {
       Alert.alert(t('common.error'), e.message);
+    }
+  };
+
+  const handleGenerateDetails = async () => {
+    setGeneratingDetails(true);
+    try {
+      const result = await generatePlantDetails(plant.name, plant.note);
+      if (result?.details) {
+        await supabase.from('plants').update({ details: result.details }).eq('id', plant.id);
+        setPlantDetails(result.details);
+        Alert.alert(t('common.success'), t('plants.detailsGenerated'));
+      }
+    } catch (e) {
+      Alert.alert(t('common.error'), e.message);
+    } finally {
+      setGeneratingDetails(false);
     }
   };
 
@@ -316,33 +335,33 @@ export default function PlantDetailScreen({ route }) {
         )}
       </View>
 
-      {/* Tabs */}
-      <View style={{ flexDirection: 'row', marginVertical: spacing.lg, justifyContent: 'center' }}>
+      {/* Tabs — horizontal scrollbar for narrow screens */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabBar}
+        style={{ marginVertical: spacing.lg }}
+      >
         {tabNames.map((item) => (
           <TouchableOpacity
             key={item.key}
             onPress={() => setTab(item.key)}
-            style={{
-              backgroundColor: tab === item.key ? colors.primary : colors.borderLight,
-              borderRadius: radius.pill,
-              paddingVertical: spacing.sm,
-              paddingHorizontal: 18,
-              marginHorizontal: 2,
-              elevation: tab === item.key ? 2 : 0,
-            }}
+            style={[
+              styles.tabChip,
+              tab === item.key && styles.tabChipActive,
+            ]}
           >
             <Text
-              style={{
-                color: tab === item.key ? colors.surface : colors.textPrimary,
-                fontWeight: 'bold',
-                fontSize: 16,
-              }}
+              style={[
+                styles.tabChipText,
+                tab === item.key && styles.tabChipTextActive,
+              ]}
             >
               {item.label}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* Diary / Gallery tabs rendered outside the card */}
       {tab === 'diary' && (
@@ -439,7 +458,22 @@ export default function PlantDetailScreen({ route }) {
               ))}
             </View>
           ) : (
-            <Text style={{ color: colors.textDisabled }}>{t('plants.noDetails')}</Text>
+            <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
+              <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
+                {t('plants.noDetails')}
+              </Text>
+              {!plantDetails && (
+                <DSButton
+                  variant="secondary"
+                  icon="document-text-outline"
+                  onPress={handleGenerateDetails}
+                  disabled={generatingDetails}
+                  size="sm"
+                >
+                  {generatingDetails ? t('common.loading') : t('plants.generateDetails')}
+                </DSButton>
+              )}
+            </View>
           )}
         </View>
       )}
@@ -625,4 +659,29 @@ const styles = StyleSheet.create({
   zoneName: { fontSize: 16 },
   zoneType: { color: colors.textTertiary, fontSize: 12 },
   locationTxt: { color: colors.textTertiary, fontSize: 12 },
+
+  /* Tabs */
+  tabBar: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.xs,
+    gap: spacing.xs,
+  },
+  tabChip: {
+    backgroundColor: colors.borderLight,
+    borderRadius: radius.pill,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  tabChipActive: {
+    backgroundColor: colors.primary,
+    elevation: 2,
+  },
+  tabChipText: {
+    color: colors.textPrimary,
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  tabChipTextActive: {
+    color: colors.surface,
+  },
 });

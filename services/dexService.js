@@ -30,6 +30,24 @@ export async function fetchDex(userId, filter = 'all') {
     discoveredMap[d.species_id] = d;
   }
 
+  // Fallback images: for species without image_url, use the first plant photo
+  const speciesWithoutImage = (allSpecies || []).filter((s) => !s.image_url);
+  let plantImageMap = {};
+  if (speciesWithoutImage.length > 0) {
+    // Get one plant image per species via canonical_name match
+    const { data: plantImages } = await supabase
+      .from('plants')
+      .select('name, image_url')
+      .eq('user_id', userId)
+      .not('image_url', 'is', null);
+    for (const p of plantImages || []) {
+      const key = p.name?.trim().toLowerCase();
+      if (key && p.image_url && !plantImageMap[key]) {
+        plantImageMap[key] = p.image_url;
+      }
+    }
+  }
+
   // Assign dexNumber BEFORE filtering so slot numbers stay stable across filters.
   //
   // ⚠️ KNOWN LIMITATION: dexNumber is derived from alphabetical sort order of
@@ -40,6 +58,7 @@ export async function fetchDex(userId, filter = 'all') {
   // (see HANDOFF.md → "Bekannte Tech Debt").
   let result = (allSpecies || []).map((species, idx) => ({
     ...species,
+    image_url: species.image_url || plantImageMap[species.canonical_name] || null,
     dexNumber: idx + 1,
     discovered: !!discoveredMap[species.id],
     isFirstDiscoverer: discoveredMap[species.id]?.is_first || false,
