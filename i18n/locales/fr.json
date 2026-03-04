@@ -307,7 +307,10 @@
     "discovered": "Découvertes",
     "notInRanking": "Pas dans le classement ?",
     "optInMessage": "Activez le classement dans votre profil pour vous mesurer aux autres.",
-    "joinButton": "Rejoindre maintenant"
+    "joinButton": "Rejoindre maintenant",
+    "plantCount": "{{count}} plantes",
+    "avgHealth": "Ø Santé {{score}}",
+    "healthMultiplier": "Multiplicateur"
   },
   "profile": {
     "title": "Profil",

@@ -18,10 +18,16 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { supabase } from '../supabase';
-import { calcDiscoveryScore, calcStreak } from './scoringHelpers';
+import {
+  calcDiscoveryScore,
+  calcStreak,
+  calcPlantCountBonus,
+  calcHealthMultiplier,
+  calcCombinedGardenerScore,
+} from './scoringHelpers';
 
 // Re-export for tests
-export { calcDiscoveryScore, calcStreak } from './scoringHelpers';
+export { calcDiscoveryScore, calcStreak, calcCombinedGardenerScore } from './scoringHelpers';
 
 // Score-Spalten-Mapping für Zeitfenster + Typ
 const SCORE_COLUMNS = {
@@ -134,18 +140,63 @@ export async function getMyStats(userId) {
 
   if (dErr) throw dErr;
 
+  // Pflanzen zählen
+  const { count: plantCount, error: pErr } = await supabase
+    .from('plants')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (pErr) throw pErr;
+
+  // Letzter Healthcheck pro Pflanze → Durchschnitt berechnen
+  const { data: plants } = await supabase
+    .from('plants')
+    .select('id')
+    .eq('user_id', userId);
+
+  let avgHealthScore = 0;
+  if (plants && plants.length > 0) {
+    // Letzten Healthcheck-Score pro Pflanze holen
+    const { data: healthData } = await supabase
+      .from('plant_healthchecks')
+      .select('plant_id, healthscore, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    // Nur den neuesten Score pro Pflanze behalten
+    const latestPerPlant = new Map();
+    for (const hc of healthData || []) {
+      if (!latestPerPlant.has(hc.plant_id)) {
+        latestPerPlant.set(hc.plant_id, hc.healthscore);
+      }
+    }
+
+    // Pflanzen ohne Healthcheck zählen als 0
+    let totalHealth = 0;
+    for (const p of plants) {
+      totalHealth += latestPerPlant.get(p.id) ?? 0;
+    }
+    avgHealthScore = totalHealth / plants.length;
+  }
+
   const now = new Date();
   const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
   const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
 
-  // Gardener Scores
-  const gardenerScoreAll = gardeningData.reduce((sum, e) => sum + Number(e.points), 0);
-  const gardenerScoreWeek = gardeningData
+  // Raw Gardener Scores (ohne Bonus)
+  const rawScoreAll = gardeningData.reduce((sum, e) => sum + Number(e.points), 0);
+  const rawScoreWeek = gardeningData
     .filter((e) => new Date(e.created_at) > weekAgo)
     .reduce((sum, e) => sum + Number(e.points), 0);
-  const gardenerScoreMonth = gardeningData
+  const rawScoreMonth = gardeningData
     .filter((e) => new Date(e.created_at) > monthAgo)
     .reduce((sum, e) => sum + Number(e.points), 0);
+
+  // Combined Gardener Scores (mit Pflanzen-Bonus & Health-Multiplikator)
+  const pc = plantCount || 0;
+  const gardenerScoreWeek = calcCombinedGardenerScore(rawScoreWeek, pc, avgHealthScore);
+  const gardenerScoreMonth = calcCombinedGardenerScore(rawScoreMonth, pc, avgHealthScore);
+  const gardenerScoreAll = calcCombinedGardenerScore(rawScoreAll, pc, avgHealthScore);
 
   // Discovery Scores
   const discoveryAll = calcDiscoveryScore(discoveryData);
@@ -177,6 +228,9 @@ export async function getMyStats(userId) {
     gardenerScore: { week: gardenerScoreWeek, month: gardenerScoreMonth, all: gardenerScoreAll },
     discoveryScore: { week: discoveryWeek, month: discoveryMonth, all: discoveryAll },
     streak,
+    plantCount: pc,
+    avgHealthScore: Math.round(avgHealthScore),
+    healthMultiplier: calcHealthMultiplier(avgHealthScore),
     totalDiscoveries: discoveryData.length,
     firstDiscoveries: discoveryData.filter((e) => e.is_first).length,
     taskCompletionRate: tasksTotal > 0 ? Math.round((tasksOnTime / tasksTotal) * 100) : 0,

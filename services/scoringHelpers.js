@@ -82,6 +82,49 @@ export function computeNextDueAt(baseDueAt, intervalDays) {
   return new Date(base.getTime() + intervalDays * 86400000);
 }
 
+// ── Pflanzen- & Health-Bonus ────────────────────────────────
+/**
+ * Berechnet den Pflanzen-Bonus: 0.5 Punkte pro aktive Pflanze.
+ * Belohnt Vielfalt im Garten.
+ * @param {number} plantCount - Anzahl aktiver Pflanzen
+ * @returns {number} Bonus-Punkte
+ */
+export function calcPlantCountBonus(plantCount) {
+  return Math.max(0, plantCount) * 0.5;
+}
+
+/**
+ * Berechnet den Health-Multiplikator basierend auf dem Durchschnitt
+ * aller letzten Healthcheck-Scores.
+ * - avgHealth ≥ 80 → Bonus (z.B. 90 → 1.125×)
+ * - avgHealth < 80 → Dämpfung (z.B. 60 → 0.75×)
+ * - Kein Healthcheck → neutraler Faktor 1.0
+ * @param {number|null} avgHealthScore - Durchschnittlicher Health-Score (0-100)
+ * @returns {number} Multiplikator (0.25 … 1.25, capped)
+ */
+export function calcHealthMultiplier(avgHealthScore) {
+  // Kein Healthcheck bekannt → Health = 0 → minimaler Multiplikator
+  const score = avgHealthScore ?? 0;
+  // Normalisiert auf 80 als Baseline: 80/80 = 1.0
+  const raw = score / 80;
+  // Clamp zwischen 0.25 und 1.25 um extreme Ausreißer zu vermeiden
+  return Math.min(1.25, Math.max(0.25, raw));
+}
+
+/**
+ * Berechnet den kombinierten Gärtner-Score inkl. Pflanzen- & Health-Bonus.
+ * Formel: (gardening_points + plant_bonus) × health_multiplier
+ * @param {number} gardeningPoints - Summe aller gardening_event Punkte
+ * @param {number} plantCount - Anzahl aktiver Pflanzen
+ * @param {number|null} avgHealthScore - Durchschnittlicher Health-Score (0-100)
+ * @returns {number} Gesamtscore (gerundet auf 1 Dezimalstelle)
+ */
+export function calcCombinedGardenerScore(gardeningPoints, plantCount, avgHealthScore) {
+  const plantBonus = calcPlantCountBonus(plantCount);
+  const healthMultiplier = calcHealthMultiplier(avgHealthScore);
+  return Math.round((gardeningPoints + plantBonus) * healthMultiplier * 10) / 10;
+}
+
 export function calcStreak(dates) {
   const uniqueDates = [...new Set(dates.map((d) => new Date(d).toISOString().slice(0, 10)))]
     .sort()

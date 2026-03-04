@@ -307,7 +307,10 @@
     "discovered": "Scoperte",
     "notInRanking": "Non in classifica?",
     "optInMessage": "Attiva la classifica nel tuo profilo per confrontarti con gli altri.",
-    "joinButton": "Partecipa ora"
+    "joinButton": "Partecipa ora",
+    "plantCount": "{{count}} piante",
+    "avgHealth": "Ø Salute {{score}}",
+    "healthMultiplier": "Moltiplicatore"
   },
   "profile": {
     "title": "Profilo",

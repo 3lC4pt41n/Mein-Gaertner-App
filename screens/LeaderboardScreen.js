@@ -205,6 +205,33 @@ export default function LeaderboardScreen() {
                       value={myStats.totalDiscoveries}
                     />
                   </View>
+                  {scoreType === 'gardener' && (
+                    <View style={styles.bonusRow}>
+                      <View style={styles.bonusItem}>
+                        <Ionicons name="flower-outline" size={16} color={colors.textTertiary} />
+                        <Text style={styles.bonusLabel}>
+                          {' '}
+                          {t('leaderboard.plantCount', { count: myStats.plantCount ?? 0 })}
+                        </Text>
+                      </View>
+                      <View style={styles.bonusItem}>
+                        <Ionicons name="heart-outline" size={16} color={colors.textTertiary} />
+                        <Text style={styles.bonusLabel}>
+                          {' '}
+                          {t('leaderboard.avgHealth', {
+                            score: myStats.avgHealthScore ?? 0,
+                          })}
+                        </Text>
+                      </View>
+                      <View style={styles.bonusItem}>
+                        <Ionicons name="trending-up-outline" size={16} color={colors.textTertiary} />
+                        <Text style={styles.bonusLabel}>
+                          {' '}
+                          ×{(myStats.healthMultiplier ?? 1).toFixed(2)}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
                   <DSButton
                     variant="ghost"
                     size="sm"
@@ -371,6 +398,16 @@ const styles = StyleSheet.create({
   statItem: { alignItems: 'center', gap: spacing.xs },
   statValue: { fontSize: 18, fontWeight: 'bold', color: colors.textPrimary },
   statLabel: { fontSize: 12, color: colors.textTertiary },
+  bonusRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderLight,
+  },
+  bonusItem: { flexDirection: 'row', alignItems: 'center' },
+  bonusLabel: { fontSize: 11, color: colors.textTertiary },
 
   // Opt-in CTA
   optInCard: {

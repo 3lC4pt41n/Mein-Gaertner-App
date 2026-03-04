@@ -18,6 +18,9 @@ import {
   calcHealthcheckPoints,
   calcDiscoveryScore,
   calcStreak,
+  calcPlantCountBonus,
+  calcHealthMultiplier,
+  calcCombinedGardenerScore,
 } from '../services/scoringHelpers';
 
 // ═══════════════════════════════════════════════════════════
@@ -126,6 +129,73 @@ describe('Discovery-Score', () => {
     ];
     // 3 (Anzahl) + 5*2 (Erstentdeckungen) = 13
     expect(calcDiscoveryScore(events)).toBe(13);
+  });
+});
+
+describe('Pflanzen-Bonus', () => {
+  test('0 Pflanzen: 0 Bonus', () => {
+    expect(calcPlantCountBonus(0)).toBe(0);
+  });
+
+  test('1 Pflanze: 0.5 Bonus', () => {
+    expect(calcPlantCountBonus(1)).toBe(0.5);
+  });
+
+  test('10 Pflanzen: 5.0 Bonus', () => {
+    expect(calcPlantCountBonus(10)).toBe(5.0);
+  });
+
+  test('negative Werte: 0', () => {
+    expect(calcPlantCountBonus(-3)).toBe(0);
+  });
+});
+
+describe('Health-Multiplikator', () => {
+  test('null/undefined: 0.25 (kein Healthcheck = Health 0)', () => {
+    expect(calcHealthMultiplier(null)).toBe(0.25);
+    expect(calcHealthMultiplier(undefined)).toBe(0.25);
+  });
+
+  test('Health 0: minimaler Multiplikator 0.25', () => {
+    expect(calcHealthMultiplier(0)).toBe(0.25);
+  });
+
+  test('Health 80: neutraler Multiplikator 1.0', () => {
+    expect(calcHealthMultiplier(80)).toBe(1.0);
+  });
+
+  test('Health 100: Multiplikator 1.25 (max)', () => {
+    expect(calcHealthMultiplier(100)).toBe(1.25);
+  });
+
+  test('Health 60: Multiplikator 0.75', () => {
+    expect(calcHealthMultiplier(60)).toBe(0.75);
+  });
+
+  test('Health 40: Multiplikator 0.5', () => {
+    expect(calcHealthMultiplier(40)).toBe(0.5);
+  });
+
+  test('extrem hoch (120): capped bei 1.25', () => {
+    expect(calcHealthMultiplier(120)).toBe(1.25);
+  });
+});
+
+describe('Kombinierter Gärtner-Score', () => {
+  test('10 Punkte + 2 Pflanzen + Health 80 = (10+1)*1.0 = 11', () => {
+    expect(calcCombinedGardenerScore(10, 2, 80)).toBe(11);
+  });
+
+  test('10 Punkte + 0 Pflanzen + Health 0 = (10+0)*0.25 = 2.5', () => {
+    expect(calcCombinedGardenerScore(10, 0, 0)).toBe(2.5);
+  });
+
+  test('20 Punkte + 4 Pflanzen + Health 100 = (20+2)*1.25 = 27.5', () => {
+    expect(calcCombinedGardenerScore(20, 4, 100)).toBe(27.5);
+  });
+
+  test('0 Punkte + 0 Pflanzen + null Health = 0', () => {
+    expect(calcCombinedGardenerScore(0, 0, null)).toBe(0);
   });
 });
 

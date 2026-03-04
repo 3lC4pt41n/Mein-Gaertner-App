@@ -307,7 +307,10 @@
     "discovered": "Открыто",
     "notInRanking": "Нет в рейтинге?",
     "optInMessage": "Включите рейтинг в профиле, чтобы соревноваться с другими.",
-    "joinButton": "Присоединиться"
+    "joinButton": "Присоединиться",
+    "plantCount": "{{count}} растений",
+    "avgHealth": "Ø Здоровье {{score}}",
+    "healthMultiplier": "Множитель"
   },
   "profile": {
     "title": "Профиль",
