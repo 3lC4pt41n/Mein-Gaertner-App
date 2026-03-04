@@ -19,7 +19,7 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
-import { SUPABASE_URL, supabase } from '../supabase.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, supabase } from '../supabase.js';
 
 // API Configuration - use Supabase Edge Function proxy
 const SUPABASE_WEATHER_PROXY = `${SUPABASE_URL}/functions/v1/weather-proxy`;
@@ -31,8 +31,11 @@ const getAuthHeaders = async () => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session?.access_token) return {};
-  return { Authorization: `Bearer ${session.access_token}` };
+  if (!session?.access_token) return { apikey: SUPABASE_ANON_KEY };
+  return {
+    Authorization: `Bearer ${session.access_token}`,
+    apikey: SUPABASE_ANON_KEY,
+  };
 };
 
 // Cache Configuration
