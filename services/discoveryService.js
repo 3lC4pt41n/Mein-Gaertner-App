@@ -80,19 +80,20 @@ export async function logDiscovery(userId, speciesName, plantId = null) {
     }
   }
 
-  // 3. Credit-Belohnung für Neuentdeckungen
+  // 3. Credit-Belohnung für Neuentdeckungen (sichere DB-Funktion)
   let creditsAwarded = 0;
   if (isNewForUser) {
-    creditsAwarded = isFirst ? 50 : 10;
     try {
-      await supabase.rpc('refund_credits', {
+      const { data: reward, error: rewardError } = await supabase.rpc('award_discovery_credits', {
         p_user_id: userId,
-        p_amount: creditsAwarded,
+        p_species_id: speciesId,
       });
+      if (!rewardError && reward) {
+        creditsAwarded = reward;
+      }
     } catch (creditError) {
       // Non-critical — Entdeckung trotzdem gültig
       console.warn('Discovery credit award failed:', creditError);
-      creditsAwarded = 0;
     }
   }
 
