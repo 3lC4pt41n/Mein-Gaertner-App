@@ -33,6 +33,6 @@ jobs:
       - name: Publish OTA update
         run: |
           FIRST_LINE=$(echo "$COMMIT_MSG" | head -1)
-          eas update --channel production --message "$FIRST_LINE" --non-interactive
+          eas update --channel production --platform ios,android --message "$FIRST_LINE" --non-interactive
         env:
           COMMIT_MSG: ${{ github.event.head_commit.message }}
