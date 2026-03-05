@@ -16,7 +16,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
-import { fetchLatestHealthcheck } from '../services/plantService';
+import { fetchLatestHealthcheck, saveHealthcheck } from '../services/plantService';
 import { addDiaryEntry, fetchGallery } from '../services/diaryService';
 import DiaryTimeline from '../components/DiaryTimeline';
 import PlantGallery from '../components/PlantGallery';
@@ -182,7 +182,17 @@ export default function PlantDetailScreen({ route }) {
       try {
         const result = await performHealthcheck(imageUrl, plant.name);
         if (result) {
-          setHealthcheck(result);
+          // Save healthcheck to database (not just React state)
+          const hc = result.healthcheck || result;
+          await saveHealthcheck({
+            plant_id: plant.id,
+            user_id: userId,
+            healthscore: hc.healthscore,
+            summary: hc.summary,
+            table_json: hc.table,
+            recommendation: hc.recommendation,
+          });
+          setHealthcheck(hc);
           Alert.alert(t('common.success'), t('plants.healthcheckDone'));
         }
       } catch (e) {
