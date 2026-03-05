@@ -25,6 +25,7 @@ Scan plants with your camera, let AI identify them, build your species collectio
 - **Weather Integration** — Location-based weather data drives automatic care task suggestions
 - **Leaderboard** — Compete with other gardeners on weekly, monthly, and all-time rankings
 - **AI Gardener Assistant** — Chat with "Ben," your AI gardener with image analysis and function calling (main tab: "Mein Gärtner")
+- **In-App Feedback** — Users can submit bug reports and feature requests directly from the app
 - **6 Languages** — German, English, French, Italian, Spanish, Russian
 - **Additional Features** — Plant diary with photos, push notifications, avatar generation, credit system
 
@@ -101,7 +102,7 @@ See `.env.example` for details.
 ├── contexts/
 │   └── AuthContext.js              # Central auth state (useAuth hook)
 │
-├── screens/                        # 15+ screens (Home, Plants, Chat, Tasks, etc.)
+├── screens/                        # 20 screens (Home, Plants, Chat, Tasks, Dex, Feedback, etc.)
 ├── services/                       # Business logic (AI, credits, tasks, plants, etc.)
 ├── components/                     # Reusable UI components
 ├── hooks/                          # Custom React hooks
@@ -113,11 +114,12 @@ See `.env.example` for details.
 │   │   ├── ai-plant-scan           # Plant identification
 │   │   ├── ai-plant-details        # Generate plant details
 │   │   ├── ai-healthcheck          # Health analysis
-│   │   ├── ai-chat                 # Chat with Ben (+ function calling)
+│   │   ├── ai-chat                 # Chat with Ben (+ function calling for task creation)
 │   │   ├── ai-gardener-avatar      # Avatar generation
 │   │   ├── weather-proxy           # Weather API proxy
 │   │   ├── revenucat-webhook       # Payment webhooks
-│   │   └── privacy-policy          # GDPR compliance
+│   │   ├── privacy-policy          # GDPR compliance
+│   │   └── _shared/               # Shared utilities (credits, OpenAI, rate-limit, validation)
 │   └── migrations/                 # SQL database migrations
 │
 ├── __tests__/                      # 10 test suites
