@@ -137,3 +137,5 @@ jest.mock('./supabase', () => ({
     },
   },
 }));
+
+// end of mocks
