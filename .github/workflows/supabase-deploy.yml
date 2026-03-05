@@ -24,6 +24,9 @@ jobs:
       - name: Link Supabase project
         run: supabase link --project-ref $SUPABASE_PROJECT_REF
 
+      - name: Repair baseline migration (already applied before migration tracking)
+        run: supabase migration repair --status applied 20250101
+
       - name: Push database migrations
         run: supabase db push
 
