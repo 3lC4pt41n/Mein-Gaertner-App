@@ -119,7 +119,7 @@ DO $$ BEGIN
   ALTER TABLE public.discovery_events
     ADD CONSTRAINT discovery_events_user_id_fkey
     FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-EXCEPTION WHEN OTHERS THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL; -- constraint already exists, OK
 END $$;
 
 DO $$ BEGIN
@@ -134,23 +134,21 @@ DO $$ BEGIN
   ALTER TABLE public.gardening_events
     ADD CONSTRAINT gardening_events_user_id_fkey
     FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-EXCEPTION WHEN OTHERS THEN NULL;
+EXCEPTION WHEN duplicate_object THEN NULL; -- constraint already exists, OK
 END $$;
 
 -- ── 5. Verify: all SECURITY DEFINER functions have search_path ──
--- This is a compile-time check — if any function is missing search_path,
--- the migration will fail at the DO block. Uncomment for CI testing:
---
--- DO $$ BEGIN
---   IF EXISTS (
---     SELECT 1 FROM pg_proc p
---     JOIN pg_namespace n ON p.pronamespace = n.oid
---     WHERE n.nspname = 'public'
---       AND p.prosecdef = true
---       AND NOT (p.proconfig @> ARRAY['search_path='])
---   ) THEN
---     RAISE EXCEPTION 'Found SECURITY DEFINER functions without search_path!';
---   END IF;
--- END $$;
+-- Fails migration if any function is missing search_path (CWE-340 guard).
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON p.pronamespace = n.oid
+    WHERE n.nspname = 'public'
+      AND p.prosecdef = true
+      AND NOT (p.proconfig @> ARRAY['search_path='])
+  ) THEN
+    RAISE EXCEPTION 'Found SECURITY DEFINER functions without search_path!';
+  END IF;
+END $$;
 
 COMMIT;

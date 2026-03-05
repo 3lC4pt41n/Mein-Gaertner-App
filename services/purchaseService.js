@@ -109,6 +109,34 @@ export async function getOfferings() {
   }
 }
 
+// ─── Live-Preise aus RC Offerings in Paket-Definitionen mergen ──
+// Returns copies of ONE_TIME_PACKAGES / SUBSCRIPTION_PACKAGES with
+// `price` replaced by the store-localised priceString from RevenueCat.
+// Hardcoded prices remain as fallback if offerings are unavailable.
+export async function getPackagesWithLivePrices() {
+  const offerings = await getOfferings();
+  const available = offerings?.current?.availablePackages || [];
+
+  // Build lookup: product identifier → priceString
+  const priceMap = {};
+  for (const pkg of available) {
+    priceMap[pkg.product.identifier] = pkg.product.priceString;
+  }
+
+  const mapPrices = (packages) =>
+    packages.map((p) => ({
+      ...p,
+      price: priceMap[p.id] || p.price, // live price or hardcoded fallback
+      _rcPackage: available.find((rc) => rc.product.identifier === p.id) || null,
+    }));
+
+  return {
+    oneTime: mapPrices(ONE_TIME_PACKAGES),
+    subscriptions: mapPrices(SUBSCRIPTION_PACKAGES),
+    hasLivePrices: Object.keys(priceMap).length > 0,
+  };
+}
+
 // ─── Kauf durchführen ───────────────────────────────────────────
 export async function purchasePackage(pkg) {
   try {

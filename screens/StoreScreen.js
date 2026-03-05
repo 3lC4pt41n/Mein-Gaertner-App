@@ -15,6 +15,7 @@ import {
   ONE_TIME_PACKAGES,
   SUBSCRIPTION_PACKAGES,
   getOfferings,
+  getPackagesWithLivePrices,
   purchasePackage,
   openManageSubscriptions,
   restorePurchases,
@@ -55,17 +56,24 @@ export default function StoreScreen({ isAdmin }) {
   const [purchasing, setPurchasing] = useState(null); // welches Paket gerade kauft
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState('packages'); // 'packages' | 'usage'
+  const [liveOneTime, setLiveOneTime] = useState(ONE_TIME_PACKAGES);
+  const [liveSubs, setLiveSubs] = useState(SUBSCRIPTION_PACKAGES);
 
   const loadData = useCallback(async () => {
     try {
-      const [bal, sub, usage] = await Promise.all([
+      const [bal, sub, usage, livePrices] = await Promise.all([
         fetchBalance(),
         fetchSubscription().catch(() => null),
         fetchUsageHistory(20).catch(() => []),
+        getPackagesWithLivePrices().catch(() => null),
       ]);
       setBalance(bal);
       setSubscription(sub);
       setRecentUsage(usage);
+      if (livePrices) {
+        setLiveOneTime(livePrices.oneTime);
+        setLiveSubs(livePrices.subscriptions);
+      }
     } catch (e) {
       console.warn('Store Daten laden:', e.message);
     } finally {
@@ -87,19 +95,20 @@ export default function StoreScreen({ isAdmin }) {
   const handlePurchase = async (pkg) => {
     setPurchasing(pkg.id);
     try {
-      // RevenueCat Offerings laden und passendes Package finden
-      const offerings = await getOfferings();
-      if (!offerings?.current?.availablePackages) {
-        // Fallback: Direkt über Product ID (für Development)
-        Alert.alert(t('store.storeUnavailable'), t('store.storeUnavailableMessage'), [
-          { text: 'OK' },
-        ]);
-        return;
+      // Use pre-loaded RC package from live prices, or fetch fresh
+      let rcPackage = pkg._rcPackage;
+      if (!rcPackage) {
+        const offerings = await getOfferings();
+        if (!offerings?.current?.availablePackages) {
+          Alert.alert(t('store.storeUnavailable'), t('store.storeUnavailableMessage'), [
+            { text: 'OK' },
+          ]);
+          return;
+        }
+        rcPackage = offerings.current.availablePackages.find(
+          (p) => p.product.identifier === pkg.id
+        );
       }
-
-      const rcPackage = offerings.current.availablePackages.find(
-        (p) => p.product.identifier === pkg.id
-      );
 
       if (!rcPackage) {
         Alert.alert(t('common.error'), t('store.packageNotFound', { name: pkg.name }));
@@ -250,7 +259,7 @@ export default function StoreScreen({ isAdmin }) {
           {/* ─── Abo-Pakete ──────────────────────────────────── */}
           <Text style={styles.sectionTitle}>{t('store.subscriptionTitle')}</Text>
           <Text style={styles.sectionSubtitle}>{t('store.subscriptionSubtitle')}</Text>
-          {SUBSCRIPTION_PACKAGES.map((pkg) => {
+          {liveSubs.map((pkg) => {
             const pcc = perCreditCent(pkg.price, pkg.credits);
             const savings = savingsPercent(pkg.price, pkg.credits);
             return (
@@ -306,7 +315,7 @@ export default function StoreScreen({ isAdmin }) {
             {t('store.oneTimeTitle')}
           </Text>
           <Text style={styles.sectionSubtitle}>{t('store.oneTimeSubtitle')}</Text>
-          {ONE_TIME_PACKAGES.map((pkg) => {
+          {liveOneTime.map((pkg) => {
             const pcc = perCreditCent(pkg.price, pkg.credits);
             const savings = savingsPercent(pkg.price, pkg.credits);
             return (

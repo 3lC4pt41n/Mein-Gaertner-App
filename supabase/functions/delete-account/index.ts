@@ -20,21 +20,55 @@ function json(body: Record<string, unknown>, status = 200) {
   });
 }
 
-// Remove all objects in a storage bucket for a given user prefix.
+// Remove all objects in a storage bucket that belong to a given user.
+// Files are stored flat with naming patterns:
+//   plant-images: plant_<userId>_<ts>.jpg, feedback/fb_<userId>_<ts>.jpg
+//   chat-images:  chat_<userId>_<ts>.jpg
+// We list the root (and known sub-folders), then filter by userId substring.
+// Paginated: Supabase Storage returns max 1000 items per list() call.
 async function purgeStorageBucket(
   serviceClient: ReturnType<typeof getServiceClient>,
   bucket: string,
   userId: string,
 ) {
-  try {
-    const { data: files } = await serviceClient.storage.from(bucket).list(userId);
-    if (files && files.length > 0) {
-      const paths = files.map((f) => `${userId}/${f.name}`);
-      await serviceClient.storage.from(bucket).remove(paths);
+  const foldersToScan = ['', 'feedback']; // root + known sub-folders
+  let totalDeleted = 0;
+
+  for (const folder of foldersToScan) {
+    try {
+      let offset = 0;
+      const PAGE_SIZE = 1000;
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { data: files, error } = await serviceClient.storage
+          .from(bucket)
+          .list(folder || undefined, { limit: PAGE_SIZE, offset });
+
+        if (error || !files || files.length === 0) break;
+
+        // Filter files that belong to this user (userId appears in filename)
+        const userFiles = files.filter(
+          (f) => f.name.includes(userId) || f.name.includes(`_${userId}_`)
+        );
+
+        if (userFiles.length > 0) {
+          const prefix = folder ? `${folder}/` : '';
+          const paths = userFiles.map((f) => `${prefix}${f.name}`);
+          await serviceClient.storage.from(bucket).remove(paths);
+          totalDeleted += paths.length;
+        }
+
+        // If we got fewer than PAGE_SIZE, we've reached the end
+        if (files.length < PAGE_SIZE) break;
+        offset += PAGE_SIZE;
+      }
+    } catch {
+      // Storage bucket or folder may not exist — non-fatal, continue.
     }
-  } catch {
-    // Storage bucket may not exist or be empty — non-fatal.
   }
+
+  return totalDeleted;
 }
 
 serve(async (req) => {
@@ -64,12 +98,18 @@ serve(async (req) => {
 
   const userId = user.id;
 
-  // --- Purge user storage (best-effort) ---
+  // --- Purge user storage (best-effort, paginated) ---
   const service = getServiceClient();
-  await Promise.allSettled([
+  const results = await Promise.allSettled([
     purgeStorageBucket(service, 'plant-images', userId),
     purgeStorageBucket(service, 'chat-images', userId),
   ]);
+
+  const deletedCount = results
+    .filter((r) => r.status === 'fulfilled')
+    .reduce((sum, r) => sum + ((r as PromiseFulfilledResult<number>).value || 0), 0);
+
+  console.log(`Purged ${deletedCount} storage objects for user ${userId}`);
 
   // --- Delete auth user (CASCADE handles all public.* tables) ---
   const { error: deleteError } = await service.auth.admin.deleteUser(userId);
@@ -79,5 +119,5 @@ serve(async (req) => {
     return json({ error: 'Account deletion failed' }, 500);
   }
 
-  return json({ success: true });
+  return json({ success: true, storageObjectsDeleted: deletedCount });
 });
