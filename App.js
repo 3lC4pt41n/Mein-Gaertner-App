@@ -1,5 +1,7 @@
 // App.js – Hauptnavigation mit RevenueCat + Credit Store
 // -----------------------------------------------------------
+import './sentry.config'; // ← Sentry MUSS als erstes geladen werden
+import { Sentry } from './sentry.config';
 import React, { useEffect, useRef } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -17,7 +19,7 @@ import TaskListScreen from './screens/TaskListScreen';
 import TaskDetailScreen from './screens/TaskDetailScreen';
 import StoreScreen from './screens/StoreScreen';
 import AdminDashboardScreen from './screens/AdminDashboardScreen';
-import BetaWelcomeScreen from './screens/BetaWelcomeScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
 import FeedbackScreen from './screens/FeedbackScreen';
 import CalendarScreen from './screens/CalendarScreen';
@@ -260,7 +262,7 @@ function AppContent() {
   }
 
   if (showWelcome) {
-    return <BetaWelcomeScreen onDone={dismissWelcome} />;
+    return <OnboardingScreen onDone={dismissWelcome} />;
   }
 
   // ---------- Navigation Container (5 Tabs) ------------------
@@ -318,7 +320,7 @@ function AppContent() {
 }
 
 // ---------- Root App Component ----------------------------
-export default function App() {
+function App() {
   return (
     <AuthProvider>
       <ErrorBoundary>
@@ -327,3 +329,5 @@ export default function App() {
     </AuthProvider>
   );
 }
+
+export default Sentry.wrap(App);

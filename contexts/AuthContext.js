@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase';
+import { Sentry } from '../sentry.config';
 import { initPurchases, logoutPurchases } from '../services/purchaseService';
 import { normalizeLanguage } from '../services/languageService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -33,6 +34,15 @@ export function AuthProvider({ children }) {
 
     return () => listener?.subscription.unsubscribe();
   }, []);
+
+  // --- Sentry User Context (anonymous ID for crash grouping) ---
+  useEffect(() => {
+    if (user?.id) {
+      Sentry.setUser({ id: user.id });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [user?.id]);
 
   // --- RevenueCat Init (after login) ---
   useEffect(() => {

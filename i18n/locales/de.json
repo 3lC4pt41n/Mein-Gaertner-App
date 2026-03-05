@@ -362,6 +362,27 @@
     "feedbackDesc": "Als Beta-Tester hilfst du uns, die App besser zu machen. Sag uns, was dir gefällt und was fehlt – wir lesen alles!",
     "ctaButton": "Los geht's!"
   },
+  "onboarding": {
+    "page1Title": "Pflanze fotografieren, sofort erkennen",
+    "page1Subtitle": "Richte deine Kamera auf eine Pflanze und unsere KI sagt dir sofort, was es ist – mit Pflegetipps.",
+    "chipScan": "Scannen",
+    "chipIdentify": "Erkennen",
+    "chipTips": "Pflegetipps",
+    "page2Title": "Dein persönlicher Pflanzen-Assistent",
+    "page2Subtitle": "Alles, was deine Pflanzen brauchen – in einer App.",
+    "feature1Title": "Gesundheits-Check",
+    "feature1Desc": "KI analysiert den Zustand deiner Pflanze per Foto.",
+    "feature2Title": "Pflege-Aufgaben",
+    "feature2Desc": "Gießen, Düngen, Umtopfen – nie mehr vergessen.",
+    "feature3Title": "Pflanzen-Tagebuch",
+    "feature3Desc": "Dokumentiere das Wachstum mit Fotos und Notizen.",
+    "page3Title": "Credits – so funktioniert's",
+    "page3Subtitle": "Jede KI-Funktion verbraucht Credits. Du bekommst Startguthaben geschenkt!",
+    "giftTitle": "Gratis-Credits zum Start",
+    "giftDesc": "Du erhältst Credits zum Loslegen – genug für mehrere Pflanzen-Scans, Healthchecks und Chats mit Ben, deinem KI-Gärtner.",
+    "ctaNext": "Weiter",
+    "ctaStart": "Erste Pflanze scannen"
+  },
   "admin": {
     "title": "Admin Dashboard",
     "noAccess": "Kein Zugriff",

@@ -25,6 +25,8 @@ Scan plants with your camera, let AI identify them, build your species collectio
 - **Weather Integration** — Location-based weather data drives automatic care task suggestions
 - **Leaderboard** — Compete with other gardeners on weekly, monthly, and all-time rankings
 - **AI Gardener Assistant** — Chat with "Ben," your AI gardener with image analysis and function calling (main tab: "Mein Gärtner")
+- **Crash Monitoring** — Sentry integration with DSGVO-compliant PII filtering (no email/IP)
+- **Onboarding Carousel** — 3-step swipeable intro for new users (value prop, features, credits)
 - **In-App Feedback** — Users can submit bug reports and feature requests directly from the app
 - **6 Languages** — German, English, French, Italian, Spanish, Russian
 - **Additional Features** — Plant diary with photos, push notifications, avatar generation, credit system
@@ -44,6 +46,7 @@ Scan plants with your camera, let AI identify them, build your species collectio
 | Notifications | expo-notifications                                   |
 | Location      | expo-location                                        |
 | Tests         | Jest 30 + React Testing Library                      |
+| Crash Monitor | Sentry (DSGVO-compliant, PII-filtered)               |
 | Linting       | ESLint + Prettier                                    |
 | CI/CD         | GitHub Actions + EAS Build                           |
 
@@ -98,13 +101,14 @@ See `.env.example` for details.
 .
 ├── App.js                          # Navigation & push notifications
 ├── supabase.js                     # Supabase client setup
+├── sentry.config.js                # Sentry crash monitoring (DSGVO-compliant)
 │
 ├── contexts/
 │   └── AuthContext.js              # Central auth state (useAuth hook)
 │
-├── screens/                        # 20 screens (Home, Plants, Chat, Tasks, Dex, Feedback, etc.)
+├── screens/                        # 21 screens (Home, Plants, Chat, Tasks, Dex, Onboarding, etc.)
 ├── services/                       # Business logic (AI, credits, tasks, plants, etc.)
-├── components/                     # Reusable UI components
+├── components/                     # Reusable UI (EmptyState, ErrorState, OfflineState, OfflineBanner, etc.)
 ├── hooks/                          # Custom React hooks
 ├── theme/                          # Design system & tokens
 ├── i18n/                           # Translations (6 languages)

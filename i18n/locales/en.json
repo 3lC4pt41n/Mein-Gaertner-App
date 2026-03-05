@@ -362,6 +362,27 @@
     "feedbackDesc": "As a beta tester, you're helping us improve the app. Tell us what you like and what's missing – we read everything!",
     "ctaButton": "Let's go!"
   },
+  "onboarding": {
+    "page1Title": "Snap a photo, identify instantly",
+    "page1Subtitle": "Point your camera at any plant and our AI will tell you what it is – with care tips.",
+    "chipScan": "Scan",
+    "chipIdentify": "Identify",
+    "chipTips": "Care Tips",
+    "page2Title": "Your personal plant assistant",
+    "page2Subtitle": "Everything your plants need – in one app.",
+    "feature1Title": "Health Check",
+    "feature1Desc": "AI analyzes your plant's condition from a photo.",
+    "feature2Title": "Care Tasks",
+    "feature2Desc": "Watering, fertilizing, repotting – never forget again.",
+    "feature3Title": "Plant Diary",
+    "feature3Desc": "Document growth with photos and notes.",
+    "page3Title": "Credits – how it works",
+    "page3Subtitle": "Every AI feature uses Credits. You'll get free starter Credits!",
+    "giftTitle": "Free Credits to get started",
+    "giftDesc": "You'll receive Credits to start with – enough for several plant scans, health checks, and chats with Ben, your AI gardener.",
+    "ctaNext": "Next",
+    "ctaStart": "Scan your first plant"
+  },
   "admin": {
     "title": "Admin Dashboard",
     "noAccess": "No access",

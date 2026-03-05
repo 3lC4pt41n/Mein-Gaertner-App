@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from '
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
+import { Sentry } from '../sentry.config';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -15,7 +16,12 @@ export default class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Structured logging (Sentry-ready)
+    // Report to Sentry with component stack context
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: errorInfo?.componentStack } },
+    });
+
+    // Structured logging for local debugging
     console.error('[ErrorBoundary] Uncaught error:', {
       message: error?.message,
       stack: error?.stack,
