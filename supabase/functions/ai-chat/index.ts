@@ -228,7 +228,14 @@ async function handleToolCall(
   }
 
   if (fn.name === 'create_task') {
-    const dueAt = new Date(args.due_date + 'T09:00:00').toISOString();
+    // Robuste Date-Validierung: GPT liefert manchmal ungültige Formate
+    let dueDate = new Date(args.due_date + 'T09:00:00');
+    if (isNaN(dueDate.getTime())) {
+      // Fallback: morgen 09:00 wenn das Datum ungültig ist
+      dueDate = new Date(Date.now() + 86400000);
+      dueDate.setHours(9, 0, 0, 0);
+    }
+    const dueAt = dueDate.toISOString();
     const { data, error } = await serviceClient
       .from('tasks')
       .insert({
