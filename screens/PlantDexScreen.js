@@ -47,11 +47,31 @@ const PlantDexScreen = () => {
     }
   }, [user, filter]);
 
+  // Always reload on focus — no dependency on loadDexData to avoid stale closures
   useFocusEffect(
     useCallback(() => {
+      let cancelled = false;
       setLoading(true);
-      loadDexData().finally(() => setLoading(false));
-    }, [loadDexData])
+      (async () => {
+        if (!user) return;
+        try {
+          setError(null);
+          const [dexData, progressData] = await Promise.all([
+            fetchDex(user.id, filter),
+            getDexProgress(user.id),
+          ]);
+          if (!cancelled) {
+            setSpecies(dexData);
+            setProgress(progressData);
+          }
+        } catch (err) {
+          if (!cancelled) setError(err.message);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
+      return () => { cancelled = true; };
+    }, [user, filter])
   );
 
   const onRefresh = async () => {
@@ -128,21 +148,17 @@ const PlantDexScreen = () => {
     </View>
   );
 
-  if (loading && species.length === 0) {
-    return (
-      <View style={styles.container}>
-        {renderHeader()}
+  // Always render FlatList to avoid layout jumps between loading/loaded states
+  const renderListEmpty = () => {
+    if (loading && species.length === 0) {
+      return (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        {renderHeader()}
+      );
+    }
+    if (error) {
+      return (
         <View style={styles.centerContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.textDisabled} />
           <Text style={styles.errorText}>{t('common.error')}</Text>
@@ -150,9 +166,15 @@ const PlantDexScreen = () => {
             <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
+      );
+    }
+    return (
+      <View style={styles.centerContainer}>
+        <Ionicons name="leaf-outline" size={48} color={colors.textDisabled} />
+        <Text style={styles.emptyText}>{t('dex.empty')}</Text>
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -172,12 +194,7 @@ const PlantDexScreen = () => {
         columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.gridContainer}
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={
-          <View style={styles.centerContainer}>
-            <Ionicons name="leaf-outline" size={48} color={colors.textDisabled} />
-            <Text style={styles.emptyText}>{t('dex.empty')}</Text>
-          </View>
-        }
+        ListEmptyComponent={renderListEmpty}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

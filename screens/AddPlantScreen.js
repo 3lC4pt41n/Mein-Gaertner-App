@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import { recognizePlant, generatePlantDetails, performHealthcheck } from '../ser
 import { fetchBalance } from '../services/creditService';
 import { logDiscovery } from '../services/discoveryService';
 import { supabase } from '../supabase';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
@@ -103,6 +103,31 @@ export default function AddPlantScreen() {
       }
     })();
   }, []);
+
+  // Reset to scan step when screen gains focus (so the plus button always works)
+  useFocusEffect(
+    useCallback(() => {
+      // Only reset if we're on the "done" step — user already saved and left
+      if (step === 'done') {
+        setStep('scan');
+        setName('');
+        setNote('');
+        setImageUri(null);
+        setBase64Image(null);
+        setSelectedZone(null);
+        setSavedPlant(null);
+        setDiscoveryResult(null);
+        setShowReveal(false);
+      }
+      // Refresh balance on focus
+      (async () => {
+        try {
+          const bal = await fetchBalance();
+          setBalance(bal);
+        } catch (_e) { /* silent */ }
+      })();
+    }, [step])
+  );
 
   // Credit error handler
   const handleCreditError = (e) => {

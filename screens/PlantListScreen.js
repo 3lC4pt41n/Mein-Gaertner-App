@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
 import { Ionicons } from '@expo/vector-icons';
@@ -106,11 +106,14 @@ export default function PlantListScreen() {
   const { userId } = useAuth();
   const [expandedZones, setExpandedZones] = useState({}); // { [zoneId]: true }
 
-  useEffect(() => {
-    if (userId) {
-      loadAll();
-    }
-  }, [userId]);
+  // Reload plant list every time screen gains focus (e.g. after adding a plant)
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        loadAll();
+      }
+    }, [userId])
+  );
 
   const loadAll = async () => {
     setLoading(true);
