@@ -531,5 +531,26 @@
     "privacyPolicy": "Informativa sulla privacy",
     "termsOfService": "Termini di servizio",
     "feedback": "Invia feedback"
+  },
+  "onboarding": {
+    "page1Title": "Fotografa una pianta, identificala subito",
+    "page1Subtitle": "Punta la fotocamera su una pianta e la nostra IA ti dice subito di cosa si tratta — con consigli di cura.",
+    "chipScan": "Scansiona",
+    "chipIdentify": "Identifica",
+    "chipTips": "Consigli",
+    "page2Title": "Il tuo assistente personale per le piante",
+    "page2Subtitle": "Tutto ciò di cui le tue piante hanno bisogno — in un'unica app.",
+    "feature1Title": "Controllo salute",
+    "feature1Desc": "L'IA analizza lo stato della tua pianta tramite foto.",
+    "feature2Title": "Compiti di cura",
+    "feature2Desc": "Innaffiare, concimare, rinvasare — non dimenticare mai più.",
+    "feature3Title": "Diario delle piante",
+    "feature3Desc": "Documenta la crescita con foto e note.",
+    "page3Title": "Crediti — come funziona",
+    "page3Subtitle": "Ogni funzione IA consuma crediti. Ricevi crediti iniziali in regalo!",
+    "giftTitle": "Crediti gratuiti per iniziare",
+    "giftDesc": "Ricevi crediti per iniziare — sufficienti per diverse scansioni di piante, controlli salute e chat con Ben, il tuo giardiniere IA.",
+    "ctaNext": "Avanti",
+    "ctaStart": "Scansiona la tua prima pianta"
   }
 }

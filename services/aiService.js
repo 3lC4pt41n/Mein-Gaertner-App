@@ -1,16 +1,20 @@
 import { supabase } from '../supabase';
+import { requestWithPolicy } from './networkPolicy';
 
 // Helper: Edge Function aufrufen über den Supabase Client
 // Der Client setzt apikey + Authorization Header automatisch korrekt
+// Wrapped with requestWithPolicy for timeout + retry on transient failures.
 async function callEdgeFunction(functionName, body) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error('Nicht eingeloggt');
 
-  const { data, error } = await supabase.functions.invoke(functionName, {
-    body,
-  });
+  // AI calls get a generous timeout (image uploads can be large) and 1 retry
+  const { data, error } = await requestWithPolicy(
+    () => supabase.functions.invoke(functionName, { body }),
+    { timeout: 45000, retries: 1, label: `ai.${functionName}` }
+  );
 
   if (error) {
     // Supabase FunctionsHttpError: error.context kann ein Response-Objekt,

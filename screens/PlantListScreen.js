@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   RefreshControl,
   ScrollView,
   LayoutAnimation,
@@ -19,8 +18,9 @@ import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchPlants } from '../services/plantService';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
-import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -102,6 +102,7 @@ export default function PlantListScreen() {
   const [grouped, setGrouped] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
   const { userId } = useAuth();
   const [expandedZones, setExpandedZones] = useState({}); // { [zoneId]: true }
@@ -117,13 +118,14 @@ export default function PlantListScreen() {
 
   const loadAll = async () => {
     setLoading(true);
+    setError(null);
     try {
       // Fetch plants once with healthscores, then use for both views
       const plants = await getPlantsWithHealthscores(userId);
       setAllPlants(plants);
       setGrouped(await getGroupedPlants(userId, plants));
     } catch (e) {
-      Alert.alert(t('common.error'), e.message);
+      setError(e.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -158,6 +160,8 @@ export default function PlantListScreen() {
   const AllRoute = () =>
     loading ? (
       <ActivityIndicator size="large" color={colors.primaryLight} style={styles.loadingIndicator} />
+    ) : error ? (
+      <ErrorState message={error} onRetry={loadAll} />
     ) : (
       <FlatList
         data={allPlants}
@@ -174,18 +178,14 @@ export default function PlantListScreen() {
         }
         ListEmptyComponent={
           !loading && (
-            <View style={styles.emptyStateContainer}>
-              <Ionicons name="leaf-outline" size={56} color={colors.textDisabled} />
-              <Text style={styles.emptyStateText}>{t('plants.noPlants')}</Text>
-              <DSButton
-                variant="primary"
-                icon="camera-outline"
-                onPress={() => navigation.navigate('Pflanze hinzufügen')}
-                style={styles.emptyStateButton}
-              >
-                {t('plants.scanFirstPlant')}
-              </DSButton>
-            </View>
+            <EmptyState
+              icon="leaf-outline"
+              title={t('plants.noPlants')}
+              message={t('plants.scanFirstPlant')}
+              actionLabel={t('plants.scanFirstPlant')}
+              actionIcon="camera-outline"
+              onAction={() => navigation.navigate('Pflanze hinzufügen')}
+            />
           )
         }
       />

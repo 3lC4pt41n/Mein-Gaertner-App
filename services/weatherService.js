@@ -20,6 +20,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, supabase } from '../supabase.js';
+import { fetchWithPolicy } from './networkPolicy';
 
 // API Configuration - use Supabase Edge Function proxy
 const SUPABASE_WEATHER_PROXY = `${SUPABASE_URL}/functions/v1/weather-proxy`;
@@ -115,7 +116,11 @@ const fetchWeatherFromAPI = async (latitude, longitude) => {
   try {
     const url = `${SUPABASE_WEATHER_PROXY}?lat=${latitude}&lon=${longitude}&type=current&units=metric`;
     const headers = await getAuthHeaders();
-    const response = await fetch(url, { headers });
+    const response = await fetchWithPolicy(
+      url,
+      { headers },
+      { label: 'weather.current', timeout: 10000 }
+    );
 
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -147,7 +152,11 @@ const fetchForecastFromAPI = async (latitude, longitude, days = 5) => {
   try {
     const url = `${SUPABASE_WEATHER_PROXY}?lat=${latitude}&lon=${longitude}&type=forecast&units=metric`;
     const headers = await getAuthHeaders();
-    const response = await fetch(url, { headers });
+    const response = await fetchWithPolicy(
+      url,
+      { headers },
+      { label: 'weather.forecast', timeout: 10000 }
+    );
 
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);

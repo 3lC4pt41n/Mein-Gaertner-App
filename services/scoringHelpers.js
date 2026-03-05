@@ -2,10 +2,18 @@
  * Pure scoring calculation helpers (no DB dependencies).
  * Used by leaderboardService and tests.
  */
+import { getTaskTypeWeight } from '../constants/taskTypes';
 
 // ── Task-Gewichte für Punkteberechnung ─────────────────────
-// Schlüssel = die deutschen Strings, die in der DB gespeichert werden
+// Language-neutral codes + legacy German keys for backward compatibility
 export const TASK_WEIGHTS = {
+  // New codes (canonical)
+  watering: 1,
+  fertilizing: 2,
+  repotting: 3,
+  healthcheck: 1,
+  other: 1,
+  // Legacy German keys (backward compat during migration)
   Gießen: 1,
   Düngen: 2,
   Umtopfen: 3,
@@ -15,11 +23,12 @@ export const TASK_WEIGHTS = {
 
 /**
  * Gibt das Gewicht für einen Task-Typ zurück.
- * @param {string} taskType - Task-Typ (z.B. 'Gießen', 'Düngen')
+ * Supports both new codes and legacy German strings.
+ * @param {string} taskType - Task-Typ (z.B. 'watering', 'Gießen')
  * @returns {number} Gewicht (Standard: 1)
  */
 export function getTaskWeight(taskType) {
-  return TASK_WEIGHTS[taskType] || 1;
+  return TASK_WEIGHTS[taskType] || getTaskTypeWeight(taskType) || 1;
 }
 
 /**

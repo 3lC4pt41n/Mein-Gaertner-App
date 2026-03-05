@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { getTaskTypeIcon, getTaskTypeI18nKey, normalizeTaskType } from '../constants/taskTypes';
 import { fetchTask, completeTask, skipTask } from '../services/taskService';
 import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
@@ -58,17 +59,7 @@ export default function TaskDetailScreen({ route, navigation }) {
         }}
       >
         <Ionicons
-          name={
-            task.type === 'Gießen'
-              ? 'water-outline'
-              : task.type === 'Düngen'
-                ? 'leaf-outline'
-                : task.type === 'Umtopfen'
-                  ? 'flower-outline'
-                  : task.type === 'Healthcheck'
-                    ? 'pulse-outline'
-                    : 'calendar-outline'
-          }
+          name={getTaskTypeIcon(task.type)}
           size={52}
           color={colors.primaryLight}
           style={{ marginBottom: spacing.md }}
@@ -81,7 +72,7 @@ export default function TaskDetailScreen({ route, navigation }) {
             color: colors.textPrimary,
           }}
         >
-          {task.type}
+          {t(getTaskTypeI18nKey(task.type))}
         </Text>
         <Text style={{ color: colors.info, fontWeight: 'bold', fontSize: 18 }}>
           {task.plant?.name || t('common.plantUnknown')}
@@ -169,7 +160,7 @@ export default function TaskDetailScreen({ route, navigation }) {
       )}
 
       {/* Healthcheck Quickstart */}
-      {task.type === 'Healthcheck' && (
+      {normalizeTaskType(task.type) === 'healthcheck' && (
         <TouchableOpacity
           style={{
             marginTop: spacing.xxl + 6,

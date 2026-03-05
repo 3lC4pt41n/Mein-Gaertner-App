@@ -223,15 +223,22 @@ function AppContent() {
     registerForPushNotifications(user.id, supabase).catch(console.warn);
   }, [user?.id, profile?.notifications_enabled]);
 
-  // --- Handle notification tap → navigate to Tasks via Mehr tab ---
+  // --- Handle notification tap → navigate to TaskDetail via Mehr tab ---
   useEffect(() => {
-    const subscription = addNotificationResponseListener(() => {
-      if (navigationRef.current) {
+    const subscription = addNotificationResponseListener(({ taskId }) => {
+      if (navigationRef.current && taskId) {
+        // Deep-link: navigate directly to TaskDetail with the task ID
+        navigationRef.current.navigate('Mehr', {
+          screen: 'TaskDetail',
+          params: { task: { id: taskId, user_id: user?.id } },
+        });
+      } else if (navigationRef.current) {
+        // Fallback: open task list if no taskId available
         navigationRef.current.navigate('Mehr', { screen: 'TasksMain' });
       }
     });
     return () => subscription.remove();
-  }, []);
+  }, [user?.id]);
 
   if (loading) return <AppLoadingScreen />;
 

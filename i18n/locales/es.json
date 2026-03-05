@@ -531,5 +531,26 @@
     "privacyPolicy": "Política de privacidad",
     "termsOfService": "Términos de servicio",
     "feedback": "Enviar comentarios"
+  },
+  "onboarding": {
+    "page1Title": "Fotografía una planta, identifícala al instante",
+    "page1Subtitle": "Apunta tu cámara a una planta y nuestra IA te dice inmediatamente qué es — con consejos de cuidado.",
+    "chipScan": "Escanear",
+    "chipIdentify": "Identificar",
+    "chipTips": "Consejos",
+    "page2Title": "Tu asistente personal de plantas",
+    "page2Subtitle": "Todo lo que tus plantas necesitan — en una sola aplicación.",
+    "feature1Title": "Chequeo de salud",
+    "feature1Desc": "La IA analiza el estado de tu planta por foto.",
+    "feature2Title": "Tareas de cuidado",
+    "feature2Desc": "Regar, abonar, trasplantar — nunca más lo olvides.",
+    "feature3Title": "Diario de plantas",
+    "feature3Desc": "Documenta el crecimiento con fotos y notas.",
+    "page3Title": "Créditos — así funciona",
+    "page3Subtitle": "Cada función de IA consume créditos. ¡Recibes créditos iniciales gratis!",
+    "giftTitle": "Créditos gratis para empezar",
+    "giftDesc": "Recibes créditos para comenzar — suficientes para varios escaneos de plantas, chequeos de salud y chats con Ben, tu jardinero IA.",
+    "ctaNext": "Siguiente",
+    "ctaStart": "Escanear mi primera planta"
   }
 }

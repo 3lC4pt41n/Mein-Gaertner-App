@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { getTaskTypeIcon, getTaskTypeI18nKey } from '../constants/taskTypes';
 import {
   fetchTasks,
   completeTask,
@@ -20,8 +21,9 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AddTaskDialog from '../components/AddTaskDialog';
 import WeatherWidget from '../components/WeatherWidget';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
-import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { rescheduleAllTaskReminders, cancelTaskReminder } from '../services/notificationService';
@@ -128,17 +130,7 @@ export default function TaskScreen() {
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Ionicons
-            name={
-              item.type === 'Gießen'
-                ? 'water-outline'
-                : item.type === 'Düngen'
-                  ? 'leaf-outline'
-                  : item.type === 'Umtopfen'
-                    ? 'flower-outline'
-                    : item.type === 'Healthcheck'
-                      ? 'pulse-outline'
-                      : 'calendar-outline'
-            }
+            name={getTaskTypeIcon(item.type)}
             size={32}
             color={colors.primaryLight}
             style={{ marginRight: spacing.md }}
@@ -146,7 +138,7 @@ export default function TaskScreen() {
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ fontWeight: 'bold', fontSize: 18 }}>
-                {item.type} {isRecurring ? '' : ''}{' '}
+                {t(getTaskTypeI18nKey(item.type))}{' '}
                 <Text style={{ color: colors.info }}>{item.plant?.name || '?'}</Text>
               </Text>
               {isRecurring && (
@@ -221,19 +213,7 @@ export default function TaskScreen() {
         />
       )}
       {error && !loading ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="cloud-offline-outline" size={56} color={colors.textDisabled} />
-          <Text style={styles.emptyTitle}>{t('common.error')}</Text>
-          <Text style={styles.emptyHint}>{error}</Text>
-          <DSButton
-            variant="primary"
-            icon="refresh-outline"
-            onPress={loadTasks}
-            style={{ marginTop: spacing.lg }}
-          >
-            {t('common.retry')}
-          </DSButton>
-        </View>
+        <ErrorState message={error} onRetry={loadTasks} />
       ) : (
         <FlatList
           data={tasks}
@@ -242,23 +222,14 @@ export default function TaskScreen() {
           contentContainerStyle={{ padding: spacing.lg, paddingBottom: 100 }}
           ListEmptyComponent={
             !loading && (
-              <View style={styles.emptyState}>
-                <Ionicons
-                  name="checkmark-done-circle-outline"
-                  size={56}
-                  color={colors.textDisabled}
-                />
-                <Text style={styles.emptyTitle}>{t('tasks.emptyTitle')}</Text>
-                <Text style={styles.emptyHint}>{t('tasks.emptyHint')}</Text>
-                <DSButton
-                  variant="secondary"
-                  icon="add-outline"
-                  onPress={() => setShowAddDialog(true)}
-                  style={{ marginTop: spacing.lg }}
-                >
-                  {t('tasks.newTask')}
-                </DSButton>
-              </View>
+              <EmptyState
+                icon="checkmark-done-circle-outline"
+                title={t('tasks.emptyTitle')}
+                message={t('tasks.emptyHint')}
+                actionLabel={t('tasks.newTask')}
+                actionIcon="add-outline"
+                onAction={() => setShowAddDialog(true)}
+              />
             )
           }
         />

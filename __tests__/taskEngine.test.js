@@ -106,10 +106,13 @@ describe('Task-Gewichte (deutsche Strings)', () => {
     expect(getTaskWeight('')).toBe(1);
   });
 
-  test('alte englische Schlüssel bekommen Fallback (nicht mehr 2/3)', () => {
-    // Sicherstellung dass die alten englischen Keys nicht mehr matchen
+  test('neue sprachneutrale Codes haben korrekte Gewichte', () => {
+    // Language-neutral codes now have proper weights (same as legacy German keys)
     expect(getTaskWeight('watering')).toBe(1);
-    expect(getTaskWeight('fertilizing')).toBe(1);
+    expect(getTaskWeight('fertilizing')).toBe(2);
+    expect(getTaskWeight('repotting')).toBe(3);
+    expect(getTaskWeight('healthcheck')).toBe(1);
+    expect(getTaskWeight('other')).toBe(1);
   });
 });
 

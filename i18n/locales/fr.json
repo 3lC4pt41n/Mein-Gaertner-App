@@ -531,5 +531,26 @@
     "privacyPolicy": "Politique de confidentialité",
     "termsOfService": "Conditions d'utilisation",
     "feedback": "Donner un avis"
+  },
+  "onboarding": {
+    "page1Title": "Photographiez une plante, identifiez-la instantanément",
+    "page1Subtitle": "Dirigez votre caméra vers une plante et notre IA vous dit immédiatement de quoi il s'agit — avec des conseils d'entretien.",
+    "chipScan": "Scanner",
+    "chipIdentify": "Identifier",
+    "chipTips": "Conseils",
+    "page2Title": "Votre assistant personnel pour les plantes",
+    "page2Subtitle": "Tout ce dont vos plantes ont besoin — dans une seule application.",
+    "feature1Title": "Bilan de santé",
+    "feature1Desc": "L'IA analyse l'état de votre plante par photo.",
+    "feature2Title": "Tâches d'entretien",
+    "feature2Desc": "Arrosage, fertilisation, rempotage — ne plus jamais oublier.",
+    "feature3Title": "Journal des plantes",
+    "feature3Desc": "Documentez la croissance avec des photos et des notes.",
+    "page3Title": "Crédits — comment ça marche",
+    "page3Subtitle": "Chaque fonction IA utilise des crédits. Vous recevez des crédits de départ gratuits !",
+    "giftTitle": "Crédits gratuits pour démarrer",
+    "giftDesc": "Vous recevez des crédits pour commencer — assez pour plusieurs scans de plantes, bilans de santé et discussions avec Ben, votre jardinier IA.",
+    "ctaNext": "Suivant",
+    "ctaStart": "Scanner ma première plante"
   }
 }

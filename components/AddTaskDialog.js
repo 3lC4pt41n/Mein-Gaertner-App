@@ -27,12 +27,13 @@ try {
   /* Web / Expo Go ohne Picker */
 }
 
+// Task types now use language-neutral codes (stored in DB)
 const TASK_TYPES = [
-  { key: 'Gießen', i18nKey: 'watering', icon: 'water-outline', color: '#2196f3' },
-  { key: 'Düngen', i18nKey: 'fertilizing', icon: 'leaf-outline', color: '#8BC34A' },
-  { key: 'Healthcheck', i18nKey: 'healthcheck', icon: 'pulse-outline', color: '#FF9800' },
-  { key: 'Umtopfen', i18nKey: 'repotting', icon: 'flower-outline', color: '#9C27B0' },
-  { key: 'Sonstiges', i18nKey: 'other', icon: 'calendar-outline', color: '#607D8B' },
+  { key: 'watering', i18nKey: 'watering', icon: 'water-outline', color: '#2196f3' },
+  { key: 'fertilizing', i18nKey: 'fertilizing', icon: 'leaf-outline', color: '#8BC34A' },
+  { key: 'healthcheck', i18nKey: 'healthcheck', icon: 'pulse-outline', color: '#FF9800' },
+  { key: 'repotting', i18nKey: 'repotting', icon: 'flower-outline', color: '#9C27B0' },
+  { key: 'other', i18nKey: 'other', icon: 'calendar-outline', color: '#607D8B' },
 ];
 
 const INTERVAL_PRESETS = [
