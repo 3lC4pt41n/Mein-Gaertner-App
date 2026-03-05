@@ -110,7 +110,7 @@ export default function DexDetailScreen({ route }) {
       )}
 
       {/* Description */}
-      {species.description ? (
+      {typeof species.description === 'string' && species.description ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('dex.description')}</Text>
           <Text style={styles.sectionBody}>{species.description}</Text>
@@ -118,7 +118,7 @@ export default function DexDetailScreen({ route }) {
       ) : null}
 
       {/* Care Summary */}
-      {species.care_summary ? (
+      {typeof species.care_summary === 'string' && species.care_summary ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('dex.careSummary')}</Text>
           <Text style={styles.sectionBody}>{species.care_summary}</Text>
@@ -126,7 +126,7 @@ export default function DexDetailScreen({ route }) {
       ) : null}
 
       {/* First Discovered By */}
-      {species.first_discoverer?.username ? (
+      {typeof species.first_discoverer === 'object' && species.first_discoverer?.username ? (
         <View style={styles.section}>
           <View style={styles.discovererRow}>
             <Ionicons name="trophy" size={18} color={colors.gold} />
