@@ -365,7 +365,7 @@ export default function PlantDetailScreen({ route }) {
       contentContainerStyle={{
         padding: spacing.xl,
         backgroundColor: colors.background,
-        flexGrow: 1,
+        minHeight: '100%',
       }}
     >
       {/* Bild + Name */}
@@ -461,7 +461,7 @@ export default function PlantDetailScreen({ route }) {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.tabBar}
-        style={{ marginVertical: spacing.lg }}
+        style={styles.tabBarWrapper}
       >
         {tabNames.map((item) => (
           <TouchableOpacity
@@ -800,6 +800,11 @@ const styles = StyleSheet.create({
   locationTxt: { color: colors.textTertiary, fontSize: 12 },
 
   /* Tabs */
+  tabBarWrapper: {
+    marginVertical: spacing.lg,
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   tabBar: {
     flexDirection: 'row',
     paddingHorizontal: spacing.xs,
