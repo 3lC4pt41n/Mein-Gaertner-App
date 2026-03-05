@@ -89,9 +89,7 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
   };
 
   // Galerie-Daten + "Foto hinzufügen"-Tile am Ende
-  const gridData = onAddPhoto
-    ? [...gallery, { id: '__add__', _isAddTile: true }]
-    : gallery;
+  const gridData = onAddPhoto ? [...gallery, { id: '__add__', _isAddTile: true }] : gallery;
 
   const renderGalleryItem = ({ item, index }) => {
     if (item._isAddTile) {
@@ -135,8 +133,15 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
         <Text style={styles.emptyText}>{t('gallery.noPhotos')}</Text>
         {onAddPhoto && (
           <TouchableOpacity style={styles.addPhotoBtn} onPress={onAddPhoto}>
-            <Ionicons name="camera-outline" size={18} color={colors.surface} style={{ marginRight: spacing.xs }} />
-            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>{t('gallery.addPhoto')}</Text>
+            <Ionicons
+              name="camera-outline"
+              size={18}
+              color={colors.surface}
+              style={{ marginRight: spacing.xs }}
+            />
+            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+              {t('gallery.addPhoto')}
+            </Text>
           </TouchableOpacity>
         )}
       </View>

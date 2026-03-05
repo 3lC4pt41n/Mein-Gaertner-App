@@ -124,7 +124,9 @@ export default function AddPlantScreen() {
         try {
           const bal = await fetchBalance();
           setBalance(bal);
-        } catch (_e) { /* silent */ }
+        } catch (_e) {
+          /* silent */
+        }
       })();
     }, [step])
   );

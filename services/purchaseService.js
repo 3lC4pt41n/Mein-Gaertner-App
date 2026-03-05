@@ -62,9 +62,16 @@ export const SUBSCRIPTION_PACKAGES = [
 ];
 
 // ─── RevenueCat initialisieren ──────────────────────────────────
+// Architecture:
+// - configure() is called once per app lifecycle (SDK requirement).
+// - logIn(userId) is called on every auth state change (login / account switch).
+// - logOut() MUST be called before Supabase sign-out (see AuthContext.signOut).
+// This ensures entitlements are always scoped to the correct Supabase user.
 let isConfigured = false;
 
 export async function initPurchases(userId) {
+  if (!userId) return;
+
   // One-time SDK configuration
   if (!isConfigured) {
     try {
@@ -77,10 +84,14 @@ export async function initPurchases(userId) {
     }
   }
 
-  // Always log in with the current user (for account switching)
+  // Always log in with the current user. RC SDK handles switching:
+  // if a different user was logged in, logIn() transfers the anonymous
+  // subscriber to the new app user ID automatically.
   try {
-    if (userId) {
-      await Purchases.logIn(userId);
+    const { customerInfo } = await Purchases.logIn(userId);
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log('RevenueCat identity:', customerInfo.originalAppUserId);
     }
   } catch (e) {
     console.warn('RevenueCat logIn fehlgeschlagen:', e.message);

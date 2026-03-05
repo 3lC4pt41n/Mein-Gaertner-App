@@ -173,7 +173,9 @@ export default function PlantDetailScreen({ route }) {
     try {
       const photos = await fetchGallery(plant.id);
       if (photos.length > 0) latestImageUrl = photos[0].image_url;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     // Fallback: Original-Pflanzenfoto
     if (!latestImageUrl) latestImageUrl = plant.image_url;
 
@@ -237,15 +239,11 @@ export default function PlantDetailScreen({ route }) {
     };
 
     if (latestImageUrl) {
-      Alert.alert(
-        t('plants.healthcheckPhotoTitle'),
-        t('plants.healthcheckPhotoMessage'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('plants.useLatestPhoto'), onPress: () => runWithPhoto(latestImageUrl) },
-          { text: t('plants.takeNewPhoto'), onPress: takeNewPhoto },
-        ]
-      );
+      Alert.alert(t('plants.healthcheckPhotoTitle'), t('plants.healthcheckPhotoMessage'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('plants.useLatestPhoto'), onPress: () => runWithPhoto(latestImageUrl) },
+        { text: t('plants.takeNewPhoto'), onPress: takeNewPhoto },
+      ]);
     } else {
       // Kein Foto vorhanden — direkt neues aufnehmen
       takeNewPhoto();
@@ -268,7 +266,11 @@ export default function PlantDetailScreen({ route }) {
       });
       if (result.canceled) return;
       const uri = result.assets[0].uri;
-      const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' });
+      const today = new Date().toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
       await addDiaryEntry({
         plant_id: plant.id,
         user_id: userId,
@@ -467,17 +469,9 @@ export default function PlantDetailScreen({ route }) {
           <TouchableOpacity
             key={item.key}
             onPress={() => setTab(item.key)}
-            style={[
-              styles.tabChip,
-              tab === item.key && styles.tabChipActive,
-            ]}
+            style={[styles.tabChip, tab === item.key && styles.tabChipActive]}
           >
-            <Text
-              style={[
-                styles.tabChipText,
-                tab === item.key && styles.tabChipTextActive,
-              ]}
-            >
+            <Text style={[styles.tabChipText, tab === item.key && styles.tabChipTextActive]}>
               {item.label}
             </Text>
           </TouchableOpacity>

@@ -6,71 +6,73 @@ on:
       - 'v*.*.*'
 
 jobs:
-  # ── 1. Tests ──────────────────────────────────────────
+  # ── 1a. Lint Gate ──────────────────────────────────────
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Lint (zero warnings, zero errors)
+        run: npx eslint . --max-warnings 0
+
+  # ── 1b. Tests ──────────────────────────────────────────
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - run: npm ci
-
       - name: Run tests
         run: npm test
 
-  # ── 2a. Android Build (parallel) ─────────────────────
+  # ── 2a. Android Build (after lint + test) ──────────────
   build-android:
-    needs: test
+    needs: [lint, test]
     runs-on: ubuntu-latest
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - run: npm ci
-
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
       - name: Build Android
         run: eas build --platform android --profile production --non-interactive
 
-  # ── 2b. iOS Build (parallel) ─────────────────────────
+  # ── 2b. iOS Build (after lint + test) ──────────────────
   build-ios:
-    needs: test
+    needs: [lint, test]
     runs-on: ubuntu-latest
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - run: npm ci
-
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
       - name: Build iOS
         run: eas build --platform ios --profile production --non-interactive
 
-  # ── 3a. Submit to Play Store ─────────────────────────
+  # ── 3a. Submit to Play Store ───────────────────────────
   submit-android:
     needs: build-android
     runs-on: ubuntu-latest
@@ -78,26 +80,21 @@ jobs:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - run: npm ci
-
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
       - name: Create Google Service Account file
         run: echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > ./google-service-account.json
-
       - name: Submit to Play Store (Internal)
         run: eas submit --platform android --profile production --latest --non-interactive
 
-  # ── 3b. Submit to App Store ──────────────────────────
+  # ── 3b. Submit to App Store ────────────────────────────
   submit-ios:
     needs: build-ios
     runs-on: ubuntu-latest
@@ -105,21 +102,16 @@ jobs:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - run: npm ci
-
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
       - name: Create ASC API Key file
         run: echo '${{ secrets.ASC_API_KEY_P8 }}' > ./asc-api-key.p8
-
       - name: Submit to App Store (TestFlight)
         run: eas submit --platform ios --profile production --latest --non-interactive

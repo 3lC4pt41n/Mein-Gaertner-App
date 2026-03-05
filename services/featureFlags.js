@@ -18,6 +18,6 @@
 // Ticket: n/a (re-evaluate post-launch)
 
 // ── Terms of Service Link ────────────────────────────────────────────────────
-// Requires: published Terms of Service page at the configured URL.
-// Status: HIDDEN — URL not yet live.
-export const SHOW_TERMS_LINK = false;
+// Published at: https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html
+// Status: LIVE — enabled for store submission.
+export const SHOW_TERMS_LINK = true;

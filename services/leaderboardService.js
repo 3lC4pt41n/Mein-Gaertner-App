@@ -21,7 +21,6 @@ import { supabase } from '../supabase';
 import {
   calcDiscoveryScore,
   calcStreak,
-  calcPlantCountBonus,
   calcHealthMultiplier,
   calcCombinedGardenerScore,
 } from './scoringHelpers';
@@ -149,10 +148,7 @@ export async function getMyStats(userId) {
   if (pErr) throw pErr;
 
   // Letzter Healthcheck pro Pflanze → Durchschnitt berechnen
-  const { data: plants } = await supabase
-    .from('plants')
-    .select('id')
-    .eq('user_id', userId);
+  const { data: plants } = await supabase.from('plants').select('id').eq('user_id', userId);
 
   let avgHealthScore = 0;
   if (plants && plants.length > 0) {

@@ -118,7 +118,8 @@ See `.env.example` for details.
 │   │   ├── ai-gardener-avatar      # Avatar generation
 │   │   ├── weather-proxy           # Weather API proxy
 │   │   ├── revenucat-webhook       # Payment webhooks
-│   │   ├── privacy-policy          # GDPR compliance
+│   │   ├── delete-account          # DSGVO account deletion
+│   │   ├── privacy-policy          # GDPR compliance (→ redirect to GitHub Pages)
 │   │   └── _shared/               # Shared utilities (credits, OpenAI, rate-limit, validation)
 │   └── migrations/                 # SQL database migrations
 │

@@ -34,6 +34,7 @@ export default [
         URLSearchParams: 'readonly',
         AbortController: 'readonly',
         FileReader: 'readonly',
+        crypto: 'readonly',
         // Web globals
         window: 'readonly',
         document: 'readonly',

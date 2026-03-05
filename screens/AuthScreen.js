@@ -436,6 +436,25 @@ export default function AuthScreen({
       {loading || authLoading ? (
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: spacing.lg }} />
       ) : null}
+
+      {/* Legal footer — required for store compliance */}
+      <View style={styles.legalFooter}>
+        <TouchableOpacity
+          onPress={() =>
+            Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html')
+          }
+        >
+          <Text style={styles.legalLink}>{t('settings.privacyPolicy')}</Text>
+        </TouchableOpacity>
+        <Text style={styles.legalSeparator}>·</Text>
+        <TouchableOpacity
+          onPress={() =>
+            Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html')
+          }
+        >
+          <Text style={styles.legalLink}>{t('settings.termsOfService')}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -502,5 +521,22 @@ const styles = StyleSheet.create({
   },
   googleButtonDisabled: {
     opacity: 0.6,
+  },
+  legalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.xl,
+    paddingTop: spacing.md,
+  },
+  legalLink: {
+    fontSize: 13,
+    color: colors.textTertiary,
+    textDecorationLine: 'underline',
+  },
+  legalSeparator: {
+    fontSize: 13,
+    color: colors.textTertiary,
+    marginHorizontal: spacing.sm,
   },
 });

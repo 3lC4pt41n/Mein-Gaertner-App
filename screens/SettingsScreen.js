@@ -96,7 +96,7 @@ function LinkRow({ icon, label, onPress }) {
 // =====================================================================
 
 export default function SettingsScreen({ navigation }) {
-  const { user, profile, signOut, updateProfile, refreshProfile } = useAuth();
+  const { user, profile, signOut, deleteAccount, updateProfile, refreshProfile } = useAuth();
 
   // --- Profile state ---
   const [username, setUsername] = useState('');
@@ -243,6 +243,23 @@ export default function SettingsScreen({ navigation }) {
         onPress: async () => {
           try {
             await signOut();
+          } catch (error) {
+            Alert.alert(t('common.error'), error.message);
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(t('settings.deleteConfirmTitle'), t('settings.deleteConfirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('settings.deleteConfirmButton'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteAccount();
           } catch (error) {
             Alert.alert(t('common.error'), error.message);
           }
@@ -438,6 +455,16 @@ export default function SettingsScreen({ navigation }) {
         >
           {t('settings.logout')}
         </DSButton>
+
+        <DSButton
+          variant="ghost"
+          fullWidth
+          icon="trash-outline"
+          onPress={handleDeleteAccount}
+          style={[styles.accountButton, styles.deleteButton]}
+        >
+          {t('settings.deleteAccount')}
+        </DSButton>
       </DSCard>
 
       {/* ========== INFO SECTION ========== */}
@@ -609,6 +636,12 @@ const styles = StyleSheet.create({
   // Account buttons
   accountButton: {
     marginBottom: spacing.sm,
+  },
+  deleteButton: {
+    marginTop: spacing.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.borderLight,
+    paddingTop: spacing.md,
   },
 
   // Info

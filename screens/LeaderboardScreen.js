@@ -224,7 +224,11 @@ export default function LeaderboardScreen() {
                         </Text>
                       </View>
                       <View style={styles.bonusItem}>
-                        <Ionicons name="trending-up-outline" size={16} color={colors.textTertiary} />
+                        <Ionicons
+                          name="trending-up-outline"
+                          size={16}
+                          color={colors.textTertiary}
+                        />
                         <Text style={styles.bonusLabel}>
                           {' '}
                           ×{(myStats.healthMultiplier ?? 1).toFixed(2)}

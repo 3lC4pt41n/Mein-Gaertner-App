@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { initPurchases } from '../services/purchaseService';
+import { initPurchases, logoutPurchases } from '../services/purchaseService';
 import { normalizeLanguage } from '../services/languageService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '../i18n';
@@ -99,7 +99,32 @@ export function AuthProvider({ children }) {
 
   // --- Sign Out ---
   const signOut = useCallback(async () => {
+    // Reset RevenueCat identity before Supabase sign-out to prevent
+    // entitlement leakage when a different user logs in next.
+    await logoutPurchases();
     await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+  }, []);
+
+  // --- Delete Account (DSGVO) ---
+  const deleteAccount = useCallback(async () => {
+    // 1. Logout RevenueCat before destroying the Supabase session
+    await logoutPurchases();
+
+    // 2. Call the delete-account edge function (uses service-role internally)
+    const session = (await supabase.auth.getSession()).data.session;
+    if (!session) throw new Error('No active session');
+
+    const { data, error } = await supabase.functions.invoke('delete-account', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      method: 'POST',
+    });
+
+    if (error) throw new Error(error.message || 'Account deletion failed');
+    if (!data?.success) throw new Error('Account deletion failed');
+
+    // 3. Clear local state — user is gone server-side
     setUser(null);
     setProfile(null);
   }, []);
@@ -128,6 +153,7 @@ export function AuthProvider({ children }) {
     refreshProfile,
     dismissWelcome,
     signOut,
+    deleteAccount,
     updateProfile,
   };
 

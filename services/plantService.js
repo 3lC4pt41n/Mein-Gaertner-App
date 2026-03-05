@@ -66,7 +66,17 @@ export async function saveHealthcheck({
 
   const { data, error } = await supabase
     .from('plant_healthchecks')
-    .insert([{ id: crypto.randomUUID(), plant_id, user_id, healthscore, summary, table_json, recommendation }])
+    .insert([
+      {
+        id: crypto.randomUUID(),
+        plant_id,
+        user_id,
+        healthscore,
+        summary,
+        table_json,
+        recommendation,
+      },
+    ])
     .select()
     .single();
   if (error) throw new Error(error.message);

@@ -70,7 +70,9 @@ const PlantDexScreen = () => {
           if (!cancelled) setLoading(false);
         }
       })();
-      return () => { cancelled = true; };
+      return () => {
+        cancelled = true;
+      };
     }, [user, filter])
   );
 
