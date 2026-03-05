@@ -63,15 +63,16 @@ export default function TaskScreen() {
     if (userId) loadTasks();
   }, [userId]);
 
-  const loadTasks = async () => {
+  const loadTasks = async (page = 0) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchTasks(userId);
-      setTasks(data ?? []);
+      const result = await fetchTasks(userId, { page });
+      const items = result?.data ?? result ?? [];
+      setTasks((prev) => (page === 0 ? items : [...prev, ...items]));
       // Reschedule reminders only when notifications are enabled
       if (profile?.notifications_enabled) {
-        rescheduleAllTaskReminders(data ?? []).catch(console.warn);
+        rescheduleAllTaskReminders(items).catch(console.warn);
       } else {
         rescheduleAllTaskReminders([]).catch(console.warn);
       }

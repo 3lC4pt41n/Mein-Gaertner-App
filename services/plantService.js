@@ -23,13 +23,18 @@ export async function savePlantToSupabase({ name, note, image, user_id, details,
   return data;
 }
 
-// Alle eigenen Pflanzen laden
-export async function fetchPlants(user_id) {
+// Alle eigenen Pflanzen laden (with optional pagination)
+const PLANT_PAGE_SIZE = 50;
+
+export async function fetchPlants(user_id, { page = 0 } = {}) {
+  const from = page * PLANT_PAGE_SIZE;
+  const to = from + PLANT_PAGE_SIZE - 1;
   const { data, error } = await supabase
     .from('plants')
     .select('*')
     .eq('user_id', user_id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(from, to);
   if (error) throw error;
   return data;
 }

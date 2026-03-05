@@ -26,14 +26,19 @@ async function logGardeningEvent({ userId, eventType, plantId, taskId, points, m
  * Tasks für eingeloggten User abrufen (inkl. Pflanzendaten).
  * Sortiert nach due_at aufsteigend.
  */
-export async function fetchTasks(user_id) {
-  const { data, error } = await supabase
+const PAGE_SIZE = 50;
+
+export async function fetchTasks(user_id, { page = 0 } = {}) {
+  const from = page * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+  const { data, error, count } = await supabase
     .from('tasks')
-    .select('*, plant:plant_id(id, name, image_url)')
+    .select('*, plant:plant_id(id, name, image_url)', { count: 'exact' })
     .eq('user_id', user_id)
-    .order('due_at', { ascending: true });
+    .order('due_at', { ascending: true })
+    .range(from, to);
   if (error) throw error;
-  return data;
+  return { data, hasMore: count > to + 1, total: count };
 }
 
 /**
