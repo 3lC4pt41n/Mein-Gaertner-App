@@ -1,3 +1,27 @@
+// Mock @sentry/react-native
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+  setUser: jest.fn(),
+  addBreadcrumb: jest.fn(),
+  withScope: jest.fn((cb) => cb({ setExtra: jest.fn(), setTag: jest.fn() })),
+  Severity: { Error: 'error', Warning: 'warning', Info: 'info' },
+  wrap: (component) => component,
+}));
+
+// Mock sentry.config (re-exports Sentry after init)
+jest.mock('./sentry.config', () => ({
+  Sentry: {
+    init: jest.fn(),
+    captureException: jest.fn(),
+    captureMessage: jest.fn(),
+    setUser: jest.fn(),
+    addBreadcrumb: jest.fn(),
+    withScope: jest.fn((cb) => cb({ setExtra: jest.fn(), setTag: jest.fn() })),
+  },
+}));
+
 // Mock @expo/vector-icons
 jest.mock('@expo/vector-icons', () => {
   const React = require('react');
