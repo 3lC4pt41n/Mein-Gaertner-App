@@ -23,7 +23,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId:
 
   const handlePickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestCameraPermissions();
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert(t('common.permissionDenied'), t('dialog.cameraPermissionNeeded'));
         return;
@@ -36,7 +36,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId:
         quality: 0.8,
       });
 
-      if (!result.cancelled) {
+      if (!result.canceled) {
         setSelectedImage(result.assets[0].uri);
       }
     } catch (_error) {

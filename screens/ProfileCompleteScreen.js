@@ -88,6 +88,22 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       return;
     }
 
+    // Validate all required fields before saving
+    const missing = [];
+    if (!username.trim()) missing.push(t('profile.username'));
+    if (!firstName.trim()) missing.push(t('profile.firstName'));
+    if (!lastName.trim()) missing.push(t('profile.lastName'));
+    if (!country.trim()) missing.push(t('profile.country'));
+    if (!language) missing.push(t('profile.language'));
+
+    if (missing.length > 0) {
+      Alert.alert(
+        t('common.validation') || 'Pflichtfelder',
+        (t('profile.missingFields') || 'Bitte fülle alle Felder aus') + ':\n' + missing.join(', ')
+      );
+      return;
+    }
+
     if (!avatarPath) {
       Alert.alert(t('profile.avatarMissing'), t('profile.avatarMissingMessage'));
       return;
