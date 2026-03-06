@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { getPlantImageUrl, getPlantImageUrls } from './uploadService';
 
 /**
  * Fetch the Plant-Dex: all species with discovery status for the user
@@ -48,6 +49,12 @@ export async function fetchDex(userId, filter = 'all') {
     }
   }
 
+  // Resolve species/fallback image references (legacy URLs + storage paths).
+  const unresolvedImageUrls = (allSpecies || []).map(
+    (species) => species.image_url || plantImageMap[species.canonical_name] || null
+  );
+  const resolvedImageUrls = await getPlantImageUrls(unresolvedImageUrls);
+
   // Assign dexNumber BEFORE filtering so slot numbers stay stable across filters.
   //
   // ⚠️ KNOWN LIMITATION: dexNumber is derived from alphabetical sort order of
@@ -58,7 +65,7 @@ export async function fetchDex(userId, filter = 'all') {
   // (see HANDOFF.md → "Bekannte Tech Debt").
   let result = (allSpecies || []).map((species, idx) => ({
     ...species,
-    image_url: species.image_url || plantImageMap[species.canonical_name] || null,
+    image_url: resolvedImageUrls[idx] || unresolvedImageUrls[idx] || null,
     dexNumber: idx + 1,
     discovered: !!discoveredMap[species.id],
     isFirstDiscoverer: discoveredMap[species.id]?.is_first || false,
@@ -121,5 +128,8 @@ export async function fetchSpeciesDetail(speciesId) {
     .single();
 
   if (error) throw error;
+  if (data?.image_url) {
+    data.image_url = (await getPlantImageUrl(data.image_url)) || data.image_url;
+  }
   return data;
 }

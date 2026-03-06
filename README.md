@@ -60,6 +60,7 @@ Scan plants with your camera, let AI identify them, build your species collectio
 - Supabase project (Database, Auth, Storage, Edge Functions)
 - RevenueCat account (in-app purchases)
 - OpenWeather API key
+- Google Maps API key (Android + iOS, configured via EAS secret)
 
 ### Installation
 
@@ -91,9 +92,16 @@ OPENAI_API_KEY=your_openai_key
 OPENWEATHER_API_KEY=your_openweather_key
 REVENUECAT_API_KEY_IOS=your_ios_key
 REVENUECAT_API_KEY_ANDROID=your_android_key
+GOOGLE_MAPS_API_KEY=your_maps_key
 ```
 
 See `.env.example` for details.
+
+### Storage Image Strategy
+
+- `plant-images` are stored in DB as **storage paths** (not long-lived signed URLs).
+- Signed URLs are generated **on-demand** in read flows (`getPlantImageUrl`, `getPlantImageUrls`).
+- Legacy `http(s)` URLs remain backward-compatible and are passed through unchanged.
 
 ## Project Structure
 

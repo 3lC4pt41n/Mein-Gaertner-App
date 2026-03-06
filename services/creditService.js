@@ -112,7 +112,8 @@ export async function fetchCreditHistory(limit = 50) {
   // Extract results — show partial data even if one source fails
   const usageRes = usageResult.status === 'fulfilled' ? usageResult.value : { data: [] };
   const txRes = txResult.status === 'fulfilled' ? txResult.value : { data: [] };
-  const discoveryRes = discoveryResult.status === 'fulfilled' ? discoveryResult.value : { data: [] };
+  const discoveryRes =
+    discoveryResult.status === 'fulfilled' ? discoveryResult.value : { data: [] };
 
   const entries = [];
 

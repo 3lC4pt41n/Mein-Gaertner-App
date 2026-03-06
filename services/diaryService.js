@@ -42,7 +42,21 @@ export async function fetchDiaryEntries(plant_id, page = 0, limit = 20) {
     .order('created_at', { ascending: false })
     .range(from, to);
   if (error) throw error;
-  return { entries: data || [], total: count || 0, hasMore: (data?.length || 0) === limit };
+  const entries = data || [];
+  if (entries.length === 0) {
+    return { entries, total: count || 0, hasMore: false };
+  }
+
+  // Batch-resolve storage paths -> signed URLs (timeline images)
+  const rawUrls = entries.map((e) => e.image_url);
+  const resolved = await getPlantImageUrls(rawUrls);
+  const hydrated = entries.map((e, i) => ({ ...e, image_url: resolved[i] || e.image_url }));
+
+  return {
+    entries: hydrated,
+    total: count || 0,
+    hasMore: (entries.length || 0) === limit,
+  };
 }
 
 /**

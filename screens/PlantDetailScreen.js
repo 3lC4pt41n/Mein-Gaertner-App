@@ -166,7 +166,7 @@ export default function PlantDetailScreen({ route }) {
     }
   };
 
-  const handleGenerateDetails = async () => {
+  const handleGenerateDetails = useCallback(async () => {
     setGeneratingDetails(true);
     try {
       const result = await generatePlantDetails(plant.name, plant.note);
@@ -180,10 +180,10 @@ export default function PlantDetailScreen({ route }) {
     } finally {
       setGeneratingDetails(false);
     }
-  };
+  }, [plant.id, plant.name, plant.note]);
 
   // Healthcheck mit Foto-Auswahl: letztes Galerie-Foto oder neues Foto
-  const handleStartHealthcheck = async () => {
+  const handleStartHealthcheck = useCallback(async () => {
     // Neuestes Galerie-Foto suchen
     let latestImageUrl = null;
     try {
@@ -275,7 +275,7 @@ export default function PlantDetailScreen({ route }) {
       // Kein Foto vorhanden — direkt neues aufnehmen
       takeNewPhoto();
     }
-  };
+  }, [plant.id, plant.image_url, plant.name, resolvedImageUrl, userId]);
 
   // Galerie: Foto direkt hinzufügen (ohne Tagebuch-Dialog)
   const handleAddGalleryPhoto = async () => {
@@ -388,15 +388,6 @@ export default function PlantDetailScreen({ route }) {
     ]);
   };
 
-  // --- Memoized callbacks for tabs ---
-  const memoizedHandleStartHealthcheck = useCallback(() => {
-    handleStartHealthcheck();
-  }, [handleStartHealthcheck]);
-
-  const memoizedHandleGenerateDetails = useCallback(() => {
-    handleGenerateDetails();
-  }, [handleGenerateDetails]);
-
   // --- Memoized tab content to prevent re-renders when switching tabs ---
   const healthTabContent = useMemo(() => {
     if (loading) return <ActivityIndicator color={colors.primaryLight} />;
@@ -463,7 +454,7 @@ export default function PlantDetailScreen({ route }) {
         <DSButton
           variant="primary"
           icon="fitness-outline"
-          onPress={memoizedHandleStartHealthcheck}
+          onPress={handleStartHealthcheck}
           disabled={runningHealthcheck}
           size="sm"
         >
@@ -471,7 +462,7 @@ export default function PlantDetailScreen({ route }) {
         </DSButton>
       </View>
     );
-  }, [loading, healthcheck, runningHealthcheck, memoizedHandleStartHealthcheck]);
+  }, [loading, healthcheck, runningHealthcheck, handleStartHealthcheck]);
 
   const detailsTabContent = useCallback(
     (tabKey) => {
@@ -498,7 +489,7 @@ export default function PlantDetailScreen({ route }) {
             <DSButton
               variant="secondary"
               icon="document-text-outline"
-              onPress={memoizedHandleGenerateDetails}
+              onPress={handleGenerateDetails}
               disabled={generatingDetails}
               size="sm"
             >
@@ -508,7 +499,7 @@ export default function PlantDetailScreen({ route }) {
         </View>
       );
     },
-    [details, plantDetails, generatingDetails, memoizedHandleGenerateDetails]
+    [details, plantDetails, generatingDetails, handleGenerateDetails]
   );
 
   const width = Math.min(Dimensions.get('window').width, 500) - 40;

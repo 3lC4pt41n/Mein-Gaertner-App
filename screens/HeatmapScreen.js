@@ -197,49 +197,59 @@ export default function HeatmapScreen() {
       {!MAPS_KEY_AVAILABLE ? (
         <View style={styles.center}>
           <Ionicons name="map-outline" size={48} color={colors.textTertiary} />
-          <Text style={{ marginTop: 12, fontSize: 16, fontWeight: '600', color: colors.textPrimary, textAlign: 'center' }}>
+          <Text
+            style={{
+              marginTop: 12,
+              fontSize: 16,
+              fontWeight: '600',
+              color: colors.textPrimary,
+              textAlign: 'center',
+            }}
+          >
             {t('heatmap.mapUnavailable')}
           </Text>
-          <Text style={{ marginTop: 8, fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
+          <Text
+            style={{ marginTop: 8, fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}
+          >
             {t('heatmap.mapUnavailableHint')}
           </Text>
         </View>
       ) : (
-      <MapErrorBoundary>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={initialRegion}
-          showsUserLocation
-          showsMyLocationButton={Platform.OS === 'android'}
-          mapType="standard"
-        >
-          {grid.map((cell) => (
-            <Circle
-              key={`${cell.grid_lat}-${cell.grid_lon}`}
-              center={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
-              radius={heatRadius(cell.discovery_count)}
-              fillColor={heatColor(cell.discovery_count)}
-              strokeColor="transparent"
-            />
-          ))}
-
-          {/* Markers for high-activity cells */}
-          {grid
-            .filter((c) => c.discovery_count >= 5)
-            .map((cell) => (
-              <Marker
-                key={`m-${cell.grid_lat}-${cell.grid_lon}`}
-                coordinate={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
-                anchor={{ x: 0.5, y: 0.5 }}
-              >
-                <View style={styles.markerBubble}>
-                  <Text style={styles.markerText}>{cell.discovery_count}</Text>
-                </View>
-              </Marker>
+        <MapErrorBoundary>
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            initialRegion={initialRegion}
+            showsUserLocation
+            showsMyLocationButton={Platform.OS === 'android'}
+            mapType="standard"
+          >
+            {grid.map((cell) => (
+              <Circle
+                key={`${cell.grid_lat}-${cell.grid_lon}`}
+                center={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
+                radius={heatRadius(cell.discovery_count)}
+                fillColor={heatColor(cell.discovery_count)}
+                strokeColor="transparent"
+              />
             ))}
-        </MapView>
-      </MapErrorBoundary>
+
+            {/* Markers for high-activity cells */}
+            {grid
+              .filter((c) => c.discovery_count >= 5)
+              .map((cell) => (
+                <Marker
+                  key={`m-${cell.grid_lat}-${cell.grid_lon}`}
+                  coordinate={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                >
+                  <View style={styles.markerBubble}>
+                    <Text style={styles.markerText}>{cell.discovery_count}</Text>
+                  </View>
+                </Marker>
+              ))}
+          </MapView>
+        </MapErrorBoundary>
       )}
 
       {/* Stats overlay */}
