@@ -398,8 +398,9 @@ export default function SettingsScreen({ navigation }) {
 
               if (val) {
                 // Re-schedule reminders for all due tasks when notifications enabled
-                const tasks = await fetchTasks(user.id);
-                await rescheduleAllTaskReminders(tasks ?? []);
+                const result = await fetchTasks(user.id);
+                const tasks = result?.data ?? result ?? [];
+                await rescheduleAllTaskReminders(tasks);
               } else {
                 // Cancel all scheduled reminders when notifications disabled
                 await rescheduleAllTaskReminders([]);

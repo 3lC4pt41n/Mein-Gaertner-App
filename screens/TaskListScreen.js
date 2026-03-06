@@ -48,6 +48,9 @@ export default function TaskScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const navigation = useNavigation();
   const { userId, profile } = useAuth();
 
@@ -63,23 +66,35 @@ export default function TaskScreen() {
     if (userId) loadTasks();
   }, [userId]);
 
-  const loadTasks = async (page = 0) => {
-    setLoading(true);
+  const loadTasks = async (p = 0) => {
+    if (p === 0) setLoading(true);
+    else setLoadingMore(true);
     setError(null);
     try {
-      const result = await fetchTasks(userId, { page });
+      const result = await fetchTasks(userId, { page: p });
       const items = result?.data ?? result ?? [];
-      setTasks((prev) => (page === 0 ? items : [...prev, ...items]));
+      setTasks((prev) => (p === 0 ? items : [...prev, ...items]));
+      setHasMore(result?.hasMore ?? false);
+      setPage(p);
       // Reschedule reminders only when notifications are enabled
-      if (profile?.notifications_enabled) {
-        rescheduleAllTaskReminders(items).catch(console.warn);
-      } else {
-        rescheduleAllTaskReminders([]).catch(console.warn);
+      if (p === 0) {
+        if (profile?.notifications_enabled) {
+          rescheduleAllTaskReminders(items).catch(console.warn);
+        } else {
+          rescheduleAllTaskReminders([]).catch(console.warn);
+        }
       }
     } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadTasks(page + 1);
     }
   };
 
@@ -221,6 +236,17 @@ export default function TaskScreen() {
           keyExtractor={(item) => item.id?.toString()}
           renderItem={renderItem}
           contentContainerStyle={{ padding: spacing.lg, paddingBottom: 100 }}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.primaryLight}
+                style={{ marginVertical: spacing.lg }}
+              />
+            ) : null
+          }
           ListEmptyComponent={
             !loading && (
               <EmptyState

@@ -1,6 +1,7 @@
 import { supabase } from '../supabase';
 import { addAutoDiaryEntry } from './diaryService';
 import { getTaskWeight, computeNextDueAt } from './scoringHelpers';
+import { requestWithPolicy } from './networkPolicy';
 
 // Re-export for backwards compatibility and tests
 export { getTaskWeight, calcTaskPoints, calcSkipPoints, computeNextDueAt } from './scoringHelpers';
@@ -29,30 +30,40 @@ async function logGardeningEvent({ userId, eventType, plantId, taskId, points, m
 const PAGE_SIZE = 50;
 
 export async function fetchTasks(user_id, { page = 0 } = {}) {
-  const from = page * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-  const { data, error, count } = await supabase
-    .from('tasks')
-    .select('*, plant:plant_id(id, name, image_url)', { count: 'exact' })
-    .eq('user_id', user_id)
-    .order('due_at', { ascending: true })
-    .range(from, to);
-  if (error) throw error;
-  return { data, hasMore: count > to + 1, total: count };
+  return requestWithPolicy(
+    async () => {
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data, error, count } = await supabase
+        .from('tasks')
+        .select('*, plant:plant_id(id, name, image_url)', { count: 'exact' })
+        .eq('user_id', user_id)
+        .order('due_at', { ascending: true })
+        .range(from, to);
+      if (error) throw error;
+      return { data, hasMore: count > to + 1, total: count };
+    },
+    { label: 'tasks.fetch', timeout: 10000, retries: 1 }
+  );
 }
 
 /**
  * Einzelnen Task (mit Pflanzendetails) laden.
  */
 export async function fetchTask(task_id, user_id) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .select('*, plant:plant_id(*)')
-    .eq('id', task_id)
-    .eq('user_id', user_id)
-    .single();
-  if (error) throw error;
-  return data;
+  return requestWithPolicy(
+    async () => {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*, plant:plant_id(*)')
+        .eq('id', task_id)
+        .eq('user_id', user_id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    { label: 'tasks.fetchOne', timeout: 10000, retries: 1 }
+  );
 }
 
 /**

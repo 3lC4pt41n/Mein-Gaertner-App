@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchTasks } from '../services/taskService';
+import { getTaskTypeI18nKey } from '../constants/taskTypes';
 import WeatherWidget from '../components/WeatherWidget';
 import DSButton from '../theme/DSButton';
 import { colors, spacing, radius } from '../theme/tokens';
@@ -88,8 +89,9 @@ export default function CalendarScreen() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchTasks(userId);
-      setTasks(data || []);
+      const result = await fetchTasks(userId);
+      const items = result?.data ?? result ?? [];
+      setTasks(items);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -318,7 +320,7 @@ export default function CalendarScreen() {
                     />
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
-                        {item.type}
+                        {t(getTaskTypeI18nKey(item.type))}
                       </Text>
                       <Text style={{ fontSize: 12, color: colors.textSecondary }}>
                         {item.plant?.name || '?'} –{' '}

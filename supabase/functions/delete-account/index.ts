@@ -103,6 +103,7 @@ serve(async (req) => {
   const results = await Promise.allSettled([
     purgeStorageBucket(service, 'plant-images', userId),
     purgeStorageBucket(service, 'chat-images', userId),
+    purgeStorageBucket(service, 'avatars', userId),
   ]);
 
   const deletedCount = results

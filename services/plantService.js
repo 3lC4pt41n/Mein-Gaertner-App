@@ -1,5 +1,6 @@
 import { supabase } from '../supabase';
 import { addAutoDiaryEntry } from './diaryService';
+import { requestWithPolicy } from './networkPolicy';
 
 // Slug aus Pflanzenname generieren: "Monstera Deliciosa" → "monstera-deliciosa-a3f2"
 function generateSlug(name) {
@@ -27,16 +28,21 @@ export async function savePlantToSupabase({ name, note, image, user_id, details,
 const PLANT_PAGE_SIZE = 50;
 
 export async function fetchPlants(user_id, { page = 0 } = {}) {
-  const from = page * PLANT_PAGE_SIZE;
-  const to = from + PLANT_PAGE_SIZE - 1;
-  const { data, error } = await supabase
-    .from('plants')
-    .select('*')
-    .eq('user_id', user_id)
-    .order('created_at', { ascending: false })
-    .range(from, to);
-  if (error) throw error;
-  return data;
+  return requestWithPolicy(
+    async () => {
+      const from = page * PLANT_PAGE_SIZE;
+      const to = from + PLANT_PAGE_SIZE - 1;
+      const { data, error, count } = await supabase
+        .from('plants')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user_id)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      if (error) throw error;
+      return { data, hasMore: count > to + 1, total: count };
+    },
+    { label: 'plants.fetch', timeout: 10000, retries: 1 }
+  );
 }
 
 // Pflanze löschen
@@ -46,7 +52,15 @@ export async function deletePlant(id) {
 }
 
 // Healthcheck speichern + Gardening-Event loggen
-export async function saveHealthcheck({
+export async function saveHealthcheck(params) {
+  return requestWithPolicy(() => _saveHealthcheckInner(params), {
+    label: 'plants.saveHealthcheck',
+    timeout: 15000,
+    retries: 1,
+  });
+}
+
+async function _saveHealthcheckInner({
   plant_id,
   user_id,
   healthscore,

@@ -31,7 +31,8 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 // Fetch all plants with their latest healthcheck in a single query
 async function getPlantsWithHealthscores(userId) {
-  const plants = await fetchPlants(userId);
+  const result = await fetchPlants(userId);
+  const plants = result?.data ?? result ?? [];
 
   if (plants.length === 0) {
     return plants;
