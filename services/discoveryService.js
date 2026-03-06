@@ -1,4 +1,49 @@
+import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../supabase';
+
+const LOCATION_CACHE_KEY = '@weather_location'; // shared with weatherService
+
+/**
+ * Best-effort GPS location for discovery events.
+ * Returns { latitude, longitude } or null (never throws, never blocks UI).
+ * Re-uses the 30-min cached location from weatherService when available.
+ */
+export async function getDiscoveryLocation() {
+  try {
+    // 1. Check cache first (shared with weatherService)
+    const cached = await AsyncStorage.getItem(LOCATION_CACHE_KEY);
+    if (cached) {
+      const { latitude, longitude, timestamp } = JSON.parse(cached);
+      // Accept cache within 30 min
+      if (Date.now() - timestamp < 30 * 60 * 1000) {
+        return { latitude, longitude };
+      }
+    }
+
+    // 2. Check permission without prompting
+    const { status } = await Location.getForegroundPermissionsAsync();
+    if (status !== 'granted') return null;
+
+    // 3. Get current position (balanced accuracy, 5s timeout)
+    const loc = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+      timeout: 5000,
+    });
+
+    const { latitude, longitude } = loc.coords;
+
+    // Update shared cache
+    await AsyncStorage.setItem(
+      LOCATION_CACHE_KEY,
+      JSON.stringify({ latitude, longitude, timestamp: Date.now() })
+    );
+
+    return { latitude, longitude };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Discovery-Event bei Pflanzenerkennung loggen.
@@ -8,9 +53,10 @@ import { supabase } from '../supabase';
  * @param {string} userId - User-ID
  * @param {string} speciesName - Erkannter Pflanzenname (canonical)
  * @param {string|null} plantId - Plant-ID nach dem Speichern
+ * @param {{ latitude: number, longitude: number }|null} location - GPS coords at discovery time
  * @returns {Promise<Object>} { speciesId, isFirst, isNewForUser, totalDiscoverers, displayName }
  */
-export async function logDiscovery(userId, speciesName, plantId = null) {
+export async function logDiscovery(userId, speciesName, plantId = null, location = null) {
   if (!userId || !speciesName) return null;
 
   const canonical = speciesName.trim().toLowerCase();
@@ -67,6 +113,9 @@ export async function logDiscovery(userId, speciesName, plantId = null) {
     species_id: speciesId,
     plant_id: plantId,
     is_first: isFirst,
+    ...(location?.latitude != null && location?.longitude != null
+      ? { latitude: location.latitude, longitude: location.longitude }
+      : {}),
   });
 
   // Check if this is a new discovery for the user
@@ -131,6 +180,19 @@ export async function fetchMyDiscoveries(userId) {
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
+}
+
+/**
+ * Fetch aggregated heatmap grid data for the world map.
+ * Only includes users who opted in (heatmap_opt_in = true).
+ * Returns privacy-safe ~1km² grid cells.
+ */
+export async function fetchHeatmapGrid() {
+  const { data, error } = await supabase
+    .from('heatmap_grid')
+    .select('grid_lat, grid_lon, discovery_count, species_count, first_discoveries');
+  if (error) throw error;
+  return data ?? [];
 }
 
 /**

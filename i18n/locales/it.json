@@ -554,6 +554,8 @@
     "privacySection": "Privacy",
     "showInLeaderboard": "Mostra in classifica",
     "showInLeaderboardHint": "Altri giardinieri vedono il tuo punteggio",
+    "showOnHeatmap": "Mostra sulla mappa mondiale",
+    "showOnHeatmapHint": "Le tue scoperte appaiono in forma anonima sulla mappa globale",
     "publicDisplayName": "Nome pubblico",
     "publicDisplayNameHint": "Mostrato al posto del nome utente",
     "accountSection": "Account",

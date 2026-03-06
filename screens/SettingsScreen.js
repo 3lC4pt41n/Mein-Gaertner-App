@@ -111,6 +111,7 @@ export default function SettingsScreen({ navigation }) {
 
   // --- Privacy state ---
   const [leaderboardOptIn, setLeaderboardOptIn] = useState(false);
+  const [heatmapOptIn, setHeatmapOptIn] = useState(false);
   const [publicDisplayName, setPublicDisplayName] = useState('');
 
   // --- UI state ---
@@ -145,6 +146,7 @@ export default function SettingsScreen({ navigation }) {
       setLanguage(normalizeLanguage(profile.language));
       setNotificationsEnabled(profile.notifications_enabled ?? true);
       setLeaderboardOptIn(profile.leaderboard_opt_in ?? false);
+      setHeatmapOptIn(profile.heatmap_opt_in ?? false);
       setPublicDisplayName(profile.public_display_name ?? '');
     }
   }, [profile]);
@@ -242,6 +244,15 @@ export default function SettingsScreen({ navigation }) {
       await updateProfile({ leaderboard_opt_in: val });
     } catch {
       setLeaderboardOptIn(!val); // Revert on error
+    }
+  };
+
+  const handleHeatmapToggle = async (val) => {
+    setHeatmapOptIn(val);
+    try {
+      await updateProfile({ heatmap_opt_in: val });
+    } catch {
+      setHeatmapOptIn(!val); // Revert on error
     }
   };
 
@@ -439,6 +450,13 @@ export default function SettingsScreen({ navigation }) {
           hint={t('settings.showInLeaderboardHint')}
           value={leaderboardOptIn}
           onValueChange={handleLeaderboardToggle}
+        />
+
+        <ToggleRow
+          label={t('settings.showOnHeatmap')}
+          hint={t('settings.showOnHeatmapHint')}
+          value={heatmapOptIn}
+          onValueChange={handleHeatmapToggle}
         />
 
         <DSInput

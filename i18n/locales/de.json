@@ -575,6 +575,8 @@
     "privacySection": "Datenschutz",
     "showInLeaderboard": "In Rangliste anzeigen",
     "showInLeaderboardHint": "Andere Gärtner sehen deinen Score",
+    "showOnHeatmap": "Auf Weltkarte anzeigen",
+    "showOnHeatmapHint": "Deine Pflanzenfunde erscheinen anonymisiert auf der globalen Karte",
     "publicDisplayName": "Öffentlicher Anzeigename",
     "publicDisplayNameHint": "Wird statt deinem Benutzernamen angezeigt",
     "accountSection": "Konto",

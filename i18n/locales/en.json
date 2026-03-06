@@ -575,6 +575,8 @@
     "privacySection": "Privacy",
     "showInLeaderboard": "Show in leaderboard",
     "showInLeaderboardHint": "Other gardeners can see your score",
+    "showOnHeatmap": "Show on world map",
+    "showOnHeatmapHint": "Your plant discoveries appear anonymised on the global map",
     "publicDisplayName": "Public display name",
     "publicDisplayNameHint": "Shown instead of your username",
     "accountSection": "Account",

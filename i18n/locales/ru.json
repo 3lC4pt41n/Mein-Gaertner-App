@@ -554,6 +554,8 @@
     "privacySection": "Конфиденциальность",
     "showInLeaderboard": "Показывать в рейтинге",
     "showInLeaderboardHint": "Другие садовники видят ваш счёт",
+    "showOnHeatmap": "Показывать на мировой карте",
+    "showOnHeatmapHint": "Ваши находки анонимно отображаются на глобальной карте",
     "publicDisplayName": "Публичное имя",
     "publicDisplayNameHint": "Отображается вместо имени пользователя",
     "accountSection": "Аккаунт",

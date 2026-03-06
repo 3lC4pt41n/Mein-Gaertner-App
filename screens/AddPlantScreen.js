@@ -17,7 +17,7 @@ import { savePlantToSupabase, saveHealthcheck } from '../services/plantService';
 import { uploadPlantImage } from '../services/uploadService';
 import { recognizePlant, generatePlantDetails, performHealthcheck } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
-import { logDiscovery } from '../services/discoveryService';
+import { logDiscovery, getDiscoveryLocation } from '../services/discoveryService';
 import { supabase } from '../supabase';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
@@ -236,10 +236,11 @@ export default function AddPlantScreen() {
         ...(selectedZone ? { zone_id: selectedZone.id } : {}),
       });
 
-      // Discovery event — capture result for reveal
+      // Discovery event — capture result for reveal (with best-effort GPS)
       let discovery = null;
       try {
-        discovery = await logDiscovery(userId, name, plant?.id);
+        const location = await getDiscoveryLocation();
+        discovery = await logDiscovery(userId, name, plant?.id, location);
       } catch (discoveryError) {
         // Discovery logging failed — plant is saved.
         // Build a fallback result so the user still sees the reveal modal.
