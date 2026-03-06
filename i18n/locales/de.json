@@ -131,6 +131,7 @@
     "tabGallery": "Galerie",
     "tabCare": "Pflege",
     "tabExtras": "Extras",
+    "tabTasks": "Aufgaben",
     "tabHealth": "Gesundheit",
     "healthLabel": "Gesundheit",
     "noHealthcheck": "Kein Healthcheck vorhanden.",
@@ -183,7 +184,11 @@
     "saveFailed": "Speichern fehlgeschlagen",
     "scanError": "Verbindung fehlgeschlagen",
     "unknownError": "Unbekannter Fehler",
-    "saveFailedMessage": "Speichern fehlgeschlagen: {{message}}"
+    "saveFailedMessage": "Speichern fehlgeschlagen: {{message}}",
+    "addTask": "Aufgabe hinzufügen",
+    "dueTasks": "Anstehend",
+    "noTasks": "Alles erledigt — keine offenen Aufgaben",
+    "taskHistory": "Zuletzt erledigt"
   },
   "tasks": {
     "title": "Aufgaben & Termine",
@@ -511,7 +516,15 @@
     },
     "empty": "Noch keine Arten entdeckt. Scanne deine erste Pflanze!",
     "notDiscovered": "Nicht entdeckt",
-    "speciesNotFound": "Pflanzenart nicht gefunden."
+    "speciesNotFound": "Pflanzenart nicht gefunden.",
+    "categories": {
+      "houseplant": "Zimmerpflanzen",
+      "succulent": "Sukkulenten & Kakteen",
+      "flowering": "Blühpflanzen",
+      "tree": "Bäume & Sträucher",
+      "groundcover": "Bodendecker & Kletterpflanzen",
+      "other": "Sonstige"
+    }
   },
   "ben": {
     "taskCreated": "Aufgabe erstellt",

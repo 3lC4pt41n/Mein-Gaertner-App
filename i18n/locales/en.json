@@ -131,6 +131,7 @@
     "tabGallery": "Gallery",
     "tabCare": "Care",
     "tabExtras": "Extras",
+    "tabTasks": "Tasks",
     "tabHealth": "Health",
     "healthLabel": "Health",
     "noHealthcheck": "No health check available.",
@@ -183,7 +184,11 @@
     "saveFailed": "Save failed",
     "scanError": "Connection failed",
     "unknownError": "Unknown error",
-    "saveFailedMessage": "Save failed: {{message}}"
+    "saveFailedMessage": "Save failed: {{message}}",
+    "addTask": "Add Task",
+    "dueTasks": "Upcoming",
+    "noTasks": "All done — no open tasks",
+    "taskHistory": "Recently completed"
   },
   "tasks": {
     "title": "Tasks & Schedules",
@@ -511,7 +516,15 @@
     },
     "empty": "You haven't discovered any species yet. Scan your first plant!",
     "notDiscovered": "Not discovered",
-    "speciesNotFound": "Plant species not found."
+    "speciesNotFound": "Plant species not found.",
+    "categories": {
+      "houseplant": "Houseplants",
+      "succulent": "Succulents & Cacti",
+      "flowering": "Flowering Plants",
+      "tree": "Trees & Shrubs",
+      "groundcover": "Ground Cover & Climbers",
+      "other": "Other"
+    }
   },
   "ben": {
     "taskCreated": "Task created",

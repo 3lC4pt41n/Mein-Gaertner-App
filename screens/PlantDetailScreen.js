@@ -20,6 +20,7 @@ import { fetchLatestHealthcheck, saveHealthcheck } from '../services/plantServic
 import { addDiaryEntry, fetchGallery } from '../services/diaryService';
 import DiaryTimeline from '../components/DiaryTimeline';
 import PlantGallery from '../components/PlantGallery';
+import PlantTasksList from '../components/PlantTasksList';
 import AddDiaryEntryDialog from '../components/AddDiaryEntryDialog';
 import { useNavigation } from '@react-navigation/native';
 import { t } from '../i18n';
@@ -133,6 +134,7 @@ export default function PlantDetailScreen({ route }) {
 
   const tabNames = [
     { key: 'overview', label: t('plants.tabOverview') },
+    { key: 'tasks', label: t('plants.tabTasks') },
     { key: 'diary', label: t('plants.tabDiary') },
     { key: 'gallery', label: t('plants.tabGallery') },
     { key: 'care', label: t('plants.tabCare') },
@@ -512,9 +514,12 @@ export default function PlantDetailScreen({ route }) {
           onAddPhoto={handleAddGalleryPhoto}
         />
       )}
+      {tab === 'tasks' && (
+        <PlantTasksList plantId={plant.id} plantName={plant.name} userId={userId} />
+      )}
 
       {/* Tab Content (care, health, overview) */}
-      {tab !== 'diary' && tab !== 'gallery' && (
+      {tab !== 'diary' && tab !== 'gallery' && tab !== 'tasks' && (
         <View style={styles.card}>
           {tab === 'health' ? (
             loading ? (

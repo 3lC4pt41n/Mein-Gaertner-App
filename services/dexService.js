@@ -11,7 +11,7 @@ export async function fetchDex(userId, filter = 'all') {
   const { data: allSpecies, error: speciesError } = await supabase
     .from('species')
     .select(
-      'id, canonical_name, first_discovered_by, first_discovered_at, image_url, description, care_summary, total_discoverers'
+      'id, canonical_name, first_discovered_by, first_discovered_at, image_url, description, care_summary, total_discoverers, plant_type'
     )
     .order('canonical_name', { ascending: true });
 

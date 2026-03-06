@@ -131,6 +131,7 @@
     "tabGallery": "Galerie",
     "tabCare": "Entretien & emplacement",
     "tabExtras": "Extras",
+    "tabTasks": "Tâches",
     "tabHealth": "Bilan santé",
     "healthLabel": "Santé",
     "noHealthcheck": "Aucun bilan santé disponible.",
@@ -168,6 +169,10 @@
     "scanError": "Échec de la connexion",
     "unknownError": "Erreur inconnue",
     "saveFailedMessage": "Échec de l'enregistrement : {{message}}",
+    "addTask": "Ajouter une tâche",
+    "dueTasks": "À venir",
+    "noTasks": "Tout est fait — aucune tâche ouverte",
+    "taskHistory": "Récemment terminées",
     "stepScan": "Scanner",
     "stepSave": "Enregistrer",
     "stepDone": "Terminé",
@@ -490,7 +495,15 @@
     },
     "empty": "Vous n'avez encore découvert aucune espèce. Scannez votre première plante !",
     "notDiscovered": "Non découverte",
-    "speciesNotFound": "Espèce végétale introuvable."
+    "speciesNotFound": "Espèce végétale introuvable.",
+    "categories": {
+      "houseplant": "Plantes d'intérieur",
+      "succulent": "Succulentes et cactus",
+      "flowering": "Plantes à fleurs",
+      "tree": "Arbres et arbustes",
+      "groundcover": "Couvre-sols et grimpantes",
+      "other": "Autres"
+    }
   },
   "ben": {
     "taskCreated": "Tâche créée",

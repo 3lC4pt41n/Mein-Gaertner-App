@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  SectionList,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
@@ -21,6 +21,57 @@ const FILTERS = [
   { label: 'discovered', value: 'discovered' },
   { label: 'first', value: 'first' },
 ];
+
+// Category display order & icon mapping
+const CATEGORY_ORDER = ['houseplant', 'succulent', 'flowering', 'tree', 'groundcover', 'other'];
+
+const CATEGORY_ICONS = {
+  houseplant: 'leaf',
+  succulent: 'water',
+  flowering: 'flower',
+  tree: 'git-branch-outline',
+  groundcover: 'layers-outline',
+  other: 'ellipsis-horizontal',
+};
+
+const CATEGORY_COLORS = {
+  houseplant: '#4CAF50',
+  succulent: '#8BC34A',
+  flowering: '#E91E63',
+  tree: '#795548',
+  groundcover: '#009688',
+  other: '#607D8B',
+};
+
+/**
+ * Group flat species list into SectionList sections by plant_type.
+ * Each section's data is chunked into pairs for a 2-column grid.
+ */
+function groupIntoSections(speciesList) {
+  const groups = {};
+  for (const s of speciesList) {
+    const type = s.plant_type || 'other';
+    if (!groups[type]) groups[type] = [];
+    groups[type].push(s);
+  }
+
+  return CATEGORY_ORDER.filter((cat) => groups[cat]?.length > 0).map((cat) => {
+    const items = groups[cat];
+    // Chunk into pairs for 2-column grid
+    const rows = [];
+    for (let i = 0; i < items.length; i += 2) {
+      rows.push(items.slice(i, i + 2));
+    }
+    return {
+      key: cat,
+      title: t(`dex.categories.${cat}`),
+      icon: CATEGORY_ICONS[cat],
+      color: CATEGORY_COLORS[cat],
+      count: items.length,
+      data: rows,
+    };
+  });
+}
 
 const PlantDexScreen = () => {
   const { user } = useAuth();
@@ -81,6 +132,8 @@ const PlantDexScreen = () => {
     await loadDexData();
     setRefreshing(false);
   };
+
+  const sections = useMemo(() => groupIntoSections(species), [species]);
 
   const progressPercent = progress.total > 0 ? (progress.discovered / progress.total) * 100 : 0;
 
@@ -150,7 +203,7 @@ const PlantDexScreen = () => {
     </View>
   );
 
-  // Always render FlatList to avoid layout jumps between loading/loaded states
+  // Show loading / error / empty when no sections
   const renderListEmpty = () => {
     if (loading && species.length === 0) {
       return (
@@ -178,25 +231,45 @@ const PlantDexScreen = () => {
     );
   };
 
+  const renderSectionHeader = ({ section }) => (
+    <View style={styles.sectionHeader}>
+      <View style={[styles.sectionIconBg, { backgroundColor: section.color + '22' }]}>
+        <Ionicons name={section.icon} size={18} color={section.color} />
+      </View>
+      <Text style={styles.sectionTitle}>{section.title}</Text>
+      <Text style={styles.sectionCount}>{section.count}</Text>
+    </View>
+  );
+
+  // Each "item" is a pair (row of 2 cards)
+  const renderRow = ({ item: pair }) => (
+    <View style={styles.gridRow}>
+      {pair.map((species) => (
+        <DexCard
+          key={species.id}
+          species={species}
+          discovered={species.discovered}
+          isFirstDiscoverer={species.isFirstDiscoverer}
+          slotNumber={species.dexNumber}
+          onPress={(speciesId) => navigation.navigate('DexDetail', { speciesId, species })}
+        />
+      ))}
+      {/* Spacer if odd number of items */}
+      {pair.length === 1 && <View style={{ flex: 1 }} />}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <FlatList
-        data={species}
-        renderItem={({ item }) => (
-          <DexCard
-            species={item}
-            discovered={item.discovered}
-            isFirstDiscoverer={item.isFirstDiscoverer}
-            slotNumber={item.dexNumber}
-            onPress={(speciesId) => navigation.navigate('DexDetail', { speciesId, species: item })}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.gridRow}
+      <SectionList
+        sections={sections}
+        renderItem={renderRow}
+        renderSectionHeader={renderSectionHeader}
+        keyExtractor={(pair, idx) => pair[0]?.id || `row-${idx}`}
         contentContainerStyle={styles.gridContainer}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderListEmpty}
+        stickySectionHeadersEnabled={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -315,12 +388,46 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  /* Section Headers */
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  sectionIconBg: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  sectionCount: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.textTertiary,
+    backgroundColor: colors.borderLight,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+  },
+
   /* Grid */
   gridContainer: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xxl,
   },
   gridRow: {
+    flexDirection: 'row',
     gap: spacing.md,
     marginBottom: spacing.md,
   },
