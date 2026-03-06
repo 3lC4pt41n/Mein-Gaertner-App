@@ -103,6 +103,14 @@ See `.env.example` for details.
 - Signed URLs are generated **on-demand** in read flows (`getPlantImageUrl`, `getPlantImageUrls`).
 - Legacy `http(s)` URLs remain backward-compatible and are passed through unchanged.
 
+### Latest Stability Updates (March 2026, P1)
+
+- `PlantDetailScreen` no longer nests vertical `FlatList` components inside a vertical parent `ScrollView` for Diary/Gallery tabs.
+- `chatService.fetchMessages()` now resolves chat image paths in batch via `createSignedUrls()` with per-image fallback.
+- `requestWithPolicy()` now enforces hard timeouts even when downstream clients ignore `AbortSignal`.
+- Silent error paths were removed in `AssistantScreen`, `SettingsScreen`, and `AuthContext` (non-fatal errors are now surfaced/logged).
+- Added tests for `chatService` URL resolution and `networkPolicy` timeout behavior.
+
 ## Project Structure
 
 ```
@@ -135,7 +143,7 @@ See `.env.example` for details.
 │   │   └── _shared/               # Shared utilities (credits, OpenAI, rate-limit, validation)
 │   └── migrations/                 # SQL database migrations
 │
-├── __tests__/                      # 10 test suites
+├── __tests__/                      # 12 test suites
 ├── .github/
 │   ├── workflows/                  # CI/CD workflows
 │   ├── ISSUE_TEMPLATE/             # Issue templates
@@ -229,7 +237,7 @@ npx jest __tests__/services/languageService.test.js
 npx jest --coverage
 ```
 
-10 test suites cover core logic:
+12 test suites cover core logic:
 
 - Task engine (recurring, rescheduling)
 - Scoring & discovery

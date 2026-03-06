@@ -133,6 +133,7 @@ jest.mock('./supabase', () => ({
       from: jest.fn().mockReturnValue({
         upload: jest.fn(),
         createSignedUrl: jest.fn(),
+        createSignedUrls: jest.fn(),
       }),
     },
   },

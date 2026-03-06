@@ -46,14 +46,18 @@ export default function AssistantScreen() {
       try {
         const bal = await fetchBalance();
         setBalance(bal);
-      } catch (_e) {
-        /* Balance-Fehler ignorieren — UI zeigt null */
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[AssistantScreen] fetchBalance failed:', error?.message);
+        }
       }
       try {
         const userLanguage = await fetchCurrentUserLanguage();
         setLanguage(userLanguage);
-      } catch (_e) {
-        /* Fallback: Deutsch */
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[AssistantScreen] fetchCurrentUserLanguage failed:', error?.message);
+        }
       }
 
       const avatarPath = user?.user_metadata?.gardener_avatar_path;
@@ -66,8 +70,10 @@ export default function AssistantScreen() {
           if (!signedError && signedData?.signedUrl) {
             setUserAvatarUrl(signedData.signedUrl);
           }
-        } catch (_e) {
-          /* Avatar optional */
+        } catch (error) {
+          if (__DEV__) {
+            console.warn('[AssistantScreen] avatar URL resolve failed:', error?.message);
+          }
         }
       }
     })();
@@ -76,14 +82,26 @@ export default function AssistantScreen() {
   // Initial: letzte 30 Messages laden
   useEffect(() => {
     if (!user_id) return;
-    fetchMessages(user_id)
-      .then(({ messages: msgs, hasMore: more }) => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { messages: msgs, hasMore: more } = await fetchMessages(user_id);
+        if (!mounted) return;
         setMessages(msgs);
         setHasMore(more);
-      })
-      .catch(() => {
-        // Initial message load failed
-      });
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[AssistantScreen] initial message load failed:', error?.message);
+        }
+        if (mounted) {
+          Alert.alert(t('common.error'), error?.message || t('common.networkError'));
+        }
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, [user_id]);
 
   useEffect(() => {
@@ -101,8 +119,11 @@ export default function AssistantScreen() {
       });
       setMessages((prev) => [...older, ...prev]);
       setHasMore(more);
-    } catch (_e) {
-      // Load older messages failed
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('[AssistantScreen] load older messages failed:', error?.message);
+      }
+      Alert.alert(t('common.error'), error?.message || t('common.networkError'));
     } finally {
       setLoadingMore(false);
     }
@@ -137,7 +158,7 @@ export default function AssistantScreen() {
   const takeAndSendPhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      alert(t('common.cameraRequired'));
+      Alert.alert(t('common.error'), t('common.cameraRequired'));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -201,6 +222,10 @@ export default function AssistantScreen() {
       setMessages((m) => [...m, { ...userMessage, created_at: new Date().toISOString() }]);
       setInput('');
       await getBenAnswer(input, null);
+    } catch (error) {
+      if (!handleCreditError(error)) {
+        Alert.alert(t('common.error'), error?.message || t('common.networkError'));
+      }
     } finally {
       setLoading(false);
     }

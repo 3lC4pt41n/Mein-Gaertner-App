@@ -8,6 +8,13 @@ import i18n from '../i18n';
 
 const AuthContext = createContext(null);
 
+function reportAuthError(context, error) {
+  const normalizedError =
+    error instanceof Error ? error : new Error(String(error || 'Unknown error'));
+  console.warn(`[AuthContext] ${context}:`, normalizedError.message);
+  Sentry.captureException(normalizedError);
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -23,7 +30,10 @@ export function AuthProvider({ children }) {
     supabase.auth
       .getUser()
       .then(({ data }) => setUser(data?.user ?? null))
-      .catch(() => setUser(null));
+      .catch((error) => {
+        reportAuthError('auth.getUser', error);
+        setUser(null);
+      });
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
@@ -47,16 +57,18 @@ export function AuthProvider({ children }) {
   // --- RevenueCat Init (after login) ---
   useEffect(() => {
     if (user?.id) {
-      initPurchases(user.id).catch(console.warn);
+      initPurchases(user.id).catch((error) => reportAuthError('purchases.init', error));
     }
   }, [user?.id]);
 
   // --- Beta Welcome Check (once per user) ---
   useEffect(() => {
     if (user?.id) {
-      AsyncStorage.getItem(`beta_welcome_shown_${user.id}`).then((val) => {
-        if (!val) setShowWelcome(true);
-      });
+      AsyncStorage.getItem(`beta_welcome_shown_${user.id}`)
+        .then((val) => {
+          if (!val) setShowWelcome(true);
+        })
+        .catch((error) => reportAuthError('betaWelcome.read', error));
     }
   }, [user?.id]);
 
@@ -77,7 +89,8 @@ export function AuthProvider({ children }) {
           }
           setLoading(false);
         })
-        .catch(() => {
+        .catch((error) => {
+          reportAuthError('profiles.fetch', error);
           setProfile(null);
           setLoading(false);
         });
@@ -90,7 +103,11 @@ export function AuthProvider({ children }) {
   // --- Refresh Profile (callable from screens after profile edits) ---
   const refreshProfile = useCallback(async () => {
     if (!user?.id) return;
-    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    if (error) {
+      reportAuthError('profiles.refresh', error);
+      return;
+    }
     if (data) {
       setProfile(data);
       if (data.language) {
@@ -102,7 +119,11 @@ export function AuthProvider({ children }) {
   // --- Dismiss Beta Welcome ---
   const dismissWelcome = useCallback(async () => {
     if (user?.id) {
-      await AsyncStorage.setItem(`beta_welcome_shown_${user.id}`, 'true');
+      try {
+        await AsyncStorage.setItem(`beta_welcome_shown_${user.id}`, 'true');
+      } catch (error) {
+        reportAuthError('betaWelcome.write', error);
+      }
     }
     setShowWelcome(false);
   }, [user?.id]);

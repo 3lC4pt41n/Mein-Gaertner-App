@@ -28,7 +28,7 @@ const typeBadges = {
   discovery: '🌱',
 };
 
-export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
+export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto, ListHeaderComponent }) {
   const [gallery, setGallery] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -59,8 +59,10 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
         }
       }
       setGallery(allPhotos);
-    } catch (_error) {
-      // Load gallery failed
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('[PlantGallery] loadGallery failed:', error?.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -122,32 +124,41 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
     );
   };
 
+  const renderListHeader = () =>
+    typeof ListHeaderComponent === 'function' ? <ListHeaderComponent /> : ListHeaderComponent;
+
   if (loading) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.stateContainer}>
+        {renderListHeader()}
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
       </View>
     );
   }
 
   if (gallery.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="image-outline" size={48} color={colors.textSecondary} />
-        <Text style={styles.emptyText}>{t('gallery.noPhotos')}</Text>
-        {onAddPhoto && (
-          <TouchableOpacity style={styles.addPhotoBtn} onPress={onAddPhoto}>
-            <Ionicons
-              name="camera-outline"
-              size={18}
-              color={colors.surface}
-              style={{ marginRight: spacing.xs }}
-            />
-            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
-              {t('gallery.addPhoto')}
-            </Text>
-          </TouchableOpacity>
-        )}
+      <View style={styles.stateContainer}>
+        {renderListHeader()}
+        <View style={styles.emptyContainer}>
+          <Ionicons name="image-outline" size={48} color={colors.textSecondary} />
+          <Text style={styles.emptyText}>{t('gallery.noPhotos')}</Text>
+          {onAddPhoto && (
+            <TouchableOpacity style={styles.addPhotoBtn} onPress={onAddPhoto}>
+              <Ionicons
+                name="camera-outline"
+                size={18}
+                color={colors.surface}
+                style={{ marginRight: spacing.xs }}
+              />
+              <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+                {t('gallery.addPhoto')}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     );
   }
@@ -158,9 +169,16 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
         data={gridData}
         renderItem={renderGalleryItem}
         keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={ListHeaderComponent}
         numColumns={COLUMNS}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.listContent}
+        initialNumToRender={12}
+        maxToRenderPerBatch={12}
+        windowSize={9}
+        removeClippedSubviews
+        updateCellsBatchingPeriod={60}
+        keyboardShouldPersistTaps="handled"
         scrollEventThrottle={16}
       />
 
@@ -234,6 +252,9 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
 }
 
 const styles = StyleSheet.create({
+  stateContainer: {
+    flex: 1,
+  },
   listContent: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
@@ -370,4 +391,5 @@ PlantGallery.propTypes = {
   plantId: PropTypes.string.isRequired,
   plantImageUrl: PropTypes.string,
   onAddPhoto: PropTypes.func,
+  ListHeaderComponent: PropTypes.oneOfType([PropTypes.element, PropTypes.func]),
 };

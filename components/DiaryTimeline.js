@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import {
   View,
   Text,
@@ -27,7 +28,7 @@ const typeBorderColors = {
   discovery: colors.info,
 };
 
-export default function DiaryTimeline({ plantId }) {
+export default function DiaryTimeline({ plantId, ListHeaderComponent }) {
   const [entries, setEntries] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -51,8 +52,10 @@ export default function DiaryTimeline({ plantId }) {
         setTotal(totalCount);
         setHasMore(more);
         setPage(pageNum);
-      } catch (_error) {
-        // Load diary entries failed
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[DiaryTimeline] loadEntries failed:', error?.message);
+        }
       } finally {
         setLoading(false);
       }
@@ -161,19 +164,28 @@ export default function DiaryTimeline({ plantId }) {
     return null;
   };
 
+  const renderListHeader = () =>
+    typeof ListHeaderComponent === 'function' ? <ListHeaderComponent /> : ListHeaderComponent;
+
   if (loading && page === 0) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.stateContainer}>
+        {renderListHeader()}
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
       </View>
     );
   }
 
   if (!loading && entries.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="document-text-outline" size={48} color={colors.textSecondary} />
-        <Text style={styles.emptyText}>{t('diary.noEntries')}</Text>
+      <View style={styles.stateContainer}>
+        {renderListHeader()}
+        <View style={styles.emptyContainer}>
+          <Ionicons name="document-text-outline" size={48} color={colors.textSecondary} />
+          <Text style={styles.emptyText}>{t('diary.noEntries')}</Text>
+        </View>
       </View>
     );
   }
@@ -183,16 +195,31 @@ export default function DiaryTimeline({ plantId }) {
       data={entries}
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderEntry}
+      ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={renderFooter}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.5}
+      initialNumToRender={8}
+      maxToRenderPerBatch={8}
+      windowSize={9}
+      removeClippedSubviews
+      updateCellsBatchingPeriod={50}
       scrollEventThrottle={16}
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={styles.listContent}
     />
   );
 }
 
+DiaryTimeline.propTypes = {
+  plantId: PropTypes.string.isRequired,
+  ListHeaderComponent: PropTypes.oneOfType([PropTypes.element, PropTypes.func]),
+};
+
 const styles = StyleSheet.create({
+  stateContainer: {
+    flex: 1,
+  },
   listContent: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,

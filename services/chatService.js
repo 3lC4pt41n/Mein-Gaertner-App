@@ -15,20 +15,72 @@ export async function saveMessage({ user_id, sender, content, image_path, image_
 }
 
 const PAGE_SIZE = 30;
+const SIGNED_URL_TTL = 60 * 60; // 1 hour
 
 // Signed URLs fuer Messages mit image_path generieren
 async function resolveImageUrls(messages) {
-  return Promise.all(
-    messages.map(async (msg) => {
-      if (msg.image_path) {
-        const { data: signedData } = await supabase.storage
-          .from('chat-images')
-          .createSignedUrl(msg.image_path, 60 * 60); // 1 Stunde
-        return { ...msg, image_url: signedData?.signedUrl || msg.image_url };
-      }
-      return msg;
-    })
-  );
+  if (!messages?.length) return [];
+
+  const resolved = [...messages];
+  const pathEntries = [];
+
+  for (let i = 0; i < messages.length; i++) {
+    if (messages[i]?.image_path) {
+      pathEntries.push({ index: i, path: messages[i].image_path });
+    }
+  }
+
+  if (pathEntries.length === 0) {
+    return resolved;
+  }
+
+  const uniquePaths = [...new Set(pathEntries.map((entry) => entry.path))];
+  const pathToSignedUrl = new Map();
+  const bucket = supabase.storage.from('chat-images');
+
+  try {
+    if (typeof bucket.createSignedUrls !== 'function') {
+      throw new Error('createSignedUrls unavailable');
+    }
+    const { data, error } = await bucket.createSignedUrls(uniquePaths, SIGNED_URL_TTL);
+    if (error) throw error;
+
+    uniquePaths.forEach((path, index) => {
+      pathToSignedUrl.set(path, data?.[index]?.signedUrl || null);
+    });
+  } catch (batchError) {
+    if (__DEV__) {
+      console.warn(
+        '[chatService] createSignedUrls failed, using per-image fallback:',
+        batchError?.message
+      );
+    }
+
+    await Promise.all(
+      uniquePaths.map(async (path) => {
+        try {
+          const { data: signedData, error: signedError } = await bucket.createSignedUrl(
+            path,
+            SIGNED_URL_TTL
+          );
+          if (signedError) throw signedError;
+          pathToSignedUrl.set(path, signedData?.signedUrl || null);
+        } catch {
+          pathToSignedUrl.set(path, null);
+        }
+      })
+    );
+  }
+
+  pathEntries.forEach(({ index, path }) => {
+    const fallbackUrl = messages[index]?.image_url || null;
+    resolved[index] = {
+      ...messages[index],
+      image_url: pathToSignedUrl.get(path) || fallbackUrl,
+    };
+  });
+
+  return resolved;
 }
 
 // Lädt den Verlauf für einen User (paginiert, mit on-demand Signed URLs)

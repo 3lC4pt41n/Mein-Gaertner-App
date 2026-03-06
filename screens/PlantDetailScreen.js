@@ -503,161 +503,180 @@ export default function PlantDetailScreen({ route }) {
   );
 
   const width = Math.min(Dimensions.get('window').width, 500) - 40;
+  const isVirtualizedTab = tab === 'diary' || tab === 'gallery';
 
-  return (
-    <ScrollView
-      contentContainerStyle={{
-        padding: spacing.xl,
-        backgroundColor: colors.background,
-        minHeight: '100%',
-      }}
-    >
-      {/* Bild + Name */}
-      <View style={styles.card}>
-        {resolvedImageUrl && (
-          <Image
-            source={{ uri: resolvedImageUrl }}
-            style={{
-              width: width,
-              height: (width * 2) / 3,
-              borderRadius: radius.lg,
-              alignSelf: 'center',
-              marginBottom: spacing.sm,
-              backgroundColor: colors.border,
-            }}
-            resizeMode="cover"
-          />
-        )}
-        <Text style={styles.title}>{plant.name}</Text>
-        <Text style={styles.subtitle}>{plant.note}</Text>
-        {healthcheck && typeof healthcheck.healthscore === 'number' && (
-          <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
-        )}
-
-        {/* Zugewiesene Zone */}
-        {assignedZone ? (
-          <View style={{ alignItems: 'center', marginVertical: spacing.sm }}>
-            <Ionicons name="home-outline" size={18} color={colors.primaryLight} />
-            <Text style={{ color: colors.textPrimary, fontWeight: 'bold', fontSize: 16 }}>
-              {t('plants.assignedTo', { zone: assignedZone.name })}
-              {assignedZone.location?.name ? ` (${assignedZone.location.name})` : ''}
-            </Text>
-            <View style={{ flexDirection: 'row', marginTop: spacing.sm }}>
-              <TouchableOpacity
-                style={[
-                  styles.zoneBtn,
-                  { backgroundColor: colors.textTertiary, marginRight: spacing.sm },
-                ]}
-                onPress={() => {
-                  setPickerVisible(true);
-                  loadZones();
-                }}
-              >
-                <Ionicons
-                  name="swap-horizontal"
-                  size={18}
-                  color={colors.surface}
-                  style={{ marginRight: spacing.sm }}
-                />
-                <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
-                  {t('plants.changeZone')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.zoneBtn, { backgroundColor: colors.danger }]}
-                onPress={removeZone}
-              >
-                <Ionicons
-                  name="close"
-                  size={18}
-                  color={colors.surface}
-                  style={{ marginRight: spacing.sm }}
-                />
-                <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
-                  {t('plants.removeZone')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.zoneBtn}
-            onPress={() => {
-              setPickerVisible(true);
-              loadZones();
-            }}
-          >
-            <Ionicons
-              name="home-outline"
-              size={18}
-              color={colors.surface}
-              style={{ marginRight: spacing.sm }}
-            />
-            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
-              {t('plants.assignZone')}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Tabs — horizontal scrollbar for narrow screens */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabBar}
-        style={styles.tabBarWrapper}
-      >
-        {tabNames.map((item) => (
-          <TouchableOpacity
-            key={item.key}
-            onPress={() => setTab(item.key)}
-            style={[styles.tabChip, tab === item.key && styles.tabChipActive]}
-          >
-            <Text style={[styles.tabChipText, tab === item.key && styles.tabChipTextActive]}>
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Diary / Gallery tabs rendered outside the card */}
-      {tab === 'diary' && (
-        <View>
-          <TouchableOpacity
-            style={[styles.zoneBtn, { alignSelf: 'center', marginBottom: spacing.md }]}
-            onPress={() => setShowDiaryDialog(true)}
-          >
-            <Ionicons
-              name="add"
-              size={18}
-              color={colors.surface}
-              style={{ marginRight: spacing.xs }}
-            />
-            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>{t('diary.addEntry')}</Text>
-          </TouchableOpacity>
-          <DiaryTimeline key={diaryKey} plantId={plant.id} />
-        </View>
-      )}
-      {tab === 'gallery' && (
-        <PlantGallery
-          key={galleryKey}
-          plantId={plant.id}
-          plantImageUrl={plant.image_url}
-          onAddPhoto={handleAddGalleryPhoto}
+  const plantHeaderCard = (
+    <View style={styles.card}>
+      {resolvedImageUrl && (
+        <Image
+          source={{ uri: resolvedImageUrl }}
+          style={{
+            width: width,
+            height: (width * 2) / 3,
+            borderRadius: radius.lg,
+            alignSelf: 'center',
+            marginBottom: spacing.sm,
+            backgroundColor: colors.border,
+          }}
+          resizeMode="cover"
         />
       )}
-      {tab === 'tasks' && (
-        <PlantTasksList plantId={plant.id} plantName={plant.name} userId={userId} />
+      <Text style={styles.title}>{plant.name}</Text>
+      <Text style={styles.subtitle}>{plant.note}</Text>
+      {healthcheck && typeof healthcheck.healthscore === 'number' && (
+        <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
       )}
 
-      {/* Tab Content (care, health, overview) — memoized for performance */}
-      {tab !== 'diary' && tab !== 'gallery' && tab !== 'tasks' && (
-        <View style={styles.card}>
-          {tab === 'health' ? healthTabContent : detailsTabContent(tab)}
+      {/* Zugewiesene Zone */}
+      {assignedZone ? (
+        <View style={{ alignItems: 'center', marginVertical: spacing.sm }}>
+          <Ionicons name="home-outline" size={18} color={colors.primaryLight} />
+          <Text style={{ color: colors.textPrimary, fontWeight: 'bold', fontSize: 16 }}>
+            {t('plants.assignedTo', { zone: assignedZone.name })}
+            {assignedZone.location?.name ? ` (${assignedZone.location.name})` : ''}
+          </Text>
+          <View style={{ flexDirection: 'row', marginTop: spacing.sm }}>
+            <TouchableOpacity
+              style={[
+                styles.zoneBtn,
+                { backgroundColor: colors.textTertiary, marginRight: spacing.sm },
+              ]}
+              onPress={() => {
+                setPickerVisible(true);
+                loadZones();
+              }}
+            >
+              <Ionicons
+                name="swap-horizontal"
+                size={18}
+                color={colors.surface}
+                style={{ marginRight: spacing.sm }}
+              />
+              <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+                {t('plants.changeZone')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.zoneBtn, { backgroundColor: colors.danger }]}
+              onPress={removeZone}
+            >
+              <Ionicons
+                name="close"
+                size={18}
+                color={colors.surface}
+                style={{ marginRight: spacing.sm }}
+              />
+              <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+                {t('plants.removeZone')}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
+      ) : (
+        <TouchableOpacity
+          style={styles.zoneBtn}
+          onPress={() => {
+            setPickerVisible(true);
+            loadZones();
+          }}
+        >
+          <Ionicons
+            name="home-outline"
+            size={18}
+            color={colors.surface}
+            style={{ marginRight: spacing.sm }}
+          />
+          <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+            {t('plants.assignZone')}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  const tabBar = (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.tabBar}
+      style={styles.tabBarWrapper}
+    >
+      {tabNames.map((item) => (
+        <TouchableOpacity
+          key={item.key}
+          onPress={() => setTab(item.key)}
+          style={[styles.tabChip, tab === item.key && styles.tabChipActive]}
+        >
+          <Text style={[styles.tabChipText, tab === item.key && styles.tabChipTextActive]}>
+            {item.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+
+  return (
+    <>
+      {isVirtualizedTab ? (
+        <View style={styles.screen}>
+          {tab === 'diary' ? (
+            <DiaryTimeline
+              key={diaryKey}
+              plantId={plant.id}
+              ListHeaderComponent={
+                <View style={styles.listTabHeader}>
+                  {plantHeaderCard}
+                  {tabBar}
+                  <TouchableOpacity
+                    style={[styles.zoneBtn, { alignSelf: 'center', marginBottom: spacing.md }]}
+                    onPress={() => setShowDiaryDialog(true)}
+                  >
+                    <Ionicons
+                      name="add"
+                      size={18}
+                      color={colors.surface}
+                      style={{ marginRight: spacing.xs }}
+                    />
+                    <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+                      {t('diary.addEntry')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              }
+            />
+          ) : (
+            <PlantGallery
+              key={galleryKey}
+              plantId={plant.id}
+              plantImageUrl={plant.image_url}
+              onAddPhoto={handleAddGalleryPhoto}
+              ListHeaderComponent={
+                <View style={styles.listTabHeader}>
+                  {plantHeaderCard}
+                  {tabBar}
+                </View>
+              }
+            />
+          )}
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {plantHeaderCard}
+          {tabBar}
+
+          {tab === 'tasks' && (
+            <PlantTasksList plantId={plant.id} plantName={plant.name} userId={userId} />
+          )}
+
+          {/* Tab Content (care, health, overview) — memoized for performance */}
+          {tab !== 'tasks' && (
+            <View style={styles.card}>
+              {tab === 'health' ? healthTabContent : detailsTabContent(tab)}
+            </View>
+          )}
+        </ScrollView>
       )}
 
-      {/* Add Diary Entry Dialog */}
       <AddDiaryEntryDialog
         visible={showDiaryDialog}
         onClose={() => setShowDiaryDialog(false)}
@@ -764,7 +783,7 @@ export default function PlantDetailScreen({ route }) {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-    </ScrollView>
+    </>
   );
 }
 
@@ -784,6 +803,20 @@ PlantDetailScreen.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollContainer: {
+    padding: spacing.xl,
+    backgroundColor: colors.background,
+    minHeight: '100%',
+  },
+  listTabHeader: {
+    paddingTop: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.background,
+  },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,

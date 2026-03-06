@@ -167,7 +167,12 @@ export default function SettingsScreen({ navigation }) {
     }
     createAvatarSignedUrl(path)
       .then(setAvatarUrl)
-      .catch(() => setAvatarUrl(null));
+      .catch((error) => {
+        if (__DEV__) {
+          console.warn('[SettingsScreen] createAvatarSignedUrl failed:', error?.message);
+        }
+        setAvatarUrl(null);
+      });
   }, [user?.user_metadata?.gardener_avatar_path]);
 
   // --- Pull to refresh ---
@@ -240,8 +245,8 @@ export default function SettingsScreen({ navigation }) {
     applyLanguage(code);
     try {
       await updateProfile({ language: code });
-    } catch {
-      // Silently fail \u2013 language already applied locally
+    } catch (error) {
+      Alert.alert(t('common.error'), error?.message || t('settings.profileSaveError'));
     }
   };
 
@@ -249,8 +254,9 @@ export default function SettingsScreen({ navigation }) {
     setLeaderboardOptIn(val);
     try {
       await updateProfile({ leaderboard_opt_in: val });
-    } catch {
+    } catch (error) {
       setLeaderboardOptIn(!val); // Revert on error
+      Alert.alert(t('common.error'), error?.message || t('settings.profileSaveError'));
     }
   };
 
@@ -258,16 +264,17 @@ export default function SettingsScreen({ navigation }) {
     setHeatmapOptIn(val);
     try {
       await updateProfile({ heatmap_opt_in: val });
-    } catch {
+    } catch (error) {
       setHeatmapOptIn(!val); // Revert on error
+      Alert.alert(t('common.error'), error?.message || t('settings.profileSaveError'));
     }
   };
 
   const handlePublicDisplayNameSave = async () => {
     try {
       await updateProfile({ public_display_name: publicDisplayName });
-    } catch {
-      Alert.alert(t('common.error'), t('settings.profileSaveError'));
+    } catch (error) {
+      Alert.alert(t('common.error'), error?.message || t('settings.profileSaveError'));
     }
   };
 
@@ -307,8 +314,8 @@ export default function SettingsScreen({ navigation }) {
   const handleManageSubscription = async () => {
     try {
       await openManageSubscriptions();
-    } catch {
-      Alert.alert(t('common.error'), t('store.storeUnavailable'));
+    } catch (error) {
+      Alert.alert(t('common.error'), error?.message || t('store.storeUnavailable'));
     }
   };
 

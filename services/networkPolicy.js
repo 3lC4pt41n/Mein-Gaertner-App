@@ -32,7 +32,9 @@ function isTransient(error) {
   if (!error) return false;
 
   // Abort/timeout
-  if (error.name === 'AbortError') return true;
+  if (error.name === 'AbortError' || error.name === 'TimeoutError' || error.code === 'ETIMEDOUT') {
+    return true;
+  }
 
   // Network errors (fetch failures, DNS, etc.)
   const msg = (error.message || '').toLowerCase();
@@ -62,6 +64,14 @@ function getDelay(attempt) {
   const exponential = BASE_DELAY * Math.pow(2, attempt);
   const jitter = Math.random() * BASE_DELAY;
   return Math.min(exponential + jitter, MAX_DELAY);
+}
+
+function createTimeoutError(timeout, label) {
+  const err = new Error(`[${label}] Request timed out after ${timeout}ms`);
+  err.name = 'TimeoutError';
+  err.code = 'ETIMEDOUT';
+  err.timeout = timeout;
+  return err;
 }
 
 /**
@@ -110,11 +120,10 @@ export async function requestWithPolicy(fn, options = {}) {
   let lastError;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    // Create a per-attempt abort controller that chains with external signal
     const controller = new AbortController();
     let timeoutId;
+    let timedOut = false;
 
-    // Forward external abort
     if (externalSignal?.aborted) {
       throw Object.assign(new Error('Aborted'), { name: 'AbortError' });
     }
@@ -122,13 +131,22 @@ export async function requestWithPolicy(fn, options = {}) {
     externalSignal?.addEventListener('abort', onExternalAbort, { once: true });
 
     try {
-      // Set per-attempt timeout
-      timeoutId = setTimeout(() => controller.abort(), timeout);
+      // Hard-timeout works even when downstream clients ignore AbortSignal.
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          timedOut = true;
+          controller.abort();
+          reject(createTimeoutError(timeout, label));
+        }, timeout);
+      });
 
-      const result = await fn({ signal: controller.signal });
+      const requestPromise = Promise.resolve().then(() => fn({ signal: controller.signal }));
+      const result = await Promise.race([requestPromise, timeoutPromise]);
       return result;
     } catch (error) {
-      lastError = error;
+      const normalizedError =
+        timedOut && error?.name === 'AbortError' ? createTimeoutError(timeout, label) : error;
+      lastError = normalizedError;
 
       // Don't retry if externally aborted
       if (externalSignal?.aborted) {
@@ -136,8 +154,8 @@ export async function requestWithPolicy(fn, options = {}) {
       }
 
       // Don't retry non-transient errors (4xx, auth, etc.)
-      if (!isTransient(error) || attempt >= retries) {
-        throw error;
+      if (!isTransient(normalizedError) || attempt >= retries) {
+        throw normalizedError;
       }
 
       // Backoff before retry
