@@ -37,7 +37,14 @@
     "buyCredits": "Credits kaufen",
     "retry": "Erneut versuchen",
     "share": "Teilen",
-    "shareFailed": "Teilen fehlgeschlagen"
+    "shareFailed": "Teilen fehlgeschlagen",
+    "back": "Zurück",
+    "unknownError": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
+    "serverError": "Der Server ist gerade nicht erreichbar. Bitte versuche es in ein paar Minuten erneut.",
+    "timeoutError": "Die Anfrage hat zu lange gedauert. Bitte prüfe deine Internetverbindung.",
+    "authError": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    "notFoundError": "Die angeforderten Daten wurden nicht gefunden.",
+    "permissionError": "Du hast keine Berechtigung für diese Aktion."
   },
   "nav": {
     "home": "Zuhause",
@@ -495,7 +502,8 @@
       "first": "Erst-Entdeckungen"
     },
     "empty": "Noch keine Arten entdeckt. Scanne deine erste Pflanze!",
-    "notDiscovered": "Nicht entdeckt"
+    "notDiscovered": "Nicht entdeckt",
+    "speciesNotFound": "Pflanzenart nicht gefunden."
   },
   "ben": {
     "taskCreated": "Aufgabe erstellt",

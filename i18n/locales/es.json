@@ -37,7 +37,14 @@
     "buyCredits": "Comprar Credits",
     "retry": "Reintentar",
     "share": "Compartir",
-    "shareFailed": "Error al compartir"
+    "shareFailed": "Error al compartir",
+    "back": "Atrás",
+    "unknownError": "Se produjo un error desconocido. Inténtalo de nuevo.",
+    "serverError": "El servidor no está disponible en este momento. Inténtalo en unos minutos.",
+    "timeoutError": "La solicitud tardó demasiado. Comprueba tu conexión a Internet.",
+    "authError": "Tu sesión ha expirado. Inicia sesión de nuevo.",
+    "notFoundError": "No se encontraron los datos solicitados.",
+    "permissionError": "No tienes permiso para esta acción."
   },
   "nav": {
     "home": "Inicio",
@@ -474,7 +481,8 @@
       "first": "Primeros descubrimientos"
     },
     "empty": "Aún no has descubierto ninguna especie. ¡Escanea tu primera planta!",
-    "notDiscovered": "No descubierta"
+    "notDiscovered": "No descubierta",
+    "speciesNotFound": "Especie no encontrada."
   },
   "ben": {
     "taskCreated": "Tarea creada",

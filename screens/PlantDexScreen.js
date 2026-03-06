@@ -327,11 +327,11 @@ const styles = StyleSheet.create({
 
   /* States */
   centerContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xxxl * 2,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxxl,
+    minHeight: 200,
     gap: spacing.md,
   },
   errorText: {

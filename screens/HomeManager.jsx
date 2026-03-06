@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../supabase';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
@@ -33,9 +33,11 @@ export default function HomeManager() {
   const { userId } = useAuth();
   const navigation = useNavigation();
 
-  useEffect(() => {
-    reload();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [userId])
+  );
 
   const reload = async () => {
     if (!userId) {

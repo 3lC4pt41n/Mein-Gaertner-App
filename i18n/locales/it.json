@@ -37,7 +37,14 @@
     "buyCredits": "Acquista Credits",
     "retry": "Riprova",
     "share": "Condividi",
-    "shareFailed": "Condivisione fallita"
+    "shareFailed": "Condivisione fallita",
+    "back": "Indietro",
+    "unknownError": "Si è verificato un errore sconosciuto. Riprova.",
+    "serverError": "Il server non è al momento disponibile. Riprova tra qualche minuto.",
+    "timeoutError": "La richiesta ha impiegato troppo tempo. Controlla la tua connessione internet.",
+    "authError": "La tua sessione è scaduta. Effettua nuovamente l'accesso.",
+    "notFoundError": "I dati richiesti non sono stati trovati.",
+    "permissionError": "Non hai il permesso per questa azione."
   },
   "nav": {
     "home": "Casa",
@@ -474,7 +481,8 @@
       "first": "Prime scoperte"
     },
     "empty": "Non hai ancora scoperto nessuna specie. Scansiona la tua prima pianta!",
-    "notDiscovered": "Non scoperta"
+    "notDiscovered": "Non scoperta",
+    "speciesNotFound": "Specie vegetale non trovata."
   },
   "ben": {
     "taskCreated": "Attività creata",

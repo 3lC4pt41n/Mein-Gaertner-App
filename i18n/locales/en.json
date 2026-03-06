@@ -37,7 +37,14 @@
     "buyCredits": "Buy Credits",
     "retry": "Try again",
     "share": "Share",
-    "shareFailed": "Sharing failed"
+    "shareFailed": "Sharing failed",
+    "back": "Back",
+    "unknownError": "An unknown error occurred. Please try again.",
+    "serverError": "The server is currently unavailable. Please try again in a few minutes.",
+    "timeoutError": "The request took too long. Please check your internet connection.",
+    "authError": "Your session has expired. Please sign in again.",
+    "notFoundError": "The requested data was not found.",
+    "permissionError": "You do not have permission for this action."
   },
   "nav": {
     "home": "Home",
@@ -495,7 +502,8 @@
       "first": "First Discoveries"
     },
     "empty": "You haven't discovered any species yet. Scan your first plant!",
-    "notDiscovered": "Not discovered"
+    "notDiscovered": "Not discovered",
+    "speciesNotFound": "Plant species not found."
   },
   "ben": {
     "taskCreated": "Task created",

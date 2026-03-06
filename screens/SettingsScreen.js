@@ -1,6 +1,6 @@
 // SettingsScreen.js – Profil, Einstellungen, Datenschutz, Konto, App-Info
 // ---------------------------------------------------------------------
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -117,6 +117,24 @@ export default function SettingsScreen({ navigation }) {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // --- Auto-save public display name on screen leave ---
+  const displayNameRef = useRef(publicDisplayName);
+  const initialDisplayNameRef = useRef('');
+  useEffect(() => {
+    displayNameRef.current = publicDisplayName;
+  }, [publicDisplayName]);
+  useEffect(() => {
+    if (profile) initialDisplayNameRef.current = profile.public_display_name ?? '';
+  }, [profile]);
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      if (displayNameRef.current !== initialDisplayNameRef.current) {
+        updateProfile({ public_display_name: displayNameRef.current }).catch(() => {});
+      }
+    });
+    return unsubscribe;
+  }, [navigation, updateProfile]);
 
   // --- Initialize from profile ---
   useEffect(() => {

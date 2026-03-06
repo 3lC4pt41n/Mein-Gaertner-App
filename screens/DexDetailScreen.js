@@ -16,24 +16,30 @@ import { fetchSpeciesDetail } from '../services/dexService';
 import { formatDisplayName } from '../services/discoveryService';
 import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
+import { friendlyError } from '../utils/errorMessages';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HERO_HEIGHT = Math.min(SCREEN_WIDTH * 0.75, 340);
 
-export default function DexDetailScreen({ route }) {
-  const { speciesId, species: initialSpecies } = route.params;
+export default function DexDetailScreen({ route, navigation }) {
+  const { speciesId, species: initialSpecies } = route.params ?? {};
   const [species, setSpecies] = useState(initialSpecies || null);
   const [loading, setLoading] = useState(!initialSpecies?.description);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!speciesId) return;
+    if (!speciesId) {
+      setError(t('dex.speciesNotFound'));
+      return;
+    }
     (async () => {
       try {
         setLoading(true);
+        setError(null);
         const detail = await fetchSpeciesDetail(speciesId);
-        setSpecies((prev) => ({ ...prev, ...detail }));
-      } catch {
-        // Detail fetch failed — show what we have
+        if (detail) setSpecies((prev) => ({ ...prev, ...detail }));
+      } catch (err) {
+        if (!species) setError(friendlyError(err));
       } finally {
         setLoading(false);
       }
@@ -54,6 +60,21 @@ export default function DexDetailScreen({ route }) {
       }
     }
   };
+
+  if (error && !species) {
+    return (
+      <View style={styles.center}>
+        <Ionicons name="alert-circle-outline" size={48} color={colors.danger ?? '#e74c3c'} />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity
+          onPress={() => (navigation.canGoBack() ? navigation.goBack() : null)}
+          style={styles.backButton}
+        >
+          <Text style={styles.backButtonText}>{t('common.back')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (!species) {
     return (
@@ -222,6 +243,25 @@ const styles = StyleSheet.create({
   },
   discovererName: {
     fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.md,
+    marginHorizontal: spacing.xl,
+  },
+  backButton: {
+    marginTop: spacing.lg,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySurface,
+  },
+  backButtonText: {
+    fontSize: 15,
     fontWeight: '600',
     color: colors.primary,
   },

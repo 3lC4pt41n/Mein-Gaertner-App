@@ -37,7 +37,14 @@
     "buyCredits": "Acheter des Credits",
     "retry": "Réessayer",
     "share": "Partager",
-    "shareFailed": "Échec du partage"
+    "shareFailed": "Échec du partage",
+    "back": "Retour",
+    "unknownError": "Une erreur inconnue est survenue. Veuillez réessayer.",
+    "serverError": "Le serveur est actuellement indisponible. Veuillez réessayer dans quelques minutes.",
+    "timeoutError": "La requête a pris trop de temps. Veuillez vérifier votre connexion internet.",
+    "authError": "Votre session a expiré. Veuillez vous reconnecter.",
+    "notFoundError": "Les données demandées n'ont pas été trouvées.",
+    "permissionError": "Vous n'avez pas la permission pour cette action."
   },
   "nav": {
     "home": "Accueil",
@@ -474,7 +481,8 @@
       "first": "Premières découvertes"
     },
     "empty": "Vous n'avez encore découvert aucune espèce. Scannez votre première plante !",
-    "notDiscovered": "Non découverte"
+    "notDiscovered": "Non découverte",
+    "speciesNotFound": "Espèce végétale introuvable."
   },
   "ben": {
     "taskCreated": "Tâche créée",

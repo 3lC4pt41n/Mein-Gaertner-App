@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -29,6 +29,7 @@ import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
 import DiscoveryRevealModal from '../components/DiscoveryRevealModal';
 import { AI_COSTS } from '../services/pricingConfig';
+import { friendlyError } from '../utils/errorMessages';
 
 // Fetch zones grouped by location for the picker
 async function fetchZonesGrouped(userId) {
@@ -104,11 +105,17 @@ export default function AddPlantScreen() {
     })();
   }, []);
 
+  // Track step via ref so useFocusEffect doesn't depend on step value
+  const stepRef = useRef(step);
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
+
   // Reset to scan step when screen gains focus (so the plus button always works)
   useFocusEffect(
     useCallback(() => {
       // Only reset if we're on the "done" step — user already saved and left
-      if (step === 'done') {
+      if (stepRef.current === 'done') {
         setStep('scan');
         setName('');
         setNote('');
@@ -128,7 +135,7 @@ export default function AddPlantScreen() {
           /* silent */
         }
       })();
-    }, [step])
+    }, [])
   );
 
   // Credit error handler
@@ -178,8 +185,8 @@ export default function AddPlantScreen() {
         setStep('save');
       } catch (e) {
         if (!handleCreditError(e)) {
-          Alert.alert(t('common.error'), e.message || t('plants.unknownError'));
-          setNote(t('common.error') + ': ' + (e.message || t('plants.scanError')));
+          Alert.alert(t('common.error'), friendlyError(e));
+          setNote(t('common.error') + ': ' + friendlyError(e));
           setName('');
         }
       }
@@ -234,11 +241,19 @@ export default function AddPlantScreen() {
       try {
         discovery = await logDiscovery(userId, name, plant?.id);
       } catch (discoveryError) {
-        // Discovery logging is non-critical — plant is saved, reveal just won't show.
-        // Error is intentionally not surfaced to user but logged for diagnostics.
+        // Discovery logging failed — plant is saved.
+        // Build a fallback result so the user still sees the reveal modal.
         if (__DEV__) {
           console.warn('[AddPlant] Discovery logging failed:', discoveryError?.message);
         }
+        discovery = {
+          speciesId: null,
+          isFirst: false,
+          isNewForUser: true,
+          totalDiscoverers: 0,
+          displayName: name,
+          creditsAwarded: 0,
+        };
       }
 
       // Gardening event
@@ -263,7 +278,7 @@ export default function AddPlantScreen() {
         setShowReveal(true);
       }
     } catch (err) {
-      Alert.alert(t('common.error'), t('plants.saveFailedMessage', { message: err.message }));
+      Alert.alert(t('common.error'), friendlyError(err));
     } finally {
       setLoading(false);
     }
