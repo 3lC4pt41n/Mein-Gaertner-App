@@ -241,7 +241,17 @@
       "monthly": "Jeden Monat"
     },
     "emptyTitle": "Alles erledigt!",
-    "emptyHint": "Keine offenen Aufgaben. Erstelle eine neue oder genieße den freien Tag."
+    "emptyHint": "Keine offenen Aufgaben. Erstelle eine neue oder genieße den freien Tag.",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "yesterday": "Gestern",
+    "daysOverdue": "Tage überfällig",
+    "inDays": "In {{count}} Tagen",
+    "completed": "Erledigt",
+    "skipped": "Übersprungen",
+    "skipTitle": "Aufgabe überspringen?",
+    "skipMessage": "Die Aufgabe wird als übersprungen markiert.",
+    "skip": "Überspringen"
   },
   "assistant": {
     "placeholder": "Schreib Ben eine Nachricht …",

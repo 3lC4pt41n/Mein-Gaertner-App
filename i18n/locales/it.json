@@ -241,7 +241,17 @@
       "monthly": "Ogni mese"
     },
     "emptyTitle": "Tutto fatto!",
-    "emptyHint": "Nessuna attività in sospeso. Creane una nuova o goditi la giornata."
+    "emptyHint": "Nessuna attività in sospeso. Creane una nuova o goditi la giornata.",
+    "today": "Oggi",
+    "tomorrow": "Domani",
+    "yesterday": "Ieri",
+    "daysOverdue": "giorni in ritardo",
+    "inDays": "Tra {{count}} giorni",
+    "completed": "Completata",
+    "skipped": "Saltata",
+    "skipTitle": "Saltare l'attività?",
+    "skipMessage": "L'attività verrà contrassegnata come saltata.",
+    "skip": "Salta"
   },
   "assistant": {
     "placeholder": "Scrivi un messaggio a Ben …",

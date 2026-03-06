@@ -241,7 +241,17 @@
       "monthly": "Chaque mois"
     },
     "emptyTitle": "Tout est fait !",
-    "emptyHint": "Aucune tâche en attente. Créez-en une ou profitez de votre journée."
+    "emptyHint": "Aucune tâche en attente. Créez-en une ou profitez de votre journée.",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "yesterday": "Hier",
+    "daysOverdue": "jours de retard",
+    "inDays": "Dans {{count}} jours",
+    "completed": "Terminée",
+    "skipped": "Ignorée",
+    "skipTitle": "Ignorer la tâche ?",
+    "skipMessage": "La tâche sera marquée comme ignorée.",
+    "skip": "Ignorer"
   },
   "assistant": {
     "placeholder": "Écrivez un message à Ben …",

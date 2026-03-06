@@ -241,7 +241,17 @@
       "monthly": "Cada mes"
     },
     "emptyTitle": "¡Todo listo!",
-    "emptyHint": "No hay tareas pendientes. Crea una nueva o disfruta tu día libre."
+    "emptyHint": "No hay tareas pendientes. Crea una nueva o disfruta tu día libre.",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "yesterday": "Ayer",
+    "daysOverdue": "días de retraso",
+    "inDays": "En {{count}} días",
+    "completed": "Completada",
+    "skipped": "Omitida",
+    "skipTitle": "¿Omitir tarea?",
+    "skipMessage": "La tarea se marcará como omitida.",
+    "skip": "Omitir"
   },
   "assistant": {
     "placeholder": "Escribe un mensaje a Ben …",

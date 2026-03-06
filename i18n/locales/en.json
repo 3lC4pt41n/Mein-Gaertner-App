@@ -241,7 +241,17 @@
       "monthly": "Every month"
     },
     "emptyTitle": "All done!",
-    "emptyHint": "No open tasks. Create a new one or enjoy your day off."
+    "emptyHint": "No open tasks. Create a new one or enjoy your day off.",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "daysOverdue": "days overdue",
+    "inDays": "In {{count}} days",
+    "completed": "Completed",
+    "skipped": "Skipped",
+    "skipTitle": "Skip task?",
+    "skipMessage": "The task will be marked as skipped.",
+    "skip": "Skip"
   },
   "assistant": {
     "placeholder": "Write Ben a message …",
