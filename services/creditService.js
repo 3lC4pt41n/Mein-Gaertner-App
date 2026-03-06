@@ -84,8 +84,8 @@ export async function fetchCreditHistory(limit = 50) {
   } = await supabase.auth.getUser();
   if (!user) throw new Error('Nicht eingeloggt');
 
-  // Fetch all three sources in parallel
-  const [usageRes, txRes, discoveryRes] = await Promise.all([
+  // Fetch all three sources in parallel — use allSettled for partial resilience
+  const [usageResult, txResult, discoveryResult] = await Promise.allSettled([
     supabase
       .from('usage_log')
       .select('id, action, cost_credits, created_at')
@@ -108,6 +108,11 @@ export async function fetchCreditHistory(limit = 50) {
       .order('created_at', { ascending: false })
       .limit(limit),
   ]);
+
+  // Extract results — show partial data even if one source fails
+  const usageRes = usageResult.status === 'fulfilled' ? usageResult.value : { data: [] };
+  const txRes = txResult.status === 'fulfilled' ? txResult.value : { data: [] };
+  const discoveryRes = discoveryResult.status === 'fulfilled' ? discoveryResult.value : { data: [] };
 
   const entries = [];
 

@@ -129,6 +129,19 @@ export async function logDiscovery(userId, speciesName, plantId = null, location
     }
   }
 
+  // 2b. Update species.total_discoverers counter in the database
+  if (isNewForUser) {
+    const { error: updateError } = await supabase
+      .from('species')
+      .update({ total_discoverers: totalDiscoverers })
+      .eq('id', speciesId);
+
+    if (updateError) {
+      // Non-critical — counter will be slightly off but discovery is still valid
+      console.warn('Failed to update total_discoverers:', updateError.message);
+    }
+  }
+
   // 3. Credit-Belohnung für Neuentdeckungen (sichere DB-Funktion)
   let creditsAwarded = 0;
   if (isNewForUser) {

@@ -61,7 +61,7 @@ export default function AssistantScreen() {
         try {
           const { data: signedData, error: signedError } = await supabase.storage
             .from('chat-images')
-            .createSignedUrl(avatarPath, 60 * 60 * 24 * 7);
+            .createSignedUrl(avatarPath, 60 * 60 * 24 * 30);
 
           if (!signedError && signedData?.signedUrl) {
             setUserAvatarUrl(signedData.signedUrl);
@@ -211,7 +211,8 @@ export default function AssistantScreen() {
     if (sender === GARDENER_NAME) return require('../assets/avatars/ben.png');
     if (sender === 'user' && userAvatarUrl) return { uri: userAvatarUrl };
     if (sender === 'user') return require('../assets/avatars/tim.png');
-    return null;
+    // Fallback: All bot/system senders get the gardener avatar
+    return require('../assets/avatars/ben.png');
   };
 
   // Bubble

@@ -1,5 +1,5 @@
 // screens/PlantDetailScreen.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   SectionList,
   Alert,
 } from 'react-native';
+import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../supabase';
@@ -28,7 +29,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { generatePlantDetails, performHealthcheck } from '../services/aiService';
-import { uploadPlantImage } from '../services/uploadService';
+import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -106,6 +107,19 @@ export default function PlantDetailScreen({ route }) {
   const [runningHealthcheck, setRunningHealthcheck] = useState(false);
   const [galleryKey, setGalleryKey] = useState(0);
 
+  // Resolved image URL (handles both legacy URLs and storage paths)
+  const [resolvedImageUrl, setResolvedImageUrl] = useState(
+    plant.image_url?.startsWith('http') ? plant.image_url : null
+  );
+
+  useEffect(() => {
+    if (plant.image_url && !plant.image_url.startsWith('http')) {
+      getPlantImageUrl(plant.image_url).then((url) => {
+        if (url) setResolvedImageUrl(url);
+      });
+    }
+  }, [plant.image_url]);
+
   // --- Zone-Picker States ---
   const [sections, setSections] = useState([]);
   const [zonesLoading, setZonesLoading] = useState(false);
@@ -178,8 +192,10 @@ export default function PlantDetailScreen({ route }) {
     } catch {
       /* ignore */
     }
-    // Fallback: Original-Pflanzenfoto
-    if (!latestImageUrl) latestImageUrl = plant.image_url;
+    // Fallback: Original-Pflanzenfoto (resolve on-demand if path)
+    if (!latestImageUrl) {
+      latestImageUrl = resolvedImageUrl || (await getPlantImageUrl(plant.image_url));
+    }
 
     const runWithPhoto = async (imageUrl) => {
       setRunningHealthcheck(true);
@@ -188,7 +204,7 @@ export default function PlantDetailScreen({ route }) {
         if (result) {
           // Save healthcheck to database (not just React state)
           const hc = result.healthcheck || result;
-          if (hc && typeof hc.healthscore === 'number' && hc.healthscore > 0) {
+          if (hc && typeof hc.healthscore === 'number' && hc.healthscore >= 0) {
             await saveHealthcheck({
               plant_id: plant.id,
               user_id: userId,
@@ -229,20 +245,21 @@ export default function PlantDetailScreen({ route }) {
         });
         if (result.canceled) return;
         const uri = result.assets[0].uri;
-        // Foto hochladen + als Galerie-Eintrag speichern
-        const imageUrl = await uploadPlantImage(uri, userId);
+        // Foto hochladen — returns storage path (not URL)
+        const imagePath = await uploadPlantImage(uri, userId);
         await supabase.from('plant_diary').insert({
           plant_id: plant.id,
           user_id: userId,
           type: 'healthcheck',
           title: t('plants.healthcheckPhoto'),
           note: '',
-          image_url: imageUrl,
+          image_url: imagePath,
         });
         setGalleryKey((k) => k + 1);
         setDiaryKey((k) => k + 1);
-        // Healthcheck mit dem neuen Foto
-        await runWithPhoto(imageUrl);
+        // On-demand URL fuer AI-Healthcheck
+        const displayUrl = await getPlantImageUrl(imagePath);
+        await runWithPhoto(displayUrl);
       } catch (e) {
         Alert.alert(t('common.error'), e.message);
       }
@@ -265,7 +282,7 @@ export default function PlantDetailScreen({ route }) {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(t('common.error'), t('feedback.galleryPermission'));
+        Alert.alert(t('common.error'), t('gallery.permission'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -290,6 +307,7 @@ export default function PlantDetailScreen({ route }) {
       });
       setGalleryKey((k) => k + 1);
       setDiaryKey((k) => k + 1);
+      Alert.alert(t('common.success'), t('gallery.photoAdded'));
     } catch (e) {
       Alert.alert(t('common.error'), e.message);
     }
@@ -370,6 +388,129 @@ export default function PlantDetailScreen({ route }) {
     ]);
   };
 
+  // --- Memoized callbacks for tabs ---
+  const memoizedHandleStartHealthcheck = useCallback(() => {
+    handleStartHealthcheck();
+  }, [handleStartHealthcheck]);
+
+  const memoizedHandleGenerateDetails = useCallback(() => {
+    handleGenerateDetails();
+  }, [handleGenerateDetails]);
+
+  // --- Memoized tab content to prevent re-renders when switching tabs ---
+  const healthTabContent = useMemo(() => {
+    if (loading) return <ActivityIndicator color={colors.primaryLight} />;
+    if (healthcheck) {
+      return (
+        <View>
+          <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
+          <Text
+            style={{
+              textAlign: 'center',
+              fontSize: 18,
+              marginBottom: spacing.sm,
+              color: colors.textSecondary,
+            }}
+          >
+            {healthcheck.summary}
+          </Text>
+          <View style={{ marginBottom: spacing.lg }}>
+            {Array.isArray(healthcheck.table_json) &&
+              healthcheck.table_json.map((row, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    borderBottomWidth: idx === healthcheck.table_json.length - 1 ? 0 : 1,
+                    borderBottomColor: colors.border,
+                    paddingVertical: spacing.sm,
+                  }}
+                >
+                  <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
+                    {row.Kriterium}{' '}
+                    <Text style={{ color: colors.primaryLight }}>{row.Bewertung}/100</Text>
+                  </Text>
+                  <Text style={{ fontSize: 14, color: colors.textSecondary }}>
+                    Beobachtung:{' '}
+                    <Text style={{ color: colors.textPrimary }}>{row.Beobachtung}</Text>
+                  </Text>
+                  {row.Begründung && (
+                    <Text style={{ fontSize: 12, color: colors.textTertiary }}>
+                      Grund: {row.Begründung}
+                    </Text>
+                  )}
+                </View>
+              ))}
+          </View>
+          <Text
+            style={{
+              fontStyle: 'italic',
+              color: colors.info,
+              fontWeight: 'bold',
+              fontSize: 14,
+              textAlign: 'center',
+            }}
+          >
+            {healthcheck.recommendation}
+          </Text>
+        </View>
+      );
+    }
+    return (
+      <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
+        <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
+          {t('plants.noHealthcheck')}
+        </Text>
+        <DSButton
+          variant="primary"
+          icon="fitness-outline"
+          onPress={memoizedHandleStartHealthcheck}
+          disabled={runningHealthcheck}
+          size="sm"
+        >
+          {runningHealthcheck ? t('common.loading') : t('plants.startHealthcheck')}
+        </DSButton>
+      </View>
+    );
+  }, [loading, healthcheck, runningHealthcheck, memoizedHandleStartHealthcheck]);
+
+  const detailsTabContent = useCallback(
+    (tabKey) => {
+      if (details[tabKey]) {
+        return (
+          <View>
+            {Object.entries(details[tabKey]).map(([k, v]) => (
+              <View key={k} style={{ marginBottom: spacing.md }}>
+                <Text style={{ fontWeight: 'bold', color: colors.textPrimary, fontSize: 14 }}>
+                  {k}
+                </Text>
+                <Text style={{ marginLeft: spacing.xs, color: colors.textSecondary }}>{v}</Text>
+              </View>
+            ))}
+          </View>
+        );
+      }
+      return (
+        <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
+          <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
+            {t('plants.noDetails')}
+          </Text>
+          {!plantDetails && (
+            <DSButton
+              variant="secondary"
+              icon="document-text-outline"
+              onPress={memoizedHandleGenerateDetails}
+              disabled={generatingDetails}
+              size="sm"
+            >
+              {generatingDetails ? t('common.loading') : t('plants.generateDetails')}
+            </DSButton>
+          )}
+        </View>
+      );
+    },
+    [details, plantDetails, generatingDetails, memoizedHandleGenerateDetails]
+  );
+
   const width = Math.min(Dimensions.get('window').width, 500) - 40;
 
   return (
@@ -382,9 +523,9 @@ export default function PlantDetailScreen({ route }) {
     >
       {/* Bild + Name */}
       <View style={styles.card}>
-        {plant.image_url && (
+        {resolvedImageUrl && (
           <Image
-            source={{ uri: plant.image_url }}
+            source={{ uri: resolvedImageUrl }}
             style={{
               width: width,
               height: (width * 2) / 3,
@@ -518,109 +659,10 @@ export default function PlantDetailScreen({ route }) {
         <PlantTasksList plantId={plant.id} plantName={plant.name} userId={userId} />
       )}
 
-      {/* Tab Content (care, health, overview) */}
+      {/* Tab Content (care, health, overview) — memoized for performance */}
       {tab !== 'diary' && tab !== 'gallery' && tab !== 'tasks' && (
         <View style={styles.card}>
-          {tab === 'health' ? (
-            loading ? (
-              <ActivityIndicator color={colors.primaryLight} />
-            ) : healthcheck ? (
-              <View>
-                <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontSize: 18,
-                    marginBottom: spacing.sm,
-                    color: colors.textSecondary,
-                  }}
-                >
-                  {healthcheck.summary}
-                </Text>
-                <View style={{ marginBottom: spacing.lg }}>
-                  {Array.isArray(healthcheck.table_json) &&
-                    healthcheck.table_json.map((row, idx) => (
-                      <View
-                        key={idx}
-                        style={{
-                          borderBottomWidth: idx === healthcheck.table_json.length - 1 ? 0 : 1,
-                          borderBottomColor: colors.border,
-                          paddingVertical: spacing.sm,
-                        }}
-                      >
-                        <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
-                          {row.Kriterium}{' '}
-                          <Text style={{ color: colors.primaryLight }}>{row.Bewertung}/100</Text>
-                        </Text>
-                        <Text style={{ fontSize: 14, color: colors.textSecondary }}>
-                          Beobachtung:{' '}
-                          <Text style={{ color: colors.textPrimary }}>{row.Beobachtung}</Text>
-                        </Text>
-                        {row.Begründung && (
-                          <Text style={{ fontSize: 12, color: colors.textTertiary }}>
-                            Grund: {row.Begründung}
-                          </Text>
-                        )}
-                      </View>
-                    ))}
-                </View>
-                <Text
-                  style={{
-                    fontStyle: 'italic',
-                    color: colors.info,
-                    fontWeight: 'bold',
-                    fontSize: 14,
-                    textAlign: 'center',
-                  }}
-                >
-                  {healthcheck.recommendation}
-                </Text>
-              </View>
-            ) : (
-              <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
-                <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
-                  {t('plants.noHealthcheck')}
-                </Text>
-                <DSButton
-                  variant="primary"
-                  icon="fitness-outline"
-                  onPress={handleStartHealthcheck}
-                  disabled={runningHealthcheck}
-                  size="sm"
-                >
-                  {runningHealthcheck ? t('common.loading') : t('plants.startHealthcheck')}
-                </DSButton>
-              </View>
-            )
-          ) : details[tab] ? (
-            <View>
-              {Object.entries(details[tab]).map(([k, v]) => (
-                <View key={k} style={{ marginBottom: spacing.md }}>
-                  <Text style={{ fontWeight: 'bold', color: colors.textPrimary, fontSize: 14 }}>
-                    {k}
-                  </Text>
-                  <Text style={{ marginLeft: spacing.xs, color: colors.textSecondary }}>{v}</Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
-              <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
-                {t('plants.noDetails')}
-              </Text>
-              {!plantDetails && (
-                <DSButton
-                  variant="secondary"
-                  icon="document-text-outline"
-                  onPress={handleGenerateDetails}
-                  disabled={generatingDetails}
-                  size="sm"
-                >
-                  {generatingDetails ? t('common.loading') : t('plants.generateDetails')}
-                </DSButton>
-              )}
-            </View>
-          )}
+          {tab === 'health' ? healthTabContent : detailsTabContent(tab)}
         </View>
       )}
 
@@ -734,6 +776,21 @@ export default function PlantDetailScreen({ route }) {
     </ScrollView>
   );
 }
+
+PlantDetailScreen.propTypes = {
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      plant: PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string,
+        note: PropTypes.string,
+        image_url: PropTypes.string,
+        zone_id: PropTypes.string,
+        details: PropTypes.object,
+      }).isRequired,
+    }).isRequired,
+  }).isRequired,
+};
 
 const styles = StyleSheet.create({
   card: {

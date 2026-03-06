@@ -5,9 +5,27 @@
 
 const IS_DEV = process.env.APP_VARIANT === 'development';
 
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY || '';
+
 module.exports = ({ config }) => {
   return {
     ...config,
+    ios: {
+      ...config.ios,
+      config: {
+        ...config.ios?.config,
+        googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+      },
+    },
+    android: {
+      ...config.android,
+      config: {
+        ...config.android?.config,
+        googleMaps: {
+          apiKey: GOOGLE_MAPS_API_KEY,
+        },
+      },
+    },
     extra: {
       ...config.extra,
       // Sentry DSN from EAS Secrets (set via `eas secret:create`)

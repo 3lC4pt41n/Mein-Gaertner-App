@@ -137,6 +137,7 @@
     "noHealthcheck": "No hay chequeo de salud disponible.",
     "startHealthcheck": "Iniciar chequeo de salud",
     "healthcheckDone": "¡Chequeo de salud completado!",
+    "healthcheckParseError": "El chequeo de salud no se pudo evaluar. Inténtalo de nuevo.",
     "noImageForHealthcheck": "No hay foto disponible para el chequeo de salud.",
     "healthcheckPhotoTitle": "Foto para el diagnóstico",
     "healthcheckPhotoMessage": "¿Qué foto usar para el diagnóstico?",
@@ -467,7 +468,9 @@
     "noPhotosHint": "Las fotos del diario aparecerán aquí.",
     "photoCount": "{{current}} / {{total}}",
     "addPhoto": "Añadir foto",
-    "plantPhoto": "Foto de la planta"
+    "plantPhoto": "Foto de la planta",
+    "permission": "Se requiere acceso a la biblioteca de fotos.",
+    "photoAdded": "La foto se ha añadido a la galería."
   },
   "calendar": {
     "title": "Calendario",
@@ -486,7 +489,9 @@
     "regions": "Regiones",
     "yourStats": "Tú: {{total}} descubrimientos, {{firsts}} primeros hallazgos",
     "emptyTitle": "Sin datos aún",
-    "emptyHint": "Cuando los jardineros compartan sus descubrimientos, aparecerán aquí en el mapa."
+    "emptyHint": "Cuando los jardineros compartan sus descubrimientos, aparecerán aquí en el mapa.",
+    "mapUnavailable": "Mapa no disponible",
+    "mapUnavailableHint": "La vista del mapa no se pudo cargar. Inténtalo de nuevo más tarde."
   },
   "dex": {
     "title": "Planta-Dex",
@@ -556,6 +561,7 @@
     "avatarUpdating": "Creando avatar…",
     "profileSaved": "¡Perfil guardado!",
     "profileSaveError": "No se pudo guardar el perfil.",
+    "displayNameSaveError": "No se pudo guardar el nombre de visualización.",
     "preferencesSection": "Preferencias",
     "language": "Idioma",
     "notifications": "Notificaciones",

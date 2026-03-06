@@ -5,16 +5,90 @@
  * Only opted-in users' data is shown (heatmap_opt_in = true).
  * Coordinates are grid-aggregated (~1 km²) for privacy.
  */
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import React, { useEffect, useState, useMemo, useCallback, useRef, Component } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Platform,
+  TouchableOpacity,
+} from 'react-native';
 import MapView, { Circle, Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { fetchHeatmapGrid, fetchDiscoveryStats } from '../services/discoveryService';
 import { requestLocationPermission } from '../services/weatherService';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../i18n';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSCard from '../theme/DSCard';
+
+// ── Maps API Key validation ──────────────────────────────────────
+// Native MapView crashes fatally without a valid key — ErrorBoundary
+// can't catch that. Check upfront and show fallback UI instead.
+const MAPS_KEY_AVAILABLE = (() => {
+  const iosKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey;
+  const androidKey = Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
+  const key = Platform.OS === 'ios' ? iosKey : androidKey;
+  // Placeholder or empty = not configured
+  return !!key && key !== 'GOOGLE_MAPS_API_KEY';
+})();
+
+// ── Error Boundary for MapView crashes ──────────────────────────────
+class MapErrorBoundary extends Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, info) {
+    console.warn('MapView crashed:', error, info?.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+          <Ionicons name="map-outline" size={48} color={colors.textTertiary} />
+          <Text
+            style={{
+              marginTop: 12,
+              fontSize: 16,
+              fontWeight: '600',
+              color: colors.textPrimary,
+              textAlign: 'center',
+            }}
+          >
+            {t('heatmap.mapUnavailable') || 'Karte nicht verfügbar'}
+          </Text>
+          <Text
+            style={{ marginTop: 8, fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}
+          >
+            {t('heatmap.mapUnavailableHint') ||
+              'Die Karte konnte nicht geladen werden. Bitte versuche es später erneut.'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => this.setState({ hasError: false })}
+            style={{
+              marginTop: 16,
+              paddingVertical: 10,
+              paddingHorizontal: 24,
+              backgroundColor: colors.primary,
+              borderRadius: 20,
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: '600' }}>
+              {t('common.retry') || 'Erneut versuchen'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ── Colour scale for heat circles ──────────────────────────────────
 const HEAT_COLORS = [
@@ -119,40 +193,54 @@ export default function HeatmapScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Map */}
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={initialRegion}
-        showsUserLocation
-        showsMyLocationButton={Platform.OS === 'android'}
-        mapType="standard"
-      >
-        {grid.map((cell) => (
-          <Circle
-            key={`${cell.grid_lat}-${cell.grid_lon}`}
-            center={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
-            radius={heatRadius(cell.discovery_count)}
-            fillColor={heatColor(cell.discovery_count)}
-            strokeColor="transparent"
-          />
-        ))}
-
-        {/* Markers for high-activity cells */}
-        {grid
-          .filter((c) => c.discovery_count >= 5)
-          .map((cell) => (
-            <Marker
-              key={`m-${cell.grid_lat}-${cell.grid_lon}`}
-              coordinate={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
-              anchor={{ x: 0.5, y: 0.5 }}
-            >
-              <View style={styles.markerBubble}>
-                <Text style={styles.markerText}>{cell.discovery_count}</Text>
-              </View>
-            </Marker>
+      {/* Map — key validated + ErrorBoundary to prevent fatal crashes */}
+      {!MAPS_KEY_AVAILABLE ? (
+        <View style={styles.center}>
+          <Ionicons name="map-outline" size={48} color={colors.textTertiary} />
+          <Text style={{ marginTop: 12, fontSize: 16, fontWeight: '600', color: colors.textPrimary, textAlign: 'center' }}>
+            {t('heatmap.mapUnavailable')}
+          </Text>
+          <Text style={{ marginTop: 8, fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
+            {t('heatmap.mapUnavailableHint')}
+          </Text>
+        </View>
+      ) : (
+      <MapErrorBoundary>
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          initialRegion={initialRegion}
+          showsUserLocation
+          showsMyLocationButton={Platform.OS === 'android'}
+          mapType="standard"
+        >
+          {grid.map((cell) => (
+            <Circle
+              key={`${cell.grid_lat}-${cell.grid_lon}`}
+              center={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
+              radius={heatRadius(cell.discovery_count)}
+              fillColor={heatColor(cell.discovery_count)}
+              strokeColor="transparent"
+            />
           ))}
-      </MapView>
+
+          {/* Markers for high-activity cells */}
+          {grid
+            .filter((c) => c.discovery_count >= 5)
+            .map((cell) => (
+              <Marker
+                key={`m-${cell.grid_lat}-${cell.grid_lon}`}
+                coordinate={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
+                anchor={{ x: 0.5, y: 0.5 }}
+              >
+                <View style={styles.markerBubble}>
+                  <Text style={styles.markerText}>{cell.discovery_count}</Text>
+                </View>
+              </Marker>
+            ))}
+        </MapView>
+      </MapErrorBoundary>
+      )}
 
       {/* Stats overlay */}
       <View style={styles.statsOverlay}>

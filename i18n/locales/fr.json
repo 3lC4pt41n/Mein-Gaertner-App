@@ -137,6 +137,7 @@
     "noHealthcheck": "Aucun bilan santé disponible.",
     "startHealthcheck": "Lancer le bilan santé",
     "healthcheckDone": "Bilan santé terminé !",
+    "healthcheckParseError": "Le bilan de santé n'a pas pu être évalué. Veuillez réessayer.",
     "noImageForHealthcheck": "Aucune photo disponible pour le bilan santé.",
     "healthcheckPhotoTitle": "Photo pour le bilan",
     "healthcheckPhotoMessage": "Quelle photo utiliser pour le bilan de santé ?",
@@ -467,7 +468,9 @@
     "noPhotosHint": "Les photos du journal apparaîtront ici.",
     "photoCount": "{{current}} / {{total}}",
     "addPhoto": "Ajouter une photo",
-    "plantPhoto": "Photo de la plante"
+    "plantPhoto": "Photo de la plante",
+    "permission": "L'accès à la photothèque est requis.",
+    "photoAdded": "La photo a été ajoutée à la galerie."
   },
   "calendar": {
     "title": "Calendrier",
@@ -486,7 +489,9 @@
     "regions": "Régions",
     "yourStats": "Vous : {{total}} découvertes, {{firsts}} premières",
     "emptyTitle": "Aucune donnée",
-    "emptyHint": "Quand les jardiniers partagent leurs découvertes, elles apparaissent ici."
+    "emptyHint": "Quand les jardiniers partagent leurs découvertes, elles apparaissent ici.",
+    "mapUnavailable": "Carte non disponible",
+    "mapUnavailableHint": "La vue de la carte n'a pas pu être chargée. Veuillez réessayer plus tard."
   },
   "dex": {
     "title": "Plante-Dex",
@@ -556,6 +561,7 @@
     "avatarUpdating": "Création de l'avatar…",
     "profileSaved": "Profil enregistré !",
     "profileSaveError": "Impossible d'enregistrer le profil.",
+    "displayNameSaveError": "Le nom d'affichage n'a pas pu être enregistré.",
     "preferencesSection": "Préférences",
     "language": "Langue",
     "notifications": "Notifications",

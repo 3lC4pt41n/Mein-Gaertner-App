@@ -1,11 +1,12 @@
 // components/PlantTasksList.js
 // Displays tasks filtered by a specific plant — used inside PlantDetailScreen's "tasks" tab.
 import React, { useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../supabase';
-import { completeTask, skipTask } from '../services/taskService';
+import { completeTask, skipTask, createTask, createRecurringTask } from '../services/taskService';
 import { resolveTaskType } from '../constants/taskTypes';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
@@ -98,9 +99,31 @@ export default function PlantTasksList({ plantId, plantName, userId }) {
     ]);
   };
 
-  const handleTaskSaved = () => {
-    setShowDialog(false);
-    load();
+  const handleTaskSaved = async ({ type, due_at, note, plant_id, recurring, interval_days }) => {
+    try {
+      if (recurring && interval_days) {
+        await createRecurringTask({
+          plant_id: plant_id || plantId,
+          user_id: userId,
+          type,
+          due_at,
+          note,
+          interval_days,
+        });
+      } else {
+        await createTask({
+          plant_id: plant_id || plantId,
+          user_id: userId,
+          type,
+          due_at,
+          note,
+        });
+      }
+      setShowDialog(false);
+      await load();
+    } catch (e) {
+      Alert.alert(t('common.error'), t('tasks.createFailed') + ': ' + e.message);
+    }
   };
 
   const dueTasks = tasks.filter((tk) => tk.state === 'DUE');
@@ -308,3 +331,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 });
+
+PlantTasksList.propTypes = {
+  plantId: PropTypes.string.isRequired,
+  plantName: PropTypes.string.isRequired,
+  userId: PropTypes.string.isRequired,
+};

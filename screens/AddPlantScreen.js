@@ -14,7 +14,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { savePlantToSupabase, saveHealthcheck } from '../services/plantService';
-import { uploadPlantImage } from '../services/uploadService';
+import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
 import { recognizePlant, generatePlantDetails, performHealthcheck } from '../services/aiService';
 import { fetchBalance } from '../services/creditService';
 import { logDiscovery, getDiscoveryLocation } from '../services/discoveryService';
@@ -215,10 +215,10 @@ export default function AddPlantScreen() {
     }
     setLoading(true);
 
-    // Upload image
-    let uploadedUrl = null;
+    // Upload image — returns storage path (not signed URL)
+    let uploadedPath = null;
     try {
-      uploadedUrl = await uploadPlantImage(imageUri, userId);
+      uploadedPath = await uploadPlantImage(imageUri, userId);
     } catch (e) {
       Alert.alert(t('plants.uploadError'), e.message);
       setLoading(false);
@@ -230,7 +230,7 @@ export default function AddPlantScreen() {
       const plant = await savePlantToSupabase({
         name,
         note,
-        image: uploadedUrl,
+        image: uploadedPath,
         user_id: userId,
         details: null,
         ...(selectedZone ? { zone_id: selectedZone.id } : {}),
@@ -242,19 +242,12 @@ export default function AddPlantScreen() {
         const location = await getDiscoveryLocation();
         discovery = await logDiscovery(userId, name, plant?.id, location);
       } catch (discoveryError) {
-        // Discovery logging failed — plant is saved.
-        // Build a fallback result so the user still sees the reveal modal.
+        // Discovery logging failed — plant is saved, but we do NOT fake a discovery.
+        // The reveal modal only shows for real, verified discoveries.
         if (__DEV__) {
           console.warn('[AddPlant] Discovery logging failed:', discoveryError?.message);
         }
-        discovery = {
-          speciesId: null,
-          isFirst: false,
-          isNewForUser: true,
-          totalDiscoverers: 0,
-          displayName: name,
-          creditsAwarded: 0,
-        };
+        discovery = null;
       }
 
       // Gardening event
@@ -270,7 +263,9 @@ export default function AddPlantScreen() {
         // Non-critical — continue silently
       }
 
-      setSavedPlant({ ...plant, image_url: uploadedUrl });
+      // Generate display URL on-demand for immediate UI
+      const displayUrl = await getPlantImageUrl(uploadedPath);
+      setSavedPlant({ ...plant, image_url: displayUrl });
       setStep('done');
 
       // Show discovery reveal for new discoveries

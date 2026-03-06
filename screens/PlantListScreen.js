@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchPlants } from '../services/plantService';
+import { getPlantImageUrls } from '../services/uploadService';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -57,9 +58,14 @@ async function getPlantsWithHealthscores(userId) {
     }
   }
 
-  // Merge healthscores into plants
-  const plantsWithScores = plants.map((plant) => ({
+  // Batch-resolve storage paths → signed URLs (1 API call)
+  const rawUrls = plants.map((p) => p.image_url);
+  const resolvedUrls = await getPlantImageUrls(rawUrls);
+
+  // Merge healthscores + resolved URLs into plants
+  const plantsWithScores = plants.map((plant, i) => ({
     ...plant,
+    image_url: resolvedUrls[i] || plant.image_url,
     healthscore: healthscoreMap[plant.id] ?? null,
   }));
 
@@ -133,64 +139,89 @@ export default function PlantListScreen() {
     }
   };
 
-  // Einzelnes Plant-Item
-  const renderPlantItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('PlantDetail', { plant: item })}>
-      <View style={styles.plantCardContainer}>
-        {item.image_url ? (
-          <Image source={{ uri: item.image_url }} style={styles.plantImage} />
-        ) : (
-          <View style={styles.plantImagePlaceholder}>
-            <Text>🌱</Text>
-          </View>
-        )}
-        <View style={styles.plantTextContainer}>
-          <Text style={styles.plantName}>{item.name || '?'}</Text>
-          <Text style={styles.plantNote}>{item.note}</Text>
-          {item.healthscore !== null && (
-            <Text style={styles.plantHealthscore}>
-              {t('plants.healthscoreValue', { score: item.healthscore })}
-            </Text>
+  // Einzelnes Plant-Item — stable reference for FlatList performance
+  const renderPlantItem = useCallback(
+    ({ item }) => (
+      <TouchableOpacity onPress={() => navigation.navigate('PlantDetail', { plant: item })}>
+        <View style={styles.plantCardContainer}>
+          {item.image_url ? (
+            <Image source={{ uri: item.image_url }} style={styles.plantImage} />
+          ) : (
+            <View style={styles.plantImagePlaceholder}>
+              <Text>🌱</Text>
+            </View>
           )}
+          <View style={styles.plantTextContainer}>
+            <Text style={styles.plantName}>{item.name || '?'}</Text>
+            <Text style={styles.plantNote}>{item.note}</Text>
+            {item.healthscore !== null && (
+              <Text style={styles.plantHealthscore}>
+                {t('plants.healthscoreValue', { score: item.healthscore })}
+              </Text>
+            )}
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    ),
+    [navigation]
   );
 
-  // "Alle"-Tab
-  const AllRoute = () =>
-    loading ? (
-      <ActivityIndicator size="large" color={colors.primaryLight} style={styles.loadingIndicator} />
-    ) : error ? (
-      <ErrorState message={error} onRetry={loadAll} />
-    ) : (
-      <FlatList
-        data={allPlants}
-        keyExtractor={(item) => item.id?.toString()}
-        renderItem={renderPlantItem}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              loadAll();
-            }}
-          />
-        }
-        ListEmptyComponent={
-          !loading && (
-            <EmptyState
-              icon="leaf-outline"
-              title={t('plants.noPlants')}
-              message={t('plants.scanFirstPlant')}
-              actionLabel={t('plants.scanFirstPlant')}
-              actionIcon="camera-outline"
-              onAction={() => navigation.navigate('Pflanze hinzufügen')}
-            />
-          )
-        }
-      />
-    );
+  // Stable keyExtractor — avoid recreating on every render
+  const keyExtractor = useCallback((item) => item.id?.toString(), []);
+
+  // Stable refresh handler
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadAll();
+  }, [loadAll]);
+
+  // "Alle"-Tab — memoized to prevent re-creation on every render (critical for TabView)
+  const AllRoute = useCallback(
+    () =>
+      loading ? (
+        <ActivityIndicator
+          size="large"
+          color={colors.primaryLight}
+          style={styles.loadingIndicator}
+        />
+      ) : error ? (
+        <ErrorState message={error} onRetry={loadAll} />
+      ) : (
+        <FlatList
+          data={allPlants}
+          keyExtractor={keyExtractor}
+          renderItem={renderPlantItem}
+          removeClippedSubviews={Platform.OS !== 'web'}
+          windowSize={7}
+          maxToRenderPerBatch={10}
+          initialNumToRender={10}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListEmptyComponent={
+            !loading && (
+              <EmptyState
+                icon="leaf-outline"
+                title={t('plants.noPlants')}
+                message={t('plants.scanFirstPlant')}
+                actionLabel={t('plants.scanFirstPlant')}
+                actionIcon="camera-outline"
+                onAction={() => navigation.navigate('Pflanze hinzufügen')}
+              />
+            )
+          }
+        />
+      ),
+    [
+      loading,
+      error,
+      allPlants,
+      refreshing,
+      renderPlantItem,
+      keyExtractor,
+      onRefresh,
+      loadAll,
+      navigation,
+    ]
+  );
 
   // "Zuhause"-Tab: Accordion Location > Zone > Pflanzen
   const toggleZone = (zoneId) => {
@@ -198,71 +229,89 @@ export default function PlantListScreen() {
     setExpandedZones((prev) => ({ ...prev, [zoneId]: !prev[zoneId] }));
   };
 
-  const HomesRoute = () =>
-    loading ? (
-      <ActivityIndicator size="large" color={colors.primaryLight} style={styles.loadingIndicator} />
-    ) : (
-      <ScrollView style={styles.homesScrollView}>
-        {grouped.length === 0 && (
-          <Text style={styles.noLocationsText}>{t('plants.noLocations')}</Text>
-        )}
-        {grouped.map((location) => (
-          <View key={location.id} style={styles.locationContainer}>
-            <Text style={styles.locationName}>{location.name}</Text>
-            {location.zones.map((zone) => (
-              <View key={zone.id} style={styles.zoneAccordionContainer}>
-                <TouchableOpacity
-                  onPress={() => toggleZone(zone.id)}
-                  style={styles.zoneAccordionHeader}
-                >
-                  <Text style={styles.zoneTitle}>{zone.name}</Text>
-                  <Text style={styles.zoneCount}>
-                    {t('plants.plantsCount', { count: zone.plants.length })}
-                  </Text>
-                  <Text style={styles.zoneExpandIcon}>{expandedZones[zone.id] ? '▲' : '▼'}</Text>
-                </TouchableOpacity>
-                {expandedZones[zone.id] && (
-                  <View style={styles.zoneContentContainer}>
-                    {zone.plants.length > 0 ? (
-                      zone.plants.map((plant) => (
-                        <TouchableOpacity
-                          key={plant.id}
-                          onPress={() => navigation.navigate('PlantDetail', { plant })}
-                        >
-                          <View style={styles.zonePlantItemRow}>
-                            {plant.image_url ? (
-                              <Image
-                                source={{ uri: plant.image_url }}
-                                style={styles.zonePlantImage}
-                              />
-                            ) : (
-                              <View style={styles.zonePlantImagePlaceholder}>
-                                <Text>🌱</Text>
-                              </View>
-                            )}
-                            <View>
-                              <Text style={styles.zonePlantName}>{plant.name}</Text>
-                              <Text style={styles.zonePlantNote}>{plant.note}</Text>
-                              {plant.healthscore !== null && (
-                                <Text style={styles.zonePlantHealthscore}>
-                                  {t('plants.healthscoreValue', { score: plant.healthscore })}
-                                </Text>
+  // "Zuhause"-Tab — memoized for TabView performance
+  const HomesRoute = useCallback(
+    () =>
+      loading ? (
+        <ActivityIndicator
+          size="large"
+          color={colors.primaryLight}
+          style={styles.loadingIndicator}
+        />
+      ) : (
+        <ScrollView style={styles.homesScrollView}>
+          {grouped.length === 0 && (
+            <Text style={styles.noLocationsText}>{t('plants.noLocations')}</Text>
+          )}
+          {grouped.map((location) => (
+            <View key={location.id} style={styles.locationContainer}>
+              <Text style={styles.locationName}>{location.name}</Text>
+              {location.zones.map((zone) => (
+                <View key={zone.id} style={styles.zoneAccordionContainer}>
+                  <TouchableOpacity
+                    onPress={() => toggleZone(zone.id)}
+                    style={styles.zoneAccordionHeader}
+                  >
+                    <Text style={styles.zoneTitle}>{zone.name}</Text>
+                    <Text style={styles.zoneCount}>
+                      {t('plants.plantsCount', { count: zone.plants.length })}
+                    </Text>
+                    <Text style={styles.zoneExpandIcon}>{expandedZones[zone.id] ? '▲' : '▼'}</Text>
+                  </TouchableOpacity>
+                  {expandedZones[zone.id] && (
+                    <View style={styles.zoneContentContainer}>
+                      {zone.plants.length > 0 ? (
+                        zone.plants.map((plant) => (
+                          <TouchableOpacity
+                            key={plant.id}
+                            onPress={() => navigation.navigate('PlantDetail', { plant })}
+                          >
+                            <View style={styles.zonePlantItemRow}>
+                              {plant.image_url ? (
+                                <Image
+                                  source={{ uri: plant.image_url }}
+                                  style={styles.zonePlantImage}
+                                />
+                              ) : (
+                                <View style={styles.zonePlantImagePlaceholder}>
+                                  <Text>🌱</Text>
+                                </View>
                               )}
+                              <View>
+                                <Text style={styles.zonePlantName}>{plant.name}</Text>
+                                <Text style={styles.zonePlantNote}>{plant.note}</Text>
+                                {plant.healthscore !== null && (
+                                  <Text style={styles.zonePlantHealthscore}>
+                                    {t('plants.healthscoreValue', { score: plant.healthscore })}
+                                  </Text>
+                                )}
+                              </View>
                             </View>
-                          </View>
-                        </TouchableOpacity>
-                      ))
-                    ) : (
-                      <Text style={styles.noZonePlantsText}>{t('plants.noZonePlants')}</Text>
-                    )}
-                  </View>
-                )}
-              </View>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
-    );
+                          </TouchableOpacity>
+                        ))
+                      ) : (
+                        <Text style={styles.noZonePlantsText}>{t('plants.noZonePlants')}</Text>
+                      )}
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          ))}
+        </ScrollView>
+      ),
+    [loading, grouped, expandedZones, navigation]
+  );
+
+  // Memoize scene map so TabView doesn't recreate scenes
+  const renderScene = useMemo(
+    () =>
+      SceneMap({
+        all: AllRoute,
+        homes: HomesRoute,
+      }),
+    [AllRoute, HomesRoute]
+  );
 
   return (
     <View style={styles.screenContainer}>
@@ -283,10 +332,7 @@ export default function PlantListScreen() {
 
       <TabView
         navigationState={{ index, routes }}
-        renderScene={SceneMap({
-          all: AllRoute,
-          homes: HomesRoute,
-        })}
+        renderScene={renderScene}
         onIndexChange={setIndex}
         initialLayout={{ width: 320 }}
         renderTabBar={(props) => (

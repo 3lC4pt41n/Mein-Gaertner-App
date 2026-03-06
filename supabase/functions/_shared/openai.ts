@@ -47,6 +47,7 @@ export async function callOpenAI(params: {
   temperature?: number;
   tools?: any[];
   tool_choice?: string | { type: string };
+  response_format?: { type: string };
 }): Promise<OpenAIResponse> {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) throw new Error('OPENAI_API_KEY nicht konfiguriert');
@@ -66,6 +67,10 @@ export async function callOpenAI(params: {
 
   if (params.tool_choice) {
     body.tool_choice = params.tool_choice;
+  }
+
+  if (params.response_format) {
+    body.response_format = params.response_format;
   }
 
   const res = await fetch(OPENAI_URL, {

@@ -32,7 +32,6 @@ Sentry.init({
 
   // Sensible Defaults
   attachStacktrace: true,
-  autoSessionTracking: true,
 
   // PII filtern (DSGVO)
   sendDefaultPii: false,

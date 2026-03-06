@@ -137,6 +137,7 @@
     "noHealthcheck": "Nessun controllo salute disponibile.",
     "startHealthcheck": "Avvia controllo salute",
     "healthcheckDone": "Controllo salute completato!",
+    "healthcheckParseError": "Il controllo salute non è stato valutato. Riprova.",
     "noImageForHealthcheck": "Nessuna foto disponibile per il controllo salute.",
     "healthcheckPhotoTitle": "Foto per il controllo",
     "healthcheckPhotoMessage": "Quale foto utilizzare per il controllo salute?",
@@ -467,7 +468,9 @@
     "noPhotosHint": "Le foto dal diario appariranno qui.",
     "photoCount": "{{current}} / {{total}}",
     "addPhoto": "Aggiungi foto",
-    "plantPhoto": "Foto della pianta"
+    "plantPhoto": "Foto della pianta",
+    "permission": "È necessario l'accesso alla libreria foto.",
+    "photoAdded": "La foto è stata aggiunta alla galleria."
   },
   "calendar": {
     "title": "Calendario",
@@ -486,7 +489,9 @@
     "regions": "Regioni",
     "yourStats": "Tu: {{total}} scoperte, {{firsts}} prime scoperte",
     "emptyTitle": "Nessun dato",
-    "emptyHint": "Quando i giardinieri condivideranno le loro scoperte, appariranno qui sulla mappa."
+    "emptyHint": "Quando i giardinieri condivideranno le loro scoperte, appariranno qui sulla mappa.",
+    "mapUnavailable": "Mappa non disponibile",
+    "mapUnavailableHint": "La vista mappa non è stata caricata. Riprova più tardi."
   },
   "dex": {
     "title": "Pianta-Dex",
@@ -556,6 +561,7 @@
     "avatarUpdating": "Creazione dell'avatar…",
     "profileSaved": "Profilo salvato!",
     "profileSaveError": "Impossibile salvare il profilo.",
+    "displayNameSaveError": "Il nome visualizzato non è stato salvato.",
     "preferencesSection": "Preferenze",
     "language": "Lingua",
     "notifications": "Notifiche",

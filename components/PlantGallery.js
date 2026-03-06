@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchGallery } from '../services/diaryService';
+import { getPlantImageUrl } from '../services/uploadService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 
@@ -39,16 +41,18 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto }) {
   const loadGallery = async () => {
     try {
       setLoading(true);
+      // fetchGallery already resolves storage paths → signed URLs
       const diaryPhotos = await fetchGallery(plantId);
-      // Pflanzenbild als erstes Galerie-Element hinzufügen
       const allPhotos = [...(diaryPhotos || [])];
-      if (plantImageUrl) {
-        const hasMainPhoto = allPhotos.some((p) => p.image_url === plantImageUrl);
+      // Resolve main plant image (may be storage path)
+      const resolvedMainUrl = plantImageUrl ? await getPlantImageUrl(plantImageUrl) : null;
+      if (resolvedMainUrl) {
+        const hasMainPhoto = allPhotos.some((p) => p.image_url === resolvedMainUrl);
         if (!hasMainPhoto) {
           allPhotos.unshift({
             id: 'plant-main',
             title: t('gallery.plantPhoto'),
-            image_url: plantImageUrl,
+            image_url: resolvedMainUrl,
             created_at: new Date().toISOString(),
             type: 'discovery',
           });
@@ -361,3 +365,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
 });
+
+PlantGallery.propTypes = {
+  plantId: PropTypes.string.isRequired,
+  plantImageUrl: PropTypes.string,
+  onAddPhoto: PropTypes.func,
+};

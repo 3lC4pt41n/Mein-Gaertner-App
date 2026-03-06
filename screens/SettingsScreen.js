@@ -37,7 +37,7 @@ import { SHOW_TERMS_LINK } from '../services/featureFlags';
 async function createAvatarSignedUrl(path) {
   const { data, error } = await supabase.storage
     .from('chat-images')
-    .createSignedUrl(path, 60 * 60 * 24 * 7);
+    .createSignedUrl(path, 60 * 60 * 24 * 30);
   if (error) throw error;
   return data?.signedUrl || null;
 }
@@ -131,7 +131,14 @@ export default function SettingsScreen({ navigation }) {
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', () => {
       if (displayNameRef.current !== initialDisplayNameRef.current) {
-        updateProfile({ public_display_name: displayNameRef.current }).catch(() => {});
+        updateProfile({ public_display_name: displayNameRef.current }).catch((err) => {
+          console.warn('Auto-save display name failed:', err?.message);
+          // Show non-blocking alert so the user knows the save failed
+          Alert.alert(
+            t('common.error'),
+            t('settings.displayNameSaveError') || t('settings.profileSaveError')
+          );
+        });
       }
     });
     return unsubscribe;

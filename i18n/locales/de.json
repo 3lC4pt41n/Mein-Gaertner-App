@@ -137,6 +137,7 @@
     "noHealthcheck": "Kein Healthcheck vorhanden.",
     "startHealthcheck": "Healthcheck starten",
     "healthcheckDone": "Healthcheck abgeschlossen!",
+    "healthcheckParseError": "Der Healthcheck konnte nicht ausgewertet werden. Bitte versuche es erneut.",
     "noImageForHealthcheck": "Kein Foto vorhanden für den Healthcheck.",
     "healthcheckPhotoTitle": "Foto für Healthcheck",
     "healthcheckPhotoMessage": "Welches Foto soll für den Healthcheck verwendet werden?",
@@ -488,7 +489,9 @@
     "noPhotosHint": "Fotos aus dem Tagebuch erscheinen hier.",
     "photoCount": "{{current}} / {{total}}",
     "addPhoto": "Foto hinzufügen",
-    "plantPhoto": "Pflanzenfoto"
+    "plantPhoto": "Pflanzenfoto",
+    "permission": "Zugriff auf die Fotomediathek wird benötigt.",
+    "photoAdded": "Foto wurde zur Galerie hinzugefügt."
   },
   "calendar": {
     "title": "Kalender",
@@ -507,7 +510,9 @@
     "regions": "Regionen",
     "yourStats": "Du: {{total}} Funde, {{firsts}} Erstentdeckungen",
     "emptyTitle": "Noch keine Daten",
-    "emptyHint": "Sobald Gärtner ihre Funde teilen, erscheinen sie hier auf der Karte."
+    "emptyHint": "Sobald Gärtner ihre Funde teilen, erscheinen sie hier auf der Karte.",
+    "mapUnavailable": "Karte nicht verfügbar",
+    "mapUnavailableHint": "Die Kartenansicht konnte nicht geladen werden. Bitte versuche es später erneut."
   },
   "dex": {
     "title": "Pflanzen-Dex",
@@ -577,6 +582,7 @@
     "avatarUpdating": "Avatar wird erstellt…",
     "profileSaved": "Profil gespeichert!",
     "profileSaveError": "Profil konnte nicht gespeichert werden.",
+    "displayNameSaveError": "Anzeigename konnte nicht gespeichert werden.",
     "preferencesSection": "Einstellungen",
     "language": "Sprache",
     "notifications": "Benachrichtigungen",

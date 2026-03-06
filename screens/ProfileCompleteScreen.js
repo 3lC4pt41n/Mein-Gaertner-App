@@ -15,7 +15,7 @@ import { t } from '../i18n';
 async function createAvatarSignedUrl(path) {
   const { data, error } = await supabase.storage
     .from('chat-images')
-    .createSignedUrl(path, 60 * 60 * 24 * 7);
+    .createSignedUrl(path, 60 * 60 * 24 * 30);
   if (error) throw error;
   return data?.signedUrl || null;
 }

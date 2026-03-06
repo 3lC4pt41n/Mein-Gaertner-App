@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { uploadPlantImage } from './uploadService';
+import { uploadPlantImage, getPlantImageUrls } from './uploadService';
 
 /**
  * Add a manual diary entry (user writes note + optional photo)
@@ -46,7 +46,8 @@ export async function fetchDiaryEntries(plant_id, page = 0, limit = 20) {
 }
 
 /**
- * Fetch gallery (only entries with images)
+ * Fetch gallery (only entries with images).
+ * Resolves storage paths to on-demand signed URLs (batch, 1 API call).
  */
 export async function fetchGallery(plant_id) {
   const { data, error } = await supabase
@@ -56,5 +57,11 @@ export async function fetchGallery(plant_id) {
     .not('image_url', 'is', null)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data || [];
+  const entries = data || [];
+  if (entries.length === 0) return entries;
+
+  // Batch-resolve storage paths → signed URLs
+  const rawUrls = entries.map((e) => e.image_url);
+  const resolved = await getPlantImageUrls(rawUrls);
+  return entries.map((e, i) => ({ ...e, image_url: resolved[i] || e.image_url }));
 }

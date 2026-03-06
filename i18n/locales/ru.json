@@ -137,6 +137,7 @@
     "noHealthcheck": "Проверка здоровья недоступна.",
     "startHealthcheck": "Начать проверку здоровья",
     "healthcheckDone": "Проверка здоровья завершена!",
+    "healthcheckParseError": "Проверка здоровья не удалась. Пожалуйста, попробуйте снова.",
     "noImageForHealthcheck": "Нет фото для проверки здоровья.",
     "healthcheckPhotoTitle": "Фото для проверки",
     "healthcheckPhotoMessage": "Какое фото использовать для проверки здоровья?",
@@ -467,7 +468,9 @@
     "noPhotosHint": "Фото из дневника появятся здесь.",
     "photoCount": "{{current}} / {{total}}",
     "addPhoto": "Добавить фото",
-    "plantPhoto": "Фото растения"
+    "plantPhoto": "Фото растения",
+    "permission": "Требуется доступ к фотобиблиотеке.",
+    "photoAdded": "Фото добавлено в галерею."
   },
   "calendar": {
     "title": "Календарь",
@@ -486,7 +489,9 @@
     "regions": "Регионы",
     "yourStats": "Вы: {{total}} находок, {{firsts}} первых открытий",
     "emptyTitle": "Пока нет данных",
-    "emptyHint": "Когда садоводы поделятся своими находками, они появятся здесь на карте."
+    "emptyHint": "Когда садоводы поделятся своими находками, они появятся здесь на карте.",
+    "mapUnavailable": "Карта недоступна",
+    "mapUnavailableHint": "Не удалось загрузить карту. Пожалуйста, попробуйте позже."
   },
   "dex": {
     "title": "Растение-Дex",
@@ -556,6 +561,7 @@
     "avatarUpdating": "Создание аватара…",
     "profileSaved": "Профиль сохранён!",
     "profileSaveError": "Не удалось сохранить профиль.",
+    "displayNameSaveError": "Не удалось сохранить отображаемое имя.",
     "preferencesSection": "Параметры",
     "language": "Язык",
     "notifications": "Уведомления",

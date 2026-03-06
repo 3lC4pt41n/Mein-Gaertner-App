@@ -24,7 +24,7 @@ import {
 } from '../_shared/validate.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 
-const HEALTHCHECK_CRITERIA: Record<SupportedLanguage, string[]> = {
+const HEALTHCHECK_CRITERIA: Record<string, string[]> = {
   de: [
     'Blattfarbe & -struktur',
     'Schädlingsbefall',
@@ -70,10 +70,19 @@ const HEALTHCHECK_CRITERIA: Record<SupportedLanguage, string[]> = {
     'Sustrato y superficie',
     'Indicadores generales de cuidado',
   ],
+  ru: [
+    'Цвет и текстура листьев',
+    'Поражение вредителями',
+    'Целостность листьев',
+    'Форма роста и устойчивость',
+    'Размер горшка и растения',
+    'Субстрат и поверхность',
+    'Общие признаки ухода',
+  ],
 };
 
-function buildHealthcheckPrompt(language: SupportedLanguage, languagePromptName: string) {
-  const c = HEALTHCHECK_CRITERIA[language];
+function buildHealthcheckPrompt(language: string, languagePromptName: string) {
+  const c = HEALTHCHECK_CRITERIA[language] || HEALTHCHECK_CRITERIA['de'];
   return `Analyze the provided plant photo and run a plant health check. Return ONLY this JSON:
 
 {
@@ -164,8 +173,9 @@ serve(async (req) => {
     const languagePromptName = getLanguagePromptName(resolvedLanguage);
     const healthcheckPrompt = buildHealthcheckPrompt(resolvedLanguage, languagePromptName);
 
-    // OpenAI Call
+    // OpenAI Call — response_format forces valid JSON output
     const messages: any[] = [
+      { role: 'system', content: 'You are a plant health analyst. Always respond with valid JSON only.' },
       { role: 'user', content: healthcheckPrompt },
       {
         role: 'user',
@@ -181,6 +191,7 @@ serve(async (req) => {
       result = await callOpenAI({
         messages,
         max_tokens: 1200,
+        response_format: { type: 'json_object' },
       });
     } catch (e) {
       await refundCredits(serviceClient, userId, cost);
@@ -200,20 +211,30 @@ serve(async (req) => {
       metadata: { plant_name, language: resolvedLanguage },
     });
 
-    // Antwort parsen
+    // Antwort parsen — robust: strip markdown fences, extract JSON object
     let parsed;
     try {
-      const cleaned = result.content
+      let cleaned = result.content
         .replace(/```json/g, '')
         .replace(/```/g, '')
         .trim();
+      // Fallback: extract first JSON object if surrounded by text
+      if (!cleaned.startsWith('{')) {
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) cleaned = match[0];
+      }
       parsed = JSON.parse(cleaned);
     } catch {
       parsed = null;
     }
 
+    // Coerce healthscore to number (GPT sometimes returns string "85" instead of 85)
+    if (parsed && parsed.healthscore !== undefined) {
+      parsed.healthscore = Number(parsed.healthscore);
+    }
+
     // Guard: wenn Parsing fehlschlägt oder healthscore fehlt → Credits refunden + Fehler
-    if (!parsed || typeof parsed.healthscore !== 'number') {
+    if (!parsed || typeof parsed.healthscore !== 'number' || isNaN(parsed.healthscore)) {
       await refundCredits(serviceClient, userId, cost);
       return new Response(
         JSON.stringify({
@@ -227,6 +248,9 @@ serve(async (req) => {
         }
       );
     }
+
+    // Clamp healthscore to valid range
+    parsed.healthscore = Math.max(0, Math.min(100, Math.round(parsed.healthscore)));
 
     return new Response(
       JSON.stringify({

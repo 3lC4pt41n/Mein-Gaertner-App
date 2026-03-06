@@ -51,7 +51,7 @@ export default function DexDetailScreen({ route, navigation }) {
     const speciesDisplayName = formatDisplayName(species.canonical_name);
     try {
       await Share.share({
-        message: `${speciesDisplayName} — ${t('dex.discoveredBy', { count: species.total_discoverers || 1 })} 🌱`,
+        message: `${speciesDisplayName} — ${t('dex.discoveredBy', { count: Math.max(species.total_discoverers || 0, 1) })} 🌱`,
       });
     } catch (error) {
       const cancelled = error?.code === 'ERR_CANCELED' || error?.message === 'User did not share';
@@ -122,7 +122,12 @@ export default function DexDetailScreen({ route, navigation }) {
       <View style={styles.statRow}>
         <Ionicons name="people" size={16} color={colors.textSecondary} />
         <Text style={styles.statText}>
-          {species.total_discoverers || 0} {t('dex.discoverers')}
+          {species.total_discoverers != null && species.total_discoverers > 0
+            ? species.total_discoverers
+            : species.discovered
+              ? 1
+              : 0}{' '}
+          {t('dex.discoverers')}
         </Text>
       </View>
 

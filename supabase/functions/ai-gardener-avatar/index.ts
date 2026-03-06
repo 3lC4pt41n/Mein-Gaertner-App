@@ -138,7 +138,7 @@ Composition and style — follow exactly:
 
     const { data: urlData, error: urlError } = await serviceClient.storage
       .from(bucket)
-      .createSignedUrl(avatarPath, 60 * 60 * 24 * 7);
+      .createSignedUrl(avatarPath, 60 * 60 * 24 * 30);
 
     if (urlError) throw urlError;
 

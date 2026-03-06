@@ -137,6 +137,7 @@
     "noHealthcheck": "No health check available.",
     "startHealthcheck": "Start health check",
     "healthcheckDone": "Health check complete!",
+    "healthcheckParseError": "The health check could not be evaluated. Please try again.",
     "noImageForHealthcheck": "No photo available for health check.",
     "healthcheckPhotoTitle": "Photo for healthcheck",
     "healthcheckPhotoMessage": "Which photo should be used for the healthcheck?",
@@ -488,7 +489,9 @@
     "noPhotosHint": "Photos from the diary will appear here.",
     "photoCount": "{{current}} / {{total}}",
     "addPhoto": "Add photo",
-    "plantPhoto": "Plant photo"
+    "plantPhoto": "Plant photo",
+    "permission": "Photo library access is required.",
+    "photoAdded": "Photo has been added to the gallery."
   },
   "calendar": {
     "title": "Calendar",
@@ -507,7 +510,9 @@
     "regions": "Regions",
     "yourStats": "You: {{total}} discoveries, {{firsts}} first finds",
     "emptyTitle": "No data yet",
-    "emptyHint": "Once gardeners share their discoveries, they will appear here on the map."
+    "emptyHint": "Once gardeners share their discoveries, they will appear here on the map.",
+    "mapUnavailable": "Map unavailable",
+    "mapUnavailableHint": "The map view could not be loaded. Please try again later."
   },
   "dex": {
     "title": "Plant-Dex",
@@ -577,6 +582,7 @@
     "avatarUpdating": "Creating avatar…",
     "profileSaved": "Profile saved!",
     "profileSaveError": "Could not save profile.",
+    "displayNameSaveError": "Display name could not be saved.",
     "preferencesSection": "Preferences",
     "language": "Language",
     "notifications": "Notifications",
