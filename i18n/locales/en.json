@@ -500,6 +500,15 @@
     "previousMonth": "Previous month",
     "nextMonth": "Next month"
   },
+  "heatmap": {
+    "title": "World Map",
+    "discoveries": "Discoveries",
+    "species": "Species",
+    "regions": "Regions",
+    "yourStats": "You: {{total}} discoveries, {{firsts}} first finds",
+    "emptyTitle": "No data yet",
+    "emptyHint": "Once gardeners share their discoveries, they will appear here on the map."
+  },
   "dex": {
     "title": "Plant-Dex",
     "progress": "{{discovered}} / {{total}} species discovered",

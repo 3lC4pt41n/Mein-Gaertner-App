@@ -479,6 +479,15 @@
     "previousMonth": "Предыдущий месяц",
     "nextMonth": "Следующий месяц"
   },
+  "heatmap": {
+    "title": "Мировая карта",
+    "discoveries": "Находки",
+    "species": "Виды",
+    "regions": "Регионы",
+    "yourStats": "Вы: {{total}} находок, {{firsts}} первых открытий",
+    "emptyTitle": "Пока нет данных",
+    "emptyHint": "Когда садоводы поделятся своими находками, они появятся здесь на карте."
+  },
   "dex": {
     "title": "Растение-Дex",
     "progress": "{{discovered}} / {{total}} видов обнаружено",

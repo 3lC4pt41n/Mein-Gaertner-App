@@ -479,6 +479,15 @@
     "previousMonth": "Mois précédent",
     "nextMonth": "Mois suivant"
   },
+  "heatmap": {
+    "title": "Carte mondiale",
+    "discoveries": "Découvertes",
+    "species": "Espèces",
+    "regions": "Régions",
+    "yourStats": "Vous : {{total}} découvertes, {{firsts}} premières",
+    "emptyTitle": "Aucune donnée",
+    "emptyHint": "Quand les jardiniers partagent leurs découvertes, elles apparaissent ici."
+  },
   "dex": {
     "title": "Plante-Dex",
     "progress": "{{discovered}} / {{total}} espèces découvertes",

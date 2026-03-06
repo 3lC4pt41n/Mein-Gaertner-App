@@ -22,7 +22,8 @@
       "bundleIdentifier": "com.elcaptain.digitalergaertner",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "Wird benötigt, um Pflanzen zu fotografieren und per KI zu erkennen."
+        "NSCameraUsageDescription": "Wird benötigt, um Pflanzen zu fotografieren und per KI zu erkennen.",
+        "NSLocationWhenInUseUsageDescription": "Wird für Wetter-Daten und die Weltkarte der Pflanzenfunde verwendet."
       }
     },
     "android": {
@@ -30,7 +31,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.elcaptain.digitalergaertner"
+      "package": "com.elcaptain.digitalergaertner",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

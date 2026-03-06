@@ -500,6 +500,15 @@
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat"
   },
+  "heatmap": {
+    "title": "Weltkarte",
+    "discoveries": "Funde",
+    "species": "Arten",
+    "regions": "Regionen",
+    "yourStats": "Du: {{total}} Funde, {{firsts}} Erstentdeckungen",
+    "emptyTitle": "Noch keine Daten",
+    "emptyHint": "Sobald Gärtner ihre Funde teilen, erscheinen sie hier auf der Karte."
+  },
   "dex": {
     "title": "Pflanzen-Dex",
     "progress": "{{discovered}} / {{total}} Arten entdeckt",

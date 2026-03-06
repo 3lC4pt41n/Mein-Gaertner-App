@@ -26,6 +26,7 @@ import CalendarScreen from './screens/CalendarScreen';
 import PlantDexScreen from './screens/PlantDexScreen';
 import DexDetailScreen from './screens/DexDetailScreen';
 import MoreScreen from './screens/MoreScreen';
+import HeatmapScreen from './screens/HeatmapScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -107,6 +108,11 @@ function MoreStack({ isAdmin }) {
         name="LeaderboardMain"
         component={LeaderboardScreen}
         options={{ title: t('nav.leaderboard') }}
+      />
+      <Stack.Screen
+        name="HeatmapMain"
+        component={HeatmapScreen}
+        options={{ title: t('heatmap.title') }}
       />
       <Stack.Screen
         name="CalendarMain"
