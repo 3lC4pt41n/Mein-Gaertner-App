@@ -186,16 +186,24 @@ export default function PlantDetailScreen({ route }) {
         if (result) {
           // Save healthcheck to database (not just React state)
           const hc = result.healthcheck || result;
-          await saveHealthcheck({
-            plant_id: plant.id,
-            user_id: userId,
-            healthscore: hc.healthscore,
-            summary: hc.summary,
-            table_json: hc.table,
-            recommendation: hc.recommendation,
-          });
-          setHealthcheck(hc);
-          Alert.alert(t('common.success'), t('plants.healthcheckDone'));
+          if (hc && typeof hc.healthscore === 'number' && hc.healthscore > 0) {
+            await saveHealthcheck({
+              plant_id: plant.id,
+              user_id: userId,
+              healthscore: hc.healthscore,
+              summary: hc.summary,
+              table_json: hc.table,
+              recommendation: hc.recommendation,
+            });
+            setHealthcheck(hc);
+            Alert.alert(t('common.success'), t('plants.healthcheckDone'));
+          } else {
+            Alert.alert(
+              t('common.error'),
+              t('plants.healthcheckParseError') ||
+                'Der Healthcheck konnte nicht ausgewertet werden. Bitte versuche es erneut.'
+            );
+          }
         }
       } catch (e) {
         Alert.alert(t('common.error'), e.message);

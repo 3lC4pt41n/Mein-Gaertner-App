@@ -212,6 +212,22 @@ serve(async (req) => {
       parsed = null;
     }
 
+    // Guard: wenn Parsing fehlschlägt oder healthscore fehlt → Credits refunden + Fehler
+    if (!parsed || typeof parsed.healthscore !== 'number') {
+      await refundCredits(serviceClient, userId, cost);
+      return new Response(
+        JSON.stringify({
+          error: 'Healthcheck konnte nicht ausgewertet werden – bitte erneut versuchen.',
+          balance: newBalance + cost,
+          credits_used: 0,
+        }),
+        {
+          status: 422,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     return new Response(
       JSON.stringify({
         healthcheck: parsed,
