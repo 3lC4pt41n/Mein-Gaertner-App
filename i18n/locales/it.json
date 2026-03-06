@@ -291,6 +291,14 @@
       "plantDetails": "📋 Dettagli generati",
       "healthcheck": "💚 Controllo salute",
       "chat": "💬 Chat con Ben"
+    },
+    "historyTitle": "Cronologia crediti",
+    "historyLabels": {
+      "firstDiscovery": "Prima scoperta",
+      "discovery": "Nuova scoperta",
+      "betaWelcome": "Bonus di benvenuto beta",
+      "purchase": "Acquisto crediti",
+      "subscription": "Crediti abbonamento"
     }
   },
   "leaderboard": {

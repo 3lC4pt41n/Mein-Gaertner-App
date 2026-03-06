@@ -291,6 +291,14 @@
       "plantDetails": "📋 Подробности созданы",
       "healthcheck": "💚 Проверка здоровья",
       "chat": "💬 Чат с Беном"
+    },
+    "historyTitle": "История кредитов",
+    "historyLabels": {
+      "firstDiscovery": "Первое открытие",
+      "discovery": "Новое открытие",
+      "betaWelcome": "Бонус бета-тестирования",
+      "purchase": "Покупка кредитов",
+      "subscription": "Кредиты подписки"
     }
   },
   "leaderboard": {

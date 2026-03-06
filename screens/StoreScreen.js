@@ -10,7 +10,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchBalance, fetchSubscription, fetchUsageHistory } from '../services/creditService';
+import { fetchBalance, fetchSubscription, fetchCreditHistory } from '../services/creditService';
 import {
   ONE_TIME_PACKAGES,
   SUBSCRIPTION_PACKAGES,
@@ -51,7 +51,7 @@ export default function StoreScreen({ isAdmin }) {
   const navigation = useNavigation();
   const [balance, setBalance] = useState(null);
   const [subscription, setSubscription] = useState(null);
-  const [recentUsage, setRecentUsage] = useState([]);
+  const [creditHistory, setCreditHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(null); // welches Paket gerade kauft
   const [refreshing, setRefreshing] = useState(false);
@@ -61,15 +61,15 @@ export default function StoreScreen({ isAdmin }) {
 
   const loadData = useCallback(async () => {
     try {
-      const [bal, sub, usage, livePrices] = await Promise.all([
+      const [bal, sub, history, livePrices] = await Promise.all([
         fetchBalance(),
         fetchSubscription().catch(() => null),
-        fetchUsageHistory(20).catch(() => []),
+        fetchCreditHistory(30).catch(() => []),
         getPackagesWithLivePrices().catch(() => null),
       ]);
       setBalance(bal);
       setSubscription(sub);
-      setRecentUsage(usage);
+      setCreditHistory(history);
       if (livePrices) {
         setLiveOneTime(livePrices.oneTime);
         setLiveSubs(livePrices.subscriptions);
@@ -161,12 +161,38 @@ export default function StoreScreen({ isAdmin }) {
     }
   };
 
-  // ─── Action Labels für Usage ───────────────────────────────
-  const actionLabels = {
-    plant_scan: t('store.actionLabels.plantScan'),
-    plant_details: t('store.actionLabels.plantDetails'),
-    healthcheck: t('store.actionLabels.healthcheck'),
-    chat: t('store.actionLabels.chat'),
+  // ─── Labels für Credit-History ──────────────────────────────
+  const historyLabel = (item) => {
+    if (item.type === 'usage') {
+      const map = {
+        plant_scan: t('store.actionLabels.plantScan'),
+        plant_details: t('store.actionLabels.plantDetails'),
+        healthcheck: t('store.actionLabels.healthcheck'),
+        chat: t('store.actionLabels.chat'),
+      };
+      return map[item.label] || item.label;
+    }
+    if (item.type === 'discovery') {
+      return item.label === 'first_discovery'
+        ? t('store.historyLabels.firstDiscovery')
+        : t('store.historyLabels.discovery');
+    }
+    if (item.type === 'purchase') {
+      const map = {
+        beta_welcome: t('store.historyLabels.betaWelcome'),
+        purchase: t('store.historyLabels.purchase'),
+        subscription: t('store.historyLabels.subscription'),
+      };
+      return map[item.label] || t('store.historyLabels.purchase');
+    }
+    return item.label;
+  };
+
+  const historyIcon = (item) => {
+    if (item.type === 'usage') return 'flash-outline';
+    if (item.type === 'discovery') return item.label === 'first_discovery' ? 'trophy' : 'sparkles';
+    if (item.type === 'purchase') return 'cart-outline';
+    return 'ellipse-outline';
   };
 
   if (loading) {
@@ -415,31 +441,59 @@ export default function StoreScreen({ isAdmin }) {
         </>
       ) : (
         <>
-          {/* ─── Usage Tab ───────────────────────────────────── */}
-          <Text style={styles.sectionTitle}>{t('store.usageTitle')}</Text>
-          {recentUsage.length === 0 ? (
+          {/* ─── Credit History Tab ──────────────────────────── */}
+          <Text style={styles.sectionTitle}>{t('store.historyTitle')}</Text>
+          {creditHistory.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons name="leaf-outline" size={48} color={colors.textDisabled} />
               <Text style={styles.emptyText}>{t('store.noUsage')}</Text>
             </View>
           ) : (
-            recentUsage.map((item, idx) => (
-              <View key={item.id || idx} style={styles.usageRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.usageAction}>{actionLabels[item.action] || item.action}</Text>
-                  <Text style={styles.usageDate}>
-                    {new Date(item.created_at).toLocaleDateString(i18n.locale, {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+            creditHistory.map((item, idx) => {
+              const isPositive = item.credits > 0;
+              return (
+                <View key={item.id || idx} style={styles.usageRow}>
+                  <View
+                    style={[
+                      styles.historyIconBg,
+                      isPositive ? styles.historyIconBgPositive : styles.historyIconBgNegative,
+                    ]}
+                  >
+                    <Ionicons
+                      name={historyIcon(item)}
+                      size={16}
+                      color={isPositive ? colors.primaryLight : colors.textTertiary}
+                    />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                    <Text style={styles.usageAction}>{historyLabel(item)}</Text>
+                    {item.detail ? (
+                      <Text style={styles.usageDetail} numberOfLines={1}>
+                        {item.detail}
+                      </Text>
+                    ) : null}
+                    <Text style={styles.usageDate}>
+                      {new Date(item.date).toLocaleDateString(i18n.locale, {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.usageCredits,
+                      isPositive ? styles.creditsPositive : styles.creditsNegative,
+                    ]}
+                  >
+                    {isPositive ? '+' : ''}
+                    {item.credits}
                   </Text>
                 </View>
-                <Text style={styles.usageCredits}>-{item.cost_credits}</Text>
-              </View>
-            ))
+              );
+            })
           )}
         </>
       )}
@@ -642,8 +696,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   usageAction: { fontSize: 14, color: colors.textPrimary, fontWeight: '500' },
+  usageDetail: { fontSize: 12, color: colors.textSecondary, marginTop: 1 },
   usageDate: { fontSize: 12, color: colors.textTertiary, marginTop: spacing.xs },
-  usageCredits: { fontSize: 16, fontWeight: 'bold', color: colors.danger },
+  usageCredits: { fontSize: 16, fontWeight: 'bold' },
+  creditsPositive: { color: colors.primaryLight },
+  creditsNegative: { color: colors.danger ?? '#e74c3c' },
+  historyIconBg: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historyIconBgPositive: { backgroundColor: colors.primarySurface },
+  historyIconBgNegative: { backgroundColor: colors.borderLight ?? '#f0f0f0' },
 
   // Empty State
   emptyState: { alignItems: 'center', padding: spacing.xxxl },
