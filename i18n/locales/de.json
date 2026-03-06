@@ -315,7 +315,9 @@
       "betaWelcome": "Beta-Willkommensbonus",
       "purchase": "Credit-Kauf",
       "subscription": "Abo-Credits"
-    }
+    },
+    "historyPartial": "Verlauf teilweise geladen. Einige Einträge fehlen.",
+    "historyUnavailable": "Credit-Verlauf konnte nicht geladen werden."
   },
   "leaderboard": {
     "title": "Rangliste",

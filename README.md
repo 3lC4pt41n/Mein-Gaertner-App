@@ -169,7 +169,7 @@ The app uses a credit system for AI features:
 | Details Generation | 15   |
 | Health Check       | 8    |
 | Chat Message       | 3    |
-| Avatar Generation  | 0    |
+| Avatar Generation  | 20   |
 
 Users can purchase credits via subscriptions or one-time purchases. Beta testers receive 100 free credits.
 

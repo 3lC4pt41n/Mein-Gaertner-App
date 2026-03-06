@@ -109,16 +109,28 @@ export async function fetchCreditHistory(limit = 50) {
       .limit(limit),
   ]);
 
-  // Extract results — show partial data even if one source fails
-  const usageRes = usageResult.status === 'fulfilled' ? usageResult.value : { data: [] };
-  const txRes = txResult.status === 'fulfilled' ? txResult.value : { data: [] };
-  const discoveryRes =
-    discoveryResult.status === 'fulfilled' ? discoveryResult.value : { data: [] };
+  const sourceErrors = [];
+  const pickData = (result, sourceName) => {
+    if (result.status === 'rejected') {
+      sourceErrors.push(`${sourceName}: ${result.reason?.message || 'request failed'}`);
+      return [];
+    }
+    if (result.value?.error) {
+      sourceErrors.push(`${sourceName}: ${result.value.error.message || 'query failed'}`);
+      return [];
+    }
+    return result.value?.data || [];
+  };
+
+  // Keep partial data, but do not silently report it as complete.
+  const usageData = pickData(usageResult, 'usage_log');
+  const txData = pickData(txResult, 'transactions');
+  const discoveryData = pickData(discoveryResult, 'discovery_events');
 
   const entries = [];
 
   // Usage entries (negative credits)
-  for (const u of usageRes.data || []) {
+  for (const u of usageData) {
     entries.push({
       id: u.id,
       type: 'usage',
@@ -129,7 +141,7 @@ export async function fetchCreditHistory(limit = 50) {
   }
 
   // Transaction entries (positive credits)
-  for (const tx of txRes.data || []) {
+  for (const tx of txData) {
     entries.push({
       id: tx.id,
       type: 'purchase',
@@ -141,7 +153,7 @@ export async function fetchCreditHistory(limit = 50) {
   }
 
   // Discovery reward entries (positive credits)
-  for (const d of discoveryRes.data || []) {
+  for (const d of discoveryData) {
     entries.push({
       id: d.id,
       type: 'discovery',
@@ -155,5 +167,14 @@ export async function fetchCreditHistory(limit = 50) {
   // Sort by date descending
   entries.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  return entries.slice(0, limit);
+  const limited = entries.slice(0, limit);
+
+  if (sourceErrors.length > 0) {
+    const err = new Error(`Credit history incomplete: ${sourceErrors.join(' | ')}`);
+    err.code = 'CREDIT_HISTORY_INCOMPLETE';
+    err.partialEntries = limited;
+    throw err;
+  }
+
+  return limited;
 }

@@ -52,6 +52,7 @@ export default function StoreScreen({ isAdmin }) {
   const [balance, setBalance] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [creditHistory, setCreditHistory] = useState([]);
+  const [creditHistoryWarning, setCreditHistoryWarning] = useState(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(null); // welches Paket gerade kauft
   const [refreshing, setRefreshing] = useState(false);
@@ -61,15 +62,32 @@ export default function StoreScreen({ isAdmin }) {
 
   const loadData = useCallback(async () => {
     try {
-      const [bal, sub, history, livePrices] = await Promise.all([
+      const [bal, sub, livePrices] = await Promise.all([
         fetchBalance(),
         fetchSubscription().catch(() => null),
-        fetchCreditHistory(30).catch(() => []),
         getPackagesWithLivePrices().catch(() => null),
       ]);
+
+      let history = [];
+      let historyWarning = null;
+      try {
+        history = await fetchCreditHistory(30);
+      } catch (err) {
+        if (err?.code === 'CREDIT_HISTORY_INCOMPLETE' && Array.isArray(err.partialEntries)) {
+          history = err.partialEntries;
+          historyWarning = t('store.historyPartial');
+          console.warn('Credit history partially loaded:', err.message);
+        } else {
+          history = [];
+          historyWarning = t('store.historyUnavailable');
+          console.warn('Credit history load failed:', err?.message || err);
+        }
+      }
+
       setBalance(bal);
       setSubscription(sub);
       setCreditHistory(history);
+      setCreditHistoryWarning(historyWarning);
       if (livePrices) {
         setLiveOneTime(livePrices.oneTime);
         setLiveSubs(livePrices.subscriptions);
@@ -443,6 +461,12 @@ export default function StoreScreen({ isAdmin }) {
         <>
           {/* ─── Credit History Tab ──────────────────────────── */}
           <Text style={styles.sectionTitle}>{t('store.historyTitle')}</Text>
+          {creditHistoryWarning ? (
+            <View style={styles.historyWarningBox}>
+              <Ionicons name="warning-outline" size={16} color={colors.warning} />
+              <Text style={styles.historyWarningText}>{creditHistoryWarning}</Text>
+            </View>
+          ) : null}
           {creditHistory.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons name="leaf-outline" size={48} color={colors.textDisabled} />
@@ -710,6 +734,21 @@ const styles = StyleSheet.create({
   },
   historyIconBgPositive: { backgroundColor: colors.primarySurface },
   historyIconBgNegative: { backgroundColor: colors.borderLight ?? '#f0f0f0' },
+  historyWarningBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.sm,
+    backgroundColor: colors.warningSurface ?? '#FFF8E1',
+  },
+  historyWarningText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
 
   // Empty State
   emptyState: { alignItems: 'center', padding: spacing.xxxl },

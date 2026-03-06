@@ -1,5 +1,5 @@
 import { supabase } from '../../supabase';
-import { fetchBalance, fetchUsageHistory } from '../../services/creditService';
+import { fetchBalance, fetchUsageHistory, fetchCreditHistory } from '../../services/creditService';
 
 describe('creditService', () => {
   beforeEach(() => {
@@ -102,6 +102,161 @@ describe('creditService', () => {
 
       const history = await fetchUsageHistory();
       expect(history).toEqual([]);
+    });
+  });
+
+  describe('fetchCreditHistory', () => {
+    it('returns merged and date-sorted history entries when all sources succeed', async () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-789' } },
+      });
+
+      const usageLimitMock = jest.fn().mockResolvedValue({
+        data: [
+          { id: 'u1', action: 'chat', cost_credits: 3, created_at: '2026-03-01T10:00:00.000Z' },
+        ],
+        error: null,
+      });
+      const txLimitMock = jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: 't1',
+            type: 'purchase',
+            package_name: 'starter',
+            credits_added: 100,
+            created_at: '2026-03-02T10:00:00.000Z',
+          },
+        ],
+        error: null,
+      });
+      const discoveryLimitMock = jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'd1',
+            is_first: false,
+            credits_awarded: 5,
+            created_at: '2026-03-03T10:00:00.000Z',
+            species: { canonical_name: 'monstera deliciosa' },
+          },
+        ],
+        error: null,
+      });
+
+      supabase.from.mockImplementation((table) => {
+        if (table === 'usage_log') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                order: jest.fn().mockReturnValue({
+                  limit: usageLimitMock,
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === 'transactions') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                order: jest.fn().mockReturnValue({
+                  limit: txLimitMock,
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === 'discovery_events') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                gt: jest.fn().mockReturnValue({
+                  order: jest.fn().mockReturnValue({
+                    limit: discoveryLimitMock,
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      });
+
+      const history = await fetchCreditHistory(30);
+
+      expect(history).toHaveLength(3);
+      expect(history[0]).toMatchObject({ id: 'd1', type: 'discovery', credits: 5 });
+      expect(history[1]).toMatchObject({ id: 't1', type: 'purchase', credits: 100 });
+      expect(history[2]).toMatchObject({ id: 'u1', type: 'usage', credits: -3 });
+    });
+
+    it('throws CREDIT_HISTORY_INCOMPLETE and includes partial entries when one source fails', async () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-789' } },
+      });
+
+      const usageLimitMock = jest.fn().mockResolvedValue({
+        data: [
+          { id: 'u1', action: 'chat', cost_credits: 3, created_at: '2026-03-01T10:00:00.000Z' },
+        ],
+        error: null,
+      });
+      const txLimitMock = jest.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'permission denied' },
+      });
+      const discoveryLimitMock = jest.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      });
+
+      supabase.from.mockImplementation((table) => {
+        if (table === 'usage_log') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                order: jest.fn().mockReturnValue({
+                  limit: usageLimitMock,
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === 'transactions') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                order: jest.fn().mockReturnValue({
+                  limit: txLimitMock,
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === 'discovery_events') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                gt: jest.fn().mockReturnValue({
+                  order: jest.fn().mockReturnValue({
+                    limit: discoveryLimitMock,
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      });
+
+      try {
+        await fetchCreditHistory(30);
+        throw new Error('Expected fetchCreditHistory to throw');
+      } catch (error) {
+        expect(error).toMatchObject({ code: 'CREDIT_HISTORY_INCOMPLETE' });
+        expect(error.partialEntries).toEqual([
+          expect.objectContaining({ id: 'u1', type: 'usage', credits: -3 }),
+        ]);
+      }
     });
   });
 });

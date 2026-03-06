@@ -315,7 +315,9 @@
       "betaWelcome": "Bono de bienvenida beta",
       "purchase": "Compra de créditos",
       "subscription": "Créditos de suscripción"
-    }
+    },
+    "historyPartial": "Historial cargado parcialmente. Faltan algunas entradas.",
+    "historyUnavailable": "No se pudo cargar el historial de créditos."
   },
   "leaderboard": {
     "title": "Clasificación",

@@ -315,7 +315,9 @@
       "betaWelcome": "Beta Welcome Bonus",
       "purchase": "Credit Purchase",
       "subscription": "Subscription Credits"
-    }
+    },
+    "historyPartial": "History partially loaded. Some entries are missing.",
+    "historyUnavailable": "Credit history could not be loaded."
   },
   "leaderboard": {
     "title": "Ranking",

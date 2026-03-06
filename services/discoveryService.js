@@ -71,11 +71,10 @@ export async function logDiscovery(userId, speciesName, plantId = null, location
 
   let speciesId;
   let isFirst = false;
-  let totalDiscoverers = 1;
+  let totalDiscoverers = existing?.total_discoverers || 0;
 
   if (existing) {
     speciesId = existing.id;
-    totalDiscoverers = (existing.total_discoverers || 0) + 1;
   } else {
     // Neue Species – dieser User ist Erstentdecker
     const { data: newSpecies, error: insertError } = await supabase
@@ -97,7 +96,7 @@ export async function logDiscovery(userId, speciesName, plantId = null, location
           .eq('canonical_name', canonical)
           .single();
         speciesId = retry.id;
-        totalDiscoverers = (retry.total_discoverers || 0) + 1;
+        totalDiscoverers = retry.total_discoverers || 0;
       } else {
         throw insertError;
       }
@@ -129,17 +128,18 @@ export async function logDiscovery(userId, speciesName, plantId = null, location
     }
   }
 
-  // 2b. Update species.total_discoverers counter in the database
-  if (isNewForUser) {
-    const { error: updateError } = await supabase
-      .from('species')
-      .update({ total_discoverers: totalDiscoverers })
-      .eq('id', speciesId);
+  // 2b. Read counter from DB (single source of truth via trigger)
+  const { data: speciesCounterRow, error: counterError } = await supabase
+    .from('species')
+    .select('total_discoverers')
+    .eq('id', speciesId)
+    .maybeSingle();
 
-    if (updateError) {
-      // Non-critical — counter will be slightly off but discovery is still valid
-      console.warn('Failed to update total_discoverers:', updateError.message);
-    }
+  if (!counterError && speciesCounterRow?.total_discoverers != null) {
+    totalDiscoverers = speciesCounterRow.total_discoverers;
+  } else if (isNewForUser && totalDiscoverers < 1) {
+    // Defensive fallback if counter read fails after a new discovery.
+    totalDiscoverers = 1;
   }
 
   // 3. Credit-Belohnung für Neuentdeckungen (sichere DB-Funktion)

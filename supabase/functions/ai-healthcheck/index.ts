@@ -198,19 +198,6 @@ serve(async (req) => {
       throw e;
     }
 
-    // Usage loggen
-    await logUsage(serviceClient, {
-      user_id: userId,
-      action: 'healthcheck',
-      prompt_tokens: result.prompt_tokens,
-      completion_tokens: result.completion_tokens,
-      total_tokens: result.total_tokens,
-      cost_credits: cost,
-      openai_cost_usd: result.cost_usd,
-      model: result.model,
-      metadata: { plant_name, language: resolvedLanguage },
-    });
-
     // Antwort parsen — robust: strip markdown fences, extract JSON object
     let parsed;
     try {
@@ -251,6 +238,19 @@ serve(async (req) => {
 
     // Clamp healthscore to valid range
     parsed.healthscore = Math.max(0, Math.min(100, Math.round(parsed.healthscore)));
+
+    // Usage loggen only after a successful parse (refund-paths stay consistent)
+    await logUsage(serviceClient, {
+      user_id: userId,
+      action: 'healthcheck',
+      prompt_tokens: result.prompt_tokens,
+      completion_tokens: result.completion_tokens,
+      total_tokens: result.total_tokens,
+      cost_credits: cost,
+      openai_cost_usd: result.cost_usd,
+      model: result.model,
+      metadata: { plant_name, language: resolvedLanguage },
+    });
 
     return new Response(
       JSON.stringify({

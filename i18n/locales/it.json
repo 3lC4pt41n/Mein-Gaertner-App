@@ -315,7 +315,9 @@
       "betaWelcome": "Bonus di benvenuto beta",
       "purchase": "Acquisto crediti",
       "subscription": "Crediti abbonamento"
-    }
+    },
+    "historyPartial": "Cronologia caricata parzialmente. Mancano alcune voci.",
+    "historyUnavailable": "Impossibile caricare la cronologia crediti."
   },
   "leaderboard": {
     "title": "Classifica",
