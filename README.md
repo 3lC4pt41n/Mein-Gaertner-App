@@ -236,7 +236,7 @@ npx jest --coverage
 
 ## License
 
-MIT License © 2026 Tim Ergenthaler
+Proprietary © 2026 Tim Mergenthaler. All rights reserved.
 
 See [LICENSE](LICENSE) for details.
 
