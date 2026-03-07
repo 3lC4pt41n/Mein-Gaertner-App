@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 
 // Single source of truth: GitHub Pages hosts the canonical privacy policy.
 // This edge function redirects there to avoid content drift between two copies.
