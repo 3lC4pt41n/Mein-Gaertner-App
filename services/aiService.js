@@ -36,54 +36,38 @@ async function getSessionWithRefresh({ forceRefresh = false } = {}) {
   return session || null;
 }
 
-async function invokeEdgeWithToken(functionName, body, accessToken) {
-  return requestWithPolicy(
-    () =>
-      supabase.functions.invoke(functionName, {
-        body,
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-      }),
-    { timeout: 45000, retries: 1, label: `ai.${functionName}` }
-  );
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function invokeEdge(functionName, body) {
+  return requestWithPolicy(() => supabase.functions.invoke(functionName, { body }), {
+    timeout: 45000,
+    retries: 1,
+    label: `ai.${functionName}`,
+  });
 }
 
 // Helper: Edge Function aufrufen über den Supabase Client
 // Der Client setzt apikey + Authorization Header automatisch korrekt
 // Wrapped with requestWithPolicy for timeout + retry on transient failures.
 async function callEdgeFunction(functionName, body) {
-  const initialSession = await getSessionWithRefresh();
-  if (!initialSession?.access_token) {
-    // Do NOT call signOut() here – the auth state listener in the app
-    // will handle navigation. Calling signOut() destroys a potentially
-    // recoverable refresh token and causes a hard logout.
-    const err = new Error('Nicht eingeloggt');
-    err.code = 'AUTH_REQUIRED';
-    err.status = 401;
-    throw err;
-  }
+  // Warm-up: camera resume can briefly race with session hydration in AsyncStorage.
+  await getSessionWithRefresh();
 
   // AI calls get a generous timeout (image uploads can be large) and 1 retry
-  let { data, error } = await invokeEdgeWithToken(functionName, body, initialSession.access_token);
+  let { data, error } = await invokeEdge(functionName, body);
 
   // One auth-recovery retry with forced token refresh.
-  // Only trigger on clear 401 status – not on vague error messages.
-  const maybeAuth = error && (error.status === 401 || error?.context?.status === 401);
-  if (maybeAuth) {
+  if (error && isAuthFailure(error)) {
+    // Short delay helps after returning from camera intent on Android.
+    await sleep(250);
     const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
-    if (
-      refreshedSession?.access_token &&
-      refreshedSession.access_token !== initialSession.access_token
-    ) {
-      const retryResult = await invokeEdgeWithToken(
-        functionName,
-        body,
-        refreshedSession.access_token
-      );
+    if (refreshedSession?.access_token) {
+      const retryResult = await invokeEdge(functionName, body);
       data = retryResult.data;
       error = retryResult.error;
     }
-    // Do NOT signOut here – let the parsed-error handler below decide.
-    // Aggressive signOut on transient failures was logging users out.
   }
 
   if (error) {

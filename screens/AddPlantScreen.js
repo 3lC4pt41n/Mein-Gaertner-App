@@ -314,7 +314,7 @@ export default function AddPlantScreen() {
       setSavedPlant((p) => ({ ...p, details: detailsData.details }));
     } catch (e) {
       if (!handleCreditError(e)) {
-        Alert.alert(t('common.error'), e.message);
+        Alert.alert(t('common.error'), friendlyError(e));
       }
     } finally {
       setLoading(false);
@@ -347,7 +347,7 @@ export default function AddPlantScreen() {
       Alert.alert(t('common.success'), t('plants.healthcheckGenerated'));
     } catch (e) {
       if (!handleCreditError(e)) {
-        Alert.alert(t('common.error'), e.message);
+        Alert.alert(t('common.error'), friendlyError(e));
       }
     } finally {
       setLoading(false);

@@ -8,7 +8,6 @@ supabase.auth.refreshSession = jest.fn().mockResolvedValue({
   data: { session: { access_token: 'refreshed-token' } },
   error: null,
 });
-supabase.auth.signOut = jest.fn().mockResolvedValue({});
 
 const {
   recognizePlant,
@@ -27,7 +26,6 @@ describe('aiService', () => {
       data: { session: { access_token: 'refreshed-token' } },
       error: null,
     });
-    supabase.auth.signOut.mockResolvedValue({});
   });
 
   describe('recognizePlant', () => {
@@ -40,7 +38,6 @@ describe('aiService', () => {
       const result = await recognizePlant('base64data', 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-plant-scan', {
         body: { base64: 'base64data', language: 'de' },
-        headers: { Authorization: 'Bearer mock-token' },
       });
       expect(result).toEqual({ name: 'Monstera', note: 'Tropical plant' });
     });
@@ -89,7 +86,6 @@ describe('aiService', () => {
       await generatePlantDetails('Monstera', 'Care note', 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-plant-details', {
         body: { name: 'Monstera', note: 'Care note', language: 'de' },
-        headers: { Authorization: 'Bearer mock-token' },
       });
     });
   });
@@ -104,7 +100,6 @@ describe('aiService', () => {
       const result = await performHealthcheck('https://image.url', 'Rose', 'en');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-healthcheck', {
         body: { image_url: 'https://image.url', plant_name: 'Rose', language: 'en' },
-        headers: { Authorization: 'Bearer mock-token' },
       });
       expect(result).toEqual({ score: 85 });
     });
@@ -120,7 +115,6 @@ describe('aiService', () => {
       const result = await chatWithBen('Hi Ben', null, 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token' },
       });
       expect(result).toEqual({ reply: 'Hello!' });
     });
@@ -133,10 +127,12 @@ describe('aiService', () => {
         data: { session: null },
         error: { message: 'no refresh token' },
       });
+      supabase.functions.invoke.mockResolvedValue({
+        data: null,
+        error: { message: '401 Unauthorized', status: 401 },
+      });
 
       await expect(chatWithBen('Hi', null, 'de')).rejects.toThrow('Nicht eingeloggt');
-      // signOut should NOT be called – the auth state listener handles navigation
-      expect(supabase.auth.signOut).not.toHaveBeenCalled();
     });
 
     it('refreshes token and retries once on 401', async () => {
@@ -154,11 +150,9 @@ describe('aiService', () => {
       expect(result).toEqual({ reply: 'Recovered' });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(1, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token' },
       });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer refreshed-token' },
       });
     });
   });

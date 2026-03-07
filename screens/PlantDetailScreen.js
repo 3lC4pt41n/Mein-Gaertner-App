@@ -30,6 +30,7 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { generatePlantDetails, performHealthcheck } from '../services/aiService';
 import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
+import { friendlyError } from '../utils/errorMessages';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -162,7 +163,7 @@ export default function PlantDetailScreen({ route }) {
       setDiaryKey((prev) => prev + 1); // refresh diary
       Alert.alert(t('common.success'), t('diary.entrySaved'));
     } catch (e) {
-      Alert.alert(t('common.error'), e.message);
+      Alert.alert(t('common.error'), friendlyError(e));
     }
   };
 
@@ -176,7 +177,7 @@ export default function PlantDetailScreen({ route }) {
         Alert.alert(t('common.success'), t('plants.detailsGenerated'));
       }
     } catch (e) {
-      Alert.alert(t('common.error'), e.message);
+      Alert.alert(t('common.error'), friendlyError(e));
     } finally {
       setGeneratingDetails(false);
     }
@@ -229,7 +230,7 @@ export default function PlantDetailScreen({ route }) {
           }
         }
       } catch (e) {
-        Alert.alert(t('common.error'), e.message);
+        Alert.alert(t('common.error'), friendlyError(e));
       } finally {
         setRunningHealthcheck(false);
       }
@@ -266,7 +267,7 @@ export default function PlantDetailScreen({ route }) {
         const displayUrl = await getPlantImageUrl(imagePath);
         await runWithPhoto(displayUrl);
       } catch (e) {
-        Alert.alert(t('common.error'), e.message);
+        Alert.alert(t('common.error'), friendlyError(e));
       }
     };
 
@@ -314,7 +315,7 @@ export default function PlantDetailScreen({ route }) {
       setDiaryKey((k) => k + 1);
       Alert.alert(t('common.success'), t('gallery.photoAdded'));
     } catch (e) {
-      Alert.alert(t('common.error'), e.message);
+      Alert.alert(t('common.error'), friendlyError(e));
     }
   };
 
@@ -344,7 +345,7 @@ export default function PlantDetailScreen({ route }) {
       const data = await fetchZonesWithLocationsGrouped();
       setSections(data);
     } catch (err) {
-      Alert.alert(t('common.error'), err.message);
+      Alert.alert(t('common.error'), friendlyError(err));
       setSections([]);
     }
     setZonesLoading(false);
@@ -363,7 +364,7 @@ export default function PlantDetailScreen({ route }) {
       setPickerVisible(false);
       setAssignedZone(zone);
     } catch (e) {
-      Alert.alert(t('common.error'), e.message);
+      Alert.alert(t('common.error'), friendlyError(e));
     } finally {
       setSavingZone(false);
     }
@@ -386,7 +387,7 @@ export default function PlantDetailScreen({ route }) {
             setAssignedZone(null);
             Alert.alert(t('common.success'), t('plants.removeZoneSuccess'));
           } catch (e) {
-            Alert.alert(t('common.error'), e.message);
+            Alert.alert(t('common.error'), friendlyError(e));
           }
         },
       },

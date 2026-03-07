@@ -38,6 +38,7 @@ export function friendlyError(error) {
   // ── Auth ────────────────────────────────────
   if (
     code === 401 ||
+    code === 'AUTH_REQUIRED' ||
     code === 'PGRST301' ||
     lower.includes('jwt') ||
     lower.includes('token expired') ||
