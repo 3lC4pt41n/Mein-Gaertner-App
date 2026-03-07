@@ -12,6 +12,7 @@ function isAuthFailure(error, parsed) {
     msg.includes('unauthorized') ||
     msg.includes('not authenticated') ||
     msg.includes('nicht authentifiziert') ||
+    msg.includes('nicht eingeloggt') ||
     msg.includes('invalid token') ||
     msg.includes('token expired')
   );
@@ -40,78 +41,118 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function invokeEdge(functionName, body) {
-  return requestWithPolicy(() => supabase.functions.invoke(functionName, { body }), {
-    timeout: 45000,
-    retries: 1,
-    label: `ai.${functionName}`,
-  });
+async function invokeEdge(functionName, body, accessToken) {
+  return requestWithPolicy(
+    () =>
+      supabase.functions.invoke(functionName, {
+        body,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+    {
+      timeout: 45000,
+      retries: 1,
+      label: `ai.${functionName}`,
+    }
+  );
 }
 
-// Helper: Edge Function aufrufen über den Supabase Client
-// Der Client setzt apikey + Authorization Header automatisch korrekt
+async function parseInvokeError(error) {
+  let parsed;
+  let contextText = '';
+
+  try {
+    if (error?.context && typeof error.context.clone === 'function') {
+      const cloned = error.context.clone();
+      if (typeof cloned.json === 'function') {
+        try {
+          parsed = await cloned.json();
+        } catch {
+          contextText = (await cloned.text()) || '';
+          try {
+            parsed = JSON.parse(contextText);
+          } catch {
+            parsed = null;
+          }
+        }
+      } else if (typeof error.context.json === 'function') {
+        parsed = await error.context.json();
+      }
+    } else if (error?.context && typeof error.context.json === 'function') {
+      parsed = await error.context.json();
+    } else if (typeof error?.context === 'string') {
+      contextText = error.context;
+      try {
+        parsed = JSON.parse(error.context);
+      } catch {
+        parsed = null;
+      }
+    } else if (error?.context && typeof error.context === 'object') {
+      parsed = error.context;
+    }
+  } catch {
+    parsed = null;
+  }
+
+  const firstDetail =
+    Array.isArray(parsed?.details) && parsed.details.length > 0
+      ? parsed.details.find((d) => d?.message)?.message || null
+      : null;
+
+  return { parsed, contextText, firstDetail };
+}
+
+// Helper: Edge Function aufrufen über den Supabase Client.
+// Authorization wird explizit gesetzt, um Auth-Races in RN zu vermeiden.
 // Wrapped with requestWithPolicy for timeout + retry on transient failures.
 async function callEdgeFunction(functionName, body) {
   // Warm-up: camera resume can briefly race with session hydration in AsyncStorage.
-  await getSessionWithRefresh();
+  let session = await getSessionWithRefresh();
+  let accessToken = session?.access_token || null;
+
+  // If session isn't ready yet, force one refresh attempt before first invoke.
+  if (!accessToken) {
+    session = await getSessionWithRefresh({ forceRefresh: true });
+    accessToken = session?.access_token || null;
+  }
+
+  if (!accessToken) {
+    await supabase.auth.signOut().catch(() => {});
+    const err = new Error('Nicht eingeloggt');
+    err.code = 'AUTH_REQUIRED';
+    err.status = 401;
+    throw err;
+  }
 
   // AI calls get a generous timeout (image uploads can be large) and 1 retry
-  let { data, error } = await invokeEdge(functionName, body);
+  let { data, error } = await invokeEdge(functionName, body, accessToken);
   let attemptedAuthRecovery = false;
 
   // Auth-recovery: retry up to 2 times with forced refresh.
-  if (error && isAuthFailure(error)) {
+  let parsedInitial = null;
+  if (error) {
+    ({ parsed: parsedInitial } = await parseInvokeError(error));
+  }
+  if (error && isAuthFailure(error, parsedInitial)) {
     attemptedAuthRecovery = true;
     const delaysMs = [250, 700];
     for (const delayMs of delaysMs) {
       await sleep(delayMs);
       const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
-      if (!refreshedSession?.access_token) continue;
+      const refreshedToken = refreshedSession?.access_token || null;
+      if (!refreshedToken) continue;
 
-      const retryResult = await invokeEdge(functionName, body);
+      const retryResult = await invokeEdge(functionName, body, refreshedToken);
       data = retryResult.data;
       error = retryResult.error;
-      if (!error || !isAuthFailure(error)) break;
+      if (!error) break;
+
+      const { parsed: parsedRetry } = await parseInvokeError(error);
+      if (!isAuthFailure(error, parsedRetry)) break;
     }
   }
 
   if (error) {
-    // Supabase FunctionsHttpError: error.context kann ein Response-Objekt,
-    // ein String oder bereits ein Objekt sein (je nach SDK-Version).
-    let parsed;
-    let contextText = '';
-    try {
-      if (error.context && typeof error.context.json === 'function') {
-        // Response-Objekt (Supabase JS v2) – Body robust lesen (JSON oder Text)
-        const cloned = typeof error.context.clone === 'function' ? error.context.clone() : null;
-        if (cloned && typeof cloned.json === 'function') {
-          try {
-            parsed = await cloned.json();
-          } catch {
-            contextText = (await cloned.text()) || '';
-            try {
-              parsed = JSON.parse(contextText);
-            } catch {
-              parsed = null;
-            }
-          }
-        } else {
-          parsed = await error.context.json();
-        }
-      } else if (typeof error.context === 'string') {
-        contextText = error.context;
-        parsed = JSON.parse(error.context);
-      } else {
-        parsed = error.context;
-      }
-    } catch {
-      parsed = null;
-    }
-
-    const firstDetail =
-      Array.isArray(parsed?.details) && parsed.details.length > 0
-        ? parsed.details.find((d) => d?.message)?.message || null
-        : null;
+    const { parsed, contextText, firstDetail } = await parseInvokeError(error);
 
     // Spezialbehandlung: Auth
     if (isAuthFailure(error, parsed)) {

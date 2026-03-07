@@ -40,6 +40,7 @@ describe('aiService', () => {
       const result = await recognizePlant('base64data', 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-plant-scan', {
         body: { base64: 'base64data', language: 'de' },
+        headers: { Authorization: 'Bearer mock-token' },
       });
       expect(result).toEqual({ name: 'Monstera', note: 'Tropical plant' });
     });
@@ -88,6 +89,7 @@ describe('aiService', () => {
       await generatePlantDetails('Monstera', 'Care note', 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-plant-details', {
         body: { name: 'Monstera', note: 'Care note', language: 'de' },
+        headers: { Authorization: 'Bearer mock-token' },
       });
     });
   });
@@ -102,6 +104,7 @@ describe('aiService', () => {
       const result = await performHealthcheck('https://image.url', 'Rose', 'en');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-healthcheck', {
         body: { image_url: 'https://image.url', plant_name: 'Rose', language: 'en' },
+        headers: { Authorization: 'Bearer mock-token' },
       });
       expect(result).toEqual({ score: 85 });
     });
@@ -117,6 +120,7 @@ describe('aiService', () => {
       const result = await chatWithBen('Hi Ben', null, 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
+        headers: { Authorization: 'Bearer mock-token' },
       });
       expect(result).toEqual({ reply: 'Hello!' });
     });
@@ -135,6 +139,7 @@ describe('aiService', () => {
       });
 
       await expect(chatWithBen('Hi', null, 'de')).rejects.toThrow('Nicht eingeloggt');
+      expect(supabase.functions.invoke).not.toHaveBeenCalled();
       expect(supabase.auth.signOut).toHaveBeenCalledTimes(1);
     });
 
@@ -153,9 +158,39 @@ describe('aiService', () => {
       expect(result).toEqual({ reply: 'Recovered' });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(1, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
+        headers: { Authorization: 'Bearer mock-token' },
       });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
+        headers: { Authorization: 'Bearer refreshed-token' },
+      });
+      expect(supabase.auth.signOut).not.toHaveBeenCalled();
+    });
+
+    it('retries when auth error is wrapped in non-2xx context payload', async () => {
+      supabase.functions.invoke
+        .mockResolvedValueOnce({
+          data: null,
+          error: {
+            message: 'Edge Function returned a non-2xx status code',
+            context: JSON.stringify({ error: 'Nicht authentifiziert', status: 401 }),
+          },
+        })
+        .mockResolvedValueOnce({
+          data: { reply: 'Recovered from wrapped auth error' },
+          error: null,
+        });
+
+      const result = await chatWithBen('Hi Ben', null, 'de');
+      expect(result).toEqual({ reply: 'Recovered from wrapped auth error' });
+      expect(supabase.functions.invoke).toHaveBeenCalledTimes(2);
+      expect(supabase.functions.invoke).toHaveBeenNthCalledWith(1, 'ai-chat', {
+        body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
+        headers: { Authorization: 'Bearer mock-token' },
+      });
+      expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'ai-chat', {
+        body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
+        headers: { Authorization: 'Bearer refreshed-token' },
       });
       expect(supabase.auth.signOut).not.toHaveBeenCalled();
     });
