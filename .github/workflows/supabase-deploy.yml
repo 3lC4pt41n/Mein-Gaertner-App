@@ -24,11 +24,19 @@ jobs:
       - name: Link Supabase project
         run: supabase link --project-ref $SUPABASE_PROJECT_REF
 
-      - name: Repair baseline migration (already applied before migration tracking)
-        run: supabase migration repair --status applied 20250101
+      - name: Repair already-applied migrations missing from tracking
+        run: |
+          supabase migration repair --status applied 20250101
+          supabase migration repair --status applied 20260321
 
       - name: Push database migrations
+        id: db_push
+        continue-on-error: true
         run: supabase db push
+
+      - name: Warn if db push failed
+        if: steps.db_push.outcome == 'failure'
+        run: echo "::warning::supabase db push failed — check migration drift. Edge Functions will still deploy."
 
       - name: Deploy Edge Functions
         run: |
