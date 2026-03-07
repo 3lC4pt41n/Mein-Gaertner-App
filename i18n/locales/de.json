@@ -543,6 +543,12 @@
     "empty": "Noch keine Arten entdeckt. Scanne deine erste Pflanze!",
     "notDiscovered": "Nicht entdeckt",
     "speciesNotFound": "Pflanzenart nicht gefunden.",
+    "heatmapTitle": "Fund-Hotspots dieser Art",
+    "heatmapHint": "Nur anonymisierte Funde von Nutzern mit Kartenfreigabe.",
+    "heatmapEmpty": "Für diese Art gibt es noch keine Standortdaten.",
+    "heatmapUnavailable": "Karte derzeit nicht verfügbar.",
+    "heatmapDiscoveries": "{{count}} Funde",
+    "heatmapRegions": "{{count}} Regionen",
     "categories": {
       "houseplant": "Zimmerpflanzen",
       "succulent": "Sukkulenten & Kakteen",

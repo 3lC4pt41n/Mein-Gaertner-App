@@ -543,6 +543,12 @@
     "empty": "You haven't discovered any species yet. Scan your first plant!",
     "notDiscovered": "Not discovered",
     "speciesNotFound": "Plant species not found.",
+    "heatmapTitle": "Discovery hotspots for this species",
+    "heatmapHint": "Only anonymized discoveries from users who opted into map sharing.",
+    "heatmapEmpty": "No location data for this species yet.",
+    "heatmapUnavailable": "Map currently unavailable.",
+    "heatmapDiscoveries": "{{count}} discoveries",
+    "heatmapRegions": "{{count}} regions",
     "categories": {
       "houseplant": "Houseplants",
       "succulent": "Succulents & Cacti",

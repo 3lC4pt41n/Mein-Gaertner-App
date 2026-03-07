@@ -209,6 +209,22 @@ export async function fetchHeatmapGrid() {
 }
 
 /**
+ * Fetch aggregated heatmap grid for a single species.
+ * Privacy-safe data only (opt-in users, aggregated grid cells).
+ */
+export async function fetchHeatmapGridBySpecies(speciesId) {
+  if (!speciesId) return [];
+
+  const { data, error } = await supabase
+    .from('heatmap_species_grid')
+    .select('grid_lat, grid_lon, discovery_count, first_discoveries')
+    .eq('species_id', speciesId);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+/**
  * Anzahl entdeckter Arten + Erstentdeckungen eines Users.
  */
 export async function fetchDiscoveryStats(userId) {

@@ -522,6 +522,12 @@
     "empty": "Non hai ancora scoperto nessuna specie. Scansiona la tua prima pianta!",
     "notDiscovered": "Non scoperta",
     "speciesNotFound": "Specie vegetale non trovata.",
+    "heatmapTitle": "Aree di scoperta per questa specie",
+    "heatmapHint": "Solo scoperte anonimizzate di utenti che hanno attivato la condivisione sulla mappa.",
+    "heatmapEmpty": "Nessun dato di posizione per questa specie al momento.",
+    "heatmapUnavailable": "Mappa attualmente non disponibile.",
+    "heatmapDiscoveries": "{{count}} scoperte",
+    "heatmapRegions": "{{count}} regioni",
     "categories": {
       "houseplant": "Piante da appartamento",
       "succulent": "Succulente e cactus",

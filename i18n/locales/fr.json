@@ -522,6 +522,12 @@
     "empty": "Vous n'avez encore découvert aucune espèce. Scannez votre première plante !",
     "notDiscovered": "Non découverte",
     "speciesNotFound": "Espèce végétale introuvable.",
+    "heatmapTitle": "Zones de découverte de cette espèce",
+    "heatmapHint": "Uniquement des découvertes anonymisées d'utilisateurs ayant activé le partage sur carte.",
+    "heatmapEmpty": "Aucune donnée de localisation pour cette espèce pour le moment.",
+    "heatmapUnavailable": "Carte actuellement indisponible.",
+    "heatmapDiscoveries": "{{count}} découvertes",
+    "heatmapRegions": "{{count}} régions",
     "categories": {
       "houseplant": "Plantes d'intérieur",
       "succulent": "Succulentes et cactus",
