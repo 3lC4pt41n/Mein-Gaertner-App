@@ -219,7 +219,9 @@ export default function PlantDetailScreen({ route }) {
               table_json: hc.table,
               recommendation: hc.recommendation,
             });
-            setHealthcheck(hc);
+            // Reload from DB so field names match render logic (table_json)
+            const saved = await fetchLatestHealthcheck(plant.id);
+            setHealthcheck(saved);
             Alert.alert(t('common.success'), t('plants.healthcheckDone'));
           } else {
             Alert.alert(
