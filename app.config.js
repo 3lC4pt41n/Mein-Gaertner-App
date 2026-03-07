@@ -4,11 +4,11 @@
 // See: https://docs.expo.dev/build-reference/variables/
 
 const IS_DEV = process.env.APP_VARIANT === 'development';
-const IS_PRODUCTION = !IS_DEV && (process.env.APP_ENV || 'production') === 'production';
+const IS_EAS_BUILD = process.env.EAS_BUILD === 'true'; // Set automatically by EAS Build
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY || '';
 
-if (IS_PRODUCTION && !GOOGLE_MAPS_API_KEY) {
+if (IS_EAS_BUILD && !IS_DEV && !GOOGLE_MAPS_API_KEY) {
   throw new Error(
     'Missing GOOGLE_MAPS_API_KEY for production build. Set it as an EAS secret before building.'
   );
