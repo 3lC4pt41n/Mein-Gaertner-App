@@ -136,6 +136,7 @@
     "healthLabel": "Health",
     "noHealthcheck": "No health check available.",
     "startHealthcheck": "Start health check",
+    "newHealthcheck": "New health check",
     "healthcheckDone": "Health check complete!",
     "healthcheckParseError": "The health check could not be evaluated. Please try again.",
     "noImageForHealthcheck": "No photo available for health check.",

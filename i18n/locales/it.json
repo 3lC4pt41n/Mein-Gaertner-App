@@ -136,6 +136,7 @@
     "healthLabel": "Salute",
     "noHealthcheck": "Nessun controllo salute disponibile.",
     "startHealthcheck": "Avvia controllo salute",
+    "newHealthcheck": "Nuovo controllo salute",
     "healthcheckDone": "Controllo salute completato!",
     "healthcheckParseError": "Il controllo salute non è stato valutato. Riprova.",
     "noImageForHealthcheck": "Nessuna foto disponibile per il controllo salute.",

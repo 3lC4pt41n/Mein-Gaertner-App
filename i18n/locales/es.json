@@ -136,6 +136,7 @@
     "healthLabel": "Salud",
     "noHealthcheck": "No hay chequeo de salud disponible.",
     "startHealthcheck": "Iniciar chequeo de salud",
+    "newHealthcheck": "Nuevo chequeo de salud",
     "healthcheckDone": "¡Chequeo de salud completado!",
     "healthcheckParseError": "El chequeo de salud no se pudo evaluar. Inténtalo de nuevo.",
     "noImageForHealthcheck": "No hay foto disponible para el chequeo de salud.",
