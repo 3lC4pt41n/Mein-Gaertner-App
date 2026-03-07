@@ -1,42 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { memo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { formatDisplayName } from '../services/discoveryService';
 
+// expo-image: blurhash placeholder while loading, automatic disk + memory cache,
+// no manual timeout needed — the library handles retries & caching internally.
+const BLURHASH_PLACEHOLDER = 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.';
+
 /**
  * DexCard — A single species card in the Plant Dex grid.
  *
  * Shows discovered species with image, name, badges.
  * Shows undiscovered species as locked silhouettes.
- *
- * @param {Object} props
- * @param {Object} props.species - Species data
- * @param {boolean} props.discovered - Whether user has discovered this species
- * @param {boolean} props.isFirstDiscoverer - Whether user was first to discover
- * @param {number} props.slotNumber - Position in the dex (1-indexed)
- * @param {Function} props.onPress - Called with speciesId on tap
  */
-const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }) => {
-  const [imageLoading, setImageLoading] = useState(!!species.image_url);
-  const [imageFailed, setImageFailed] = useState(false);
-
-  useEffect(() => {
-    setImageLoading(!!species.image_url);
-    setImageFailed(false);
-  }, [species.image_url]);
-
-  useEffect(() => {
-    if (!imageLoading || !species.image_url || imageFailed) return undefined;
-    const timer = setTimeout(() => {
-      setImageLoading(false);
-      setImageFailed(true);
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [imageLoading, imageFailed, species.image_url]);
-
+const DexCard = memo(({ species, discovered, isFirstDiscoverer, slotNumber, onPress }) => {
   const handlePress = () => {
     if (onPress && discovered) {
       onPress(species.id);
@@ -66,26 +47,17 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }
         <>
           {/* Discovered Species */}
           <View style={styles.imageContainer}>
-            {species.image_url && !imageFailed ? (
-              <>
-                {imageLoading && (
-                  <ActivityIndicator
-                    style={styles.imageLoader}
-                    size="small"
-                    color={colors.primaryLight}
-                  />
-                )}
-                <Image
-                  source={{ uri: species.image_url }}
-                  style={styles.image}
-                  onLoad={() => setImageLoading(false)}
-                  onLoadEnd={() => setImageLoading(false)}
-                  onError={() => {
-                    setImageLoading(false);
-                    setImageFailed(true);
-                  }}
-                />
-              </>
+            {species.image_url ? (
+              <Image
+                source={{ uri: species.image_url }}
+                style={styles.image}
+                contentFit="cover"
+                placeholder={{ blurhash: BLURHASH_PLACEHOLDER }}
+                placeholderContentFit="cover"
+                transition={200}
+                cachePolicy="disk"
+                recyclingKey={species.id}
+              />
             ) : (
               <View style={styles.imagePlaceholder}>
                 <Ionicons name="leaf" size={32} color={colors.primary} />
@@ -130,7 +102,9 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }
       )}
     </TouchableOpacity>
   );
-};
+});
+
+DexCard.displayName = 'DexCard';
 
 const styles = StyleSheet.create({
   card: {
@@ -138,7 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radius.md,
     overflow: 'hidden',
-    ...shadows.md,
+    ...shadows.sm,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -169,17 +143,10 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1,
     backgroundColor: colors.primarySurface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imageLoader: {
-    position: 'absolute',
-    zIndex: 1,
   },
   image: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   imagePlaceholder: {
     width: '100%',

@@ -127,84 +127,99 @@ const PlantDexScreen = () => {
     }, [user, filter])
   );
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadDexData();
     setRefreshing(false);
-  };
+  }, [loadDexData]);
 
   const sections = useMemo(() => groupIntoSections(species), [species]);
 
   const progressPercent = progress.total > 0 ? (progress.discovered / progress.total) * 100 : 0;
 
-  const filterItems = FILTERS.map((f) => ({
-    label: t(`dex.filters.${f.label}`),
-    value: f.value,
-  }));
+  const filterItems = useMemo(
+    () =>
+      FILTERS.map((f) => ({
+        label: t(`dex.filters.${f.label}`),
+        value: f.value,
+      })),
+    []
+  );
 
-  const renderHeader = () => (
-    <View>
-      {/* Collection Header */}
-      <View style={styles.collectionHeader}>
-        <View style={styles.progressSection}>
-          {/* Main Progress */}
-          <Text style={styles.progressTitle}>
-            {progress.discovered}
-            <Text style={styles.progressTotal}> / {progress.total}</Text>
-          </Text>
-          <Text style={styles.progressSubtitle}>{t('dex.species')}</Text>
+  // Stable callback for card press — avoids re-creating in renderRow
+  const handleCardPress = useCallback(
+    (speciesId, speciesData) => {
+      navigation.navigate('DexDetail', { speciesId, species: speciesData });
+    },
+    [navigation]
+  );
 
-          {/* Progress Bar */}
-          <View style={styles.progressBarContainer}>
-            <View style={[styles.progressBar, { width: `${Math.min(progressPercent, 100)}%` }]} />
-          </View>
+  const renderHeader = useCallback(
+    () => (
+      <View>
+        {/* Collection Header */}
+        <View style={styles.collectionHeader}>
+          <View style={styles.progressSection}>
+            {/* Main Progress */}
+            <Text style={styles.progressTitle}>
+              {progress.discovered}
+              <Text style={styles.progressTotal}> / {progress.total}</Text>
+            </Text>
+            <Text style={styles.progressSubtitle}>{t('dex.species')}</Text>
 
-          {/* Stats Row */}
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Ionicons name="star" size={16} color={colors.gold} />
-              <Text style={styles.statValue}>{progress.firstDiscoveries}</Text>
-              <Text style={styles.statLabel}>{t('dex.filters.first')}</Text>
+            {/* Progress Bar */}
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBar, { width: `${Math.min(progressPercent, 100)}%` }]} />
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Ionicons name="leaf" size={16} color={colors.primaryLight} />
-              <Text style={styles.statValue}>{progress.discovered}</Text>
-              <Text style={styles.statLabel}>{t('dex.filters.discovered')}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Ionicons name="lock-closed" size={16} color={colors.textDisabled} />
-              <Text style={styles.statValue}>
-                {Math.max(0, progress.total - progress.discovered)}
-              </Text>
-              <Text style={styles.statLabel}>{t('dex.notDiscovered')}</Text>
+
+            {/* Stats Row */}
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Ionicons name="star" size={16} color={colors.gold} />
+                <Text style={styles.statValue}>{progress.firstDiscoveries}</Text>
+                <Text style={styles.statLabel}>{t('dex.filters.first')}</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Ionicons name="leaf" size={16} color={colors.primaryLight} />
+                <Text style={styles.statValue}>{progress.discovered}</Text>
+                <Text style={styles.statLabel}>{t('dex.filters.discovered')}</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Ionicons name="lock-closed" size={16} color={colors.textDisabled} />
+                <Text style={styles.statValue}>
+                  {Math.max(0, progress.total - progress.discovered)}
+                </Text>
+                <Text style={styles.statLabel}>{t('dex.notDiscovered')}</Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
 
-      {/* Filter Chips */}
-      <View style={styles.filterContainer}>
-        {filterItems.map((item) => (
-          <TouchableOpacity
-            key={item.value}
-            style={[styles.filterChip, filter === item.value && styles.filterChipActive]}
-            onPress={() => setFilter(item.value)}
-          >
-            <Text
-              style={[styles.filterChipText, filter === item.value && styles.filterChipTextActive]}
+        {/* Filter Chips */}
+        <View style={styles.filterContainer}>
+          {filterItems.map((item) => (
+            <TouchableOpacity
+              key={item.value}
+              style={[styles.filterChip, filter === item.value && styles.filterChipActive]}
+              onPress={() => setFilter(item.value)}
             >
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[styles.filterChipText, filter === item.value && styles.filterChipTextActive]}
+              >
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
-    </View>
+    ),
+    [progress, progressPercent, filter, filterItems]
   );
 
   // Show loading / error / empty when no sections
-  const renderListEmpty = () => {
+  const renderListEmpty = useCallback(() => {
     if (loading && species.length === 0) {
       return (
         <View style={styles.centerContainer}>
@@ -229,35 +244,43 @@ const PlantDexScreen = () => {
         <Text style={styles.emptyText}>{t('dex.empty')}</Text>
       </View>
     );
-  };
+  }, [loading, species.length, error, loadDexData]);
 
-  const renderSectionHeader = ({ section }) => (
-    <View style={styles.sectionHeader}>
-      <View style={[styles.sectionIconBg, { backgroundColor: section.color + '22' }]}>
-        <Ionicons name={section.icon} size={18} color={section.color} />
+  const renderSectionHeader = useCallback(
+    ({ section }) => (
+      <View style={styles.sectionHeader}>
+        <View style={[styles.sectionIconBg, { backgroundColor: section.color + '22' }]}>
+          <Ionicons name={section.icon} size={18} color={section.color} />
+        </View>
+        <Text style={styles.sectionTitle}>{section.title}</Text>
+        <Text style={styles.sectionCount}>{section.count}</Text>
       </View>
-      <Text style={styles.sectionTitle}>{section.title}</Text>
-      <Text style={styles.sectionCount}>{section.count}</Text>
-    </View>
+    ),
+    []
   );
 
   // Each "item" is a pair (row of 2 cards)
-  const renderRow = ({ item: pair }) => (
-    <View style={styles.gridRow}>
-      {pair.map((species) => (
-        <DexCard
-          key={species.id}
-          species={species}
-          discovered={species.discovered}
-          isFirstDiscoverer={species.isFirstDiscoverer}
-          slotNumber={species.dexNumber}
-          onPress={(speciesId) => navigation.navigate('DexDetail', { speciesId, species })}
-        />
-      ))}
-      {/* Spacer if odd number of items */}
-      {pair.length === 1 && <View style={{ flex: 1 }} />}
-    </View>
+  const renderRow = useCallback(
+    ({ item: pair }) => (
+      <View style={styles.gridRow}>
+        {pair.map((sp) => (
+          <DexCard
+            key={sp.id}
+            species={sp}
+            discovered={sp.discovered}
+            isFirstDiscoverer={sp.isFirstDiscoverer}
+            slotNumber={sp.dexNumber}
+            onPress={(speciesId) => handleCardPress(speciesId, sp)}
+          />
+        ))}
+        {/* Spacer if odd number of items */}
+        {pair.length === 1 && <View style={styles.spacer} />}
+      </View>
+    ),
+    [handleCardPress]
   );
+
+  const keyExtractor = useCallback((pair, idx) => pair[0]?.id || `row-${idx}`, []);
 
   return (
     <View style={styles.container}>
@@ -265,11 +288,21 @@ const PlantDexScreen = () => {
         sections={sections}
         renderItem={renderRow}
         renderSectionHeader={renderSectionHeader}
-        keyExtractor={(pair, idx) => pair[0]?.id || `row-${idx}`}
+        keyExtractor={keyExtractor}
         contentContainerStyle={styles.gridContainer}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderListEmpty}
         stickySectionHeadersEnabled={false}
+        // ── Virtualization tuning ──
+        // Render 3 screens worth of items above/below viewport.
+        // Default is 21 (≈10 screens) which renders far too many items at once.
+        windowSize={7}
+        // Render 4 rows per JS frame (= 8 cards) instead of default 10
+        maxToRenderPerBatch={4}
+        // Start with 6 rows visible (= 12 cards)
+        initialNumToRender={6}
+        // Keep 2 off-screen rows before unmounting
+        removeClippedSubviews
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -430,6 +463,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     marginBottom: spacing.md,
+  },
+  spacer: {
+    flex: 1,
   },
 
   /* States */
