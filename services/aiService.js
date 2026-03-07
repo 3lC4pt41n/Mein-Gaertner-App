@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { supabase, SUPABASE_ANON_KEY } from '../supabase';
 import { requestWithPolicy } from './networkPolicy';
 
 function isAuthFailure(error, parsed) {
@@ -18,34 +18,34 @@ function isAuthFailure(error, parsed) {
   );
 }
 
-async function getSessionWithRefresh({ forceRefresh = false } = {}) {
-  if (!forceRefresh) {
+async function getAccessToken({ waitForHydration = true } = {}) {
+  const readToken = async () => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    if (session?.access_token) return session;
+    return session?.access_token || null;
+  };
+
+  let token = await readToken();
+  if (!token && waitForHydration) {
+    // After returning from camera intent on Android, session hydration can lag briefly.
+    await sleep(150);
+    token = await readToken();
   }
 
-  if (typeof supabase.auth.refreshSession === 'function') {
-    const { data, error } = await supabase.auth.refreshSession();
-    if (!error && data?.session?.access_token) return data.session;
-  }
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session || null;
+  return token;
 }
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function invokeEdge(functionName, body, accessToken, { useExplicitAuthHeader = false } = {}) {
+async function invokeEdge(functionName, body, accessToken, { useExplicitAuthHeader = true } = {}) {
   const invokeOptions = { body };
   if (useExplicitAuthHeader && accessToken) {
     invokeOptions.headers = {
       Authorization: `Bearer ${accessToken}`,
+      apikey: SUPABASE_ANON_KEY,
     };
   }
 
@@ -102,19 +102,10 @@ async function parseInvokeError(error) {
 }
 
 // Helper: Edge Function aufrufen über den Supabase Client.
-// Authorization wird explizit gesetzt, um Auth-Races in RN zu vermeiden.
+// Authorization + apikey werden explizit gesetzt, um stale function headers in RN zu vermeiden.
 // Wrapped with requestWithPolicy for timeout + retry on transient failures.
 async function callEdgeFunction(functionName, body) {
-  // Warm-up: camera resume can briefly race with session hydration in AsyncStorage.
-  let session = await getSessionWithRefresh();
-  let accessToken = session?.access_token || null;
-
-  // If session isn't ready yet, force one refresh attempt before first invoke.
-  if (!accessToken) {
-    session = await getSessionWithRefresh({ forceRefresh: true });
-    accessToken = session?.access_token || null;
-  }
-
+  let accessToken = await getAccessToken();
   if (!accessToken) {
     const err = new Error('Nicht eingeloggt');
     err.code = 'AUTH_REQUIRED';
@@ -124,58 +115,33 @@ async function callEdgeFunction(functionName, body) {
 
   // AI calls get a generous timeout (image uploads can be large) and 1 retry
   let { data, error } = await invokeEdge(functionName, body, accessToken, {
-    useExplicitAuthHeader: false,
+    useExplicitAuthHeader: true,
   });
-  let explicitAttempted = false;
 
-  // Auth-recovery: retry up to 2 times with forced refresh.
+  // Auth-recovery: one explicit retry with a freshly-read access token.
   let parsedInitial = null;
   if (error) {
     ({ parsed: parsedInitial } = await parseInvokeError(error));
   }
   if (error && isAuthFailure(error, parsedInitial)) {
-    const delaysMs = [250, 700];
-    for (const delayMs of delaysMs) {
-      await sleep(delayMs);
-      const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
-      const refreshedToken = refreshedSession?.access_token || null;
-      if (!refreshedToken) continue;
-      accessToken = refreshedToken;
+    await sleep(250);
+    const latestToken = (await getAccessToken({ waitForHydration: false })) || accessToken;
+    const explicitRetry = await invokeEdge(functionName, body, latestToken, {
+      useExplicitAuthHeader: true,
+    });
+    data = explicitRetry.data;
+    error = explicitRetry.error;
+    accessToken = latestToken;
 
-      // Retry 1: SDK-managed headers (preferred path, worked before regression).
-      const retryResult = await invokeEdge(functionName, body, refreshedToken, {
-        useExplicitAuthHeader: false,
-      });
-      data = retryResult.data;
-      error = retryResult.error;
-      if (!error) break;
-
-      const { parsed: parsedRetry } = await parseInvokeError(error);
-      if (!isAuthFailure(error, parsedRetry)) break;
-
-      // Retry 2: explicit bearer fallback for rare token propagation races in RN.
-      const explicitRetry = await invokeEdge(functionName, body, refreshedToken, {
-        useExplicitAuthHeader: true,
-      });
-      explicitAttempted = true;
-      data = explicitRetry.data;
-      error = explicitRetry.error;
-      if (!error) break;
-
-      const { parsed: parsedExplicit } = await parseInvokeError(error);
-      if (!isAuthFailure(error, parsedExplicit)) break;
-    }
-
-    // Final fallback if we never reached the explicit path in the loop.
-    if (error && accessToken && !explicitAttempted) {
-      const { parsed: parsedAfterRetries } = await parseInvokeError(error);
-      if (isAuthFailure(error, parsedAfterRetries)) {
-        const fallbackResult = await invokeEdge(functionName, body, accessToken, {
-          useExplicitAuthHeader: true,
+    // Final fallback: let supabase-js attach function headers implicitly.
+    if (error) {
+      const { parsed: parsedAfterExplicit } = await parseInvokeError(error);
+      if (isAuthFailure(error, parsedAfterExplicit)) {
+        const sdkFallback = await invokeEdge(functionName, body, null, {
+          useExplicitAuthHeader: false,
         });
-        explicitAttempted = true;
-        data = fallbackResult.data;
-        error = fallbackResult.error;
+        data = sdkFallback.data;
+        error = sdkFallback.error;
       }
     }
   }
