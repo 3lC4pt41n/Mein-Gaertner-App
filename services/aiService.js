@@ -41,19 +41,19 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function invokeEdge(functionName, body, accessToken) {
-  return requestWithPolicy(
-    () =>
-      supabase.functions.invoke(functionName, {
-        body,
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }),
-    {
-      timeout: 45000,
-      retries: 1,
-      label: `ai.${functionName}`,
-    }
-  );
+async function invokeEdge(functionName, body, accessToken, { useExplicitAuthHeader = false } = {}) {
+  const invokeOptions = { body };
+  if (useExplicitAuthHeader && accessToken) {
+    invokeOptions.headers = {
+      Authorization: `Bearer ${accessToken}`,
+    };
+  }
+
+  return requestWithPolicy(() => supabase.functions.invoke(functionName, invokeOptions), {
+    timeout: 45000,
+    retries: 1,
+    label: `ai.${functionName}`,
+  });
 }
 
 async function parseInvokeError(error) {
@@ -116,7 +116,6 @@ async function callEdgeFunction(functionName, body) {
   }
 
   if (!accessToken) {
-    await supabase.auth.signOut().catch(() => {});
     const err = new Error('Nicht eingeloggt');
     err.code = 'AUTH_REQUIRED';
     err.status = 401;
@@ -124,8 +123,10 @@ async function callEdgeFunction(functionName, body) {
   }
 
   // AI calls get a generous timeout (image uploads can be large) and 1 retry
-  let { data, error } = await invokeEdge(functionName, body, accessToken);
-  let attemptedAuthRecovery = false;
+  let { data, error } = await invokeEdge(functionName, body, accessToken, {
+    useExplicitAuthHeader: false,
+  });
+  let explicitAttempted = false;
 
   // Auth-recovery: retry up to 2 times with forced refresh.
   let parsedInitial = null;
@@ -133,21 +134,49 @@ async function callEdgeFunction(functionName, body) {
     ({ parsed: parsedInitial } = await parseInvokeError(error));
   }
   if (error && isAuthFailure(error, parsedInitial)) {
-    attemptedAuthRecovery = true;
     const delaysMs = [250, 700];
     for (const delayMs of delaysMs) {
       await sleep(delayMs);
       const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
       const refreshedToken = refreshedSession?.access_token || null;
       if (!refreshedToken) continue;
+      accessToken = refreshedToken;
 
-      const retryResult = await invokeEdge(functionName, body, refreshedToken);
+      // Retry 1: SDK-managed headers (preferred path, worked before regression).
+      const retryResult = await invokeEdge(functionName, body, refreshedToken, {
+        useExplicitAuthHeader: false,
+      });
       data = retryResult.data;
       error = retryResult.error;
       if (!error) break;
 
       const { parsed: parsedRetry } = await parseInvokeError(error);
       if (!isAuthFailure(error, parsedRetry)) break;
+
+      // Retry 2: explicit bearer fallback for rare token propagation races in RN.
+      const explicitRetry = await invokeEdge(functionName, body, refreshedToken, {
+        useExplicitAuthHeader: true,
+      });
+      explicitAttempted = true;
+      data = explicitRetry.data;
+      error = explicitRetry.error;
+      if (!error) break;
+
+      const { parsed: parsedExplicit } = await parseInvokeError(error);
+      if (!isAuthFailure(error, parsedExplicit)) break;
+    }
+
+    // Final fallback if we never reached the explicit path in the loop.
+    if (error && accessToken && !explicitAttempted) {
+      const { parsed: parsedAfterRetries } = await parseInvokeError(error);
+      if (isAuthFailure(error, parsedAfterRetries)) {
+        const fallbackResult = await invokeEdge(functionName, body, accessToken, {
+          useExplicitAuthHeader: true,
+        });
+        explicitAttempted = true;
+        data = fallbackResult.data;
+        error = fallbackResult.error;
+      }
     }
   }
 
@@ -156,10 +185,7 @@ async function callEdgeFunction(functionName, body) {
 
     // Spezialbehandlung: Auth
     if (isAuthFailure(error, parsed)) {
-      // If auth still fails after refresh retry, clear stale local auth state.
-      if (attemptedAuthRecovery) {
-        await supabase.auth.signOut().catch(() => {});
-      }
+      // Never auto-signOut here. A failed AI request must not hard-logout the user.
       const err = new Error(parsed?.error || 'Nicht eingeloggt');
       err.code = 'AUTH_REQUIRED';
       err.status = 401;
