@@ -206,7 +206,10 @@ const PlantDexScreen = () => {
               onPress={() => setFilter(item.value)}
             >
               <Text
-                style={[styles.filterChipText, filter === item.value && styles.filterChipTextActive]}
+                style={[
+                  styles.filterChipText,
+                  filter === item.value && styles.filterChipTextActive,
+                ]}
               >
                 {item.label}
               </Text>
