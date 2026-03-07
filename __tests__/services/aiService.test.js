@@ -135,7 +135,8 @@ describe('aiService', () => {
       });
 
       await expect(chatWithBen('Hi', null, 'de')).rejects.toThrow('Nicht eingeloggt');
-      expect(supabase.auth.signOut).toHaveBeenCalled();
+      // signOut should NOT be called – the auth state listener handles navigation
+      expect(supabase.auth.signOut).not.toHaveBeenCalled();
     });
 
     it('refreshes token and retries once on 401', async () => {

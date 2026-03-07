@@ -2,19 +2,18 @@ import { supabase } from '../supabase';
 import { requestWithPolicy } from './networkPolicy';
 
 function isAuthFailure(error, parsed) {
+  // Only treat as auth failure when we have strong signals.
+  // NEVER match on vague substrings like 'session' – too many false positives.
   const status = parsed?.status || error?.status || error?.context?.status;
   const code = parsed?.code || error?.code;
+  if (status === 401 || code === 'UNAUTHORIZED' || code === 'AUTH_REQUIRED') return true;
   const msg = `${parsed?.error || ''} ${error?.message || ''}`.toLowerCase();
   return (
-    status === 401 ||
-    code === 'UNAUTHORIZED' ||
     msg.includes('unauthorized') ||
     msg.includes('not authenticated') ||
     msg.includes('nicht authentifiziert') ||
-    msg.includes('jwt') ||
     msg.includes('invalid token') ||
-    msg.includes('token expired') ||
-    msg.includes('session')
+    msg.includes('token expired')
   );
 }
 
@@ -54,7 +53,9 @@ async function invokeEdgeWithToken(functionName, body, accessToken) {
 async function callEdgeFunction(functionName, body) {
   const initialSession = await getSessionWithRefresh();
   if (!initialSession?.access_token) {
-    await supabase.auth.signOut().catch(() => {});
+    // Do NOT call signOut() here – the auth state listener in the app
+    // will handle navigation. Calling signOut() destroys a potentially
+    // recoverable refresh token and causes a hard logout.
     const err = new Error('Nicht eingeloggt');
     err.code = 'AUTH_REQUIRED';
     err.status = 401;
@@ -65,7 +66,10 @@ async function callEdgeFunction(functionName, body) {
   let { data, error } = await invokeEdgeWithToken(functionName, body, initialSession.access_token);
 
   // One auth-recovery retry with forced token refresh.
-  if (error && isAuthFailure(error)) {
+  // Only trigger on clear 401 status – not on vague error messages.
+  const maybeAuth =
+    error && (error.status === 401 || error?.context?.status === 401);
+  if (maybeAuth) {
     const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
     if (
       refreshedSession?.access_token &&
@@ -79,9 +83,8 @@ async function callEdgeFunction(functionName, body) {
       data = retryResult.data;
       error = retryResult.error;
     }
-    if (error && isAuthFailure(error)) {
-      await supabase.auth.signOut().catch(() => {});
-    }
+    // Do NOT signOut here – let the parsed-error handler below decide.
+    // Aggressive signOut on transient failures was logging users out.
   }
 
   if (error) {
