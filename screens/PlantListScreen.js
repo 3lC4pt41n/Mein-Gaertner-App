@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchPlants } from '../services/plantService';
-import { getPlantImageUrls } from '../services/uploadService';
+import { getPlantImageUrls, getPlantImageUrl } from '../services/uploadService';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -28,6 +28,32 @@ import { useAuth } from '../contexts/AuthContext';
 // Native animation auf Android aktivieren
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+/**
+ * PlantImage – shows the plant thumbnail, resolving storage paths on-demand
+ * when the batch-signed URL is missing (e.g. freshly uploaded images).
+ */
+function PlantImage({ uri, style, placeholderStyle }) {
+  const isHttp = uri && (uri.startsWith('http://') || uri.startsWith('https://'));
+  const [resolved, setResolved] = useState(isHttp ? uri : null);
+
+  useEffect(() => {
+    if (uri && !isHttp) {
+      getPlantImageUrl(uri).then((url) => {
+        if (url) setResolved(url);
+      });
+    }
+  }, [uri]);
+
+  if (resolved) {
+    return <Image source={{ uri: resolved }} style={style} />;
+  }
+  return (
+    <View style={placeholderStyle}>
+      <Ionicons name="leaf-outline" size={32} color={colors.textTertiary} />
+    </View>
+  );
 }
 
 // Fetch all plants with their latest healthcheck in a single query
@@ -144,13 +170,11 @@ export default function PlantListScreen() {
     ({ item }) => (
       <TouchableOpacity onPress={() => navigation.navigate('PlantDetail', { plant: item })}>
         <View style={styles.plantCardContainer}>
-          {item.image_url ? (
-            <Image source={{ uri: item.image_url }} style={styles.plantImage} />
-          ) : (
-            <View style={styles.plantImagePlaceholder}>
-              <Text>🌱</Text>
-            </View>
-          )}
+          <PlantImage
+            uri={item.image_url}
+            style={styles.plantImage}
+            placeholderStyle={styles.plantImagePlaceholder}
+          />
           <View style={styles.plantTextContainer}>
             <Text style={styles.plantName}>{item.name || '?'}</Text>
             <Text style={styles.plantNote}>{item.note}</Text>
@@ -267,16 +291,11 @@ export default function PlantListScreen() {
                             onPress={() => navigation.navigate('PlantDetail', { plant })}
                           >
                             <View style={styles.zonePlantItemRow}>
-                              {plant.image_url ? (
-                                <Image
-                                  source={{ uri: plant.image_url }}
-                                  style={styles.zonePlantImage}
-                                />
-                              ) : (
-                                <View style={styles.zonePlantImagePlaceholder}>
-                                  <Text>🌱</Text>
-                                </View>
-                              )}
+                              <PlantImage
+                                uri={plant.image_url}
+                                style={styles.zonePlantImage}
+                                placeholderStyle={styles.zonePlantImagePlaceholder}
+                              />
                               <View>
                                 <Text style={styles.zonePlantName}>{plant.name}</Text>
                                 <Text style={styles.zonePlantNote}>{plant.note}</Text>
