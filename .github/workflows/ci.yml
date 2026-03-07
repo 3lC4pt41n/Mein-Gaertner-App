@@ -17,7 +17,9 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Lint (zero warnings, zero errors)
-        run: npx eslint . --max-warnings 0
+        run: |
+          npx eslint . --max-warnings 0
+          npm run lint:tokens
 
   test:
     runs-on: ubuntu-latest

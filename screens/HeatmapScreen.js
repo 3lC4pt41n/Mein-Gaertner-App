@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     marginTop: spacing.md,
-    color: colors.error,
+    color: colors.danger,
     fontSize: 14,
     textAlign: 'center',
   },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   // Marker bubble
   markerBubble: {
     backgroundColor: colors.primary,
-    borderRadius: radius.round,
+    borderRadius: radius.pill,
     paddingHorizontal: 8,
     paddingVertical: 3,
     ...shadows.sm,

@@ -9,6 +9,7 @@ google-service-account.json
 credentials.json
 digitaler-gaertner-app-*.json
 dist/
+coverage/
 .claude/
 supabase/.temp/
 AUDIT_*.md

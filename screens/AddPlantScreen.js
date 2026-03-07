@@ -93,14 +93,14 @@ export default function AddPlantScreen() {
       try {
         const bal = await fetchBalance();
         setBalance(bal);
-      } catch (_e) {
-        // Balance fetch failed silently
+      } catch (error) {
+        console.warn('[AddPlant] fetchBalance failed:', error?.message);
       }
       try {
         const userLanguage = await fetchCurrentUserLanguage();
         setLanguage(userLanguage);
-      } catch (_e) {
-        // Language fetch failed silently
+      } catch (error) {
+        console.warn('[AddPlant] fetchCurrentUserLanguage failed:', error?.message);
       }
     })();
   }, []);
@@ -131,8 +131,8 @@ export default function AddPlantScreen() {
         try {
           const bal = await fetchBalance();
           setBalance(bal);
-        } catch (_e) {
-          /* silent */
+        } catch (error) {
+          console.warn('[AddPlant] focus fetchBalance failed:', error?.message);
         }
       })();
     }, [])
@@ -201,8 +201,10 @@ export default function AddPlantScreen() {
     try {
       const data = await fetchZonesGrouped(userId);
       setSections(data);
-    } catch (_err) {
+    } catch (error) {
+      console.warn('[AddPlant] zone picker load failed:', error?.message);
       setSections([]);
+      Alert.alert(t('common.error'), t('home.loadError'));
     }
     setZonesLoading(false);
   };
@@ -259,8 +261,8 @@ export default function AddPlantScreen() {
           points: 1.0,
           meta: { plant_name: name },
         });
-      } catch {
-        // Non-critical — continue silently
+      } catch (eventError) {
+        console.warn('[AddPlant] plant_added event log failed:', eventError?.message);
       }
 
       // Generate display URL on-demand for immediate UI
@@ -365,7 +367,7 @@ export default function AddPlantScreen() {
             <Text
               style={[
                 styles.balanceValue,
-                { color: balance > 20 ? colors.primaryLight : colors.warning },
+                { color: balance > 20 ? colors.primary : colors.warning },
               ]}
             >
               {balance}

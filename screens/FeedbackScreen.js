@@ -161,7 +161,7 @@ export default function FeedbackScreen({ navigation }) {
               onPress={() => setScreenshotUri(null)}
               accessibilityLabel={t('feedback.removeScreenshot')}
             >
-              <Ionicons name="close-circle" size={26} color={colors.error} />
+              <Ionicons name="close-circle" size={26} color={colors.danger} />
             </TouchableOpacity>
           </View>
         ) : (
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 10,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.surfaceSecondary,
   },
   removeButton: {
     position: 'absolute',

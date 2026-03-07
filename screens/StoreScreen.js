@@ -723,7 +723,7 @@ const styles = StyleSheet.create({
   usageDetail: { fontSize: 12, color: colors.textSecondary, marginTop: 1 },
   usageDate: { fontSize: 12, color: colors.textTertiary, marginTop: spacing.xs },
   usageCredits: { fontSize: 16, fontWeight: 'bold' },
-  creditsPositive: { color: colors.primaryLight },
+  creditsPositive: { color: colors.primary },
   creditsNegative: { color: colors.danger ?? '#e74c3c' },
   historyIconBg: {
     width: 32,

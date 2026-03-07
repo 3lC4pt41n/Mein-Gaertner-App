@@ -62,7 +62,7 @@ async function fetchZonesWithLocationsGrouped() {
 
 function ScoreCircle({ score = 0, label = 'Health' }) {
   let color = colors.borderLight;
-  if (score >= 90) color = colors.primaryLight;
+  if (score >= 90) color = colors.primary;
   else if (score >= 75) color = colors.healthGood;
   else if (score >= 60) color = colors.warning;
   else if (score >= 40) color = colors.warning;
@@ -418,7 +418,7 @@ export default function PlantDetailScreen({ route }) {
                 >
                   <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>
                     {row.Kriterium}{' '}
-                    <Text style={{ color: colors.primaryLight }}>{row.Bewertung}/100</Text>
+                    <Text style={{ color: colors.primary }}>{row.Bewertung}/100</Text>
                   </Text>
                   <Text style={{ fontSize: 14, color: colors.textSecondary }}>
                     Beobachtung:{' '}

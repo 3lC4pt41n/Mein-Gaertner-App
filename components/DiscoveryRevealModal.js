@@ -203,7 +203,7 @@ export default function DiscoveryRevealModal({
             {/* Credit Reward */}
             {creditsAwarded > 0 && (
               <View style={styles.creditRewardRow}>
-                <Ionicons name="diamond" size={18} color={colors.accent || '#FFD700'} />
+                <Ionicons name="diamond" size={18} color={colors.gold} />
                 <Text style={styles.creditRewardText}>
                   +{creditsAwarded} {t('common.credits')}
                 </Text>

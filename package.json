@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "test": "jest",
     "lint": "eslint .",
+    "lint:tokens": "node scripts/check-design-tokens.js",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,json}\" --ignore-path .prettierignore"
   },

@@ -207,59 +207,151 @@ function buildTools() {
 
 // ─── Tool Call Handler ────────────
 
+const TOOL_TASK_TYPES = new Set(['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges']);
+const NOTE_MAX_LENGTH = 500;
+
+function getNonEmptyString(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function parseToolArguments(rawArgs: unknown): { args: Record<string, unknown> | null; error?: string } {
+  if (typeof rawArgs !== 'string') {
+    return { args: null, error: 'Tool arguments must be a JSON string.' };
+  }
+
+  try {
+    const parsed = JSON.parse(rawArgs);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { args: null, error: 'Tool arguments must be a JSON object.' };
+    }
+    return { args: parsed as Record<string, unknown> };
+  } catch {
+    return { args: null, error: 'Invalid JSON in tool arguments.' };
+  }
+}
+
+function parseDueDate(input: unknown): { dueDate: string; dueAt: string } | null {
+  const dueDate = getNonEmptyString(input);
+  if (!dueDate || !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) return null;
+  const parsed = new Date(`${dueDate}T09:00:00Z`);
+  if (isNaN(parsed.getTime())) return null;
+  return { dueDate, dueAt: parsed.toISOString() };
+}
+
+function parseIntervalDays(input: unknown): number | null {
+  const value = typeof input === 'number' ? input : Number(input);
+  if (!Number.isInteger(value)) return null;
+  if (value < 1 || value > 365) return null;
+  return value;
+}
+
+function parseOptionalNote(input: unknown): { note: string | null; error?: string } {
+  if (input === undefined || input === null || input === '') return { note: null };
+  if (typeof input !== 'string') {
+    return { note: null, error: 'note must be a string when provided.' };
+  }
+  const trimmed = input.trim();
+  if (trimmed.length > NOTE_MAX_LENGTH) {
+    return { note: null, error: `note must be <= ${NOTE_MAX_LENGTH} characters.` };
+  }
+  return { note: trimmed.length ? trimmed : null };
+}
+
 async function handleToolCall(
   serviceClient: SupabaseClient,
   userId: string,
   toolCall: any,
   plants: any[]
 ): Promise<string> {
-  const fn = toolCall.function;
-  const args = JSON.parse(fn.arguments);
+  const fnName = toolCall?.function?.name;
+  if (!fnName) {
+    return JSON.stringify({ error: 'Tool call is missing a function name.' });
+  }
+
+  const parsedArgs = parseToolArguments(toolCall?.function?.arguments);
+  if (parsedArgs.error || !parsedArgs.args) {
+    return JSON.stringify({ error: parsedArgs.error || 'Invalid tool arguments.' });
+  }
+  const args = parsedArgs.args;
+
+  const plantName = getNonEmptyString(args.plant_name);
+  if (!plantName) {
+    return JSON.stringify({ error: 'plant_name is required and must be a non-empty string.' });
+  }
 
   // Find plant by name (case-insensitive partial match)
   const plant = plants.find((p: any) =>
-    p.name.toLowerCase().includes(args.plant_name.toLowerCase())
+    typeof p?.name === 'string' && p.name.toLowerCase().includes(plantName.toLowerCase())
   );
 
   if (!plant) {
     return JSON.stringify({
-      error: `Plant "${args.plant_name}" not found. Available plants: ${plants.map((p: any) => p.name).join(', ')}`,
+      error: `Plant "${plantName}" not found. Available plants: ${plants.map((p: any) => p.name).join(', ')}`,
     });
   }
 
-  if (fn.name === 'create_task') {
-    // Robuste Date-Validierung: GPT liefert manchmal ungültige Formate
-    let dueDate = new Date(args.due_date + 'T09:00:00');
-    if (isNaN(dueDate.getTime())) {
-      // Fallback: morgen 09:00 wenn das Datum ungültig ist
-      dueDate = new Date(Date.now() + 86400000);
-      dueDate.setHours(9, 0, 0, 0);
+  const taskType = getNonEmptyString(args.task_type);
+  if (!taskType || !TOOL_TASK_TYPES.has(taskType)) {
+    return JSON.stringify({
+      error: `task_type must be one of: ${Array.from(TOOL_TASK_TYPES).join(', ')}`,
+    });
+  }
+
+  if (fnName === 'create_task') {
+    const due = parseDueDate(args.due_date);
+    if (!due) {
+      return JSON.stringify({
+        error: 'due_date must be a valid date string in format YYYY-MM-DD.',
+      });
     }
-    const dueAt = dueDate.toISOString();
+
+    const noteResult = parseOptionalNote(args.note);
+    if (noteResult.error) {
+      return JSON.stringify({ error: noteResult.error });
+    }
+
     const { data, error } = await serviceClient
       .from('tasks')
       .insert({
         plant_id: plant.id,
         user_id: userId,
-        type: args.task_type,
-        due_at: dueAt,
-        note: args.note || null,
+        type: taskType,
+        due_at: due.dueAt,
+        note: noteResult.note,
         state: 'DUE',
       })
       .select()
       .single();
 
-    if (error) return JSON.stringify({ error: error.message });
+    if (error || !data?.id) {
+      return JSON.stringify({ error: error?.message || 'Task creation failed.' });
+    }
+
     return JSON.stringify({
       success: true,
-      task_type: args.task_type,
+      task_type: taskType,
       plant_name: plant.name,
-      due_date: args.due_date,
+      due_date: due.dueDate,
+      task_id: data.id,
     });
   }
 
-  if (fn.name === 'create_recurring_task') {
-    const dueAt = new Date(Date.now() + args.interval_days * 86400000).toISOString();
+  if (fnName === 'create_recurring_task') {
+    const intervalDays = parseIntervalDays(args.interval_days);
+    if (!intervalDays) {
+      return JSON.stringify({
+        error: 'interval_days must be an integer between 1 and 365.',
+      });
+    }
+
+    const noteResult = parseOptionalNote(args.note);
+    if (noteResult.error) {
+      return JSON.stringify({ error: noteResult.error });
+    }
+
+    const dueAt = new Date(Date.now() + intervalDays * 86400000).toISOString();
 
     // Upsert template
     const { data: tpl, error: tplError } = await serviceClient
@@ -268,8 +360,8 @@ async function handleToolCall(
         {
           user_id: userId,
           plant_id: plant.id,
-          type: args.task_type,
-          interval_days: args.interval_days,
+          type: taskType,
+          interval_days: intervalDays,
           next_due_at: dueAt,
           active: true,
         },
@@ -278,26 +370,34 @@ async function handleToolCall(
       .select()
       .single();
 
-    if (tplError) return JSON.stringify({ error: tplError.message });
+    if (tplError || !tpl?.id) {
+      return JSON.stringify({ error: tplError?.message || 'Recurring template upsert failed.' });
+    }
 
     // Create first task
     const dedupeKey = `${tpl.id}:${new Date(dueAt).toISOString().slice(0, 10)}`;
-    await serviceClient.from('tasks').insert({
+    const { error: firstTaskError } = await serviceClient.from('tasks').insert({
       plant_id: plant.id,
       user_id: userId,
-      type: args.task_type,
+      type: taskType,
       due_at: dueAt,
       state: 'DUE',
       template_id: tpl.id,
       dedupe_key: dedupeKey,
-      note: args.note || `Alle ${args.interval_days} Tage`,
+      note: noteResult.note || `Alle ${intervalDays} Tage`,
     });
+
+    // duplicate key = already exists → still a valid outcome
+    if (firstTaskError && firstTaskError.code !== '23505') {
+      return JSON.stringify({ error: firstTaskError.message });
+    }
 
     return JSON.stringify({
       success: true,
-      task_type: args.task_type,
+      task_type: taskType,
       plant_name: plant.name,
-      interval_days: args.interval_days,
+      interval_days: intervalDays,
+      first_task_created: !firstTaskError,
     });
   }
 

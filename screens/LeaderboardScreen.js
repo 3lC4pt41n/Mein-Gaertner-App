@@ -42,26 +42,36 @@ export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [optedIn, setOptedIn] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     setOptedIn(authProfile?.leaderboard_opt_in ?? false);
   }, [authProfile]);
 
-  const loadData = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const [board, rank, stats] = await Promise.all([
-        getLeaderboard(timeWindow, scoreType, 50),
-        optedIn ? getMyRank(userId, timeWindow, scoreType) : null,
-        getMyStats(userId),
-      ]);
-      setLeaderboard(board);
-      setMyRank(rank);
-      setMyStats(stats);
-    } catch (_e) {
-      // Leaderboard load failed silently
-    }
-  }, [userId, timeWindow, scoreType, optedIn]);
+  const loadData = useCallback(
+    async ({ notifyOnError = false } = {}) => {
+      if (!userId) return;
+      try {
+        const [board, rank, stats] = await Promise.all([
+          getLeaderboard(timeWindow, scoreType, 50),
+          optedIn ? getMyRank(userId, timeWindow, scoreType) : null,
+          getMyStats(userId),
+        ]);
+        setLeaderboard(board);
+        setMyRank(rank);
+        setMyStats(stats);
+        setLoadError(null);
+      } catch (error) {
+        const message = error?.message || t('common.networkError');
+        setLoadError(message);
+        console.warn('[Leaderboard] loadData failed:', message);
+        if (notifyOnError) {
+          Alert.alert(t('common.error'), message);
+        }
+      }
+    },
+    [userId, timeWindow, scoreType, optedIn]
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -70,7 +80,7 @@ export default function LeaderboardScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadData();
+    await loadData({ notifyOnError: true });
     setRefreshing(false);
   };
 
@@ -143,6 +153,13 @@ export default function LeaderboardScreen() {
 
       {/* Score-Typ Tabs */}
       {renderTabBar(SCORE_TYPES, scoreType, setScoreType)}
+
+      {!!loadError && !loading && (
+        <View style={styles.errorBanner}>
+          <Ionicons name="alert-circle-outline" size={18} color={colors.danger} />
+          <Text style={styles.errorBannerText}>{loadError}</Text>
+        </View>
+      )}
 
       {loading ? (
         <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: 40 }} />
@@ -280,8 +297,10 @@ export default function LeaderboardScreen() {
                         try {
                           await updateProfile({ leaderboard_opt_in: true });
                           setOptedIn(true);
-                        } catch (_e) {
-                          // Opt-in failed silently
+                        } catch (error) {
+                          const message = error?.message || t('settings.profileSaveError');
+                          console.warn('[Leaderboard] opt-in failed:', message);
+                          Alert.alert(t('common.error'), message);
                         }
                       }}
                       style={{ marginTop: spacing.sm }}
@@ -367,6 +386,18 @@ const styles = StyleSheet.create({
   // Empty State
   emptyContainer: { alignItems: 'center', paddingTop: 60 },
   emptyText: { marginTop: spacing.md, color: colors.textTertiary, fontSize: 14 },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+    padding: spacing.sm,
+    backgroundColor: colors.dangerSurface,
+    borderRadius: radius.sm,
+  },
+  errorBannerText: { flex: 1, fontSize: 12, color: colors.danger },
 
   // My Rank Card
   myRankCard: {

@@ -23,6 +23,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Design token guard
+        run: npm run lint:tokens
+
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest

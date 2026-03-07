@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 10,
   },
-  creditValue: { fontSize: 14, fontWeight: 'bold', color: colors.primaryLight, marginLeft: 3 },
+  creditValue: { fontSize: 14, fontWeight: 'bold', color: colors.primary, marginLeft: 3 },
 
   ctaButton: {
     flexDirection: 'row',
