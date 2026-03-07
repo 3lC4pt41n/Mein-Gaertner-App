@@ -194,10 +194,15 @@ export default function PlantDetailScreen({ route }) {
     }
     // Fallback: Original-Pflanzenfoto (resolve on-demand if path)
     if (!latestImageUrl) {
-      latestImageUrl = resolvedImageUrl || (await getPlantImageUrl(plant.image_url));
+      latestImageUrl =
+        (await getPlantImageUrl(plant.image_url)) || (await getPlantImageUrl(resolvedImageUrl));
     }
 
     const runWithPhoto = async (imageUrl) => {
+      if (!imageUrl) {
+        Alert.alert(t('common.error'), t('plants.noImageForHealthcheck'));
+        return;
+      }
       setRunningHealthcheck(true);
       try {
         const result = await performHealthcheck(imageUrl, plant.name);

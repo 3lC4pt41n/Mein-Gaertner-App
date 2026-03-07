@@ -53,6 +53,22 @@ export function friendlyError(error) {
     return t('common.permissionError');
   }
 
+  // ── Validation / input ─────────────────────
+  if (
+    code === 400 ||
+    lower.includes('ungültige eingabe') ||
+    lower.includes('invalid input') ||
+    lower.includes('base64') ||
+    lower.includes('image_url')
+  ) {
+    return msg || t('common.unknownError');
+  }
+
+  // ── Rate limit ─────────────────────────────
+  if (code === 429 || lower.includes('rate limit') || lower.includes('zu viele anfragen')) {
+    return msg || t('common.timeoutError');
+  }
+
   // ── Not found ───────────────────────────────
   if (code === 404 || lower.includes('not found') || lower.includes('does not exist')) {
     return t('common.notFoundError');
@@ -76,5 +92,8 @@ export function friendlyError(error) {
   }
 
   // ── Fallback ────────────────────────────────
+  if (msg && !lower.includes('non-2xx') && !lower.includes('[object object]')) {
+    return msg;
+  }
   return t('common.unknownError');
 }

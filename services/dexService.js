@@ -1,6 +1,13 @@
 import { supabase } from '../supabase';
 import { getPlantImageUrl, getPlantImageUrls } from './uploadService';
 
+function isRenderableImageUrl(value) {
+  return (
+    typeof value === 'string' &&
+    (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:image/'))
+  );
+}
+
 /**
  * Fetch the Plant-Dex: all species with discovery status for the user
  * @param {string} userId - The user's ID
@@ -51,7 +58,8 @@ export async function fetchDex(userId, filter = 'all') {
 
   // Resolve species/fallback image references (legacy URLs + storage paths).
   const unresolvedImageUrls = (allSpecies || []).map(
-    (species) => species.image_url || plantImageMap[species.canonical_name] || null
+    (species) =>
+      species.image_url || plantImageMap[species.canonical_name?.trim().toLowerCase()] || null
   );
   const resolvedImageUrls = await getPlantImageUrls(unresolvedImageUrls);
 
@@ -65,7 +73,9 @@ export async function fetchDex(userId, filter = 'all') {
   // (see HANDOFF.md → "Bekannte Tech Debt").
   let result = (allSpecies || []).map((species, idx) => ({
     ...species,
-    image_url: resolvedImageUrls[idx] || unresolvedImageUrls[idx] || null,
+    image_url:
+      resolvedImageUrls[idx] ||
+      (isRenderableImageUrl(unresolvedImageUrls[idx]) ? unresolvedImageUrls[idx] : null),
     dexNumber: idx + 1,
     discovered: !!discoveredMap[species.id],
     isFirstDiscoverer: discoveredMap[species.id]?.is_first || false,

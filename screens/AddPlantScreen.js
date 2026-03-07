@@ -12,6 +12,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Ionicons } from '@expo/vector-icons';
 import { savePlantToSupabase, saveHealthcheck } from '../services/plantService';
 import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
@@ -167,12 +168,24 @@ export default function AddPlantScreen() {
     const result = await ImagePicker.launchCameraAsync({
       base64: true,
       allowsEditing: true,
-      quality: 0.8,
+      quality: 0.6,
     });
 
     if (!result.canceled) {
-      const base64 = result.assets[0].base64;
       const uri = result.assets[0].uri;
+      let base64 = result.assets[0].base64 || null;
+      if (!base64 && uri) {
+        try {
+          base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+        } catch {
+          base64 = null;
+        }
+      }
+      if (!base64) {
+        Alert.alert(t('common.error'), t('dialog.imagePickerError'));
+        return;
+      }
+
       setImageUri(uri);
       setBase64Image(base64);
       setLoading(true);
@@ -185,8 +198,9 @@ export default function AddPlantScreen() {
         setStep('save');
       } catch (e) {
         if (!handleCreditError(e)) {
-          Alert.alert(t('common.error'), friendlyError(e));
-          setNote(t('common.error') + ': ' + friendlyError(e));
+          const msg = friendlyError(e);
+          Alert.alert(t('common.error'), msg);
+          setNote(t('common.error') + ': ' + msg);
           setName('');
         }
       }
@@ -267,7 +281,7 @@ export default function AddPlantScreen() {
 
       // Generate display URL on-demand for immediate UI
       const displayUrl = await getPlantImageUrl(uploadedPath);
-      setSavedPlant({ ...plant, image_url: displayUrl });
+      setSavedPlant({ ...plant, image_url: displayUrl, image_path: uploadedPath });
       setStep('done');
 
       // Show discovery reveal for new discoveries
@@ -311,7 +325,13 @@ export default function AddPlantScreen() {
     if (!savedPlant) return;
     setLoading(true);
     try {
-      const hcData = await performHealthcheck(savedPlant.image_url, name, language);
+      const source = savedPlant.image_path || savedPlant.image_url;
+      const healthcheckImageUrl = await getPlantImageUrl(source);
+      if (!healthcheckImageUrl) {
+        throw new Error(t('plants.noImageForHealthcheck'));
+      }
+
+      const hcData = await performHealthcheck(healthcheckImageUrl, name, language);
       if (typeof hcData.balance === 'number') setBalance(hcData.balance);
 
       // Save healthcheck

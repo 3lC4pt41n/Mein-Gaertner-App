@@ -1,7 +1,7 @@
 // Input-Validierung fuer Edge Functions
 // Schuetzt vor Missbrauch und ueberdimensionierten Requests
 
-const SUPABASE_STORAGE_PATTERN = /^https:\/\/[a-z]+\.supabase\.co\/storage\/v1\//;
+const SUPABASE_STORAGE_PATTERN = /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\//;
 
 const ALLOWED_LANGUAGES = ['de', 'en', 'fr', 'it', 'es', 'ru'];
 

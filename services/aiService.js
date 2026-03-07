@@ -20,11 +20,27 @@ async function callEdgeFunction(functionName, body) {
     // Supabase FunctionsHttpError: error.context kann ein Response-Objekt,
     // ein String oder bereits ein Objekt sein (je nach SDK-Version).
     let parsed;
+    let contextText = '';
     try {
       if (error.context && typeof error.context.json === 'function') {
-        // Response-Objekt (Supabase JS v2) – Body als JSON lesen
-        parsed = await error.context.json();
+        // Response-Objekt (Supabase JS v2) – Body robust lesen (JSON oder Text)
+        const cloned = typeof error.context.clone === 'function' ? error.context.clone() : null;
+        if (cloned && typeof cloned.json === 'function') {
+          try {
+            parsed = await cloned.json();
+          } catch {
+            contextText = (await cloned.text()) || '';
+            try {
+              parsed = JSON.parse(contextText);
+            } catch {
+              parsed = null;
+            }
+          }
+        } else {
+          parsed = await error.context.json();
+        }
       } else if (typeof error.context === 'string') {
+        contextText = error.context;
         parsed = JSON.parse(error.context);
       } else {
         parsed = error.context;
@@ -32,6 +48,11 @@ async function callEdgeFunction(functionName, body) {
     } catch {
       parsed = null;
     }
+
+    const firstDetail =
+      Array.isArray(parsed?.details) && parsed.details.length > 0
+        ? parsed.details.find((d) => d?.message)?.message || null
+        : null;
 
     // Spezialbehandlung: Nicht genug Credits (HTTP 402)
     if (parsed?.code === 'INSUFFICIENT_CREDITS' || error.message?.includes('402')) {
@@ -51,12 +72,22 @@ async function callEdgeFunction(functionName, body) {
     }
 
     // Benutzerfreundliche Fallback-Meldung statt rohem SDK-Text
+    const parsedMessage =
+      parsed?.error && firstDetail
+        ? `${parsed.error}: ${firstDetail}`
+        : parsed?.error || firstDetail;
+
     const userMsg =
-      parsed?.error ||
+      parsedMessage ||
+      contextText ||
       (error.message && !error.message.includes('non-2xx')
         ? error.message
         : `Fehler bei ${functionName} – bitte versuche es erneut.`);
-    throw new Error(userMsg);
+
+    const err = new Error(userMsg);
+    err.code = parsed?.code || error?.code;
+    err.status = parsed?.status || error?.status || error?.context?.status;
+    throw err;
   }
 
   return data;

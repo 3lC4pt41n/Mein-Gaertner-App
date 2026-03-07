@@ -29,6 +29,57 @@ async function logGardeningEvent({ userId, eventType, plantId, taskId, points, m
  */
 const PAGE_SIZE = 50;
 
+function isMissingTasksNoteColumnError(error) {
+  const msg = (error?.message || '').toLowerCase();
+  return (
+    msg.includes('tasks') &&
+    msg.includes('note') &&
+    (msg.includes('schema cache') || msg.includes('column'))
+  );
+}
+
+function payloadContainsNote(payload) {
+  if (Array.isArray(payload)) {
+    return payload.some((row) => Object.prototype.hasOwnProperty.call(row || {}, 'note'));
+  }
+  return Object.prototype.hasOwnProperty.call(payload || {}, 'note');
+}
+
+function stripNoteField(payload) {
+  if (Array.isArray(payload)) {
+    return payload.map((row) => {
+      const rest = { ...(row || {}) };
+      delete rest.note;
+      return rest;
+    });
+  }
+  const rest = { ...(payload || {}) };
+  delete rest.note;
+  return rest;
+}
+
+async function insertTasksWithNoteFallback(payload, { single = false } = {}) {
+  let query = supabase.from('tasks').insert(payload);
+  if (single) query = query.select().single();
+
+  let { data, error } = await query;
+  if (!error || !payloadContainsNote(payload) || !isMissingTasksNoteColumnError(error)) {
+    return { data, error };
+  }
+
+  const payloadWithoutNote = stripNoteField(payload);
+  let retryQuery = supabase.from('tasks').insert(payloadWithoutNote);
+  if (single) retryQuery = retryQuery.select().single();
+
+  const retryResult = await retryQuery;
+  if (!retryResult.error) {
+    console.warn(
+      '[taskService] tasks.note missing in PostgREST schema cache; insert retried without note.'
+    );
+  }
+  return retryResult;
+}
+
 export async function fetchTasks(user_id, { page = 0 } = {}) {
   return requestWithPolicy(
     async () => {
@@ -71,11 +122,10 @@ export async function fetchTask(task_id, user_id) {
  * State ist jetzt 'DUE' statt 'PENDING' – die UI zeigt Buttons nur bei DUE.
  */
 export async function createTask({ plant_id, user_id, type, due_at, note }) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .insert([{ plant_id, user_id, type, due_at, note, state: 'DUE' }])
-    .select()
-    .single();
+  const { data, error } = await insertTasksWithNoteFallback(
+    [{ plant_id, user_id, type, due_at, note, state: 'DUE' }],
+    { single: true }
+  );
   if (error) throw error;
   return data;
 }
@@ -113,9 +163,8 @@ export async function createRecurringTask({
 
   // 2. Ersten Task erzeugen
   const dedupeKey = `${tpl.id}:${new Date(due_at).toISOString().slice(0, 10)}`;
-  const { data: task, error: taskError } = await supabase
-    .from('tasks')
-    .insert([
+  const { data: task, error: taskError } = await insertTasksWithNoteFallback(
+    [
       {
         plant_id,
         user_id,
@@ -126,9 +175,9 @@ export async function createRecurringTask({
         template_id: tpl.id,
         dedupe_key: dedupeKey,
       },
-    ])
-    .select()
-    .single();
+    ],
+    { single: true }
+  );
 
   // 23505 = duplicate key → Task existiert bereits (OK)
   if (taskError && taskError.code !== '23505') throw taskError;
@@ -284,7 +333,7 @@ async function rescheduleFromTemplate(templateId, completedDueAt, userId) {
     const dedupeKey = `${templateId}:${nextDueIso.slice(0, 10)}`;
 
     // 3. Nächsten Task idempotent anlegen
-    const { error: insertError } = await supabase.from('tasks').insert({
+    const { error: insertError } = await insertTasksWithNoteFallback({
       user_id: userId,
       plant_id: tpl.plant_id,
       type: tpl.type,
@@ -337,7 +386,7 @@ export async function catchUpMissedTasks(userId) {
 
       // Überfälligen Task nachlegen
       const dedupeKey = `${tpl.id}:${new Date(tpl.next_due_at).toISOString().slice(0, 10)}`;
-      const { error: insertError } = await supabase.from('tasks').insert({
+      const { error: insertError } = await insertTasksWithNoteFallback({
         user_id: userId,
         plant_id: tpl.plant_id,
         type: tpl.type,

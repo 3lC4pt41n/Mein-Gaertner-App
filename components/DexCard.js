@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,7 +20,22 @@ import { formatDisplayName } from '../services/discoveryService';
  * @param {Function} props.onPress - Called with speciesId on tap
  */
 const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }) => {
-  const [imageLoading, setImageLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(!!species.image_url);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageLoading(!!species.image_url);
+    setImageFailed(false);
+  }, [species.image_url]);
+
+  useEffect(() => {
+    if (!imageLoading || !species.image_url || imageFailed) return undefined;
+    const timer = setTimeout(() => {
+      setImageLoading(false);
+      setImageFailed(true);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [imageLoading, imageFailed, species.image_url]);
 
   const handlePress = () => {
     if (onPress && discovered) {
@@ -51,7 +66,7 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }
         <>
           {/* Discovered Species */}
           <View style={styles.imageContainer}>
-            {species.image_url ? (
+            {species.image_url && !imageFailed ? (
               <>
                 {imageLoading && (
                   <ActivityIndicator
@@ -63,7 +78,12 @@ const DexCard = ({ species, discovered, isFirstDiscoverer, slotNumber, onPress }
                 <Image
                   source={{ uri: species.image_url }}
                   style={styles.image}
+                  onLoad={() => setImageLoading(false)}
                   onLoadEnd={() => setImageLoading(false)}
+                  onError={() => {
+                    setImageLoading(false);
+                    setImageFailed(true);
+                  }}
                 />
               </>
             ) : (
