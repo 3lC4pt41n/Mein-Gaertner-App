@@ -91,17 +91,34 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function unauthorizedError(message: string): Error & { code: 'UNAUTHORIZED' } {
+  const err = new Error(message) as Error & { code: 'UNAUTHORIZED' };
+  err.code = 'UNAUTHORIZED';
+  return err;
+}
+
+export function extractBearerToken(authHeader: string): string {
+  const parts = authHeader.trim().split(/\s+/);
+  const [scheme, token, ...rest] = parts;
+
+  if (scheme !== 'Bearer' || !token || rest.length > 0) {
+    throw unauthorizedError('Ungültiger Authorization Header');
+  }
+
+  return token;
+}
+
 // User-ID aus JWT extrahieren
 export async function getUserIdFromAuth(
   serviceClient: SupabaseClient,
   authHeader: string
 ): Promise<string> {
-  const token = authHeader.replace('Bearer ', '');
+  const token = extractBearerToken(authHeader);
   const {
     data: { user },
     error,
   } = await serviceClient.auth.getUser(token);
 
-  if (error || !user) throw new Error('Nicht authentifiziert');
+  if (error || !user) throw unauthorizedError('Nicht authentifiziert');
   return user.id;
 }

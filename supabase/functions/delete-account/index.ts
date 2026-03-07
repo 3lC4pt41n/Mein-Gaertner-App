@@ -6,14 +6,10 @@
 //    profiles, plants, tasks, messages, healthchecks, events, diary, etc.
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient, getUserClient } from '../_shared/supabase-client.ts';
+import { extractBearerToken } from '../_shared/credits.ts';
+import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
-const corsHeaders: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
-function json(body: Record<string, unknown>, status = 200) {
+function json(body: Record<string, unknown>, corsHeaders: Record<string, string>, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -72,18 +68,28 @@ async function purgeStorageBucket(
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, 'POST, OPTIONS');
+  const blockedOrigin = rejectDisallowedOrigin(req, corsHeaders);
+  if (blockedOrigin) return blockedOrigin;
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+    return json({ error: 'Method not allowed' }, corsHeaders, 405);
   }
 
   // --- Authenticate caller ---
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
-    return json({ error: 'Missing authorization header' }, 401);
+    return json({ error: 'Missing authorization header' }, corsHeaders, 401);
+  }
+
+  try {
+    extractBearerToken(authHeader);
+  } catch {
+    return json({ error: 'Unauthorized' }, corsHeaders, 401);
   }
 
   const userClient = getUserClient(authHeader);
@@ -93,7 +99,7 @@ serve(async (req) => {
   } = await userClient.auth.getUser();
 
   if (authError || !user) {
-    return json({ error: 'Unauthorized' }, 401);
+    return json({ error: 'Unauthorized' }, corsHeaders, 401);
   }
 
   const userId = user.id;
@@ -117,8 +123,8 @@ serve(async (req) => {
 
   if (deleteError) {
     console.error('Account deletion failed:', deleteError.message);
-    return json({ error: 'Account deletion failed' }, 500);
+    return json({ error: 'Account deletion failed' }, corsHeaders, 500);
   }
 
-  return json({ success: true, storageObjectsDeleted: deletedCount });
+  return json({ success: true, storageObjectsDeleted: deletedCount }, corsHeaders);
 });

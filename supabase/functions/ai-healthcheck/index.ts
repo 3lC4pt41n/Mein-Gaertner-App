@@ -8,7 +8,6 @@ import {
   deductCreditsAtomic,
   refundCredits,
   logUsage,
-  corsHeaders,
   getUserIdFromAuth,
 } from '../_shared/credits.ts';
 import {
@@ -23,6 +22,7 @@ import {
   validationErrorResponse,
 } from '../_shared/validate.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
+import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
 const HEALTHCHECK_CRITERIA: Record<string, string[]> = {
   de: [
@@ -109,6 +109,10 @@ Rules:
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, 'POST, OPTIONS');
+  const blockedOrigin = rejectDisallowedOrigin(req, corsHeaders);
+  if (blockedOrigin) return blockedOrigin;
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -128,10 +132,10 @@ serve(async (req) => {
     const { image_url, plant_name, language: requestedLanguage } = await req.json();
 
     // Input-Validierung (VOR Credit-Abzug)
-    const vErr = validationErrorResponse([
-      validateImageUrl(image_url),
-      validateText(plant_name, 200, 'plant_name'),
-    ]);
+    const vErr = validationErrorResponse(
+      [validateImageUrl(image_url), validateText(plant_name, 200, 'plant_name')],
+      corsHeaders
+    );
     if (vErr) return vErr;
 
     if (!image_url) {
@@ -144,7 +148,7 @@ serve(async (req) => {
     const language = validateLanguage(requestedLanguage);
 
     // Rate Limiting (vor Credit-Abzug)
-    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'healthcheck');
+    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'healthcheck', corsHeaders);
     if (rateLimitResp) return rateLimitResp;
 
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
@@ -263,8 +267,9 @@ serve(async (req) => {
       }
     );
   } catch (e: any) {
+    const status = e?.code === 'UNAUTHORIZED' ? 401 : 500;
     return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
-      status: 500,
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

@@ -1,11 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
@@ -54,10 +49,14 @@ const validateCoordinates = (lat: string | null, lon: string | null): boolean =>
  * Main handler
  */
 serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req, 'GET, OPTIONS', 'content-type, authorization, apikey');
+  const blockedOrigin = rejectDisallowedOrigin(req, corsHeaders);
+  if (blockedOrigin) return blockedOrigin;
+
   // Support CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
-      headers: CORS_HEADERS,
+      headers: corsHeaders,
     });
   }
 
@@ -65,7 +64,7 @@ serve(async (req: Request) => {
   if (req.method !== 'GET') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -74,7 +73,7 @@ serve(async (req: Request) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return new Response(JSON.stringify({ error: 'Missing authorization' }), {
       status: 401,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -91,7 +90,7 @@ serve(async (req: Request) => {
   if (authError || !user) {
     return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
       status: 401,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -99,7 +98,7 @@ serve(async (req: Request) => {
   if (!checkRateLimit(user.id)) {
     return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
       status: 429,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -115,7 +114,7 @@ serve(async (req: Request) => {
   if (!validateCoordinates(lat, lon)) {
     return new Response(JSON.stringify({ error: 'Invalid latitude or longitude' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -125,7 +124,7 @@ serve(async (req: Request) => {
       JSON.stringify({ error: "Invalid type parameter. Must be 'current' or 'forecast'" }),
       {
         status: 400,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }
@@ -137,7 +136,7 @@ serve(async (req: Request) => {
       console.error('OPENWEATHER_API_KEY not configured');
       return new Response(JSON.stringify({ error: 'API key not configured' }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
@@ -152,7 +151,7 @@ serve(async (req: Request) => {
       console.error(`OpenWeatherMap API error: ${weatherResponse.status}`);
       return new Response(JSON.stringify({ error: 'Failed to fetch weather data' }), {
         status: weatherResponse.status,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
@@ -163,14 +162,14 @@ serve(async (req: Request) => {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=600', // Cache for 10 minutes
-        ...CORS_HEADERS,
+        ...corsHeaders,
       },
     });
   } catch (error) {
     console.error('Error in weather proxy:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 });

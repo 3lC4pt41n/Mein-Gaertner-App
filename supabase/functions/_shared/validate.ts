@@ -10,6 +10,11 @@ export interface ValidationError {
   message: string;
 }
 
+const DEFAULT_RESPONSE_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 // Validiert Text-Input: max Laenge, kein HTML/Script
 export function validateText(
   text: string | undefined,
@@ -71,7 +76,10 @@ export function validateLanguage(lang: string | undefined): string {
 }
 
 // Sammelt alle Validierungsfehler und gibt 400 Response zurueck
-export function validationErrorResponse(errors: (ValidationError | null)[]): Response | null {
+export function validationErrorResponse(
+  errors: (ValidationError | null)[],
+  responseHeaders: Record<string, string> = DEFAULT_RESPONSE_HEADERS
+): Response | null {
   const actual = errors.filter(Boolean) as ValidationError[];
   if (actual.length === 0) return null;
 
@@ -84,8 +92,7 @@ export function validationErrorResponse(errors: (ValidationError | null)[]): Res
       status: 400,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        ...responseHeaders,
       },
     }
   );

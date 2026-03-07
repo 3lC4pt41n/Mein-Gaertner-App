@@ -10,7 +10,6 @@ import {
   deductCreditsAtomic,
   refundCredits,
   logUsage,
-  corsHeaders,
   getUserIdFromAuth,
 } from '../_shared/credits.ts';
 import { getLanguagePromptName, getUserLanguage } from '../_shared/language.ts';
@@ -22,6 +21,7 @@ import {
   validationErrorResponse,
 } from '../_shared/validate.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
+import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
 // ─── Garden Context: Pflanzen, Healthchecks, Tasks laden ────────────
 
@@ -537,6 +537,10 @@ Previous summary to update/extend: ${previousSummary}`,
 // ─── Main Handler ────────────
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, 'POST, OPTIONS');
+  const blockedOrigin = rejectDisallowedOrigin(req, corsHeaders);
+  if (blockedOrigin) return blockedOrigin;
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -557,15 +561,15 @@ serve(async (req) => {
     const { text, image_url, language: requestedLanguage } = await req.json();
 
     // Input-Validierung
-    const validationErr = validationErrorResponse([
-      validateText(text, 2000, 'text'),
-      validateImageUrl(image_url),
-    ]);
+    const validationErr = validationErrorResponse(
+      [validateText(text, 2000, 'text'), validateImageUrl(image_url)],
+      corsHeaders
+    );
     if (validationErr) return validationErr;
     const language = validateLanguage(requestedLanguage);
 
     // Rate Limiting (vor Credit-Abzug)
-    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'chat');
+    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'chat', corsHeaders);
     if (rateLimitResp) return rateLimitResp;
 
     // Credits atomar abziehen
@@ -690,8 +694,9 @@ serve(async (req) => {
       }
     );
   } catch (e: any) {
+    const status = e?.code === 'UNAUTHORIZED' ? 401 : 500;
     return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
-      status: 500,
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

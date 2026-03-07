@@ -1,5 +1,5 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
-import { corsHeaders } from './credits.ts';
+import { corsHeaders as defaultCorsHeaders } from './credits.ts';
 
 // ─── Rate-Limit-Konfiguration pro Aktion ────────────────────────────
 // maxRequests innerhalb von windowMinutes
@@ -20,7 +20,8 @@ export const RATE_LIMITS: Record<string, { maxRequests: number; windowMinutes: n
 export async function checkRateLimit(
   serviceClient: SupabaseClient,
   userId: string,
-  action: string
+  action: string,
+  responseHeaders: Record<string, string> = defaultCorsHeaders
 ): Promise<Response | null> {
   const config = RATE_LIMITS[action];
   if (!config) return null; // Unbekannte Aktion → kein Limit
@@ -54,7 +55,7 @@ export async function checkRateLimit(
       {
         status: 429,
         headers: {
-          ...corsHeaders,
+          ...responseHeaders,
           'Content-Type': 'application/json',
           'Retry-After': String(retryAfterSec),
         },

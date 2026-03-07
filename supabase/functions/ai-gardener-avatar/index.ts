@@ -3,13 +3,24 @@
 // POST Body: { base64: string, language?: string }
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { corsHeaders, getUserIdFromAuth, logUsage, CREDIT_COSTS, deductCreditsAtomic, refundCredits } from '../_shared/credits.ts';
+import {
+  getUserIdFromAuth,
+  logUsage,
+  CREDIT_COSTS,
+  deductCreditsAtomic,
+  refundCredits,
+} from '../_shared/credits.ts';
 import { getLanguagePromptName, getUserLanguage } from '../_shared/language.ts';
 import { callOpenAI, callOpenAIImageGenerate } from '../_shared/openai.ts';
 import { validateBase64, validateLanguage, validationErrorResponse } from '../_shared/validate.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
+import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, 'POST, OPTIONS');
+  const blockedOrigin = rejectDisallowedOrigin(req, corsHeaders);
+  if (blockedOrigin) return blockedOrigin;
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -33,7 +44,7 @@ serve(async (req) => {
     const { base64, language: requestedLanguage } = await req.json();
 
     // Input-Validierung
-    const vErr = validationErrorResponse([validateBase64(base64, 10_000_000)]);
+    const vErr = validationErrorResponse([validateBase64(base64, 10_000_000)], corsHeaders);
     if (vErr) return vErr;
 
     if (!base64) {
@@ -46,7 +57,7 @@ serve(async (req) => {
     const language = validateLanguage(requestedLanguage);
 
     // Rate Limiting
-    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'avatar');
+    const rateLimitResp = await checkRateLimit(serviceClient, userId, 'avatar', corsHeaders);
     if (rateLimitResp) return rateLimitResp;
 
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
@@ -169,8 +180,9 @@ Composition and style — follow exactly:
     if (creditsDeducted && serviceClient && userId) {
       await refundCredits(serviceClient, userId, cost);
     }
+    const status = e?.code === 'UNAUTHORIZED' ? 401 : 500;
     return new Response(JSON.stringify({ error: e.message || 'Unbekannter Fehler' }), {
-      status: 500,
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

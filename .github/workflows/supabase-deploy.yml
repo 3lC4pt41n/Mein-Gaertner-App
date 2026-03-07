@@ -32,12 +32,12 @@ jobs:
 
       - name: Deploy Edge Functions
         run: |
-          supabase functions deploy ai-plant-scan --no-verify-jwt
-          supabase functions deploy ai-plant-details --no-verify-jwt
-          supabase functions deploy ai-healthcheck --no-verify-jwt
-          supabase functions deploy ai-chat --no-verify-jwt
-          supabase functions deploy ai-gardener-avatar --no-verify-jwt
+          supabase functions deploy ai-plant-scan
+          supabase functions deploy ai-plant-details
+          supabase functions deploy ai-healthcheck
+          supabase functions deploy ai-chat
+          supabase functions deploy ai-gardener-avatar
           supabase functions deploy revenucat-webhook --no-verify-jwt
           supabase functions deploy privacy-policy --no-verify-jwt
-          supabase functions deploy weather-proxy --no-verify-jwt
-          supabase functions deploy delete-account --no-verify-jwt
+          supabase functions deploy weather-proxy
+          supabase functions deploy delete-account

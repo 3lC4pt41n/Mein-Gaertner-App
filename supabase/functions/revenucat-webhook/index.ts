@@ -2,7 +2,7 @@
 // Wird von RevenueCat aufgerufen bei Kauf, Abo-Erneuerung, Kündigung etc.
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
-import { corsHeaders } from '../_shared/credits.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 // Credit-Pakete (müssen mit RevenueCat Product IDs übereinstimmen)
 const PACKAGES: Record<string, { credits: number; type: string }> = {
@@ -24,6 +24,8 @@ const SUB_PLANS: Record<string, string> = {
 };
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, 'POST, OPTIONS');
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
