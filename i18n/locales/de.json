@@ -136,6 +136,7 @@
     "healthLabel": "Gesundheit",
     "noHealthcheck": "Kein Healthcheck vorhanden.",
     "startHealthcheck": "Healthcheck starten",
+    "newHealthcheck": "Neuer Healthcheck",
     "healthcheckDone": "Healthcheck abgeschlossen!",
     "healthcheckParseError": "Der Healthcheck konnte nicht ausgewertet werden. Bitte versuche es erneut.",
     "noImageForHealthcheck": "Kein Foto vorhanden für den Healthcheck.",

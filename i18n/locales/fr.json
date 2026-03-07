@@ -136,6 +136,7 @@
     "healthLabel": "Santé",
     "noHealthcheck": "Aucun bilan santé disponible.",
     "startHealthcheck": "Lancer le bilan santé",
+    "newHealthcheck": "Nouveau bilan santé",
     "healthcheckDone": "Bilan santé terminé !",
     "healthcheckParseError": "Le bilan de santé n'a pas pu être évalué. Veuillez réessayer.",
     "noImageForHealthcheck": "Aucune photo disponible pour le bilan santé.",

@@ -71,9 +71,9 @@ function ScoreCircle({ score = 0, label = 'Health' }) {
   return (
     <View
       style={{
-        width: 76,
-        height: 76,
-        borderRadius: 38,
+        width: 90,
+        height: 90,
+        borderRadius: 45,
         backgroundColor: color + '22',
         alignItems: 'center',
         justifyContent: 'center',
@@ -87,7 +87,9 @@ function ScoreCircle({ score = 0, label = 'Health' }) {
       }}
     >
       <Text style={{ fontSize: 28, fontWeight: 'bold', color }}>{score}</Text>
-      <Text style={{ fontSize: 14, color: colors.textTertiary, marginTop: -2 }}>{label}</Text>
+      <Text style={{ fontSize: 11, color: colors.textTertiary, marginTop: -2 }} numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -451,6 +453,17 @@ export default function PlantDetailScreen({ route }) {
           >
             {healthcheck.recommendation}
           </Text>
+          <View style={{ alignItems: 'center', marginTop: spacing.lg }}>
+            <DSButton
+              variant="secondary"
+              icon="fitness-outline"
+              onPress={handleStartHealthcheck}
+              disabled={runningHealthcheck}
+              size="sm"
+            >
+              {runningHealthcheck ? t('common.loading') : t('plants.newHealthcheck')}
+            </DSButton>
+          </View>
         </View>
       );
     }

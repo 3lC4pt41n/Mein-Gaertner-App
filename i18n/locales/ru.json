@@ -136,6 +136,7 @@
     "healthLabel": "Здоровье",
     "noHealthcheck": "Проверка здоровья недоступна.",
     "startHealthcheck": "Начать проверку здоровья",
+    "newHealthcheck": "Новая проверка здоровья",
     "healthcheckDone": "Проверка здоровья завершена!",
     "healthcheckParseError": "Проверка здоровья не удалась. Пожалуйста, попробуйте снова.",
     "noImageForHealthcheck": "Нет фото для проверки здоровья.",
