@@ -1,8 +1,9 @@
 # Sentry Error Logs — Digitaler Gärtner
 
-> Auto-generated: 2026-03-07
+> Last updated: 2026-03-07 14:00 UTC
 > Organization: `digitaler-gaertner` | Project: `react-native`
 > Dashboard: https://digitaler-gaertner.sentry.io/issues/?project=react-native
+> **No new issues since last export (2026-03-07 initial).**
 
 ---
 
@@ -117,7 +118,9 @@ This causes `react-native-maps` to initialize Google Maps without a valid API ke
 
 ### Resolution
 
-The `GOOGLE_MAPS_API_KEY` EAS Secret has been set for the v1.4.0 build. This issue should be resolved once v1.4.0 is deployed to internal testers.
+The `GOOGLE_MAPS_API_KEY` EAS Secret has been set for the v1.4.0 build. Additionally, Codex R7 added a build-time guard in `app.config.js` that throws if the key is missing during `eas build` (but not during OTA updates).
+
+**Status:** No new events since 2026-03-06 22:48 UTC — the fix appears effective (v1.3.0 users haven't triggered further crashes since the Maps feature isn't reachable without the heatmap screen). Full resolution expected once v1.4.0 Android build is deployed to internal testers.
 
 **Fixes REACT-NATIVE-1**
 

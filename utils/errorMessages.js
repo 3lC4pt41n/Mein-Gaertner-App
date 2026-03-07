@@ -40,7 +40,10 @@ export function friendlyError(error) {
     code === 401 ||
     code === 'PGRST301' ||
     lower.includes('jwt') ||
-    lower.includes('token') ||
+    lower.includes('token expired') ||
+    lower.includes('invalid token') ||
+    lower.includes('refresh token') ||
+    lower.includes('access token') ||
     lower.includes('unauthorized') ||
     lower.includes('not authenticated') ||
     lower.includes('session')

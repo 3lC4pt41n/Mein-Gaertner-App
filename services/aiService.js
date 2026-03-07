@@ -1,20 +1,88 @@
 import { supabase } from '../supabase';
 import { requestWithPolicy } from './networkPolicy';
 
+function isAuthFailure(error, parsed) {
+  const status = parsed?.status || error?.status || error?.context?.status;
+  const code = parsed?.code || error?.code;
+  const msg = `${parsed?.error || ''} ${error?.message || ''}`.toLowerCase();
+  return (
+    status === 401 ||
+    code === 'UNAUTHORIZED' ||
+    msg.includes('unauthorized') ||
+    msg.includes('not authenticated') ||
+    msg.includes('nicht authentifiziert') ||
+    msg.includes('jwt') ||
+    msg.includes('invalid token') ||
+    msg.includes('token expired') ||
+    msg.includes('session')
+  );
+}
+
+async function getSessionWithRefresh({ forceRefresh = false } = {}) {
+  if (!forceRefresh) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.access_token) return session;
+  }
+
+  if (typeof supabase.auth.refreshSession === 'function') {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (!error && data?.session?.access_token) return data.session;
+  }
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session || null;
+}
+
+async function invokeEdgeWithToken(functionName, body, accessToken) {
+  return requestWithPolicy(
+    () =>
+      supabase.functions.invoke(functionName, {
+        body,
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      }),
+    { timeout: 45000, retries: 1, label: `ai.${functionName}` }
+  );
+}
+
 // Helper: Edge Function aufrufen über den Supabase Client
 // Der Client setzt apikey + Authorization Header automatisch korrekt
 // Wrapped with requestWithPolicy for timeout + retry on transient failures.
 async function callEdgeFunction(functionName, body) {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session?.access_token) throw new Error('Nicht eingeloggt');
+  const initialSession = await getSessionWithRefresh();
+  if (!initialSession?.access_token) {
+    await supabase.auth.signOut().catch(() => {});
+    const err = new Error('Nicht eingeloggt');
+    err.code = 'AUTH_REQUIRED';
+    err.status = 401;
+    throw err;
+  }
 
   // AI calls get a generous timeout (image uploads can be large) and 1 retry
-  const { data, error } = await requestWithPolicy(
-    () => supabase.functions.invoke(functionName, { body }),
-    { timeout: 45000, retries: 1, label: `ai.${functionName}` }
-  );
+  let { data, error } = await invokeEdgeWithToken(functionName, body, initialSession.access_token);
+
+  // One auth-recovery retry with forced token refresh.
+  if (error && isAuthFailure(error)) {
+    const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
+    if (
+      refreshedSession?.access_token &&
+      refreshedSession.access_token !== initialSession.access_token
+    ) {
+      const retryResult = await invokeEdgeWithToken(
+        functionName,
+        body,
+        refreshedSession.access_token
+      );
+      data = retryResult.data;
+      error = retryResult.error;
+    }
+    if (error && isAuthFailure(error)) {
+      await supabase.auth.signOut().catch(() => {});
+    }
+  }
 
   if (error) {
     // Supabase FunctionsHttpError: error.context kann ein Response-Objekt,
@@ -53,6 +121,14 @@ async function callEdgeFunction(functionName, body) {
       Array.isArray(parsed?.details) && parsed.details.length > 0
         ? parsed.details.find((d) => d?.message)?.message || null
         : null;
+
+    // Spezialbehandlung: Auth
+    if (isAuthFailure(error, parsed)) {
+      const err = new Error(parsed?.error || 'Nicht eingeloggt');
+      err.code = 'AUTH_REQUIRED';
+      err.status = 401;
+      throw err;
+    }
 
     // Spezialbehandlung: Nicht genug Credits (HTTP 402)
     if (parsed?.code === 'INSUFFICIENT_CREDITS' || error.message?.includes('402')) {
