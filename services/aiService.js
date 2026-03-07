@@ -67,8 +67,7 @@ async function callEdgeFunction(functionName, body) {
 
   // One auth-recovery retry with forced token refresh.
   // Only trigger on clear 401 status – not on vague error messages.
-  const maybeAuth =
-    error && (error.status === 401 || error?.context?.status === 401);
+  const maybeAuth = error && (error.status === 401 || error?.context?.status === 401);
   if (maybeAuth) {
     const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
     if (
