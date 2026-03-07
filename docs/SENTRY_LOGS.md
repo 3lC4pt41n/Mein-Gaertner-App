@@ -1,9 +1,9 @@
 # Sentry Error Logs — Digitaler Gärtner
 
-> Last updated: 2026-03-07 14:00 UTC
+> Last updated: 2026-03-07 17:00 UTC
 > Organization: `digitaler-gaertner` | Project: `react-native`
 > Dashboard: https://digitaler-gaertner.sentry.io/issues/?project=react-native
-> **No new issues since last export (2026-03-07 initial).**
+> **New issue since last export: REACT-NATIVE-2 (ANR)**
 
 ---
 
@@ -11,12 +11,91 @@
 
 | Metric | Value |
 |--------|-------|
-| Total Issues | 1 |
-| Total Events | 6 |
+| Total Issues | 2 |
+| Total Events | 7 |
 | Users Impacted | 1 |
-| Time Range | 2026-03-06 16:25 – 2026-03-06 22:48 UTC |
+| Time Range | 2026-03-06 16:25 – 2026-03-07 16:26 UTC |
 | Environments | production |
 | Releases affected | `digitaler-gaertner@1.3.0` |
+
+---
+
+## REACT-NATIVE-2 — ApplicationNotResponding: ANR
+
+| Field | Value |
+|-------|-------|
+| **Status** | unresolved (new) |
+| **Severity** | fatal |
+| **Occurrences** | 1 |
+| **Users** | 1 |
+| **First seen** | 2026-03-07T16:26:44Z |
+| **Last seen** | 2026-03-07T16:26:44Z |
+| **Platform** | Java (Android) |
+| **Release** | `digitaler-gaertner@1.3.0` |
+| **Sentry URL** | https://digitaler-gaertner.sentry.io/issues/REACT-NATIVE-2 |
+| **Seer Actionability** | low |
+
+### Error Message
+
+```
+ApplicationNotResponding: ANR
+```
+
+### Stacktrace
+
+```
+at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1009)
+at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+at java.lang.reflect.Method.invoke(Unknown Source)
+at android.app.ActivityThread.main(ActivityThread.java:7870)
+at android.os.Looper.loop(Looper.java:288)
+at android.os.Looper.loopOnce(Looper.java:201)
+at android.os.Handler.dispatchMessage(Handler.java:99)
+at android.os.Handler.handleCallback(Handler.java:938)
+at android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:1022)
+at android.view.Choreographer.doFrame(Choreographer.java:780)
+at android.view.ViewRootImpl.doTraversal(ViewRootImpl.java:2179)
+at android.view.ViewRootImpl.performTraversals(ViewRootImpl.java:3374)
+at android.view.ViewRootImpl.performDraw(ViewRootImpl.java:4279)
+at android.graphics.HardwareRenderer.setStopped(HardwareRenderer.java:498)
+at android.graphics.HardwareRenderer.nSetStopped(Unknown Source)
+```
+
+**Mechanism:** AppExitInfo
+
+### Affected Device
+
+| Property | Value |
+|----------|-------|
+| Device | Google Pixel 6 Pro |
+| OS | Android 12 (build SP2A.220505.008) |
+| Manufacturer | Google |
+| Screen | 1440×2952 @ 3.5x (560 DPI) |
+| RAM | ~3 GB |
+| Processors | 4 cores (arm64-v8a) |
+| Sideloaded | yes |
+
+### App Context
+
+| Property | Value |
+|----------|-------|
+| App version | 1.3.0 |
+| App identifier | com.elcaptain.digitalergaertner |
+| OTA channel | production |
+| Runtime version | 1.3.0 |
+| Update ID | fc8d5154-f1d0-43d5-b088-620054ff8207 |
+| Foreground | yes |
+
+### Root Cause Analysis
+
+ANR (Application Not Responding) on a Pixel 6 Pro with only ~3 GB RAM running Android 12. The stack shows the main thread blocked in `HardwareRenderer.nSetStopped` → `pthread_cond_wait` → `futex_wait` — the render thread is waiting on a GPU fence/sync that never completes. This is a known Android framework issue on low-memory devices when the GPU render pipeline stalls, typically caused by memory pressure. The device is classified as `device.class: low`.
+
+**Contributing factors:**
+- Low RAM device (~3 GB) under memory pressure
+- Sideloaded build (not from Play Store — likely the local AAB test build)
+- The Google Maps API key crash (REACT-NATIVE-1) may have triggered resource cleanup that put the device under additional pressure
+
+**Status:** Single occurrence on a low-memory sideloaded test device. Not actionable from app code — this is an Android framework/GPU driver issue. Monitor for recurrence on production devices.
 
 ---
 

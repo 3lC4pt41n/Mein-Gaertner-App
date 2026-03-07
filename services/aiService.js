@@ -57,16 +57,21 @@ async function callEdgeFunction(functionName, body) {
 
   // AI calls get a generous timeout (image uploads can be large) and 1 retry
   let { data, error } = await invokeEdge(functionName, body);
+  let attemptedAuthRecovery = false;
 
-  // One auth-recovery retry with forced token refresh.
+  // Auth-recovery: retry up to 2 times with forced refresh.
   if (error && isAuthFailure(error)) {
-    // Short delay helps after returning from camera intent on Android.
-    await sleep(250);
-    const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
-    if (refreshedSession?.access_token) {
+    attemptedAuthRecovery = true;
+    const delaysMs = [250, 700];
+    for (const delayMs of delaysMs) {
+      await sleep(delayMs);
+      const refreshedSession = await getSessionWithRefresh({ forceRefresh: true });
+      if (!refreshedSession?.access_token) continue;
+
       const retryResult = await invokeEdge(functionName, body);
       data = retryResult.data;
       error = retryResult.error;
+      if (!error || !isAuthFailure(error)) break;
     }
   }
 
@@ -110,6 +115,10 @@ async function callEdgeFunction(functionName, body) {
 
     // Spezialbehandlung: Auth
     if (isAuthFailure(error, parsed)) {
+      // If auth still fails after refresh retry, clear stale local auth state.
+      if (attemptedAuthRecovery) {
+        await supabase.auth.signOut().catch(() => {});
+      }
       const err = new Error(parsed?.error || 'Nicht eingeloggt');
       err.code = 'AUTH_REQUIRED';
       err.status = 401;

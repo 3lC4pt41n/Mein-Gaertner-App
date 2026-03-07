@@ -8,6 +8,7 @@ supabase.auth.refreshSession = jest.fn().mockResolvedValue({
   data: { session: { access_token: 'refreshed-token' } },
   error: null,
 });
+supabase.auth.signOut = jest.fn().mockResolvedValue({});
 
 const {
   recognizePlant,
@@ -26,6 +27,7 @@ describe('aiService', () => {
       data: { session: { access_token: 'refreshed-token' } },
       error: null,
     });
+    supabase.auth.signOut.mockResolvedValue({});
   });
 
   describe('recognizePlant', () => {
@@ -133,6 +135,7 @@ describe('aiService', () => {
       });
 
       await expect(chatWithBen('Hi', null, 'de')).rejects.toThrow('Nicht eingeloggt');
+      expect(supabase.auth.signOut).toHaveBeenCalledTimes(1);
     });
 
     it('refreshes token and retries once on 401', async () => {
@@ -154,6 +157,7 @@ describe('aiService', () => {
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
       });
+      expect(supabase.auth.signOut).not.toHaveBeenCalled();
     });
   });
 });
