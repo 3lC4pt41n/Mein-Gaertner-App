@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { safeLaunchCamera } from '../services/imagePickerHelper';
 import { supabase } from '../supabase';
 import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
@@ -161,7 +162,7 @@ export default function AssistantScreen() {
       Alert.alert(t('common.error'), t('common.cameraRequired'));
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
+    const result = await safeLaunchCamera({
       base64: false,
       allowsEditing: false,
       quality: 0.7,

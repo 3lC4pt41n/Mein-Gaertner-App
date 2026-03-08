@@ -55,6 +55,27 @@ async function fetchZonesGrouped(userId) {
     .filter((s) => s.data.length > 0);
 }
 
+async function linkPlantToSpecies(plantId, speciesId) {
+  if (!plantId || !speciesId) return;
+
+  let lastError = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { error } = await supabase
+      .from('plants')
+      .update({ species_id: speciesId })
+      .eq('id', plantId);
+
+    if (!error) return;
+    lastError = error;
+
+    if (attempt === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
+  }
+
+  throw lastError;
+}
+
 /*
  * AddPlantScreen — staged onboarding flow:
  *   Step 1: Scan (photo + AI recognition) — 1 credit
@@ -67,6 +88,7 @@ export default function AddPlantScreen() {
 
   // ── Core state ──────────────────────────────
   const [name, setName] = useState('');
+  const [recognizedSpeciesName, setRecognizedSpeciesName] = useState('');
   const [note, setNote] = useState('');
   const [imageUri, setImageUri] = useState(null);
   const [, setBase64Image] = useState(null);
@@ -119,6 +141,7 @@ export default function AddPlantScreen() {
       if (stepRef.current === 'done') {
         setStep('scan');
         setName('');
+        setRecognizedSpeciesName('');
         setNote('');
         setImageUri(null);
         setBase64Image(null);
@@ -192,7 +215,9 @@ export default function AddPlantScreen() {
 
       try {
         const data = await recognizePlant(base64, language);
-        setName(data.name || t('plants.noNameRecognized'));
+        const detectedName = typeof data?.name === 'string' ? data.name.trim() : '';
+        setRecognizedSpeciesName(detectedName || '');
+        setName(detectedName || t('plants.noNameRecognized'));
         setNote(data.note || t('plants.noNoteAvailable'));
         if (typeof data.balance === 'number') setBalance(data.balance);
         setStep('save');
@@ -202,6 +227,7 @@ export default function AddPlantScreen() {
           Alert.alert(t('common.error'), msg);
           setNote(t('common.error') + ': ' + msg);
           setName('');
+          setRecognizedSpeciesName('');
         }
       }
       setLoading(false);
@@ -256,20 +282,15 @@ export default function AddPlantScreen() {
       let discovery = null;
       try {
         const location = await getDiscoveryLocation();
-        discovery = await logDiscovery(userId, name, plant?.id, location);
+        const discoverySpeciesName = recognizedSpeciesName?.trim() || name;
+        discovery = await logDiscovery(userId, discoverySpeciesName, plant?.id, location);
 
         // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)
         if (discovery?.speciesId && plant?.id) {
-          // Nicht blockierend: UI soll nicht auf diesen Zusatz-Write warten.
-          supabase
-            .from('plants')
-            .update({ species_id: discovery.speciesId })
-            .eq('id', plant.id)
-            .then(({ error }) => {
-              if (error && __DEV__) {
-                console.warn('[AddPlant] species link update failed:', error.message);
-              }
-            });
+          // Nicht blockierend, aber mit Retry + Logging statt stillem Fehler.
+          linkPlantToSpecies(plant.id, discovery.speciesId).catch((error) => {
+            console.warn('[AddPlant] species link update failed:', error?.message);
+          });
         }
       } catch (discoveryError) {
         // Discovery logging failed — plant is saved, but we do NOT fake a discovery.
@@ -376,6 +397,7 @@ export default function AddPlantScreen() {
   const goToPlantDetail = () => {
     if (!savedPlant) return;
     setName('');
+    setRecognizedSpeciesName('');
     setNote('');
     setImageUri(null);
     setBase64Image(null);
@@ -515,6 +537,7 @@ export default function AddPlantScreen() {
               setStep('scan');
               setImageUri(null);
               setName('');
+              setRecognizedSpeciesName('');
               setNote('');
             }}
             fullWidth

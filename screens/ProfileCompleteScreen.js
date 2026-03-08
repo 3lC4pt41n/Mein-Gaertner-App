@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Alert, Text, Image, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { safeLaunchCamera } from '../services/imagePickerHelper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
@@ -69,7 +70,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
+    const result = await safeLaunchCamera({
       base64: true,
       allowsEditing: true,
       aspect: [1, 1],

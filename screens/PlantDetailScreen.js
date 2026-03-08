@@ -16,6 +16,7 @@ import {
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { safeLaunchCamera, safeLaunchLibrary } from '../services/imagePickerHelper';
 import { supabase } from '../supabase';
 import { fetchLatestHealthcheck, saveHealthcheck } from '../services/plantService';
 import { addDiaryEntry, fetchGallery } from '../services/diaryService';
@@ -263,7 +264,7 @@ export default function PlantDetailScreen({ route }) {
           Alert.alert(t('common.error'), t('common.cameraRequired'));
           return;
         }
-        const result = await ImagePicker.launchCameraAsync({
+        const result = await safeLaunchCamera({
           mediaTypes: ['images'],
           allowsEditing: true,
           aspect: [1, 1],
@@ -311,7 +312,7 @@ export default function PlantDetailScreen({ route }) {
         Alert.alert(t('common.error'), t('gallery.permission'));
         return;
       }
-      const result = await ImagePicker.launchImageLibraryAsync({
+      const result = await safeLaunchLibrary({
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],

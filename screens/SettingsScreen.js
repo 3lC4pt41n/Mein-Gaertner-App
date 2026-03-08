@@ -15,6 +15,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { safeLaunchCamera } from '../services/imagePickerHelper';
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
@@ -192,7 +193,7 @@ export default function SettingsScreen({ navigation }) {
       Alert.alert(t('common.error'), t('profile.cameraRequired'));
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
+    const result = await safeLaunchCamera({
       base64: true,
       allowsEditing: true,
       aspect: [1, 1],

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { safeLaunchLibrary } from '../services/imagePickerHelper';
 import { supabase } from '../supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing } from '../theme/tokens';
@@ -49,7 +50,7 @@ export default function FeedbackScreen({ navigation }) {
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
+    const result = await safeLaunchLibrary({
       mediaTypes: ['images'],
       allowsEditing: false,
       quality: 0.8,

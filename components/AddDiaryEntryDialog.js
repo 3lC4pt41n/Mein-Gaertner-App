@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { safeLaunchLibrary } from '../services/imagePickerHelper';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSInput from '../theme/DSInput';
@@ -29,7 +30,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId:
         return;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
+      const result = await safeLaunchLibrary({
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
