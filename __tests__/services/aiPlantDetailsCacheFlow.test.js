@@ -72,4 +72,3 @@ describe('ai-plant-details cache-flow helpers', () => {
     });
   });
 });
-
