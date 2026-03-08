@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import { safeLaunchCamera } from '../services/imagePickerHelper';
 import { Ionicons } from '@expo/vector-icons';
 import { savePlantToSupabase, saveHealthcheck } from '../services/plantService';
 import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
@@ -89,6 +90,7 @@ export default function AddPlantScreen() {
   // ── Core state ──────────────────────────────
   const [name, setName] = useState('');
   const [recognizedSpeciesName, setRecognizedSpeciesName] = useState('');
+  const [nameEditedByUser, setNameEditedByUser] = useState(false);
   const [note, setNote] = useState('');
   const [imageUri, setImageUri] = useState(null);
   const [, setBase64Image] = useState(null);
@@ -142,6 +144,7 @@ export default function AddPlantScreen() {
         setStep('scan');
         setName('');
         setRecognizedSpeciesName('');
+        setNameEditedByUser(false);
         setNote('');
         setImageUri(null);
         setBase64Image(null);
@@ -181,6 +184,11 @@ export default function AddPlantScreen() {
     return false;
   };
 
+  const handleNameChange = useCallback((value) => {
+    setName(value);
+    setNameEditedByUser(true);
+  }, []);
+
   // ── Step 1: Scan ────────────────────────────
   const takePhotoAndRecognize = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -188,7 +196,7 @@ export default function AddPlantScreen() {
       alert(t('common.cameraRequired'));
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
+    const result = await safeLaunchCamera({
       base64: true,
       allowsEditing: true,
       quality: 0.6,
@@ -218,6 +226,7 @@ export default function AddPlantScreen() {
         const detectedName = typeof data?.name === 'string' ? data.name.trim() : '';
         setRecognizedSpeciesName(detectedName || '');
         setName(detectedName || t('plants.noNameRecognized'));
+        setNameEditedByUser(false);
         setNote(data.note || t('plants.noNoteAvailable'));
         if (typeof data.balance === 'number') setBalance(data.balance);
         setStep('save');
@@ -228,6 +237,7 @@ export default function AddPlantScreen() {
           setNote(t('common.error') + ': ' + msg);
           setName('');
           setRecognizedSpeciesName('');
+          setNameEditedByUser(false);
         }
       }
       setLoading(false);
@@ -282,7 +292,9 @@ export default function AddPlantScreen() {
       let discovery = null;
       try {
         const location = await getDiscoveryLocation();
-        const discoverySpeciesName = recognizedSpeciesName?.trim() || name;
+        const discoverySpeciesName = nameEditedByUser
+          ? name?.trim()
+          : recognizedSpeciesName?.trim() || name?.trim();
         discovery = await logDiscovery(userId, discoverySpeciesName, plant?.id, location);
 
         // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)
@@ -398,6 +410,7 @@ export default function AddPlantScreen() {
     if (!savedPlant) return;
     setName('');
     setRecognizedSpeciesName('');
+    setNameEditedByUser(false);
     setNote('');
     setImageUri(null);
     setBase64Image(null);
@@ -493,7 +506,7 @@ export default function AddPlantScreen() {
           <DSInput
             label={t('plants.nameLabel')}
             value={name}
-            onChangeText={setName}
+            onChangeText={handleNameChange}
             placeholder={t('plants.namePlaceholder')}
             icon="leaf-outline"
           />
@@ -538,6 +551,7 @@ export default function AddPlantScreen() {
               setImageUri(null);
               setName('');
               setRecognizedSpeciesName('');
+              setNameEditedByUser(false);
               setNote('');
             }}
             fullWidth
