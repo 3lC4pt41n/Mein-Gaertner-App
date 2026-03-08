@@ -56,7 +56,7 @@ function PlantImage({ uri, style, placeholderStyle }) {
   );
 }
 
-// Fetch all plants with their latest healthcheck in a single query
+// Fetch plants, healthscores & signed URLs in parallel (nicht sequentiell!)
 async function getPlantsWithHealthscores(userId) {
   const result = await fetchPlants(userId);
   const plants = result?.data ?? result ?? [];
@@ -65,55 +65,53 @@ async function getPlantsWithHealthscores(userId) {
     return plants;
   }
 
-  // Fetch all latest healthchecks in ONE query instead of N queries
+  // Healthchecks + Signed URLs PARALLEL laden (statt sequentiell)
   const plantIds = plants.map((p) => p.id);
-  const { data: healthchecks } = await supabase
-    .from('plant_healthchecks')
-    .select('plant_id, healthscore')
-    .in('plant_id', plantIds)
-    .order('created_at', { ascending: false });
+  const rawUrls = plants.map((p) => p.image_url);
+
+  const [{ data: healthchecks }, resolvedUrls] = await Promise.all([
+    supabase
+      .from('plant_healthchecks')
+      .select('plant_id, healthscore')
+      .in('plant_id', plantIds)
+      .order('created_at', { ascending: false }),
+    getPlantImageUrls(rawUrls),
+  ]);
 
   // Create a map of plant_id -> latest healthscore
   const healthscoreMap = {};
   if (healthchecks) {
     for (let hc of healthchecks) {
-      // Only keep the first (latest) healthcheck per plant
       if (!healthscoreMap[hc.plant_id]) {
         healthscoreMap[hc.plant_id] = hc.healthscore;
       }
     }
   }
 
-  // Batch-resolve storage paths → signed URLs (1 API call)
-  const rawUrls = plants.map((p) => p.image_url);
-  const resolvedUrls = await getPlantImageUrls(rawUrls);
-
   // Merge healthscores + resolved URLs into plants
-  const plantsWithScores = plants.map((plant, i) => ({
+  return plants.map((plant, i) => ({
     ...plant,
     image_url: resolvedUrls[i] || plant.image_url,
     healthscore: healthscoreMap[plant.id] ?? null,
   }));
-
-  return plantsWithScores;
 }
 
-// Dummy Service: Pflanzen gruppiert nach location > zones > plants
+// Pflanzen gruppiert nach location > zones > plants
 async function getGroupedPlants(userId, plants) {
-  // Reuse the same plants data that was already fetched
+  // Locations laden, dann Zones (Zones braucht Location-IDs)
   const { data: locations } = await supabase
     .from('locations')
     .select('id, name')
     .eq('user_id', userId);
+
+  const locIds = (locations || []).map((l) => l.id);
+  if (!locIds.length) return [];
+
   const { data: zones } = await supabase
     .from('zones')
     .select('id, name, location_id')
-    .in(
-      'location_id',
-      (locations || []).map((l) => l.id)
-    );
+    .in('location_id', locIds);
 
-  // Grouping: location > zones > plants
   return (locations || []).map((location) => ({
     ...location,
     zones: (zones || [])
@@ -153,14 +151,20 @@ export default function PlantListScreen() {
     setLoading(true);
     setError(null);
     try {
-      // Fetch plants once with healthscores, then use for both views
+      // Pflanzen laden (mit parallelen Healthscores + URL-Resolution)
       const plants = await getPlantsWithHealthscores(userId);
+      // Sofort anzeigen — nicht auf Gruppierung warten
       setAllPlants(plants);
-      setGrouped(await getGroupedPlants(userId, plants));
+      setLoading(false);
+
+      // Gruppierung im Hintergrund nachladen (nur für Homes-Tab)
+      getGroupedPlants(userId, plants)
+        .then(setGrouped)
+        .catch((e) => console.warn('[PlantList] grouped load failed:', e?.message));
     } catch (e) {
       setError(e.message);
-    } finally {
       setLoading(false);
+    } finally {
       setRefreshing(false);
     }
   };
