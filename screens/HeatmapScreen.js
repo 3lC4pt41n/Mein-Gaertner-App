@@ -29,7 +29,10 @@ import DSCard from '../theme/DSCard';
 // via Constants.expoConfig at runtime — they only end up in native
 // manifests (AndroidManifest.xml / Info.plist). Use the boolean flag
 // that app.config.js exposes through `extra` instead.
-const MAPS_KEY_AVAILABLE = !!Constants.expoConfig?.extra?.googleMapsEnabled;
+// Default to true (nullish coalesce) so that OTA-updated JS code on
+// older builds (whose manifest doesn't include the flag yet) still
+// shows the map — the native config does have the key from EAS secrets.
+const MAPS_KEY_AVAILABLE = Constants.expoConfig?.extra?.googleMapsEnabled ?? true;
 
 // ── Error Boundary for MapView crashes ──────────────────────────────
 class MapErrorBoundary extends Component {

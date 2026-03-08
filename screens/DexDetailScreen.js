@@ -32,7 +32,9 @@ const DEFAULT_SPECIES_REGION = {
 
 // Native config sections are not available at runtime via Constants.expoConfig.
 // Use the boolean flag exposed through extra by app.config.js instead.
-const MAPS_KEY_AVAILABLE = !!Constants.expoConfig?.extra?.googleMapsEnabled;
+// Default to true (nullish coalesce) so that OTA-updated JS code on older
+// builds (whose manifest doesn't include the flag yet) still renders the map.
+const MAPS_KEY_AVAILABLE = Constants.expoConfig?.extra?.googleMapsEnabled ?? true;
 
 function heatColor(count) {
   if (count >= 15) return 'rgba(244, 67, 54, 0.50)';
