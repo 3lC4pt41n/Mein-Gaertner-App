@@ -3,7 +3,7 @@
     "name": "Digitaler Gärtner",
     "slug": "digitaler-gaertner",
     "scheme": "digitalergaertner",
-    "version": "1.4.1",
+    "version": "1.4.2",
     "runtimeVersion": {
       "policy": "appVersion"
     },
