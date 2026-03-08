@@ -155,7 +155,9 @@ export async function fetchCachedSpeciesDetails(speciesId, language = 'de') {
 export async function fetchSpeciesDetail(speciesId) {
   const { data, error } = await supabase
     .from('species')
-    .select('*, first_discoverer:first_discovered_by(username, display_name), cached_details:species_details(language, details, generated_at)')
+    .select(
+      '*, first_discoverer:first_discovered_by(username, display_name), cached_details:species_details(language, details, generated_at)'
+    )
     .eq('id', speciesId)
     .single();
 
