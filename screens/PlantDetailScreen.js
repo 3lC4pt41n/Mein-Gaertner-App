@@ -30,6 +30,8 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { generatePlantDetails, performHealthcheck } from '../services/aiService';
 import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
+import { fetchCachedSpeciesDetails } from '../services/dexService';
+import { fetchCurrentUserLanguage } from '../services/languageService';
 import { friendlyError } from '../utils/errorMessages';
 
 // Helper zum Gruppieren Locations > Zonen
@@ -141,6 +143,19 @@ export default function PlantDetailScreen({ route }) {
       } catch {
         setHealthcheck(null);
       }
+
+      // Fallback: Wenn keine Details auf der Pflanze, aber species_id vorhanden →
+      // gecachte Art-Details aus dem zentralen Dex-Cache laden
+      if (!plantDetails && plant.species_id) {
+        try {
+          const lang = await fetchCurrentUserLanguage();
+          const cached = await fetchCachedSpeciesDetails(plant.species_id, lang);
+          if (cached) setPlantDetails(cached);
+        } catch {
+          // Cache-Lookup fehlgeschlagen — kein Problem, User kann Details manuell generieren
+        }
+      }
+
       setLoading(false);
     })();
     // Hole ggf. Zone/Location falls zugewiesen:
@@ -172,7 +187,8 @@ export default function PlantDetailScreen({ route }) {
   const handleGenerateDetails = useCallback(async () => {
     setGeneratingDetails(true);
     try {
-      const result = await generatePlantDetails(plant.name, plant.note);
+      const lang = await fetchCurrentUserLanguage();
+      const result = await generatePlantDetails(plant.name, plant.note, lang, plant.species_id);
       if (result?.details) {
         await supabase.from('plants').update({ details: result.details }).eq('id', plant.id);
         setPlantDetails(result.details);
@@ -183,7 +199,7 @@ export default function PlantDetailScreen({ route }) {
     } finally {
       setGeneratingDetails(false);
     }
-  }, [plant.id, plant.name, plant.note]);
+  }, [plant.id, plant.name, plant.note, plant.species_id]);
 
   // Healthcheck mit Foto-Auswahl: letztes Galerie-Foto oder neues Foto
   const handleStartHealthcheck = useCallback(async () => {

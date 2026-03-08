@@ -126,14 +126,36 @@ export async function getDexProgress(userId) {
 }
 
 /**
- * Get detailed information about a single species
+ * Gecachte Art-Details aus species_details laden (Dex-Cache).
+ * Gibt die Details als JSONB zurück oder null wenn kein Cache-Eintrag existiert.
+ *
+ * @param {string} speciesId - Species UUID
+ * @param {string} language - Sprachcode ('de', 'en', ...)
+ * @returns {Promise<Object|null>} Details-JSONB oder null
+ */
+export async function fetchCachedSpeciesDetails(speciesId, language = 'de') {
+  if (!speciesId) return null;
+  const { data, error } = await supabase
+    .from('species_details')
+    .select('details')
+    .eq('species_id', speciesId)
+    .eq('language', language)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data.details;
+}
+
+/**
+ * Get detailed information about a single species.
+ * Joins species_details for cached art details (alle Sprachen).
+ *
  * @param {string} speciesId - The species ID
- * @returns {Promise<Object>} Species with discoverer information
+ * @returns {Promise<Object>} Species with discoverer information + cached_details[]
  */
 export async function fetchSpeciesDetail(speciesId) {
   const { data, error } = await supabase
     .from('species')
-    .select('*, first_discoverer:first_discovered_by(username, display_name)')
+    .select('*, first_discoverer:first_discovered_by(username, display_name), cached_details:species_details(language, details, generated_at)')
     .eq('id', speciesId)
     .single();
 

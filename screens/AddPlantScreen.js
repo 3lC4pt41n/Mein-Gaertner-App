@@ -257,6 +257,14 @@ export default function AddPlantScreen() {
       try {
         const location = await getDiscoveryLocation();
         discovery = await logDiscovery(userId, name, plant?.id, location);
+
+        // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)
+        if (discovery?.speciesId && plant?.id) {
+          await supabase
+            .from('plants')
+            .update({ species_id: discovery.speciesId })
+            .eq('id', plant.id);
+        }
       } catch (discoveryError) {
         // Discovery logging failed — plant is saved, but we do NOT fake a discovery.
         // The reveal modal only shows for real, verified discoveries.
@@ -281,7 +289,12 @@ export default function AddPlantScreen() {
 
       // Generate display URL on-demand for immediate UI
       const displayUrl = await getPlantImageUrl(uploadedPath);
-      setSavedPlant({ ...plant, image_url: displayUrl, image_path: uploadedPath });
+      setSavedPlant({
+        ...plant,
+        image_url: displayUrl,
+        image_path: uploadedPath,
+        species_id: discovery?.speciesId || null,
+      });
       setStep('done');
 
       // Show discovery reveal for new discoveries
@@ -301,7 +314,7 @@ export default function AddPlantScreen() {
     if (!savedPlant) return;
     setLoading(true);
     try {
-      const detailsData = await generatePlantDetails(name, note, language);
+      const detailsData = await generatePlantDetails(name, note, language, savedPlant.species_id);
       if (typeof detailsData.balance === 'number') setBalance(detailsData.balance);
 
       // Update plant with details
