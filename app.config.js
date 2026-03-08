@@ -7,6 +7,18 @@ const IS_DEV = process.env.APP_VARIANT === 'development';
 const IS_EAS_BUILD = process.env.EAS_BUILD === 'true'; // Set automatically by EAS Build
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY || '';
+const HAS_GOOGLE_MAPS_KEY = !!GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'GOOGLE_MAPS_API_KEY';
+
+// Only set a definitive runtime flag when it is trustworthy:
+// - EAS Build: we know exactly whether the native key is injected
+// - With explicit key: true is safe
+// During OTA/local config evaluation without secret access, omit the flag
+// so screens can fall back to `?? true` for already-built binaries.
+const GOOGLE_MAPS_ENABLED_RUNTIME_FLAG = HAS_GOOGLE_MAPS_KEY
+  ? true
+  : IS_EAS_BUILD
+    ? false
+    : undefined;
 
 if (IS_EAS_BUILD && !IS_DEV && !GOOGLE_MAPS_API_KEY) {
   throw new Error(
@@ -42,7 +54,9 @@ module.exports = ({ config }) => {
       // Runtime flag: native config sections (ios.config, android.config) are NOT
       // available via Constants.expoConfig at runtime — they're baked into
       // AndroidManifest.xml / Info.plist only. Expose a boolean so JS can check.
-      googleMapsEnabled: !!GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'GOOGLE_MAPS_API_KEY',
+      ...(GOOGLE_MAPS_ENABLED_RUNTIME_FLAG === undefined
+        ? {}
+        : { googleMapsEnabled: GOOGLE_MAPS_ENABLED_RUNTIME_FLAG }),
     },
   };
 };
