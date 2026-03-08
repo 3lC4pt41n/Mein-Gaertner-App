@@ -260,10 +260,16 @@ export default function AddPlantScreen() {
 
         // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)
         if (discovery?.speciesId && plant?.id) {
-          await supabase
+          // Nicht blockierend: UI soll nicht auf diesen Zusatz-Write warten.
+          supabase
             .from('plants')
             .update({ species_id: discovery.speciesId })
-            .eq('id', plant.id);
+            .eq('id', plant.id)
+            .then(({ error }) => {
+              if (error && __DEV__) {
+                console.warn('[AddPlant] species link update failed:', error.message);
+              }
+            });
         }
       } catch (discoveryError) {
         // Discovery logging failed — plant is saved, but we do NOT fake a discovery.

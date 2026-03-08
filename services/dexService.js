@@ -147,17 +147,14 @@ export async function fetchCachedSpeciesDetails(speciesId, language = 'de') {
 
 /**
  * Get detailed information about a single species.
- * Joins species_details for cached art details (alle Sprachen).
  *
  * @param {string} speciesId - The species ID
- * @returns {Promise<Object>} Species with discoverer information + cached_details[]
+ * @returns {Promise<Object>} Species with discoverer information
  */
 export async function fetchSpeciesDetail(speciesId) {
   const { data, error } = await supabase
     .from('species')
-    .select(
-      '*, first_discoverer:first_discovered_by(username, display_name), cached_details:species_details(language, details, generated_at)'
-    )
+    .select('*, first_discoverer:first_discovered_by(username, display_name)')
     .eq('id', speciesId)
     .single();
 
