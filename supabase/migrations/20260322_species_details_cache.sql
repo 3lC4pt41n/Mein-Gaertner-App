@@ -89,7 +89,18 @@ WHERE p.id = de.plant_id
 INSERT INTO public.species_details (species_id, language, details, model, schema_version, generated_at, generated_by)
 SELECT
   sub.species_id,
-  COALESCE(prof.language, 'de') AS language,
+  CASE
+    WHEN prof.language IS NULL THEN 'de'
+    WHEN lower(trim(prof.language)) IN ('de','en','fr','it','es','ru')
+      THEN lower(trim(prof.language))
+    WHEN lower(trim(prof.language)) IN ('deutsch','german') THEN 'de'
+    WHEN lower(trim(prof.language)) IN ('english','englisch') THEN 'en'
+    WHEN lower(trim(prof.language)) IN ('francais','français','french','franzoesisch','französisch') THEN 'fr'
+    WHEN lower(trim(prof.language)) IN ('italian','italiano','italienisch') THEN 'it'
+    WHEN lower(trim(prof.language)) IN ('espanol','español','spanish','spanisch') THEN 'es'
+    WHEN lower(trim(prof.language)) IN ('russian','русский','russisch') THEN 'ru'
+    ELSE 'de'
+  END AS language,
   sub.details,
   'gpt-4o (backfill)',
   1,

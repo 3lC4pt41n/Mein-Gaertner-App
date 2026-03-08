@@ -443,7 +443,13 @@ serve(async (req) => {
     const languagePromptName = getLanguagePromptName(resolvedLanguage);
     const schema = DETAILS_SCHEMA_BY_LANGUAGE[resolvedLanguage];
 
-    const prompt = `Create plant details for "${name}" (hint: "${note || ''}") and return ONLY one JSON object in EXACTLY this schema:
+    // Security/quality hardening:
+    // If species is resolved, always generate against canonical species name
+    // and ignore user note hints to avoid poisoning shared cache entries.
+    const generationName = species?.canonical || name;
+    const generationHint = species ? '' : note || '';
+
+    const prompt = `Create plant details for "${generationName}" (hint: "${generationHint}") and return ONLY one JSON object in EXACTLY this schema:
 
 ${schema}
 
@@ -476,7 +482,8 @@ Rules:
       openai_cost_usd: result.cost_usd,
       model: result.model,
       metadata: {
-        plant_name: name,
+        plant_name: generationName,
+        requested_name: name,
         language: resolvedLanguage,
         species_id: species?.speciesId ?? null,
         source: 'llm',
