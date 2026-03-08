@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Alert, Text, Image, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { LANGUAGE_OPTIONS, normalizeLanguage } from '../services/languageService';
@@ -11,6 +12,8 @@ import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
 import DSChipGroup from '../theme/DSChips';
 import { t } from '../i18n';
+
+const DRAFT_KEY = 'profile_draft';
 
 async function createAvatarSignedUrl(path) {
   const { data, error } = await supabase.storage
@@ -30,6 +33,27 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [avatarPath, setAvatarPath] = useState(user?.user_metadata?.gardener_avatar_path || '');
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null);
+  const draftLoaded = useRef(false);
+
+  // Restore draft form data that was saved before avatar generation
+  // (prevents data loss when auth state change re-mounts the component)
+  useEffect(() => {
+    if (draftLoaded.current) return;
+    draftLoaded.current = true;
+    AsyncStorage.getItem(DRAFT_KEY).then((raw) => {
+      if (!raw) return;
+      try {
+        const d = JSON.parse(raw);
+        if (d.username) setUsername(d.username);
+        if (d.firstName) setFirstName(d.firstName);
+        if (d.lastName) setLastName(d.lastName);
+        if (d.country) setCountry(d.country);
+        if (d.language) setLanguage(d.language);
+      } catch (_e) {
+        // ignore
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (!avatarPath) return;
@@ -62,6 +86,11 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
 
     setGeneratingAvatar(true);
     try {
+      // Persist form data before avatar call (auth state change may re-mount component)
+      await AsyncStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ username, firstName, lastName, country, language })
+      );
       const avatarData = await generateGardenerAvatar(asset.base64, language);
       if (!avatarData?.avatar_path) {
         throw new Error(t('profile.avatarCreateError'));
@@ -121,6 +150,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
         return;
       }
 
+      await AsyncStorage.removeItem(DRAFT_KEY);
       Alert.alert(t('common.success'), t('profile.profileSaved'));
       onDone && onDone();
     } finally {
@@ -229,6 +259,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
                 .from('profiles')
                 .update({ profile_setup_skipped: true })
                 .eq('id', user.id);
+              await AsyncStorage.removeItem(DRAFT_KEY);
             } catch (_e) {
               // Best-effort
             }
