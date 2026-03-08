@@ -4,9 +4,9 @@ import { corsHeaders as defaultCorsHeaders } from './credits.ts';
 // ─── Rate-Limit-Konfiguration pro Aktion ────────────────────────────
 // maxRequests innerhalb von windowMinutes
 export const RATE_LIMITS: Record<string, { maxRequests: number; windowMinutes: number }> = {
-  chat: { maxRequests: 30, windowMinutes: 60 }, // 30 Nachrichten/Stunde
-  plant_scan: { maxRequests: 10, windowMinutes: 60 }, // 10 Scans/Stunde
-  plant_details: { maxRequests: 10, windowMinutes: 60 }, // 10 Details/Stunde
+  chat: { maxRequests: 50, windowMinutes: 60 }, // 50 Nachrichten/Stunde
+  plant_scan: { maxRequests: 25, windowMinutes: 60 }, // 25 Scans/Stunde
+  plant_details: { maxRequests: 25, windowMinutes: 60 }, // 25 Details/Stunde
   healthcheck: { maxRequests: 15, windowMinutes: 60 }, // 15 Checks/Stunde
   avatar: { maxRequests: 5, windowMinutes: 60 }, // 5 Avatare/Stunde
 };
