@@ -45,10 +45,12 @@ Scan plants with your camera, let AI identify them, build your species collectio
 | i18n          | i18n-js (6 languages)                                |
 | Notifications | expo-notifications                                   |
 | Location      | expo-location                                        |
-| Tests         | Jest 30 + React Testing Library                      |
+| Images        | expo-image (disk + memory cache, blurhash)           |
+| Maps          | react-native-maps (Google Maps)                      |
+| Tests         | Jest 29 + React Testing Library                      |
 | Crash Monitor | Sentry (DSGVO-compliant, PII-filtered)               |
 | Linting       | ESLint + Prettier                                    |
-| CI/CD         | GitHub Actions + EAS Build                           |
+| CI/CD         | GitHub Actions + EAS Build/Submit                    |
 
 ## Quick Start
 
@@ -103,13 +105,14 @@ See `.env.example` for details.
 - Signed URLs are generated **on-demand** in read flows (`getPlantImageUrl`, `getPlantImageUrls`).
 - Legacy `http(s)` URLs remain backward-compatible and are passed through unchanged.
 
-### Latest Stability Updates (March 2026, P1)
+### Latest Updates (v1.4.2, March 2026)
 
-- `PlantDetailScreen` no longer nests vertical `FlatList` components inside a vertical parent `ScrollView` for Diary/Gallery tabs.
-- `chatService.fetchMessages()` now resolves chat image paths in batch via `createSignedUrls()` with per-image fallback.
-- `requestWithPolicy()` now enforces hard timeouts even when downstream clients ignore `AbortSignal`.
-- Silent error paths were removed in `AssistantScreen`, `SettingsScreen`, and `AuthContext` (non-fatal errors are now surfaced/logged).
-- Added tests for `chatService` URL resolution and `networkPolicy` timeout behavior.
+- **Plant Dex Performance** — `expo-image` with disk caching, blurhash placeholders, and `recyclingKey`. `SectionList` virtualization (`windowSize`, `maxToRenderPerBatch`, `removeClippedSubviews`). `DexCard` wrapped in `React.memo`.
+- **Signed URL Cache** — In-memory cache (50 min TTL, max 500 entries) in `uploadService.js` prevents redundant API calls for plant images.
+- **Species Details Cache** — Server-side `species_details` table caches AI-generated plant details, reducing repeat Edge Function calls.
+- **Maps Runtime Fix** — Google Maps key availability exposed via `extra.googleMapsEnabled` (native config sections are not accessible at JS runtime via `Constants.expoConfig`).
+- **PlantListScreen Parallelization** — Plant list and healthscores load in parallel; plants render immediately while scores stream in.
+- **Profile Draft Persistence** — Profile form state persists across auth state changes.
 
 ## Project Structure
 
@@ -143,7 +146,7 @@ See `.env.example` for details.
 │   │   └── _shared/               # Shared utilities (credits, OpenAI, rate-limit, validation)
 │   └── migrations/                 # SQL database migrations
 │
-├── __tests__/                      # 12 test suites
+├── __tests__/                      # 13 test suites
 ├── .github/
 │   ├── workflows/                  # CI/CD workflows
 │   ├── ISSUE_TEMPLATE/             # Issue templates
@@ -211,8 +214,8 @@ Functions are deployed without JWT verification but validate all requests via cu
 Trigger builds by tagging a release:
 
 ```bash
-git tag v1.3.0
-git push origin v1.3.0
+git tag v1.4.2
+git push origin v1.4.2
 # Automatically builds and submits to app stores via GitHub Actions
 ```
 
@@ -220,8 +223,8 @@ Manual build:
 
 ```bash
 npm install -g eas-cli
-eas build -p android --profile preview
-eas build -p ios --profile preview
+eas build -p android --profile production
+eas build -p ios --profile production
 ```
 
 ## Testing
@@ -237,18 +240,7 @@ npx jest __tests__/services/languageService.test.js
 npx jest --coverage
 ```
 
-12 test suites cover core logic:
-
-- Task engine (recurring, rescheduling)
-- Scoring & discovery
-- Language service
-- AI service
-- Credit service
-- Leaderboards
-- Weather
-- Notifications
-- Error handling
-- Auth context
+13 test suites cover core logic: task engine, scoring, language service, AI service, credit service, leaderboards, weather, notifications, error handling, auth context, chat service, and network policy.
 
 ## License
 
