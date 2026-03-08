@@ -22,6 +22,7 @@ import {
 import { validateText, validateLanguage, validationErrorResponse } from '../_shared/validate.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
+import { buildGenerationContext } from './cache-flow.js';
 
 // ── Detail-Schema pro Sprache (inkl. Russisch) ─────────────────────────
 
@@ -446,8 +447,11 @@ serve(async (req) => {
     // Security/quality hardening:
     // If species is resolved, always generate against canonical species name
     // and ignore user note hints to avoid poisoning shared cache entries.
-    const generationName = species?.canonical || name;
-    const generationHint = species ? '' : note || '';
+    const { generationName, generationHint, requestedName } = buildGenerationContext({
+      requestedName: name,
+      note,
+      canonicalName: species?.canonical,
+    });
 
     const prompt = `Create plant details for "${generationName}" (hint: "${generationHint}") and return ONLY one JSON object in EXACTLY this schema:
 
@@ -483,7 +487,7 @@ Rules:
       model: result.model,
       metadata: {
         plant_name: generationName,
-        requested_name: name,
+        requested_name: requestedName,
         language: resolvedLanguage,
         species_id: species?.speciesId ?? null,
         source: 'llm',
