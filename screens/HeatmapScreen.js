@@ -25,15 +25,11 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSCard from '../theme/DSCard';
 
 // ── Maps API Key validation ──────────────────────────────────────
-// Native MapView crashes fatally without a valid key — ErrorBoundary
-// can't catch that. Check upfront and show fallback UI instead.
-const MAPS_KEY_AVAILABLE = (() => {
-  const iosKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey;
-  const androidKey = Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
-  const key = Platform.OS === 'ios' ? iosKey : androidKey;
-  // Placeholder or empty = not configured
-  return !!key && key !== 'GOOGLE_MAPS_API_KEY';
-})();
+// Native config sections (ios.config, android.config) are NOT available
+// via Constants.expoConfig at runtime — they only end up in native
+// manifests (AndroidManifest.xml / Info.plist). Use the boolean flag
+// that app.config.js exposes through `extra` instead.
+const MAPS_KEY_AVAILABLE = !!Constants.expoConfig?.extra?.googleMapsEnabled;
 
 // ── Error Boundary for MapView crashes ──────────────────────────────
 class MapErrorBoundary extends Component {

@@ -10,7 +10,6 @@ import {
   Share,
   Alert,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,12 +30,9 @@ const DEFAULT_SPECIES_REGION = {
   longitudeDelta: 24,
 };
 
-const MAPS_KEY_AVAILABLE = (() => {
-  const iosKey = Constants.expoConfig?.ios?.config?.googleMapsApiKey;
-  const androidKey = Constants.expoConfig?.android?.config?.googleMaps?.apiKey;
-  const key = Platform.OS === 'ios' ? iosKey : androidKey;
-  return !!key && key !== 'GOOGLE_MAPS_API_KEY';
-})();
+// Native config sections are not available at runtime via Constants.expoConfig.
+// Use the boolean flag exposed through extra by app.config.js instead.
+const MAPS_KEY_AVAILABLE = !!Constants.expoConfig?.extra?.googleMapsEnabled;
 
 function heatColor(count) {
   if (count >= 15) return 'rgba(244, 67, 54, 0.50)';

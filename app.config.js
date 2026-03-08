@@ -39,6 +39,10 @@ module.exports = ({ config }) => {
       sentryDsn: process.env.SENTRY_DSN || '',
       // Environment tag for Sentry / logging
       environment: IS_DEV ? 'development' : process.env.APP_ENV || 'production',
+      // Runtime flag: native config sections (ios.config, android.config) are NOT
+      // available via Constants.expoConfig at runtime — they're baked into
+      // AndroidManifest.xml / Info.plist only. Expose a boolean so JS can check.
+      googleMapsEnabled: !!GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'GOOGLE_MAPS_API_KEY',
     },
   };
 };
