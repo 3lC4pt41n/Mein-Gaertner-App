@@ -5,6 +5,27 @@ import { Buffer } from 'buffer'; // npm install buffer
 
 const PLANT_BUCKET = 'plant-images';
 
+// ── In-Memory Signed-URL Cache (50 Min TTL, URLs sind 60 Min gültig) ──
+const SIGNED_URL_TTL_MS = 50 * 60 * 1000;
+const signedUrlCache = new Map(); // key: storagePath → { url, expiresAt }
+
+function getCachedSignedUrl(storagePath) {
+  const entry = signedUrlCache.get(storagePath);
+  if (entry && Date.now() < entry.expiresAt) return entry.url;
+  if (entry) signedUrlCache.delete(storagePath); // abgelaufen
+  return null;
+}
+
+function setCachedSignedUrl(storagePath, url) {
+  signedUrlCache.set(storagePath, { url, expiresAt: Date.now() + SIGNED_URL_TTL_MS });
+
+  // Housekeeping: max 500 Einträge, älteste raus
+  if (signedUrlCache.size > 500) {
+    const oldest = signedUrlCache.keys().next().value;
+    signedUrlCache.delete(oldest);
+  }
+}
+
 function stripLeadingSlash(value) {
   if (!value) return '';
   return value.startsWith('/') ? value.slice(1) : value;
@@ -167,10 +188,17 @@ export async function getPlantImageUrl(pathOrUrl) {
     return isWebImageUrl(pathOrUrl) ? pathOrUrl : null;
   }
 
+  // Cache-Hit?
+  const cached = getCachedSignedUrl(storagePath);
+  if (cached) return cached;
+
   const { data, error } = await supabase.storage
     .from(PLANT_BUCKET)
     .createSignedUrl(storagePath, 60 * 60);
-  if (!error && data?.signedUrl) return data.signedUrl;
+  if (!error && data?.signedUrl) {
+    setCachedSignedUrl(storagePath, data.signedUrl);
+    return data.signedUrl;
+  }
 
   // Fallback: if original value is already a web URL, keep it.
   return isWebImageUrl(pathOrUrl) ? pathOrUrl : null;
@@ -196,6 +224,12 @@ export async function getPlantImageUrls(pathsOrUrls) {
 
     const storagePath = extractPlantStoragePath(val);
     if (storagePath) {
+      // Cache-Hit? → direkt nutzen, kein API-Call nötig
+      const cached = getCachedSignedUrl(storagePath);
+      if (cached) {
+        result[i] = cached;
+        continue;
+      }
       toSign.push({
         index: i,
         path: storagePath,
@@ -217,6 +251,7 @@ export async function getPlantImageUrls(pathsOrUrls) {
       const entry = toSign[i];
       if (!error && data?.[i]?.signedUrl) {
         result[entry.index] = data[i].signedUrl;
+        setCachedSignedUrl(entry.path, data[i].signedUrl);
       } else {
         result[entry.index] = entry.fallback;
       }
