@@ -16,6 +16,13 @@ import { t } from '../i18n';
 
 const DRAFT_KEY = 'profile_draft';
 
+// In-memory cache that survives component remounts within the same app session.
+// When supabase.auth.updateUser() triggers an auth state change, the component
+// may unmount/remount and useState would re-initialise from stale profile props.
+// This cache provides the form values synchronously on remount, before the async
+// AsyncStorage draft can be loaded.
+let formCache = null;
+
 async function createAvatarSignedUrl(path) {
   const { data, error } = await supabase.storage
     .from('chat-images')
@@ -25,22 +32,29 @@ async function createAvatarSignedUrl(path) {
 }
 
 export default function ProfileCompleteScreen({ user, profile, onDone, showSkip }) {
-  const [username, setUsername] = useState(profile?.username ?? '');
-  const [firstName, setFirstName] = useState(profile?.first_name ?? '');
-  const [lastName, setLastName] = useState(profile?.last_name ?? '');
-  const [country, setCountry] = useState(profile?.country ?? '');
-  const [language, setLanguage] = useState(normalizeLanguage(profile?.language));
+  const [username, setUsername] = useState(() => formCache?.username ?? profile?.username ?? '');
+  const [firstName, setFirstName] = useState(() => formCache?.firstName ?? profile?.first_name ?? '');
+  const [lastName, setLastName] = useState(() => formCache?.lastName ?? profile?.last_name ?? '');
+  const [country, setCountry] = useState(() => formCache?.country ?? profile?.country ?? '');
+  const [language, setLanguage] = useState(() => formCache?.language ?? normalizeLanguage(profile?.language));
   const [saving, setSaving] = useState(false);
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [avatarPath, setAvatarPath] = useState(user?.user_metadata?.gardener_avatar_path || '');
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null);
   const draftLoaded = useRef(false);
 
-  // Restore draft form data that was saved before avatar generation
-  // (prevents data loss when auth state change re-mounts the component)
+  // Keep in-memory cache in sync with form fields so remounts pick up latest values
+  useEffect(() => {
+    formCache = { username, firstName, lastName, country, language };
+  }, [username, firstName, lastName, country, language]);
+
+  // Restore draft form data from AsyncStorage as a fallback
+  // (handles app restart during avatar generation where formCache is lost)
   useEffect(() => {
     if (draftLoaded.current) return;
     draftLoaded.current = true;
+    // Only restore from AsyncStorage if we didn't already have values from formCache
+    if (formCache && (formCache.username || formCache.firstName)) return;
     AsyncStorage.getItem(DRAFT_KEY).then((raw) => {
       if (!raw) return;
       try {
@@ -152,6 +166,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       }
 
       await AsyncStorage.removeItem(DRAFT_KEY);
+      formCache = null;
       Alert.alert(t('common.success'), t('profile.profileSaved'));
       onDone && onDone();
     } finally {
@@ -261,6 +276,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
                 .update({ profile_setup_skipped: true })
                 .eq('id', user.id);
               await AsyncStorage.removeItem(DRAFT_KEY);
+              formCache = null;
             } catch (_e) {
               // Best-effort
             }
