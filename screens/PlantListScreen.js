@@ -97,7 +97,8 @@ async function getPlantsWithHealthscores(userId) {
 }
 
 // Pflanzen gruppiert nach location > zones > plants
-async function getGroupedPlants(userId, plants) {
+// Fetches ALL assigned plants directly from DB (not limited by pagination)
+async function getGroupedPlants(userId) {
   // Locations laden, dann Zones (Zones braucht Location-IDs)
   const { data: locations } = await supabase
     .from('locations')
@@ -112,13 +113,61 @@ async function getGroupedPlants(userId, plants) {
     .select('id, name, location_id')
     .in('location_id', locIds);
 
+  const zoneIds = (zones || []).map((z) => z.id);
+  if (!zoneIds.length) {
+    return (locations || []).map((location) => ({
+      ...location,
+      zones: (zones || [])
+        .filter((z) => z.location_id === location.id)
+        .map((zone) => ({ ...zone, plants: [] })),
+    }));
+  }
+
+  // Fetch ALL plants assigned to these zones (no pagination limit!)
+  const { data: assignedPlants } = await supabase
+    .from('plants')
+    .select('*')
+    .eq('user_id', userId)
+    .in('zone_id', zoneIds)
+    .order('created_at', { ascending: false });
+
+  // Resolve image URLs + healthscores for assigned plants
+  const rawUrls = (assignedPlants || []).map((p) => p.image_url);
+  const plantIds = (assignedPlants || []).map((p) => p.id);
+
+  const [resolvedUrls, healthchecksResult] = await Promise.all([
+    getPlantImageUrls(rawUrls),
+    plantIds.length > 0
+      ? supabase
+          .from('plant_healthchecks')
+          .select('plant_id, healthscore')
+          .in('plant_id', plantIds)
+          .order('created_at', { ascending: false })
+      : { data: [] },
+  ]);
+
+  const healthscoreMap = {};
+  if (healthchecksResult?.data) {
+    for (const hc of healthchecksResult.data) {
+      if (!healthscoreMap[hc.plant_id]) {
+        healthscoreMap[hc.plant_id] = hc.healthscore;
+      }
+    }
+  }
+
+  const enrichedPlants = (assignedPlants || []).map((plant, i) => ({
+    ...plant,
+    image_url: resolvedUrls[i] || plant.image_url,
+    healthscore: healthscoreMap[plant.id] ?? null,
+  }));
+
   return (locations || []).map((location) => ({
     ...location,
     zones: (zones || [])
       .filter((z) => z.location_id === location.id)
       .map((zone) => ({
         ...zone,
-        plants: (plants || []).filter((p) => p.zone_id === zone.id),
+        plants: enrichedPlants.filter((p) => p.zone_id === zone.id),
       })),
   }));
 }
@@ -157,8 +206,8 @@ export default function PlantListScreen() {
       setAllPlants(plants);
       setLoading(false);
 
-      // Gruppierung im Hintergrund nachladen (nur für Homes-Tab)
-      getGroupedPlants(userId, plants)
+      // Gruppierung im Hintergrund nachladen (fetches ALL assigned plants from DB)
+      getGroupedPlants(userId)
         .then(setGrouped)
         .catch((e) => console.warn('[PlantList] grouped load failed:', e?.message));
     } catch (e) {
