@@ -33,10 +33,14 @@ async function createAvatarSignedUrl(path) {
 
 export default function ProfileCompleteScreen({ user, profile, onDone, showSkip }) {
   const [username, setUsername] = useState(() => formCache?.username ?? profile?.username ?? '');
-  const [firstName, setFirstName] = useState(() => formCache?.firstName ?? profile?.first_name ?? '');
+  const [firstName, setFirstName] = useState(
+    () => formCache?.firstName ?? profile?.first_name ?? ''
+  );
   const [lastName, setLastName] = useState(() => formCache?.lastName ?? profile?.last_name ?? '');
   const [country, setCountry] = useState(() => formCache?.country ?? profile?.country ?? '');
-  const [language, setLanguage] = useState(() => formCache?.language ?? normalizeLanguage(profile?.language));
+  const [language, setLanguage] = useState(
+    () => formCache?.language ?? normalizeLanguage(profile?.language)
+  );
   const [saving, setSaving] = useState(false);
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [avatarPath, setAvatarPath] = useState(user?.user_metadata?.gardener_avatar_path || '');
