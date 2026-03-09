@@ -546,7 +546,6 @@ export default function PlantDetailScreen({ route }) {
 
   const plantHeaderCard = (
     <>
-      <CreditBar />
       <View style={styles.card}>
         {resolvedImageUrl && (
           <Image
@@ -659,6 +658,7 @@ export default function PlantDetailScreen({ route }) {
 
   return (
     <>
+      <CreditBar style={{ marginHorizontal: spacing.md, marginTop: spacing.sm }} />
       {isVirtualizedTab ? (
         <View style={styles.screen}>
           {tab === 'diary' ? (
