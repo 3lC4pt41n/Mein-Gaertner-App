@@ -80,12 +80,7 @@ export default function CreditBar({ onBalanceChange, style }) {
             <Text style={styles.buyLink}>{t('common.buyCredits')}</Text>
           </TouchableOpacity>
         )}
-        <Text
-          style={[
-            styles.value,
-            { color: isLow ? colors.warning : colors.primary },
-          ]}
-        >
+        <Text style={[styles.value, { color: isLow ? colors.warning : colors.primary }]}>
           {balance}
         </Text>
       </View>

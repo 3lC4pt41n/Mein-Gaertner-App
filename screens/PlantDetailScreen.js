@@ -546,93 +546,93 @@ export default function PlantDetailScreen({ route }) {
 
   const plantHeaderCard = (
     <>
-    <CreditBar />
-    <View style={styles.card}>
-      {resolvedImageUrl && (
-        <Image
-          source={{ uri: resolvedImageUrl }}
-          style={{
-            width: width,
-            height: (width * 2) / 3,
-            borderRadius: radius.lg,
-            alignSelf: 'center',
-            marginBottom: spacing.sm,
-            backgroundColor: colors.border,
-          }}
-          resizeMode="cover"
-        />
-      )}
-      <Text style={styles.title}>{plant.name}</Text>
-      <Text style={styles.subtitle}>{plant.note}</Text>
-      {healthcheck && typeof healthcheck.healthscore === 'number' && (
-        <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
-      )}
-
-      {/* Zugewiesene Zone */}
-      {assignedZone ? (
-        <View style={{ alignItems: 'center', marginVertical: spacing.sm }}>
-          <Ionicons name="home-outline" size={18} color={colors.primaryLight} />
-          <Text style={{ color: colors.textPrimary, fontWeight: 'bold', fontSize: 16 }}>
-            {t('plants.assignedTo', { zone: assignedZone.name })}
-            {assignedZone.location?.name ? ` (${assignedZone.location.name})` : ''}
-          </Text>
-          <View style={{ flexDirection: 'row', marginTop: spacing.sm }}>
-            <TouchableOpacity
-              style={[
-                styles.zoneBtn,
-                { backgroundColor: colors.textTertiary, marginRight: spacing.sm },
-              ]}
-              onPress={() => {
-                setPickerVisible(true);
-                loadZones();
-              }}
-            >
-              <Ionicons
-                name="swap-horizontal"
-                size={18}
-                color={colors.surface}
-                style={{ marginRight: spacing.sm }}
-              />
-              <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
-                {t('plants.changeZone')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.zoneBtn, { backgroundColor: colors.danger }]}
-              onPress={removeZone}
-            >
-              <Ionicons
-                name="close"
-                size={18}
-                color={colors.surface}
-                style={{ marginRight: spacing.sm }}
-              />
-              <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
-                {t('plants.removeZone')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : (
-        <TouchableOpacity
-          style={styles.zoneBtn}
-          onPress={() => {
-            setPickerVisible(true);
-            loadZones();
-          }}
-        >
-          <Ionicons
-            name="home-outline"
-            size={18}
-            color={colors.surface}
-            style={{ marginRight: spacing.sm }}
+      <CreditBar />
+      <View style={styles.card}>
+        {resolvedImageUrl && (
+          <Image
+            source={{ uri: resolvedImageUrl }}
+            style={{
+              width: width,
+              height: (width * 2) / 3,
+              borderRadius: radius.lg,
+              alignSelf: 'center',
+              marginBottom: spacing.sm,
+              backgroundColor: colors.border,
+            }}
+            resizeMode="cover"
           />
-          <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
-            {t('plants.assignZone')}
-          </Text>
-        </TouchableOpacity>
-      )}
-    </View>
+        )}
+        <Text style={styles.title}>{plant.name}</Text>
+        <Text style={styles.subtitle}>{plant.note}</Text>
+        {healthcheck && typeof healthcheck.healthscore === 'number' && (
+          <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
+        )}
+
+        {/* Zugewiesene Zone */}
+        {assignedZone ? (
+          <View style={{ alignItems: 'center', marginVertical: spacing.sm }}>
+            <Ionicons name="home-outline" size={18} color={colors.primaryLight} />
+            <Text style={{ color: colors.textPrimary, fontWeight: 'bold', fontSize: 16 }}>
+              {t('plants.assignedTo', { zone: assignedZone.name })}
+              {assignedZone.location?.name ? ` (${assignedZone.location.name})` : ''}
+            </Text>
+            <View style={{ flexDirection: 'row', marginTop: spacing.sm }}>
+              <TouchableOpacity
+                style={[
+                  styles.zoneBtn,
+                  { backgroundColor: colors.textTertiary, marginRight: spacing.sm },
+                ]}
+                onPress={() => {
+                  setPickerVisible(true);
+                  loadZones();
+                }}
+              >
+                <Ionicons
+                  name="swap-horizontal"
+                  size={18}
+                  color={colors.surface}
+                  style={{ marginRight: spacing.sm }}
+                />
+                <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+                  {t('plants.changeZone')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.zoneBtn, { backgroundColor: colors.danger }]}
+                onPress={removeZone}
+              >
+                <Ionicons
+                  name="close"
+                  size={18}
+                  color={colors.surface}
+                  style={{ marginRight: spacing.sm }}
+                />
+                <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+                  {t('plants.removeZone')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.zoneBtn}
+            onPress={() => {
+              setPickerVisible(true);
+              loadZones();
+            }}
+          >
+            <Ionicons
+              name="home-outline"
+              size={18}
+              color={colors.surface}
+              style={{ marginRight: spacing.sm }}
+            />
+            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>
+              {t('plants.assignZone')}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </>
   );
 

@@ -95,7 +95,6 @@ export default function AddPlantScreen() {
   const [imageUri, setImageUri] = useState(null);
   const [, setBase64Image] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [balance, setBalance] = useState(null);
   const [language, setLanguage] = useState('de');
 
   // ── Step tracking ───────────────────────────
@@ -214,7 +213,7 @@ export default function AddPlantScreen() {
         setName(detectedName || t('plants.noNameRecognized'));
         setNameEditedByUser(false);
         setNote(data.note || t('plants.noNoteAvailable'));
-        if (typeof data.balance === 'number') setBalance(data.balance);
+
         setStep('save');
       } catch (e) {
         if (!handleCreditError(e)) {
@@ -340,7 +339,6 @@ export default function AddPlantScreen() {
     setLoading(true);
     try {
       const detailsData = await generatePlantDetails(name, note, language, savedPlant.species_id);
-      if (typeof detailsData.balance === 'number') setBalance(detailsData.balance);
 
       // Update plant with details
       await supabase
@@ -370,7 +368,6 @@ export default function AddPlantScreen() {
       }
 
       const hcData = await performHealthcheck(healthcheckImageUrl, name, language);
-      if (typeof hcData.balance === 'number') setBalance(hcData.balance);
 
       // Save healthcheck
       await saveHealthcheck({
@@ -415,7 +412,7 @@ export default function AddPlantScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Credit balance — unified component */}
-      <CreditBar onBalanceChange={(bal) => setBalance(bal)} />
+      <CreditBar />
 
       {/* ── Step indicator ──────────────────── */}
       <View style={styles.stepRow}>

@@ -34,7 +34,6 @@ export default function AssistantScreen() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [balance, setBalance] = useState(null);
   const [language, setLanguage] = useState('de');
   const [userAvatarUrl, setUserAvatarUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
@@ -193,7 +192,6 @@ export default function AssistantScreen() {
     try {
       const data = await chatWithBen(text, image_url, language);
       const content = data?.content || t('assistant.noAnswer');
-      if (typeof data?.balance === 'number') setBalance(data.balance);
 
       const msg = { user_id, sender: GARDENER_NAME, content };
       await saveMessage(msg);
@@ -278,10 +276,7 @@ export default function AssistantScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Credit-Leiste — unified component */}
-      <CreditBar
-        onBalanceChange={(bal) => setBalance(bal)}
-        style={{ borderRadius: 0, marginBottom: 0 }}
-      />
+      <CreditBar style={{ borderRadius: 0, marginBottom: 0 }} />
 
       <FlatList
         data={messages}
