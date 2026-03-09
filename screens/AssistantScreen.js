@@ -276,7 +276,7 @@ export default function AssistantScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Credit-Leiste — unified component */}
-      <CreditBar style={{ borderRadius: 0, marginBottom: 0 }} />
+      <CreditBar style={{ marginHorizontal: spacing.md, marginTop: spacing.sm }} />
 
       <FlatList
         data={messages}
