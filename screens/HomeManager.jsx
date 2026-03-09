@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, Modal, TouchableOpacity, SectionList, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../supabase';
@@ -29,6 +29,13 @@ export default function HomeManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dexProgress, setDexProgress] = useState({ total: 0, discovered: 0, firstDiscoveries: 0 });
+
+  // Zone picker for assigning unassigned plants
+  const [zonePickerVisible, setZonePickerVisible] = useState(false);
+  const [zonePickerPlant, setZonePickerPlant] = useState(null);
+  const [zoneSections, setZoneSections] = useState([]);
+  const [zonesLoading, setZonesLoading] = useState(false);
+  const [savingZone, setSavingZone] = useState(false);
 
   const { userId } = useAuth();
   const navigation = useNavigation();
@@ -87,6 +94,64 @@ export default function HomeManager() {
       setError(err.message);
     }
     setLoading(false);
+  };
+
+  // ── Zone Picker for Unassigned Plants ──────────────
+  const openZonePicker = async (plant) => {
+    setZonePickerPlant(plant);
+    setZonePickerVisible(true);
+    setZonesLoading(true);
+    try {
+      const { data: locs } = await supabase
+        .from('locations')
+        .select('id, name')
+        .eq('user_id', userId);
+      const locIds = (locs || []).map((l) => l.id);
+      if (!locIds.length) {
+        setZoneSections([]);
+        setZonesLoading(false);
+        return;
+      }
+      const { data: zones } = await supabase
+        .from('zones')
+        .select('id, name, type, location_id')
+        .in('location_id', locIds)
+        .order('name');
+      const grouped = (locs || [])
+        .map((location) => ({
+          title: location.name,
+          data: (zones || []).filter((z) => z.location_id === location.id),
+        }))
+        .filter((section) => section.data.length > 0);
+      setZoneSections(grouped);
+    } catch (err) {
+      Alert.alert(t('common.error'), err.message);
+      setZoneSections([]);
+    }
+    setZonesLoading(false);
+  };
+
+  const assignPlantToZone = async (zone) => {
+    if (!zonePickerPlant) return;
+    setSavingZone(true);
+    try {
+      const { error } = await supabase
+        .from('plants')
+        .update({ zone_id: zone.id })
+        .eq('id', zonePickerPlant.id);
+      if (error) throw error;
+      Alert.alert(
+        t('common.success'),
+        t('plants.zoneAssigned', { zone: zone.name })
+      );
+      setZonePickerVisible(false);
+      setZonePickerPlant(null);
+      reload();
+    } catch (e) {
+      Alert.alert(t('common.error'), e.message);
+    } finally {
+      setSavingZone(false);
+    }
   };
 
   // ── Modals ──────────────────────────────────────────
@@ -382,18 +447,27 @@ export default function HomeManager() {
                 </View>
               </View>
               {unassignedPlants.map((p) => (
-                <View key={p.id} style={styles.zoneRow}>
-                  <View style={styles.zoneInfo}>
-                    <Ionicons name="leaf-outline" size={18} color={colors.textTertiary} />
-                    <Text style={styles.zoneText}>{p.name}</Text>
+                <TouchableOpacity
+                  key={p.id}
+                  onPress={() => openZonePicker(p)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.zoneRow}>
+                    <View style={styles.zoneInfo}>
+                      <Ionicons name="leaf-outline" size={18} color={colors.textTertiary} />
+                      <Text style={styles.zoneText}>{p.name}</Text>
+                    </View>
+                    <View style={styles.assignHint}>
+                      <Ionicons name="arrow-forward-outline" size={16} color={colors.primary} />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </DSCard>
           ) : null
         }
       />
-      {/* ── Modal ────────────────────────────────────── */}
+      {/* ── Location/Zone Modal ──────────────────────── */}
       <Modal visible={dialogVisible} animationType="slide" transparent onRequestClose={closeModal}>
         <View style={styles.overlay}>
           <View style={styles.modalBox}>
@@ -456,6 +530,72 @@ export default function HomeManager() {
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* ── Zone Picker Modal for Unassigned Plants ──── */}
+      <Modal
+        visible={zonePickerVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => { setZonePickerVisible(false); setZonePickerPlant(null); }}
+      >
+        <TouchableOpacity
+          style={styles.pickerOverlay}
+          activeOpacity={1}
+          onPressOut={() => { setZonePickerVisible(false); setZonePickerPlant(null); }}
+        >
+          <TouchableOpacity style={styles.pickerSheet} activeOpacity={1}>
+            <Text style={styles.pickerTitle}>
+              {zonePickerPlant
+                ? t('plants.selectZone') + ': ' + zonePickerPlant.name
+                : t('plants.selectZone')}
+            </Text>
+            {zonesLoading ? (
+              <ActivityIndicator size="large" color={colors.primaryLight} />
+            ) : zoneSections.length ? (
+              <SectionList
+                sections={zoneSections}
+                keyExtractor={(item) => item.id}
+                renderSectionHeader={({ section: { title } }) => (
+                  <Text style={styles.pickerSectionHeader}>{title}</Text>
+                )}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.pickerZoneRow}
+                    onPress={() => assignPlantToZone(item)}
+                    disabled={savingZone}
+                  >
+                    <Ionicons
+                      name="home-outline"
+                      size={22}
+                      color={colors.primaryLight}
+                      style={{ marginRight: spacing.sm }}
+                    />
+                    <Text style={styles.pickerZoneName}>
+                      {item.name} <Text style={styles.pickerZoneType}>({item.type})</Text>
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                ListEmptyComponent={
+                  <View style={{ alignItems: 'center', padding: spacing.lg }}>
+                    <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: spacing.md }}>
+                      {t('home.noZones')}
+                    </Text>
+                  </View>
+                }
+              />
+            ) : (
+              <View style={{ alignItems: 'center', padding: spacing.lg }}>
+                <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: spacing.md }}>
+                  {t('home.noZones')}
+                </Text>
+              </View>
+            )}
+            {savingZone && (
+              <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.md }} />
+            )}
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </>
   );
@@ -557,6 +697,9 @@ const styles = StyleSheet.create({
   zoneText: { fontSize: 14, color: colors.textPrimary, fontWeight: '500' },
   zoneType: { color: colors.textTertiary, fontSize: 12 },
   zoneActions: { flexDirection: 'row' },
+  assignHint: {
+    paddingHorizontal: spacing.sm,
+  },
 
   // Actions
   actionRow: {
@@ -591,7 +734,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
 
-  // Modal
+  // Location/Zone Modal
   overlay: {
     flex: 1,
     backgroundColor: colors.overlay,
@@ -620,4 +763,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: spacing.sm,
   },
+
+  // Zone Picker Modal
+  pickerOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'flex-end',
+  },
+  pickerSheet: {
+    backgroundColor: colors.surface,
+    padding: spacing.xl,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    maxHeight: '60%',
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: spacing.md,
+    textAlign: 'center',
+    color: colors.textPrimary,
+  },
+  pickerSectionHeader: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    backgroundColor: colors.background,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: 2,
+    marginTop: spacing.lg,
+    color: colors.textSecondary,
+  },
+  pickerZoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  pickerZoneName: { fontSize: 16, color: colors.textPrimary },
+  pickerZoneType: { color: colors.textTertiary, fontSize: 12 },
 });
