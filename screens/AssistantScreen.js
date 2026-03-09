@@ -18,13 +18,13 @@ import { supabase } from '../supabase';
 import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
 import { chatWithBen } from '../services/aiService';
-import { fetchBalance } from '../services/creditService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
+import CreditBar from '../components/CreditBar';
 
 const GARDENER_NAME = 'Ben';
 
@@ -44,14 +44,6 @@ export default function AssistantScreen() {
   useEffect(() => {
     if (!user_id) return;
     (async () => {
-      try {
-        const bal = await fetchBalance();
-        setBalance(bal);
-      } catch (error) {
-        if (__DEV__) {
-          console.warn('[AssistantScreen] fetchBalance failed:', error?.message);
-        }
-      }
       try {
         const userLanguage = await fetchCurrentUserLanguage();
         setLanguage(userLanguage);
@@ -285,38 +277,11 @@ export default function AssistantScreen() {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* Credit-Leiste */}
-      {balance !== null && (
-        <View
-          style={{
-            backgroundColor: balance > 10 ? colors.primarySurface : colors.warningSurface,
-            padding: spacing.sm,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: spacing.lg,
-          }}
-        >
-          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.credits')}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-            {balance <= 10 && (
-              <TouchableOpacity onPress={() => navigation.navigate('Mehr', { screen: 'ShopMain' })}>
-                <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>
-                  {t('common.buyCredits')}
-                </Text>
-              </TouchableOpacity>
-            )}
-            <Text
-              style={{
-                fontWeight: 'bold',
-                color: balance > 10 ? colors.primary : colors.warning,
-              }}
-            >
-              {balance}
-            </Text>
-          </View>
-        </View>
-      )}
+      {/* Credit-Leiste — unified component */}
+      <CreditBar
+        onBalanceChange={(bal) => setBalance(bal)}
+        style={{ borderRadius: 0, marginBottom: 0 }}
+      />
 
       <FlatList
         data={messages}

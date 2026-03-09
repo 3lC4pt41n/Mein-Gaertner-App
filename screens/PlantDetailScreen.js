@@ -34,6 +34,7 @@ import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
 import { fetchCachedSpeciesDetails } from '../services/dexService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { friendlyError } from '../utils/errorMessages';
+import CreditBar from '../components/CreditBar';
 
 // Helper zum Gruppieren Locations > Zonen
 async function fetchZonesWithLocationsGrouped() {
@@ -544,6 +545,8 @@ export default function PlantDetailScreen({ route }) {
   const isVirtualizedTab = tab === 'diary' || tab === 'gallery';
 
   const plantHeaderCard = (
+    <>
+    <CreditBar />
     <View style={styles.card}>
       {resolvedImageUrl && (
         <Image
@@ -630,6 +633,7 @@ export default function PlantDetailScreen({ route }) {
         </TouchableOpacity>
       )}
     </View>
+    </>
   );
 
   const tabBar = (

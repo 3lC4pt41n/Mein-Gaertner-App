@@ -73,6 +73,19 @@ function PlantStack() {
   );
 }
 
+// ---------- Add Plant Stack (for consistent header) --------
+function AddPlantStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="AddPlantMain"
+        component={AddPlantScreen}
+        options={{ title: t('nav.addPlant') }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 // ---------- Assistant Stack (Chat tab) --------
 function AssistantTabStack() {
   return (
@@ -310,14 +323,15 @@ function AppContent() {
         </Tab.Screen>
         <Tab.Screen
           name="Pflanze hinzufügen"
-          component={AddPlantScreen}
           options={{
             title: t('nav.addPlant'),
             tabBarLabel: () => null,
             tabBarIcon: ({ size }) => <Ionicons name="add" size={size + 4} color="#FFFFFF" />,
             tabBarButton: (props) => <AddPlantTabButton {...props} />,
           }}
-        />
+        >
+          {() => <AddPlantStack />}
+        </Tab.Screen>
         <Tab.Screen
           name="MeinGärtnerTab"
           options={{ title: t('nav.assistant'), tabBarLabel: t('nav.assistant') }}

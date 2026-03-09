@@ -18,7 +18,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { savePlantToSupabase, saveHealthcheck } from '../services/plantService';
 import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
 import { recognizePlant, generatePlantDetails, performHealthcheck } from '../services/aiService';
-import { fetchBalance } from '../services/creditService';
 import { logDiscovery, getDiscoveryLocation } from '../services/discoveryService';
 import { supabase } from '../supabase';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -32,6 +31,7 @@ import DSCard from '../theme/DSCard';
 import DiscoveryRevealModal from '../components/DiscoveryRevealModal';
 import { AI_COSTS } from '../services/pricingConfig';
 import { friendlyError } from '../utils/errorMessages';
+import CreditBar from '../components/CreditBar';
 
 // Fetch zones grouped by location for the picker
 async function fetchZonesGrouped(userId) {
@@ -116,12 +116,6 @@ export default function AddPlantScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const bal = await fetchBalance();
-        setBalance(bal);
-      } catch (error) {
-        console.warn('[AddPlant] fetchBalance failed:', error?.message);
-      }
-      try {
         const userLanguage = await fetchCurrentUserLanguage();
         setLanguage(userLanguage);
       } catch (error) {
@@ -153,15 +147,7 @@ export default function AddPlantScreen() {
         setDiscoveryResult(null);
         setShowReveal(false);
       }
-      // Refresh balance on focus
-      (async () => {
-        try {
-          const bal = await fetchBalance();
-          setBalance(bal);
-        } catch (error) {
-          console.warn('[AddPlant] focus fetchBalance failed:', error?.message);
-        }
-      })();
+      // Balance refresh handled by CreditBar component
     }, [])
   );
 
@@ -428,27 +414,8 @@ export default function AddPlantScreen() {
   // ── Render ──────────────────────────────────
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Credit balance */}
-      {balance !== null && (
-        <DSCard variant="flat" padding="sm" style={styles.balanceCard}>
-          <View style={styles.balanceRow}>
-            <Ionicons
-              name="flash"
-              size={18}
-              color={balance > 20 ? colors.primaryLight : colors.warning}
-            />
-            <Text style={styles.balanceLabel}>{t('common.credits')}</Text>
-            <Text
-              style={[
-                styles.balanceValue,
-                { color: balance > 20 ? colors.primary : colors.warning },
-              ]}
-            >
-              {balance}
-            </Text>
-          </View>
-        </DSCard>
-      )}
+      {/* Credit balance — unified component */}
+      <CreditBar onBalanceChange={(bal) => setBalance(bal)} />
 
       {/* ── Step indicator ──────────────────── */}
       <View style={styles.stepRow}>
@@ -769,12 +736,6 @@ export default function AddPlantScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: 40 },
-
-  // Balance
-  balanceCard: { marginBottom: spacing.md },
-  balanceRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  balanceLabel: { flex: 1, fontWeight: '600', color: colors.textSecondary, fontSize: 14 },
-  balanceValue: { fontWeight: 'bold', fontSize: 18 },
 
   // Steps
   stepRow: {
