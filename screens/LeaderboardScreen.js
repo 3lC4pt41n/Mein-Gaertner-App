@@ -265,7 +265,7 @@ export default function LeaderboardScreen() {
                       const scoreVal = formatScore(myStats[statsKey]?.[timeWindow] ?? 0);
                       try {
                         await Share.share({
-                          message: `🌱 ${scoreName}: ${scoreVal} ${t('common.pointsFull')} | ${t('leaderboard.streakValue', { days: myStats.streak })} Streak | ${myStats.totalDiscoveries} ${t('leaderboard.discovered')} — Digitaler Gärtner`,
+                          message: `🌱 ${scoreName}: ${scoreVal} ${t('common.pointsFull')} | ${t('leaderboard.streakValue', { days: myStats.streak })} Streak | ${myStats.totalDiscoveries} ${t('leaderboard.discovered')} — FloraScout`,
                         });
                       } catch (error) {
                         const cancelled =

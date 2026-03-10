@@ -1,4 +1,4 @@
-# Contributing to Digitaler Gärtner
+# Contributing to FloraScout
 
 We love contributions! Whether you're fixing bugs, adding features, or improving documentation, your help makes this project better.
 
@@ -276,4 +276,4 @@ Contributors are recognized in:
 - Project README (for significant contributions)
 - Release notes
 
-Thank you for helping make Digitaler Gärtner better!
+Thank you for helping make FloraScout better!

@@ -1,4 +1,4 @@
-# Store Submission Checklist — Digitaler Gärtner
+# Store Submission Checklist — FloraScout
 
 ## Apple App Store (iOS)
 - [x] Privacy Policy URL set in App Store Connect

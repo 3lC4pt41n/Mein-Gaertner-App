@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea to improve Digitaler Gärtner
+about: Suggest an idea to improve FloraScout
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''
