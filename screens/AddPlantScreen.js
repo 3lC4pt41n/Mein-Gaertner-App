@@ -465,14 +465,11 @@ export default function AddPlantScreen() {
                 ['save', 'done'].includes(step) && i === 0 && styles.stepDotDone,
                 step === 'done' && i <= 1 && styles.stepDotDone,
               ]}
-            >
-              {(step === 'done' && i <= 1) ||
+            >{(step === 'done' && i <= 1) ||
               (['save', 'done'].includes(step) && i === 0) ? (
                 <Ionicons name="checkmark" size={14} color={colors.surface} />
               ) : (
-                <Text style={[styles.stepNum, step === s && styles.stepNumActive]}>
-                  {i + 1}
-                </Text>
+                <Text style={[styles.stepNum, step === s && styles.stepNumActive]}>{i + 1}</Text>
               )}
             </View>
             <Text style={[styles.stepLabel, step === s && styles.stepLabelActive]}>
