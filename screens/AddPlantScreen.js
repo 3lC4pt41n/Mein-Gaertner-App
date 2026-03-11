@@ -79,8 +79,8 @@ async function linkPlantToSpecies(plantId, speciesId) {
 
 /*
  * AddPlantScreen — staged onboarding flow:
- *   Step 1: Scan (photo + AI recognition) — 1 credit
- *   Step 2: Save (name, note, zone) — free
+ *   Step 1: Photo (camera opens immediately)
+ *   Step 2: Save — choose: AI recognize (credits) or manual name (free), then name/note/zone
  *   Step 3: Optional upgrades (details, healthcheck) — extra credits, offered after save
  */
 export default function AddPlantScreen() {
@@ -93,14 +93,17 @@ export default function AddPlantScreen() {
   const [nameEditedByUser, setNameEditedByUser] = useState(false);
   const [note, setNote] = useState('');
   const [imageUri, setImageUri] = useState(null);
-  const [, setBase64Image] = useState(null);
+  const [base64Image, setBase64Image] = useState(null);
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState('de');
 
   // ── Step tracking ───────────────────────────
-  // 'scan' → 'save' → 'done'
-  const [step, setStep] = useState('scan');
+  // 'photo' → 'save' → 'done'
+  const [step, setStep] = useState('photo');
   const [savedPlant, setSavedPlant] = useState(null);
+
+  // ── Scan mode: 'ai' | 'manual' | null ──────
+  const [scanMode, setScanMode] = useState(null);
 
   // ── Zone picker ─────────────────────────────
   const [selectedZone, setSelectedZone] = useState(null);
@@ -129,26 +132,31 @@ export default function AddPlantScreen() {
     stepRef.current = step;
   }, [step]);
 
-  // Reset to scan step when screen gains focus (so the plus button always works)
+  // Reset to photo step when screen gains focus (so the plus button always works)
   useFocusEffect(
     useCallback(() => {
       // Only reset if we're on the "done" step — user already saved and left
       if (stepRef.current === 'done') {
-        setStep('scan');
-        setName('');
-        setRecognizedSpeciesName('');
-        setNameEditedByUser(false);
-        setNote('');
-        setImageUri(null);
-        setBase64Image(null);
-        setSelectedZone(null);
-        setSavedPlant(null);
-        setDiscoveryResult(null);
-        setShowReveal(false);
+        resetAllState();
       }
       // Balance refresh handled by CreditBar component
     }, [])
   );
+
+  const resetAllState = useCallback(() => {
+    setStep('photo');
+    setName('');
+    setRecognizedSpeciesName('');
+    setNameEditedByUser(false);
+    setNote('');
+    setImageUri(null);
+    setBase64Image(null);
+    setSelectedZone(null);
+    setSavedPlant(null);
+    setScanMode(null);
+    setDiscoveryResult(null);
+    setShowReveal(false);
+  }, []);
 
   // Credit error handler
   const handleCreditError = (e) => {
@@ -174,8 +182,8 @@ export default function AddPlantScreen() {
     setNameEditedByUser(true);
   }, []);
 
-  // ── Step 1: Scan ────────────────────────────
-  const takePhotoAndRecognize = async () => {
+  // ── Step 1: Photo only (no AI) ──────────────
+  const takePhoto = useCallback(async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
       alert(t('common.cameraRequired'));
@@ -187,46 +195,67 @@ export default function AddPlantScreen() {
       quality: 0.6,
     });
 
-    if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      let base64 = result.assets[0].base64 || null;
-      if (!base64 && uri) {
-        try {
-          base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
-        } catch {
-          base64 = null;
-        }
-      }
-      if (!base64) {
-        Alert.alert(t('common.error'), t('dialog.imagePickerError'));
-        return;
-      }
+    if (result.canceled) return;
 
-      setImageUri(uri);
-      setBase64Image(base64);
-      setLoading(true);
-
+    const uri = result.assets[0].uri;
+    let base64 = result.assets[0].base64 || null;
+    if (!base64 && uri) {
       try {
-        const data = await recognizePlant(base64, language);
-        const detectedName = typeof data?.name === 'string' ? data.name.trim() : '';
-        setRecognizedSpeciesName(detectedName || '');
-        setName(detectedName || t('plants.noNameRecognized'));
-        setNameEditedByUser(false);
-        setNote(data.note || t('plants.noNoteAvailable'));
-
-        setStep('save');
-      } catch (e) {
-        if (!handleCreditError(e)) {
-          const msg = friendlyError(e);
-          Alert.alert(t('common.error'), msg);
-          setNote(t('common.error') + ': ' + msg);
-          setName('');
-          setRecognizedSpeciesName('');
-          setNameEditedByUser(false);
-        }
+        base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+      } catch {
+        base64 = null;
       }
-      setLoading(false);
     }
+    if (!base64) {
+      Alert.alert(t('common.error'), t('dialog.imagePickerError'));
+      return;
+    }
+
+    setImageUri(uri);
+    setBase64Image(base64);
+    setStep('save');
+  }, []);
+
+  // Auto-open camera when entering photo step
+  const cameraLaunched = useRef(false);
+  useEffect(() => {
+    if (step === 'photo' && !cameraLaunched.current) {
+      cameraLaunched.current = true;
+      takePhoto();
+    }
+    if (step !== 'photo') {
+      cameraLaunched.current = false;
+    }
+  }, [step, takePhoto]);
+
+  // ── Step 2: AI recognition (costs credits) ─
+  const handleRecognize = async () => {
+    if (!base64Image) return;
+    setLoading(true);
+    setScanMode('ai');
+    try {
+      const data = await recognizePlant(base64Image, language);
+      const detectedName = typeof data?.name === 'string' ? data.name.trim() : '';
+      setRecognizedSpeciesName(detectedName || '');
+      setName(detectedName || t('plants.noNameRecognized'));
+      setNameEditedByUser(false);
+      setNote(data.note || t('plants.noNoteAvailable'));
+    } catch (e) {
+      if (!handleCreditError(e)) {
+        Alert.alert(t('common.error'), friendlyError(e));
+      }
+      setScanMode(null);
+    }
+    setLoading(false);
+  };
+
+  // ── Step 2: Manual mode (free) ─────────────
+  const handleManualMode = () => {
+    setScanMode('manual');
+    setName('');
+    setNote('');
+    setRecognizedSpeciesName('');
+    setNameEditedByUser(true);
   };
 
   // ── Zone picker helpers ─────────────────────
@@ -273,29 +302,28 @@ export default function AddPlantScreen() {
         ...(selectedZone ? { zone_id: selectedZone.id } : {}),
       });
 
-      // Discovery event — capture result for reveal (with best-effort GPS)
+      // Discovery event — only for AI-recognized plants (manual = no discovery)
       let discovery = null;
-      try {
-        const location = await getDiscoveryLocation();
-        const discoverySpeciesName = nameEditedByUser
-          ? name?.trim()
-          : recognizedSpeciesName?.trim() || name?.trim();
-        discovery = await logDiscovery(userId, discoverySpeciesName, plant?.id, location);
+      if (scanMode === 'ai') {
+        try {
+          const location = await getDiscoveryLocation();
+          const discoverySpeciesName = nameEditedByUser
+            ? name?.trim()
+            : recognizedSpeciesName?.trim() || name?.trim();
+          discovery = await logDiscovery(userId, discoverySpeciesName, plant?.id, location);
 
-        // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)
-        if (discovery?.speciesId && plant?.id) {
-          // Nicht blockierend, aber mit Retry + Logging statt stillem Fehler.
-          linkPlantToSpecies(plant.id, discovery.speciesId).catch((error) => {
-            console.warn('[AddPlant] species link update failed:', error?.message);
-          });
+          // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)
+          if (discovery?.speciesId && plant?.id) {
+            linkPlantToSpecies(plant.id, discovery.speciesId).catch((error) => {
+              console.warn('[AddPlant] species link update failed:', error?.message);
+            });
+          }
+        } catch (discoveryError) {
+          if (__DEV__) {
+            console.warn('[AddPlant] Discovery logging failed:', discoveryError?.message);
+          }
+          discovery = null;
         }
-      } catch (discoveryError) {
-        // Discovery logging failed — plant is saved, but we do NOT fake a discovery.
-        // The reveal modal only shows for real, verified discoveries.
-        if (__DEV__) {
-          console.warn('[AddPlant] Discovery logging failed:', discoveryError?.message);
-        }
-        discovery = null;
       }
 
       // Gardening event
@@ -321,8 +349,8 @@ export default function AddPlantScreen() {
       });
       setStep('done');
 
-      // Auto-generate details in the background (uses cache if available → 0 Credits)
-      if (plant?.id) {
+      // Auto-generate details in the background (only for AI mode, uses cache → 0 Credits)
+      if (plant?.id && scanMode === 'ai') {
         generatePlantDetails(name, note, language, discovery?.speciesId || null)
           .then((detailsData) => {
             if (detailsData?.details) {
@@ -406,21 +434,18 @@ export default function AddPlantScreen() {
 
   const goToPlantDetail = () => {
     if (!savedPlant) return;
-    setName('');
-    setRecognizedSpeciesName('');
-    setNameEditedByUser(false);
-    setNote('');
-    setImageUri(null);
-    setBase64Image(null);
-    setSelectedZone(null);
-    setStep('scan');
-    setSavedPlant(null);
-    setDiscoveryResult(null);
-    setShowReveal(false);
+    const plantToView = savedPlant;
+    resetAllState();
     navigation.navigate('MeinePflanzenTab', {
       screen: 'PlantDetail',
-      params: { plant: savedPlant },
+      params: { plant: plantToView },
     });
+  };
+
+  // ── "Next plant" — reset + reopen camera ───
+  const handleScanNext = () => {
+    resetAllState();
+    // Camera will auto-open via useEffect on step='photo'
   };
 
   // ── Render ──────────────────────────────────
@@ -431,7 +456,7 @@ export default function AddPlantScreen() {
 
       {/* ── Step indicator ──────────────────── */}
       <View style={styles.stepRow}>
-        {['scan', 'save', 'done'].map((s, i) => (
+        {['photo', 'save', 'done'].map((s, i) => (
           <View key={s} style={styles.stepItem}>
             <View
               style={[
@@ -441,37 +466,54 @@ export default function AddPlantScreen() {
                 step === 'done' && i <= 1 && styles.stepDotDone,
               ]}
             >
-              {(step === 'done' && i <= 1) || (['save', 'done'].includes(step) && i === 0) ? (
+              {(step === 'done' && i <= 1) ||
+              (['save', 'done'].includes(step) && i === 0) ? (
                 <Ionicons name="checkmark" size={14} color={colors.surface} />
               ) : (
-                <Text style={[styles.stepNum, step === s && styles.stepNumActive]}>{i + 1}</Text>
+                <Text
+                  style={[
+                    styles.stepNum,
+                    step === s && styles.stepNumActive,
+                  ]}
+                >
+                  {i + 1}
+                </Text>
               )}
             </View>
-            <Text style={[styles.stepLabel, step === s && styles.stepLabelActive]}>
-              {t(`plants.step${s.charAt(0).toUpperCase() + s.slice(1)}`)}
+            <Text
+              style={[
+                styles.stepLabel,
+                step === s && styles.stepLabelActive,
+              ]}
+            >
+              {t(
+                `plants.step${s.charAt(0).toUpperCase() + s.slice(1)}`
+              )}
             </Text>
           </View>
         ))}
       </View>
 
-      {/* ── STEP: Scan ─────────────────────── */}
-      {step === 'scan' && (
+      {/* ── STEP: Photo (camera auto-opens) ─ */}
+      {step === 'photo' && (
         <DSCard>
-          <DSButton
-            onPress={takePhotoAndRecognize}
-            fullWidth
-            icon="camera-outline"
-            disabled={loading}
-          >
-            {t('plants.scanButton')}
-          </DSButton>
-          {loading && (
-            <ActivityIndicator
-              size="large"
-              color={colors.primaryLight}
-              style={{ marginTop: spacing.lg }}
+          <View style={{ alignItems: 'center', gap: spacing.md }}>
+            <Ionicons
+              name="camera-outline"
+              size={48}
+              color={colors.textTertiary}
             />
-          )}
+            <Text style={styles.photoHint}>
+              {t('plants.cameraOpening')}
+            </Text>
+            <DSButton
+              onPress={takePhoto}
+              fullWidth
+              icon="camera-outline"
+            >
+              {t('plants.retakePhoto')}
+            </DSButton>
+          </View>
         </DSCard>
       )}
 
@@ -479,72 +521,139 @@ export default function AddPlantScreen() {
       {step === 'save' && (
         <DSCard>
           {imageUri && (
-            <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
+            <Image
+              source={{ uri: imageUri }}
+              style={styles.preview}
+              resizeMode="cover"
+            />
           )}
 
-          <DSInput
-            label={t('plants.nameLabel')}
-            value={name}
-            onChangeText={handleNameChange}
-            placeholder={t('plants.namePlaceholder')}
-            icon="leaf-outline"
-          />
+          {/* ── Recognize vs Manual choice ──── */}
+          {!scanMode && (
+            <View style={styles.modeChoice}>
+              <DSButton
+                onPress={handleRecognize}
+                fullWidth
+                icon="sparkles-outline"
+                disabled={loading}
+              >
+                {t('plants.recognizePlant', {
+                  credits: AI_COSTS.scan,
+                })}
+              </DSButton>
+              <DSButton
+                variant="ghost"
+                onPress={handleManualMode}
+                fullWidth
+                icon="create-outline"
+                disabled={loading}
+              >
+                {t('plants.addManually')}
+              </DSButton>
+              {loading && (
+                <ActivityIndicator
+                  size="large"
+                  color={colors.primaryLight}
+                  style={{ marginTop: spacing.sm }}
+                />
+              )}
+            </View>
+          )}
 
-          <DSInput
-            label={t('plants.noteLabel')}
-            value={note}
-            onChangeText={setNote}
-            placeholder={t('plants.notePlaceholder')}
-            multiline
-          />
+          {/* ── Mode selected: show form ───── */}
+          {scanMode && (
+            <>
+              {scanMode === 'manual' && (
+                <Text style={styles.manualDisclaimer}>
+                  {t('plants.manualDisclaimer')}
+                </Text>
+              )}
 
-          {/* Zone picker (3.2) */}
-          <Text style={styles.fieldLabel}>{t('plants.zoneOptional')}</Text>
-          <TouchableOpacity style={styles.zonePicker} onPress={openZonePicker}>
-            <Ionicons
-              name="home-outline"
-              size={18}
-              color={selectedZone ? colors.primaryLight : colors.textDisabled}
-            />
-            <Text style={[styles.zonePickerText, selectedZone && { color: colors.textPrimary }]}>
-              {selectedZone ? selectedZone.name : t('plants.selectZoneOptional')}
-            </Text>
-            <Ionicons name="chevron-down" size={18} color={colors.textTertiary} />
-          </TouchableOpacity>
+              <DSInput
+                label={t('plants.nameLabel')}
+                value={name}
+                onChangeText={handleNameChange}
+                placeholder={
+                  scanMode === 'manual'
+                    ? t('plants.namePlaceholderManual')
+                    : t('plants.namePlaceholder')
+                }
+                icon="leaf-outline"
+              />
 
-          <DSButton
-            onPress={handleSave}
-            disabled={!name || loading}
-            fullWidth
-            icon="checkmark-circle-outline"
-            style={{ marginTop: spacing.md }}
-          >
-            {t('plants.savePlant')}
-          </DSButton>
+              <DSInput
+                label={t('plants.noteLabel')}
+                value={note}
+                onChangeText={setNote}
+                placeholder={t('plants.notePlaceholder')}
+                multiline
+              />
 
-          <DSButton
-            variant="ghost"
-            size="sm"
-            onPress={() => {
-              setStep('scan');
-              setImageUri(null);
-              setName('');
-              setRecognizedSpeciesName('');
-              setNameEditedByUser(false);
-              setNote('');
-            }}
-            fullWidth
-            style={{ marginTop: spacing.xs }}
-          >
-            {t('plants.rescan')}
-          </DSButton>
+              {/* Zone picker */}
+              <Text style={styles.fieldLabel}>
+                {t('plants.zoneOptional')}
+              </Text>
+              <TouchableOpacity
+                style={styles.zonePicker}
+                onPress={openZonePicker}
+              >
+                <Ionicons
+                  name="home-outline"
+                  size={18}
+                  color={
+                    selectedZone
+                      ? colors.primaryLight
+                      : colors.textDisabled
+                  }
+                />
+                <Text
+                  style={[
+                    styles.zonePickerText,
+                    selectedZone && { color: colors.textPrimary },
+                  ]}
+                >
+                  {selectedZone
+                    ? selectedZone.name
+                    : t('plants.selectZoneOptional')}
+                </Text>
+                <Ionicons
+                  name="chevron-down"
+                  size={18}
+                  color={colors.textTertiary}
+                />
+              </TouchableOpacity>
 
-          {loading && (
-            <ActivityIndicator
-              size="large"
-              color={colors.primaryLight}
-              style={{ marginTop: spacing.lg }}
-            />
+              <DSButton
+                onPress={handleSave}
+                disabled={!name || loading}
+                fullWidth
+                icon="checkmark-circle-outline"
+                style={{ marginTop: spacing.md }}
+              >
+                {t('plants.savePlant')}
+              </DSButton>
+
+              <DSButton
+                variant="ghost"
+                size="sm"
+                onPress={() => {
+                  resetAllState();
+                  // Camera will auto-open via useEffect
+                }}
+                fullWidth
+                style={{ marginTop: spacing.xs }}
+              >
+                {t('plants.retakePhoto')}
+              </DSButton>
+
+              {loading && (
+                <ActivityIndicator
+                  size="large"
+                  color={colors.primaryLight}
+                  style={{ marginTop: spacing.lg }}
+                />
+              )}
+            </>
           )}
         </DSCard>
       )}
@@ -613,6 +722,16 @@ export default function AddPlantScreen() {
               iconPosition="right"
             >
               {t('plants.viewPlant')}
+            </DSButton>
+
+            <DSButton
+              variant="ghost"
+              onPress={handleScanNext}
+              fullWidth
+              icon="camera-outline"
+              style={{ marginTop: spacing.xs }}
+            >
+              {t('plants.scanNext')}
             </DSButton>
           </DSCard>
         </>
@@ -772,8 +891,32 @@ const styles = StyleSheet.create({
   stepLabel: { fontSize: 12, color: colors.textTertiary },
   stepLabelActive: { color: colors.primary, fontWeight: '600' },
 
+  // Photo step hint
+  photoHint: {
+    fontSize: 14,
+    color: colors.textTertiary,
+    textAlign: 'center',
+  },
+
+  // Mode choice (recognize vs manual)
+  modeChoice: { gap: spacing.sm, marginBottom: spacing.md },
+  manualDisclaimer: {
+    fontSize: 13,
+    color: colors.warning,
+    backgroundColor: colors.warningSurface,
+    padding: spacing.sm,
+    borderRadius: radius.sm,
+    marginBottom: spacing.md,
+    lineHeight: 18,
+  },
+
   // Preview
-  preview: { width: '100%', height: 200, borderRadius: radius.md, marginBottom: spacing.md },
+  preview: {
+    width: '100%',
+    height: 200,
+    borderRadius: radius.md,
+    marginBottom: spacing.md,
+  },
   previewSmall: { width: '100%', height: 140, borderRadius: radius.md, marginVertical: spacing.sm },
 
   // Zone picker
