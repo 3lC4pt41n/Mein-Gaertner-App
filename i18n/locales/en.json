@@ -185,6 +185,8 @@
     "runHealthcheck": "Run health check",
     "healthcheckGenerated": "Health check created!",
     "viewPlant": "View plant",
+    "deletePlantTitle": "Delete plant?",
+    "deletePlantMessage": "All data (diary, photos, tasks, health checks) will be permanently deleted.",
     "zoneOptional": "Zone (optional)",
     "selectZoneOptional": "Assign a zone...",
     "noNameRecognized": "No name recognized",

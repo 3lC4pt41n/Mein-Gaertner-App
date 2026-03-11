@@ -185,6 +185,8 @@
     "runHealthcheck": "Healthcheck durchführen",
     "healthcheckGenerated": "Healthcheck wurde erstellt!",
     "viewPlant": "Pflanze anzeigen",
+    "deletePlantTitle": "Pflanze löschen?",
+    "deletePlantMessage": "Alle Daten (Tagebuch, Fotos, Aufgaben, Healthchecks) werden unwiderruflich gelöscht.",
     "zoneOptional": "Zone (optional)",
     "selectZoneOptional": "Zone zuweisen...",
     "noNameRecognized": "Kein Name erkannt",

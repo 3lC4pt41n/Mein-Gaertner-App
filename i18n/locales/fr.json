@@ -199,6 +199,8 @@
     "runHealthcheck": "Lancer le bilan santé",
     "healthcheckGenerated": "Bilan santé créé !",
     "viewPlant": "Voir la plante",
+    "deletePlantTitle": "Supprimer la plante ?",
+    "deletePlantMessage": "Toutes les données (journal, photos, tâches, bilans de santé) seront définitivement supprimées.",
     "zoneOptional": "Zone (facultatif)",
     "selectZoneOptional": "Assigner une zone..."
   },

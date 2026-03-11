@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { safeLaunchCamera, safeLaunchLibrary } from '../services/imagePickerHelper';
 import { supabase } from '../supabase';
-import { fetchLatestHealthcheck, saveHealthcheck } from '../services/plantService';
+import { fetchLatestHealthcheck, saveHealthcheck, deletePlant } from '../services/plantService';
 import { addDiaryEntry, fetchGallery } from '../services/diaryService';
 import DiaryTimeline from '../components/DiaryTimeline';
 import PlantGallery from '../components/PlantGallery';
@@ -441,6 +441,24 @@ export default function PlantDetailScreen({ route }) {
     ]);
   };
 
+  const handleDeletePlant = () => {
+    Alert.alert(t('plants.deletePlantTitle'), t('plants.deletePlantMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deletePlant(plant.id);
+            navigation.goBack();
+          } catch (e) {
+            Alert.alert(t('common.error'), friendlyError(e));
+          }
+        },
+      },
+    ]);
+  };
+
   // --- Memoized tab content to prevent re-renders when switching tabs ---
   const healthTabContent = useMemo(() => {
     if (loading) return <ActivityIndicator color={colors.primaryLight} />;
@@ -844,6 +862,18 @@ export default function PlantDetailScreen({ route }) {
                   : detailsTabContent(tab)}
             </View>
           )}
+
+          {/* Delete plant */}
+          <DSButton
+            variant="ghost"
+            onPress={handleDeletePlant}
+            icon="trash-outline"
+            fullWidth
+            style={styles.deleteButton}
+            textStyle={{ color: colors.danger }}
+          >
+            {t('common.delete')}
+          </DSButton>
         </ScrollView>
       )}
 
@@ -1056,6 +1086,9 @@ const styles = StyleSheet.create({
   zoneName: { fontSize: 16 },
   zoneType: { color: colors.textTertiary, fontSize: 12 },
   locationTxt: { color: colors.textTertiary, fontSize: 12 },
+
+  /* Delete */
+  deleteButton: { marginTop: spacing.xl, marginBottom: spacing.lg },
 
   /* Tabs */
   tabBarWrapper: {

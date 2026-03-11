@@ -199,6 +199,8 @@
     "runHealthcheck": "Esegui controllo salute",
     "healthcheckGenerated": "Controllo salute creato!",
     "viewPlant": "Visualizza pianta",
+    "deletePlantTitle": "Eliminare la pianta?",
+    "deletePlantMessage": "Tutti i dati (diario, foto, attività, controlli sanitari) verranno eliminati definitivamente.",
     "zoneOptional": "Zona (opzionale)",
     "selectZoneOptional": "Assegna zona..."
   },
