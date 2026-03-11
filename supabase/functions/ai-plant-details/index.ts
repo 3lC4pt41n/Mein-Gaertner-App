@@ -389,7 +389,8 @@ async function writeCacheEntry(
   speciesId: string,
   language: SupportedLanguage,
   details: any,
-  model: string
+  model: string,
+  overwrite = false
 ): Promise<void> {
   const { error } = await serviceClient.from('species_details').upsert(
     {
@@ -401,7 +402,7 @@ async function writeCacheEntry(
       generated_at: new Date().toISOString(),
       generated_by: 'ai',
     },
-    { onConflict: 'species_id,language', ignoreDuplicates: true }
+    { onConflict: 'species_id,language', ignoreDuplicates: !overwrite }
   );
 
   if (error) {
@@ -435,6 +436,7 @@ serve(async (req) => {
       note,
       language: requestedLanguage,
       species_id: speciesIdInput,
+      force_refresh: forceRefresh,
     } = await req.json();
 
     // Input-Validierung (VOR Credit-Abzug)
@@ -456,8 +458,9 @@ serve(async (req) => {
     const species = await resolveSpecies(serviceClient, speciesIdInput, name);
 
     // ── Step 2: Cache-Lookup (VOR Credits, VOR Rate-Limit) ────────────
+    // Skip cache when force_refresh is requested (e.g. schema migration)
 
-    if (species) {
+    if (species && !forceRefresh) {
       const cached = await getCachedDetails(serviceClient, species.speciesId, resolvedLanguage);
       if (cached) {
         // Cache-Hit → sofort zurück, 0 Credits
@@ -511,7 +514,7 @@ serve(async (req) => {
     // Zwischen Cache-Lookup und Credit-Deduct könnte ein paralleler
     // Request den Cache bereits gefüllt haben. Kurz prüfen.
 
-    if (species) {
+    if (species && !forceRefresh) {
       const doubleCheck = await getCachedDetails(
         serviceClient,
         species.speciesId,
@@ -604,7 +607,8 @@ Rules:
         species.speciesId,
         resolvedLanguage,
         details,
-        result.model
+        result.model,
+        !!forceRefresh
       ).catch((e) =>
         console.error('Cache write-through error:', e?.message)
       );

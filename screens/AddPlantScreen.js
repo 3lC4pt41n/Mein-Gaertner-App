@@ -321,6 +321,21 @@ export default function AddPlantScreen() {
       });
       setStep('done');
 
+      // Auto-generate details in the background (uses cache if available → 0 Credits)
+      if (plant?.id) {
+        generatePlantDetails(name, note, language, discovery?.speciesId || null)
+          .then((detailsData) => {
+            if (detailsData?.details) {
+              supabase.from('plants').update({ details: detailsData.details }).eq('id', plant.id);
+              setSavedPlant((p) => ({ ...p, details: detailsData.details }));
+            }
+          })
+          .catch((e) => {
+            // Nicht kritisch – User kann Details manuell nachladen
+            console.warn('[AddPlant] Auto-generate details failed:', e?.message);
+          });
+      }
+
       // Show discovery reveal for new discoveries
       if (discovery?.isNewForUser) {
         setDiscoveryResult(discovery);
@@ -563,13 +578,13 @@ export default function AddPlantScreen() {
 
             <DSButton
               variant="secondary"
-              icon="document-text-outline"
+              icon={savedPlant.details ? 'refresh-outline' : 'document-text-outline'}
               onPress={handleGenerateDetails}
-              disabled={loading || !!savedPlant.details}
+              disabled={loading}
               fullWidth
               style={{ marginBottom: spacing.sm }}
             >
-              {savedPlant.details ? t('plants.detailsAlready') : t('plants.generateDetails')}
+              {savedPlant.details ? t('plants.refreshDetails') : t('plants.generateDetails')}
             </DSButton>
 
             <DSButton

@@ -147,14 +147,25 @@ export default function PlantDetailScreen({ route }) {
       }
 
       // Fallback: Wenn keine Details auf der Pflanze, aber species_id vorhanden →
-      // gecachte Art-Details aus dem zentralen Dex-Cache laden
+      // 1) gecachte Art-Details aus dem zentralen Dex-Cache laden
+      // 2) wenn kein Cache, automatisch generieren (kostenlos bei Cache-Hit)
       if (!plantDetails && plant.species_id) {
+        let found = false;
         try {
           const lang = await fetchCurrentUserLanguage();
           const cached = await fetchCachedSpeciesDetails(plant.species_id, lang);
-          if (cached) setPlantDetails(cached);
+          if (cached) {
+            setPlantDetails(cached);
+            // Auch in plants-Tabelle speichern, damit nächster Aufruf sofort da ist
+            supabase.from('plants').update({ details: cached }).eq('id', plant.id).then(() => {});
+            found = true;
+          }
         } catch {
-          // Cache-Lookup fehlgeschlagen — kein Problem, User kann Details manuell generieren
+          // Cache-Lookup fehlgeschlagen
+        }
+        // Automatisch generieren wenn weder Details noch Cache vorhanden
+        if (!found) {
+          handleGenerateDetails(false);
         }
       }
 
@@ -187,11 +198,11 @@ export default function PlantDetailScreen({ route }) {
     }
   };
 
-  const handleGenerateDetails = useCallback(async () => {
+  const handleGenerateDetails = useCallback(async (forceRefresh = false) => {
     setGeneratingDetails(true);
     try {
       const lang = await fetchCurrentUserLanguage();
-      const result = await generatePlantDetails(plant.name, plant.note, lang, plant.species_id);
+      const result = await generatePlantDetails(plant.name, plant.note, lang, plant.species_id, forceRefresh);
       if (result?.details) {
         await supabase.from('plants').update({ details: result.details }).eq('id', plant.id);
         setPlantDetails(result.details);
@@ -517,6 +528,16 @@ export default function PlantDetailScreen({ route }) {
                 <Text style={{ marginLeft: spacing.xs, color: colors.textSecondary }}>{v}</Text>
               </View>
             ))}
+            <DSButton
+              variant="ghost"
+              icon="refresh-outline"
+              onPress={() => handleGenerateDetails(true)}
+              disabled={generatingDetails}
+              size="sm"
+              style={{ alignSelf: 'center', marginTop: spacing.sm }}
+            >
+              {generatingDetails ? t('common.loading') : t('plants.refreshDetails')}
+            </DSButton>
           </View>
         );
       }
@@ -525,17 +546,15 @@ export default function PlantDetailScreen({ route }) {
           <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
             {t('plants.noDetails')}
           </Text>
-          {!plantDetails && (
-            <DSButton
-              variant="secondary"
-              icon="document-text-outline"
-              onPress={handleGenerateDetails}
-              disabled={generatingDetails}
-              size="sm"
-            >
-              {generatingDetails ? t('common.loading') : t('plants.generateDetails')}
-            </DSButton>
-          )}
+          <DSButton
+            variant="secondary"
+            icon="document-text-outline"
+            onPress={() => handleGenerateDetails(false)}
+            disabled={generatingDetails}
+            size="sm"
+          >
+            {generatingDetails ? t('common.loading') : t('plants.generateDetails')}
+          </DSButton>
         </View>
       );
     },
@@ -545,9 +564,30 @@ export default function PlantDetailScreen({ route }) {
   // Render function for the nested properties structure (dangers, benefits, compounds)
   const propertiesTabContent = useCallback(() => {
     const propsData = details?.properties;
-    // Fallback: if old extras schema exists, show it as flat key-value
+    // Fallback: if old extras schema exists, show it with refresh hint
     if (!propsData && details?.extras) {
-      return detailsTabContent('extras');
+      return (
+        <View>
+          {Object.entries(details.extras).map(([k, v]) => (
+            <View key={k} style={{ marginBottom: spacing.md }}>
+              <Text style={{ fontWeight: 'bold', color: colors.textPrimary, fontSize: 14 }}>
+                {k}
+              </Text>
+              <Text style={{ marginLeft: spacing.xs, color: colors.textSecondary }}>{v}</Text>
+            </View>
+          ))}
+          <DSButton
+            variant="ghost"
+            icon="refresh-outline"
+            onPress={() => handleGenerateDetails(true)}
+            disabled={generatingDetails}
+            size="sm"
+            style={{ alignSelf: 'center', marginTop: spacing.sm }}
+          >
+            {generatingDetails ? t('common.loading') : t('plants.refreshDetails')}
+          </DSButton>
+        </View>
+      );
     }
     if (!propsData) {
       return (
@@ -555,17 +595,15 @@ export default function PlantDetailScreen({ route }) {
           <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
             {t('plants.noDetails')}
           </Text>
-          {!plantDetails && (
-            <DSButton
-              variant="secondary"
-              icon="document-text-outline"
-              onPress={handleGenerateDetails}
-              disabled={generatingDetails}
-              size="sm"
-            >
-              {generatingDetails ? t('common.loading') : t('plants.generateDetails')}
-            </DSButton>
-          )}
+          <DSButton
+            variant="secondary"
+            icon="document-text-outline"
+            onPress={() => handleGenerateDetails(false)}
+            disabled={generatingDetails}
+            size="sm"
+          >
+            {generatingDetails ? t('common.loading') : t('plants.generateDetails')}
+          </DSButton>
         </View>
       );
     }
@@ -600,9 +638,19 @@ export default function PlantDetailScreen({ route }) {
             </View>
           );
         })}
+        <DSButton
+          variant="ghost"
+          icon="refresh-outline"
+          onPress={() => handleGenerateDetails(true)}
+          disabled={generatingDetails}
+          size="sm"
+          style={{ alignSelf: 'center', marginTop: spacing.sm }}
+        >
+          {generatingDetails ? t('common.loading') : t('plants.refreshDetails')}
+        </DSButton>
       </View>
     );
-  }, [details, plantDetails, generatingDetails, handleGenerateDetails, detailsTabContent]);
+  }, [details, plantDetails, generatingDetails, handleGenerateDetails]);
 
   const width = Math.min(Dimensions.get('window').width, 500) - 40;
   const isVirtualizedTab = tab === 'diary' || tab === 'gallery';

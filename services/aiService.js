@@ -207,9 +207,11 @@ export async function recognizePlant(base64Image, language) {
 
 // Pflanzen-Details generieren (Name → Details JSON)
 // species_id ist optional – wenn vorhanden, nutzt die Edge Function den Dex-Cache.
-export async function generatePlantDetails(name, note, language, speciesId) {
+// forceRefresh: true → Cache überspringen und neu generieren (z.B. Schema-Update)
+export async function generatePlantDetails(name, note, language, speciesId, forceRefresh = false) {
   const body = { name, note, language };
   if (speciesId) body.species_id = speciesId;
+  if (forceRefresh) body.force_refresh = true;
   return callEdgeFunction('ai-plant-details', body);
 }
 
