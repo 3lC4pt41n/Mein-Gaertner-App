@@ -314,12 +314,14 @@
     "costComparisonTitle": "Combien coûtent les fonctions IA ?",
     "costDetails": "Générer les détails d'entretien",
     "costChat": "Message de chat",
+    "costAvatar": "Créer un avatar",
     "adminDashboard": "Tableau Admin",
     "actionLabels": {
       "plantScan": "🌱 Plante identifiée",
       "plantDetails": "📋 Détails générés",
       "healthcheck": "💚 Bilan santé",
-      "chat": "💬 Chat avec Ben"
+      "chat": "💬 Chat avec Ben",
+      "avatar": "🎨 Avatar généré"
     },
     "historyTitle": "Historique des crédits",
     "historyLabels": {
@@ -381,7 +383,7 @@
     "avatarStep": "Dernière étape : créez votre avatar",
     "avatarButton": "🎨 Créer un avatar jardinier",
     "avatarSourceTitle": "Créer un avatar",
-    "avatarSourceMessage": "Comment souhaitez-vous créer votre avatar ?",
+    "avatarSourceMessage": "Coûte {{credits}} crédits. Comment souhaitez-vous créer votre avatar ?",
     "avatarFromCamera": "📷 Prendre une photo",
     "avatarFromGallery": "🖼️ Choisir dans la galerie",
     "avatarGeneric": "✨ Avatar aléatoire",

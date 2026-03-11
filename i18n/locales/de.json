@@ -314,12 +314,14 @@
     "costComparisonTitle": "Was kosten die KI-Funktionen?",
     "costDetails": "Pflege-Details generieren",
     "costChat": "Chat-Nachricht",
+    "costAvatar": "Avatar erstellen",
     "adminDashboard": "Admin Dashboard",
     "actionLabels": {
       "plantScan": "🌱 Pflanze erkannt",
       "plantDetails": "📋 Details generiert",
       "healthcheck": "💚 Healthcheck",
-      "chat": "💬 Chat mit Ben"
+      "chat": "💬 Chat mit Ben",
+      "avatar": "🎨 Avatar generiert"
     },
     "historyTitle": "Credit-Verlauf",
     "historyLabels": {
@@ -381,7 +383,7 @@
     "avatarStep": "Letzter Schritt: Avatar erstellen",
     "avatarButton": "🎨 Gärtner-Avatar erstellen",
     "avatarSourceTitle": "Avatar erstellen",
-    "avatarSourceMessage": "Wie möchtest du deinen Avatar erstellen?",
+    "avatarSourceMessage": "Kostet {{credits}} Credits. Wie möchtest du deinen Avatar erstellen?",
     "avatarFromCamera": "📷 Foto aufnehmen",
     "avatarFromGallery": "🖼️ Aus Galerie wählen",
     "avatarGeneric": "✨ Zufälliger Avatar",

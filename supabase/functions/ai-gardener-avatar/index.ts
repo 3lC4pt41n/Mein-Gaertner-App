@@ -119,7 +119,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a portrait description assistant. Describe ONLY the person's face and head for an illustrator. Focus strictly on: approximate age, gender, skin tone, hair color and style, facial hair if any, eye color, face shape, glasses if worn, and distinctive facial features (freckles, dimples, scars, etc.). Do NOT describe clothing, pose, background, or mood. Be concise and specific. Output ONLY the description, no preamble.`,
+            content: `You are a portrait description assistant. Describe ONLY the person's face and head for an illustrator. START the description with the person's gender (e.g. "A woman …" or "A man …"). Then describe: approximate age, skin tone, hair color and style, facial hair if any, eye color, face shape, glasses if worn, and distinctive facial features (freckles, dimples, scars, etc.). Do NOT describe clothing, pose, background, or mood. Be concise and specific. Output ONLY the description, no preamble.`,
           },
           {
             role: 'user',
@@ -142,9 +142,11 @@ serve(async (req) => {
       size: '1024x1024',
       quality: 'standard',
       style: 'natural',
-      prompt: `Illustrated avatar portrait of a gardener. The person looks like this:
+      prompt: `Illustrated avatar portrait of a gardener. IMPORTANT — match the gender and all physical features exactly as described below:
 
 ${personDescription}
+
+CRITICAL: The avatar MUST match the gender described above. If the description says "woman" or "female", draw a clearly female gardener. If "man" or "male", draw a clearly male gardener.
 
 MANDATORY outfit and props — always include ALL of these:
 - A worn, earth-toned gardening apron over a simple shirt.

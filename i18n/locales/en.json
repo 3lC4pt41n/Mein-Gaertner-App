@@ -314,12 +314,14 @@
     "costComparisonTitle": "What do AI features cost?",
     "costDetails": "Generate care details",
     "costChat": "Chat message",
+    "costAvatar": "Create avatar",
     "adminDashboard": "Admin Dashboard",
     "actionLabels": {
       "plantScan": "🌱 Plant identified",
       "plantDetails": "📋 Details generated",
       "healthcheck": "💚 Health Check",
-      "chat": "💬 Chat with Ben"
+      "chat": "💬 Chat with Ben",
+      "avatar": "🎨 Avatar generated"
     },
     "historyTitle": "Credit History",
     "historyLabels": {
@@ -381,7 +383,7 @@
     "avatarStep": "Last step: Create your avatar",
     "avatarButton": "🎨 Create Gardener Avatar",
     "avatarSourceTitle": "Create avatar",
-    "avatarSourceMessage": "How would you like to create your avatar?",
+    "avatarSourceMessage": "Costs {{credits}} credits. How would you like to create your avatar?",
     "avatarFromCamera": "📷 Take photo",
     "avatarFromGallery": "🖼️ Choose from gallery",
     "avatarGeneric": "✨ Random avatar",

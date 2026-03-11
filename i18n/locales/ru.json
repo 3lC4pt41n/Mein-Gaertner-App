@@ -314,12 +314,14 @@
     "costComparisonTitle": "Сколько стоят ИИ-функции?",
     "costDetails": "Генерация деталей ухода",
     "costChat": "Сообщение в чате",
+    "costAvatar": "Создать аватар",
     "adminDashboard": "Панель администратора",
     "actionLabels": {
       "plantScan": "🌱 Растение распознано",
       "plantDetails": "📋 Подробности созданы",
       "healthcheck": "💚 Проверка здоровья",
-      "chat": "💬 Чат с Беном"
+      "chat": "💬 Чат с Беном",
+      "avatar": "🎨 Аватар создан"
     },
     "historyTitle": "История кредитов",
     "historyLabels": {
@@ -381,7 +383,7 @@
     "avatarStep": "Последний шаг: создайте аватар",
     "avatarButton": "🎨 Создать аватар садовника",
     "avatarSourceTitle": "Создать аватар",
-    "avatarSourceMessage": "Как вы хотите создать аватар?",
+    "avatarSourceMessage": "Стоит {{credits}} кредитов. Как вы хотите создать аватар?",
     "avatarFromCamera": "📷 Сделать фото",
     "avatarFromGallery": "🖼️ Выбрать из галереи",
     "avatarGeneric": "✨ Случайный аватар",
