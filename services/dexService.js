@@ -146,6 +146,59 @@ export async function fetchCachedSpeciesDetails(speciesId, language = 'de') {
 }
 
 /**
+ * Fetch all photos the user has taken of a given species.
+ * Combines plant main images + diary photos across all plants of that species.
+ *
+ * @param {string} speciesId - Species UUID
+ * @param {string} userId - User UUID
+ * @returns {Promise<Array>} [{ id, image_url, title, created_at, type }]
+ */
+export async function fetchSpeciesGallery(speciesId, userId) {
+  if (!speciesId || !userId) return [];
+
+  // 1. Find all user plants of this species
+  const { data: plants, error: plantsErr } = await supabase
+    .from('plants')
+    .select('id, image_url, name, created_at')
+    .eq('species_id', speciesId)
+    .eq('user_id', userId);
+  if (plantsErr) throw plantsErr;
+  if (!plants || plants.length === 0) return [];
+
+  const plantIds = plants.map((p) => p.id);
+
+  // 2. Fetch diary photos for those plants
+  const { data: diaryPhotos, error: diaryErr } = await supabase
+    .from('plant_diary')
+    .select('id, title, image_url, created_at, type')
+    .in('plant_id', plantIds)
+    .not('image_url', 'is', null)
+    .order('created_at', { ascending: false });
+  if (diaryErr) throw diaryErr;
+
+  // 3. Combine: plant main images + diary photos
+  const allPhotos = [
+    ...plants
+      .filter((p) => p.image_url)
+      .map((p) => ({
+        id: `plant-main-${p.id}`,
+        image_url: p.image_url,
+        title: p.name || '',
+        created_at: p.created_at,
+        type: 'discovery',
+      })),
+    ...(diaryPhotos || []),
+  ];
+
+  if (allPhotos.length === 0) return [];
+
+  // 4. Batch-resolve storage paths → signed URLs
+  const rawUrls = allPhotos.map((p) => p.image_url);
+  const resolved = await getPlantImageUrls(rawUrls);
+  return allPhotos.map((p, i) => ({ ...p, image_url: resolved[i] || p.image_url }));
+}
+
+/**
  * Get detailed information about a single species.
  *
  * @param {string} speciesId - The species ID

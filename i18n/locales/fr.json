@@ -545,6 +545,11 @@
     "heatmapHint": "Uniquement des découvertes anonymisées d'utilisateurs ayant activé le partage sur carte.",
     "heatmapEmpty": "Aucune donnée de localisation pour cette espèce pour le moment.",
     "heatmapUnavailable": "Carte actuellement indisponible.",
+    "myPhotos": "Mes photos",
+    "noPhotosYet": "Pas encore de photos de cette espèce",
+    "allFinds": "Toutes les découvertes",
+    "myFinds": "Mes découvertes",
+    "noLocationData": "Pas de données de localisation pour vos découvertes",
     "heatmapDiscoveries": "{{count}} découvertes",
     "heatmapRegions": "{{count}} régions",
     "categories": {

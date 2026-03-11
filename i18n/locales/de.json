@@ -566,6 +566,11 @@
     "heatmapHint": "Nur anonymisierte Funde von Nutzern mit Kartenfreigabe.",
     "heatmapEmpty": "Für diese Art gibt es noch keine Standortdaten.",
     "heatmapUnavailable": "Karte derzeit nicht verfügbar.",
+    "myPhotos": "Meine Fotos",
+    "noPhotosYet": "Noch keine Fotos dieser Art",
+    "allFinds": "Alle Funde",
+    "myFinds": "Meine Funde",
+    "noLocationData": "Keine Standortdaten für deine Funde",
     "heatmapDiscoveries": "{{count}} Funde",
     "heatmapRegions": "{{count}} Regionen",
     "categories": {

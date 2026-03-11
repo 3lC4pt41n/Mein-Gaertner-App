@@ -566,6 +566,11 @@
     "heatmapHint": "Only anonymized discoveries from users who opted into map sharing.",
     "heatmapEmpty": "No location data for this species yet.",
     "heatmapUnavailable": "Map currently unavailable.",
+    "myPhotos": "My Photos",
+    "noPhotosYet": "No photos of this species yet",
+    "allFinds": "All finds",
+    "myFinds": "My finds",
+    "noLocationData": "No location data for your finds",
     "heatmapDiscoveries": "{{count}} discoveries",
     "heatmapRegions": "{{count}} regions",
     "categories": {

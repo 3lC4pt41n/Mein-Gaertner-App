@@ -225,6 +225,30 @@ export async function fetchHeatmapGridBySpecies(speciesId) {
 }
 
 /**
+ * Fetch the current user's discovery events for a single species (with location).
+ * Used for the "My Finds" map overlay in the Dex detail screen.
+ *
+ * @param {string} speciesId - Species UUID
+ * @param {string} userId - User UUID
+ * @returns {Promise<Array>} [{ latitude, longitude, created_at }]
+ */
+export async function fetchMyDiscoveriesForSpecies(speciesId, userId) {
+  if (!speciesId || !userId) return [];
+
+  const { data, error } = await supabase
+    .from('discovery_events')
+    .select('latitude, longitude, created_at')
+    .eq('species_id', speciesId)
+    .eq('user_id', userId);
+  if (error) throw error;
+
+  // Only return entries that have location data
+  return (data || []).filter(
+    (d) => d.latitude != null && d.longitude != null
+  );
+}
+
+/**
  * Anzahl entdeckter Arten + Erstentdeckungen eines Users.
  */
 export async function fetchDiscoveryStats(userId) {

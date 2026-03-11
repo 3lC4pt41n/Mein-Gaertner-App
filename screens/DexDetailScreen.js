@@ -10,12 +10,19 @@ import {
   Share,
   Alert,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
-import MapView, { Circle } from 'react-native-maps';
+import MapView, { Circle, Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { fetchSpeciesDetail } from '../services/dexService';
-import { fetchHeatmapGridBySpecies, formatDisplayName } from '../services/discoveryService';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchSpeciesDetail, fetchSpeciesGallery } from '../services/dexService';
+import {
+  fetchHeatmapGridBySpecies,
+  fetchMyDiscoveriesForSpecies,
+  formatDisplayName,
+} from '../services/discoveryService';
+import { DSChipGroup } from '../theme';
 import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 import { friendlyError } from '../utils/errorMessages';
@@ -23,6 +30,10 @@ import { friendlyError } from '../utils/errorMessages';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HERO_HEIGHT = Math.min(SCREEN_WIDTH * 0.75, 340);
 const HEATMAP_HEIGHT = 220;
+const GALLERY_COLUMNS = 3;
+const GALLERY_GAP = spacing.sm;
+const GALLERY_ITEM_SIZE =
+  (SCREEN_WIDTH - spacing.lg * 2 - GALLERY_GAP * (GALLERY_COLUMNS - 1)) / GALLERY_COLUMNS;
 const DEFAULT_SPECIES_REGION = {
   latitude: 48.2,
   longitude: 11.8,
@@ -52,12 +63,24 @@ function heatRadius(count) {
 
 export default function DexDetailScreen({ route, navigation }) {
   const { speciesId, species: initialSpecies } = route.params ?? {};
+  const { userId } = useAuth();
   const [species, setSpecies] = useState(initialSpecies || null);
   const [loading, setLoading] = useState(!initialSpecies?.description);
   const [error, setError] = useState(null);
   const [speciesHeatmap, setSpeciesHeatmap] = useState([]);
   const [heatmapLoading, setHeatmapLoading] = useState(true);
   const [heatmapError, setHeatmapError] = useState(null);
+
+  // Gallery state
+  const [gallery, setGallery] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Map filter state
+  const [mapMode, setMapMode] = useState('all');
+  const [myFinds, setMyFinds] = useState([]);
+  const [myFindsLoading, setMyFindsLoading] = useState(true);
 
   useEffect(() => {
     if (!speciesId) {
@@ -109,6 +132,46 @@ export default function DexDetailScreen({ route, navigation }) {
     };
   }, [speciesId]);
 
+  // Fetch user's gallery for this species
+  useEffect(() => {
+    if (!speciesId || !userId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setGalleryLoading(true);
+        const photos = await fetchSpeciesGallery(speciesId, userId);
+        if (!cancelled) setGallery(photos);
+      } catch {
+        if (!cancelled) setGallery([]);
+      } finally {
+        if (!cancelled) setGalleryLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [speciesId, userId]);
+
+  // Fetch user's own discovery locations for this species
+  useEffect(() => {
+    if (!speciesId || !userId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setMyFindsLoading(true);
+        const finds = await fetchMyDiscoveriesForSpecies(speciesId, userId);
+        if (!cancelled) setMyFinds(finds);
+      } catch {
+        if (!cancelled) setMyFinds([]);
+      } finally {
+        if (!cancelled) setMyFindsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [speciesId, userId]);
+
   const heatmapRegion = useMemo(() => {
     if (!speciesHeatmap.length) return DEFAULT_SPECIES_REGION;
 
@@ -140,6 +203,36 @@ export default function DexDetailScreen({ route, navigation }) {
       totalRegions: speciesHeatmap.length,
     };
   }, [speciesHeatmap]);
+
+  const myFindsRegion = useMemo(() => {
+    if (!myFinds.length) return DEFAULT_SPECIES_REGION;
+    const lats = myFinds.map((f) => Number(f.latitude)).filter(Number.isFinite);
+    const lons = myFinds.map((f) => Number(f.longitude)).filter(Number.isFinite);
+    if (!lats.length) return DEFAULT_SPECIES_REGION;
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons);
+    const maxLon = Math.max(...lons);
+    return {
+      latitude: (minLat + maxLat) / 2,
+      longitude: (minLon + maxLon) / 2,
+      latitudeDelta: Math.max(0.5, (maxLat - minLat) * 1.8 + 0.2),
+      longitudeDelta: Math.max(0.5, (maxLon - minLon) * 1.8 + 0.2),
+    };
+  }, [myFinds]);
+
+  const mapChips = useMemo(
+    () => [
+      { key: 'all', label: t('dex.allFinds') },
+      { key: 'mine', label: t('dex.myFinds') },
+    ],
+    []
+  );
+
+  const formatGalleryDate = (dateString) => {
+    const d = new Date(dateString);
+    return d.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
   const handleShare = async () => {
     if (!species) return;
@@ -230,60 +323,146 @@ export default function DexDetailScreen({ route, navigation }) {
         <ActivityIndicator color={colors.primary} style={{ marginVertical: spacing.lg }} />
       )}
 
-      {/* Species Heatmap */}
+      {/* Species Heatmap with filter */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('dex.heatmapTitle')}</Text>
 
-        {heatmapLoading ? (
+        {MAPS_KEY_AVAILABLE && (
+          <DSChipGroup
+            items={mapChips}
+            selected={mapMode}
+            onSelect={setMapMode}
+            variant="segmented"
+            style={styles.mapChips}
+          />
+        )}
+
+        {mapMode === 'all' ? (
+          /* All finds — aggregated heatmap */
+          heatmapLoading ? (
+            <View style={styles.heatmapState}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          ) : heatmapError ? (
+            <Text style={styles.heatmapStatusText}>{heatmapError}</Text>
+          ) : !MAPS_KEY_AVAILABLE ? (
+            <Text style={styles.heatmapStatusText}>{t('dex.heatmapUnavailable')}</Text>
+          ) : speciesHeatmap.length === 0 ? (
+            <Text style={styles.heatmapStatusText}>{t('dex.heatmapEmpty')}</Text>
+          ) : (
+            <>
+              <View style={styles.heatmapCard}>
+                <MapView
+                  style={styles.heatmapMap}
+                  initialRegion={heatmapRegion}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}
+                  pitchEnabled={false}
+                  toolbarEnabled={false}
+                >
+                  {speciesHeatmap.map((cell) => (
+                    <Circle
+                      key={`${cell.grid_lat}-${cell.grid_lon}`}
+                      center={{
+                        latitude: Number(cell.grid_lat),
+                        longitude: Number(cell.grid_lon),
+                      }}
+                      radius={heatRadius(Number(cell.discovery_count) || 0)}
+                      fillColor={heatColor(Number(cell.discovery_count) || 0)}
+                      strokeColor="transparent"
+                    />
+                  ))}
+                </MapView>
+              </View>
+              <View style={styles.heatmapMetaRow}>
+                <Text style={styles.heatmapMetaText}>
+                  {t('dex.heatmapDiscoveries', { count: heatmapSummary.totalDiscoveries })}
+                </Text>
+                <Text style={styles.heatmapMetaDot}>•</Text>
+                <Text style={styles.heatmapMetaText}>
+                  {t('dex.heatmapRegions', { count: heatmapSummary.totalRegions })}
+                </Text>
+              </View>
+            </>
+          )
+        ) : /* My finds — individual markers */
+        myFindsLoading ? (
           <View style={styles.heatmapState}>
             <ActivityIndicator size="small" color={colors.primary} />
           </View>
-        ) : heatmapError ? (
-          <Text style={styles.heatmapStatusText}>{heatmapError}</Text>
         ) : !MAPS_KEY_AVAILABLE ? (
           <Text style={styles.heatmapStatusText}>{t('dex.heatmapUnavailable')}</Text>
-        ) : speciesHeatmap.length === 0 ? (
-          <Text style={styles.heatmapStatusText}>{t('dex.heatmapEmpty')}</Text>
+        ) : myFinds.length === 0 ? (
+          <Text style={styles.heatmapStatusText}>{t('dex.noLocationData')}</Text>
         ) : (
-          <>
-            <View style={styles.heatmapCard}>
-              <MapView
-                style={styles.heatmapMap}
-                initialRegion={heatmapRegion}
-                scrollEnabled={false}
-                zoomEnabled={false}
-                rotateEnabled={false}
-                pitchEnabled={false}
-                toolbarEnabled={false}
-              >
-                {speciesHeatmap.map((cell) => (
-                  <Circle
-                    key={`${cell.grid_lat}-${cell.grid_lon}`}
-                    center={{
-                      latitude: Number(cell.grid_lat),
-                      longitude: Number(cell.grid_lon),
-                    }}
-                    radius={heatRadius(Number(cell.discovery_count) || 0)}
-                    fillColor={heatColor(Number(cell.discovery_count) || 0)}
-                    strokeColor="transparent"
-                  />
-                ))}
-              </MapView>
-            </View>
-
-            <View style={styles.heatmapMetaRow}>
-              <Text style={styles.heatmapMetaText}>
-                {t('dex.heatmapDiscoveries', { count: heatmapSummary.totalDiscoveries })}
-              </Text>
-              <Text style={styles.heatmapMetaDot}>•</Text>
-              <Text style={styles.heatmapMetaText}>
-                {t('dex.heatmapRegions', { count: heatmapSummary.totalRegions })}
-              </Text>
-            </View>
-          </>
+          <View style={styles.heatmapCard}>
+            <MapView
+              style={styles.heatmapMap}
+              initialRegion={myFindsRegion}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+              toolbarEnabled={false}
+            >
+              {myFinds.map((find, idx) => (
+                <Marker
+                  key={`my-${idx}`}
+                  coordinate={{
+                    latitude: Number(find.latitude),
+                    longitude: Number(find.longitude),
+                  }}
+                  title={formatGalleryDate(find.created_at)}
+                  pinColor={colors.primary}
+                />
+              ))}
+            </MapView>
+          </View>
         )}
 
         <Text style={styles.heatmapHint}>{t('dex.heatmapHint')}</Text>
+      </View>
+
+      {/* My Photos Gallery */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('dex.myPhotos')}</Text>
+
+        {galleryLoading ? (
+          <View style={styles.heatmapState}>
+            <ActivityIndicator size="small" color={colors.primary} />
+          </View>
+        ) : gallery.length === 0 ? (
+          <View style={styles.galleryEmpty}>
+            <Ionicons name="image-outline" size={36} color={colors.textTertiary} />
+            <Text style={styles.galleryEmptyText}>{t('dex.noPhotosYet')}</Text>
+          </View>
+        ) : (
+          <View style={styles.galleryGrid}>
+            {gallery.map((photo, idx) => (
+              <TouchableOpacity
+                key={photo.id}
+                style={styles.galleryItem}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setSelectedImage(photo);
+                  setSelectedIndex(idx);
+                }}
+              >
+                <Image
+                  source={{ uri: photo.image_url }}
+                  style={styles.galleryImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.galleryDateOverlay}>
+                  <Text style={styles.galleryDateText}>
+                    {formatGalleryDate(photo.created_at)}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* Description */}
@@ -314,6 +493,93 @@ export default function DexDetailScreen({ route, navigation }) {
           </Text>
         </View>
       ) : null}
+
+      {/* Fullscreen image modal */}
+      <Modal
+        visible={!!selectedImage}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedImage(null)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={() => setSelectedImage(null)}
+            >
+              <Ionicons name="close" size={28} color={colors.surface} />
+            </TouchableOpacity>
+            <Text style={styles.modalCounter}>
+              {selectedIndex + 1} / {gallery.length}
+            </Text>
+          </View>
+
+          {selectedImage && (
+            <View style={styles.modalImageWrap}>
+              <Image
+                source={{ uri: selectedImage.image_url }}
+                style={styles.modalImage}
+                resizeMode="contain"
+              />
+            </View>
+          )}
+
+          <View style={styles.modalFooter}>
+            {selectedImage && (
+              <>
+                {selectedImage.title ? (
+                  <Text style={styles.modalTitle}>{selectedImage.title}</Text>
+                ) : null}
+                <Text style={styles.modalDate}>
+                  {formatGalleryDate(selectedImage.created_at)}
+                </Text>
+              </>
+            )}
+          </View>
+
+          <View style={styles.modalNav}>
+            <TouchableOpacity
+              style={[styles.navBtn, selectedIndex === 0 && styles.navBtnDisabled]}
+              onPress={() => {
+                if (selectedIndex > 0) {
+                  setSelectedImage(gallery[selectedIndex - 1]);
+                  setSelectedIndex(selectedIndex - 1);
+                }
+              }}
+              disabled={selectedIndex === 0}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={28}
+                color={selectedIndex === 0 ? colors.textSecondary : colors.surface}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.navBtn,
+                selectedIndex === gallery.length - 1 && styles.navBtnDisabled,
+              ]}
+              onPress={() => {
+                if (selectedIndex < gallery.length - 1) {
+                  setSelectedImage(gallery[selectedIndex + 1]);
+                  setSelectedIndex(selectedIndex + 1);
+                }
+              }}
+              disabled={selectedIndex === gallery.length - 1}
+            >
+              <Ionicons
+                name="chevron-forward"
+                size={28}
+                color={
+                  selectedIndex === gallery.length - 1
+                    ? colors.textSecondary
+                    : colors.surface
+                }
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -441,6 +707,81 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.primary,
   },
+  mapChips: { marginBottom: spacing.md },
+
+  /* Gallery */
+  galleryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: GALLERY_GAP,
+  },
+  galleryItem: {
+    width: GALLERY_ITEM_SIZE,
+    height: GALLERY_ITEM_SIZE,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+    backgroundColor: colors.primarySurface,
+  },
+  galleryImage: { width: '100%', height: '100%' },
+  galleryDateOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: 2,
+    paddingHorizontal: spacing.xs,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  galleryDateText: { color: '#fff', fontSize: 10, textAlign: 'center' },
+  galleryEmpty: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  galleryEmptyText: {
+    marginTop: spacing.sm,
+    fontSize: 14,
+    color: colors.textTertiary,
+  },
+
+  /* Fullscreen modal */
+  modalContainer: { flex: 1, backgroundColor: '#000' },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  modalClose: { padding: spacing.sm },
+  modalCounter: { fontSize: 16, fontWeight: '600', color: colors.surface },
+  modalImageWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  modalImage: { width: SCREEN_WIDTH, height: SCREEN_WIDTH },
+  modalFooter: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.surface,
+    marginBottom: spacing.xs,
+  },
+  modalDate: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
+  modalNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
+  },
+  navBtn: {
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  navBtnDisabled: { backgroundColor: 'rgba(255,255,255,0.05)' },
+
   errorText: {
     fontSize: 16,
     color: colors.textSecondary,
