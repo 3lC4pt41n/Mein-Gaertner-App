@@ -466,8 +466,7 @@ export default function AddPlantScreen() {
                 step === 'done' && i <= 1 && styles.stepDotDone,
               ]}
             >
-              {(step === 'done' && i <= 1) ||
-              (['save', 'done'].includes(step) && i === 0) ? (
+              {(step === 'done' && i <= 1) || (['save', 'done'].includes(step) && i === 0) ? (
                 <Ionicons name="checkmark" size={14} color={colors.surface} />
               ) : (
                 <Text style={[styles.stepNum, step === s && styles.stepNumActive]}>{i + 1}</Text>
