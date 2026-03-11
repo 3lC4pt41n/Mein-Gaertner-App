@@ -4,7 +4,7 @@
  * unterstützt wird (UnsupportedPlatformError / ExpoCropImageActivity).
  *
  * Statt `ImagePicker.launchCameraAsync(opts)` direkt aufzurufen,
- * nutzen alle Screens `safelaunchCamera(opts)` bzw. `safeLaunchLibrary(opts)`.
+ * nutzen alle Screens `safeLaunchCamera(opts)` bzw. `safeLaunchLibrary(opts)`.
  */
 import * as ImagePicker from 'expo-image-picker';
 
@@ -31,7 +31,8 @@ export async function safeLaunchCamera(options = {}) {
     return await ImagePicker.launchCameraAsync(options);
   } catch (error) {
     if (options.allowsEditing && isCropUnsupportedError(error)) {
-      // Crop wird nicht unterstützt — Fallback ohne Editor
+      // Crop wird nicht unterstützt — Fallback ohne Editor (kein Sentry-Error nötig)
+      console.warn('[imagePickerHelper] Crop-Editor nicht verfügbar, Fallback ohne Editing', error.message);
       return await ImagePicker.launchCameraAsync({
         ...options,
         allowsEditing: false,
@@ -50,6 +51,8 @@ export async function safeLaunchLibrary(options = {}) {
     return await ImagePicker.launchImageLibraryAsync(options);
   } catch (error) {
     if (options.allowsEditing && isCropUnsupportedError(error)) {
+      // Crop wird nicht unterstützt — Fallback ohne Editor (kein Sentry-Error nötig)
+      console.warn('[imagePickerHelper] Crop-Editor nicht verfügbar, Fallback ohne Editing', error.message);
       return await ImagePicker.launchImageLibraryAsync({
         ...options,
         allowsEditing: false,

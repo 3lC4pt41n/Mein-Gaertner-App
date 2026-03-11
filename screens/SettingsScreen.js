@@ -566,17 +566,49 @@ export default function SettingsScreen({ navigation }) {
         <LinkRow
           icon="document-text-outline"
           label={t('settings.privacyPolicy')}
-          onPress={() =>
-            Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html')
-          }
+          onPress={async () => {
+            const url = 'https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html';
+            try {
+              const supported = await Linking.canOpenURL(url);
+              if (supported) {
+                await Linking.openURL(url);
+              } else {
+                Alert.alert(
+                  t('common.error'),
+                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                );
+              }
+            } catch {
+              Alert.alert(
+                t('common.error'),
+                t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+              );
+            }
+          }}
         />
         {SHOW_TERMS_LINK ? (
           <LinkRow
             icon="reader-outline"
             label={t('settings.termsOfService')}
-            onPress={() =>
-              Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html')
-            }
+            onPress={async () => {
+              const url = 'https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html';
+              try {
+                const supported = await Linking.canOpenURL(url);
+                if (supported) {
+                  await Linking.openURL(url);
+                } else {
+                  Alert.alert(
+                    t('common.error'),
+                    t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                  );
+                }
+              } catch {
+                Alert.alert(
+                  t('common.error'),
+                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                );
+              }
+            }}
           />
         ) : null}
         <LinkRow

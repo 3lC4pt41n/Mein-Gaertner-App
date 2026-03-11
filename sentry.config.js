@@ -36,6 +36,13 @@ Sentry.init({
   // PII filtern (DSGVO)
   sendDefaultPii: false,
 
+  // Bekannte, behandelte Fehler nicht an Sentry senden
+  ignoreErrors: [
+    // Crop-Editor auf manchen Android-Geräten nicht verfügbar — Fallback greift automatisch
+    'not available in the current platform',
+    'UnsupportedPlatformError',
+  ],
+
   // Vor dem Senden: User-Email / IP entfernen
   beforeSend(event) {
     // Entferne User-PII

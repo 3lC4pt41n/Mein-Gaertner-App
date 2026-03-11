@@ -440,17 +440,49 @@ export default function AuthScreen({
       {/* Legal footer — required for store compliance */}
       <View style={styles.legalFooter}>
         <TouchableOpacity
-          onPress={() =>
-            Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html')
-          }
+          onPress={async () => {
+            const url = 'https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html';
+            try {
+              const supported = await Linking.canOpenURL(url);
+              if (supported) {
+                await Linking.openURL(url);
+              } else {
+                Alert.alert(
+                  t('common.error'),
+                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                );
+              }
+            } catch {
+              Alert.alert(
+                t('common.error'),
+                t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+              );
+            }
+          }}
         >
           <Text style={styles.legalLink}>{t('settings.privacyPolicy')}</Text>
         </TouchableOpacity>
         <Text style={styles.legalSeparator}>·</Text>
         <TouchableOpacity
-          onPress={() =>
-            Linking.openURL('https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html')
-          }
+          onPress={async () => {
+            const url = 'https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html';
+            try {
+              const supported = await Linking.canOpenURL(url);
+              if (supported) {
+                await Linking.openURL(url);
+              } else {
+                Alert.alert(
+                  t('common.error'),
+                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                );
+              }
+            } catch {
+              Alert.alert(
+                t('common.error'),
+                t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+              );
+            }
+          }}
         >
           <Text style={styles.legalLink}>{t('settings.termsOfService')}</Text>
         </TouchableOpacity>
