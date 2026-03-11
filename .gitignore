@@ -17,3 +17,17 @@ ABNAHME_*.md
 ACTION_PLAN_*.md
 PRODUCT_REVIEW_AUDIT_*.md
 ROADMAP_STORE_READY_UPDATED.md
+
+# Generated dashboards & forecasts
+user_dashboard.xlsx
+user_dashboard.py
+FloraScout_Forecast_*.xlsx
+FloraScout_Forecast_*.jsx
+FloraScout_Revenue_Forecast.xlsx
+
+# LibreOffice lock files
+.~lock.*
+
+# Generated analysis docs
+DIGITALE_GAERTNER_REPOSITORY_ANALYSE_*.md
+LLM_PROMPT_ANALYSE_OPTIMIERUNG.md
