@@ -262,16 +262,12 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleAvatarChange = () => {
-    Alert.alert(
-      t('profile.avatarSourceTitle'),
-      t('profile.avatarSourceMessage', { credits: 20 }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('profile.avatarFromCamera'), onPress: handlePickFromCamera },
-        { text: t('profile.avatarFromGallery'), onPress: handlePickFromGallery },
-        { text: t('profile.avatarGeneric'), onPress: handleGenerateGenericAvatar },
-      ]
-    );
+    Alert.alert(t('profile.avatarSourceTitle'), t('profile.avatarSourceMessage', { credits: 20 }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('profile.avatarFromCamera'), onPress: handlePickFromCamera },
+      { text: t('profile.avatarFromGallery'), onPress: handlePickFromGallery },
+      { text: t('profile.avatarGeneric'), onPress: handleGenerateGenericAvatar },
+    ]);
   };
 
   const handleSaveProfile = async () => {
