@@ -156,14 +156,27 @@ export async function fetchCachedSpeciesDetails(speciesId, language = 'de') {
 export async function fetchSpeciesGallery(speciesId, userId) {
   if (!speciesId || !userId) return [];
 
-  // 1. Find all user plants of this species
-  const { data: plants, error: plantsErr } = await supabase
+  // 1. Look up species canonical_name
+  const { data: speciesRow, error: specErr } = await supabase
+    .from('species')
+    .select('canonical_name')
+    .eq('id', speciesId)
+    .maybeSingle();
+  if (specErr) throw specErr;
+  if (!speciesRow?.canonical_name) return [];
+
+  // 2. Find all user plants matching this species by name (no species_id FK on plants)
+  const { data: allUserPlants, error: plantsErr } = await supabase
     .from('plants')
     .select('id, image_url, name, created_at')
-    .eq('species_id', speciesId)
     .eq('user_id', userId);
   if (plantsErr) throw plantsErr;
-  if (!plants || plants.length === 0) return [];
+
+  const canonical = speciesRow.canonical_name.trim().toLowerCase();
+  const plants = (allUserPlants || []).filter(
+    (p) => p.name?.trim().toLowerCase() === canonical
+  );
+  if (plants.length === 0) return [];
 
   const plantIds = plants.map((p) => p.id);
 
