@@ -558,6 +558,8 @@
       "flowering": "Piante da fiore",
       "tree": "Alberi e arbusti",
       "groundcover": "Tappezzanti e rampicanti",
+      "herb": "Erbe e piante utili",
+      "wild": "Fiori selvatici e graminacee",
       "other": "Altre"
     }
   },

@@ -558,6 +558,8 @@
       "flowering": "Plantas con flores",
       "tree": "Árboles y arbustos",
       "groundcover": "Cubresuelos y trepadoras",
+      "herb": "Hierbas y cultivos",
+      "wild": "Flores silvestres y gramíneas",
       "other": "Otras"
     }
   },

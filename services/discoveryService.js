@@ -54,9 +54,12 @@ export async function getDiscoveryLocation() {
  * @param {string} speciesName - Erkannter Pflanzenname (canonical)
  * @param {string|null} plantId - Plant-ID nach dem Speichern
  * @param {{ latitude: number, longitude: number }|null} location - GPS coords at discovery time
+ * @param {string|null} plantType - AI-classified category (houseplant, succulent, etc.)
  * @returns {Promise<Object>} { speciesId, isFirst, isNewForUser, totalDiscoverers, displayName }
  */
-export async function logDiscovery(userId, speciesName, plantId = null, location = null) {
+export async function logDiscovery(
+  userId, speciesName, plantId = null, location = null, plantType = null
+) {
   if (!userId || !speciesName) return null;
 
   const canonical = speciesName.trim().toLowerCase();
@@ -65,7 +68,7 @@ export async function logDiscovery(userId, speciesName, plantId = null, location
   // 1. Species upsert (canonical_name ist UNIQUE)
   const { data: existing } = await supabase
     .from('species')
-    .select('id, first_discovered_by, total_discoverers')
+    .select('id, first_discovered_by, total_discoverers, plant_type')
     .eq('canonical_name', canonical)
     .maybeSingle();
 
@@ -75,6 +78,10 @@ export async function logDiscovery(userId, speciesName, plantId = null, location
 
   if (existing) {
     speciesId = existing.id;
+    // Backfill plant_type if species was created before AI classification
+    if (plantType && (!existing.plant_type || existing.plant_type === 'other')) {
+      await supabase.from('species').update({ plant_type: plantType }).eq('id', speciesId);
+    }
   } else {
     // Neue Species – dieser User ist Erstentdecker
     const { data: newSpecies, error: insertError } = await supabase
@@ -83,6 +90,7 @@ export async function logDiscovery(userId, speciesName, plantId = null, location
         canonical_name: canonical,
         first_discovered_by: userId,
         first_discovered_at: new Date().toISOString(),
+        ...(plantType ? { plant_type: plantType } : {}),
       })
       .select('id')
       .single();

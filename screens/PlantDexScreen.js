@@ -23,13 +23,24 @@ const FILTERS = [
 ];
 
 // Category display order & icon mapping
-const CATEGORY_ORDER = ['houseplant', 'succulent', 'flowering', 'tree', 'groundcover', 'other'];
+const CATEGORY_ORDER = [
+  'houseplant',
+  'succulent',
+  'flowering',
+  'tree',
+  'herb',
+  'wild',
+  'groundcover',
+  'other',
+];
 
 const CATEGORY_ICONS = {
   houseplant: 'leaf',
   succulent: 'water',
   flowering: 'flower',
   tree: 'git-branch-outline',
+  herb: 'nutrition-outline',
+  wild: 'flower-outline',
   groundcover: 'layers-outline',
   other: 'ellipsis-horizontal',
 };
@@ -39,6 +50,8 @@ const CATEGORY_COLORS = {
   succulent: '#8BC34A',
   flowering: '#E91E63',
   tree: '#795548',
+  herb: '#FF9800',
+  wild: '#66BB6A',
   groundcover: '#009688',
   other: '#607D8B',
 };

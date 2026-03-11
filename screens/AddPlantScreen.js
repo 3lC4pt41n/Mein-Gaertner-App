@@ -92,6 +92,7 @@ export default function AddPlantScreen() {
   const [recognizedSpeciesName, setRecognizedSpeciesName] = useState('');
   const [nameEditedByUser, setNameEditedByUser] = useState(false);
   const [note, setNote] = useState('');
+  const [plantType, setPlantType] = useState(null);
   const [imageUri, setImageUri] = useState(null);
   const [base64Image, setBase64Image] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -240,6 +241,7 @@ export default function AddPlantScreen() {
       setName(detectedName || t('plants.noNameRecognized'));
       setNameEditedByUser(false);
       setNote(data.note || t('plants.noNoteAvailable'));
+      setPlantType(data.plant_type || null);
     } catch (e) {
       if (!handleCreditError(e)) {
         Alert.alert(t('common.error'), friendlyError(e));
@@ -310,7 +312,9 @@ export default function AddPlantScreen() {
           const discoverySpeciesName = nameEditedByUser
             ? name?.trim()
             : recognizedSpeciesName?.trim() || name?.trim();
-          discovery = await logDiscovery(userId, discoverySpeciesName, plant?.id, location);
+          discovery = await logDiscovery(
+            userId, discoverySpeciesName, plant?.id, location, plantType
+          );
 
           // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)
           if (discovery?.speciesId && plant?.id) {

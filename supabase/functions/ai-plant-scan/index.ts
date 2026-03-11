@@ -95,12 +95,15 @@ serve(async (req) => {
                 text: `Identify the plant in this photo and return JSON in exactly this format:
 {
   "name": "Botanical name",
-  "note": "One concise care tip sentence"
+  "note": "One concise care tip sentence",
+  "plant_type": "category"
 }
 Rules:
 - Write the note in ${languagePromptName}.
 - Output one language only, no extra text.
-- If uncertain, still provide your best estimate.`,
+- If uncertain, still provide your best estimate.
+- Classify plant_type into exactly one of: houseplant, succulent, flowering, tree, herb, wild, groundcover, other.
+- Choose the single best-fitting category.`,
               },
               {
                 type: 'image_url',
@@ -138,7 +141,15 @@ Rules:
         .trim();
       parsed = JSON.parse(cleaned);
     } catch {
-      parsed = { name: 'Nicht erkannt', note: result.content };
+      parsed = { name: 'Nicht erkannt', note: result.content, plant_type: 'other' };
+    }
+
+    // Ensure plant_type is a valid category
+    const validTypes = [
+      'houseplant', 'succulent', 'flowering', 'tree', 'herb', 'wild', 'groundcover', 'other',
+    ];
+    if (!parsed.plant_type || !validTypes.includes(parsed.plant_type)) {
+      parsed.plant_type = 'other';
     }
 
     return new Response(

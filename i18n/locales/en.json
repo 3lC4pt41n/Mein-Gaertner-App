@@ -579,6 +579,8 @@
       "flowering": "Flowering Plants",
       "tree": "Trees & Shrubs",
       "groundcover": "Ground Cover & Climbers",
+      "herb": "Herbs & Crops",
+      "wild": "Wildflowers & Grasses",
       "other": "Other"
     }
   },
