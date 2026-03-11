@@ -434,11 +434,10 @@ export default function AddPlantScreen() {
 
   const goToPlantDetail = () => {
     if (!savedPlant) return;
-    const plantToView = savedPlant;
-    resetAllState();
+    // Navigate first — state resets on next focus via useFocusEffect
     navigation.navigate('MeinePflanzenTab', {
       screen: 'PlantDetail',
-      params: { plant: plantToView },
+      params: { plant: savedPlant },
     });
   };
 
