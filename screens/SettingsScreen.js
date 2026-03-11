@@ -206,45 +206,55 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handlePickFromCamera = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert(t('common.error'), t('profile.cameraRequired'));
-      return;
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(t('common.error'), t('profile.cameraRequired'));
+        return;
+      }
+      const result = await safeLaunchCamera({
+        mediaTypes: ['images'],
+        base64: true,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const asset = result.assets?.[0];
+      if (!asset?.base64) {
+        Alert.alert(t('common.error'), t('profile.photoReadError'));
+        return;
+      }
+      await processAvatarGeneration(asset.base64);
+    } catch (error) {
+      Alert.alert(t('common.error'), error.message || t('profile.photoReadError'));
     }
-    const result = await safeLaunchCamera({
-      base64: true,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (result.canceled) return;
-    const asset = result.assets?.[0];
-    if (!asset?.base64) {
-      Alert.alert(t('common.error'), t('profile.photoReadError'));
-      return;
-    }
-    await processAvatarGeneration(asset.base64);
   };
 
   const handlePickFromGallery = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert(t('common.error'), t('profile.libraryRequired'));
-      return;
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(t('common.error'), t('profile.libraryRequired'));
+        return;
+      }
+      const result = await safeLaunchLibrary({
+        mediaTypes: ['images'],
+        base64: true,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const asset = result.assets?.[0];
+      if (!asset?.base64) {
+        Alert.alert(t('common.error'), t('profile.photoReadError'));
+        return;
+      }
+      await processAvatarGeneration(asset.base64);
+    } catch (error) {
+      Alert.alert(t('common.error'), error.message || t('profile.photoReadError'));
     }
-    const result = await safeLaunchLibrary({
-      base64: true,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (result.canceled) return;
-    const asset = result.assets?.[0];
-    if (!asset?.base64) {
-      Alert.alert(t('common.error'), t('profile.photoReadError'));
-      return;
-    }
-    await processAvatarGeneration(asset.base64);
   };
 
   const handleGenerateGenericAvatar = async () => {
