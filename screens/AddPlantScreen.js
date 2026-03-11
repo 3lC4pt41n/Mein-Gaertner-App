@@ -313,7 +313,11 @@ export default function AddPlantScreen() {
             ? name?.trim()
             : recognizedSpeciesName?.trim() || name?.trim();
           discovery = await logDiscovery(
-            userId, discoverySpeciesName, plant?.id, location, plantType
+            userId,
+            discoverySpeciesName,
+            plant?.id,
+            location,
+            plantType
           );
 
           // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)

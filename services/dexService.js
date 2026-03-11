@@ -173,9 +173,7 @@ export async function fetchSpeciesGallery(speciesId, userId) {
   if (plantsErr) throw plantsErr;
 
   const canonical = speciesRow.canonical_name.trim().toLowerCase();
-  const plants = (allUserPlants || []).filter(
-    (p) => p.name?.trim().toLowerCase() === canonical
-  );
+  const plants = (allUserPlants || []).filter((p) => p.name?.trim().toLowerCase() === canonical);
   if (plants.length === 0) return [];
 
   const plantIds = plants.map((p) => p.id);

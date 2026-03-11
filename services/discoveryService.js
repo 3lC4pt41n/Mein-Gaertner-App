@@ -58,7 +58,11 @@ export async function getDiscoveryLocation() {
  * @returns {Promise<Object>} { speciesId, isFirst, isNewForUser, totalDiscoverers, displayName }
  */
 export async function logDiscovery(
-  userId, speciesName, plantId = null, location = null, plantType = null
+  userId,
+  speciesName,
+  plantId = null,
+  location = null,
+  plantType = null
 ) {
   if (!userId || !speciesName) return null;
 
