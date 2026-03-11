@@ -455,9 +455,7 @@ export default function DexDetailScreen({ route, navigation }) {
                   resizeMode="cover"
                 />
                 <View style={styles.galleryDateOverlay}>
-                  <Text style={styles.galleryDateText}>
-                    {formatGalleryDate(photo.created_at)}
-                  </Text>
+                  <Text style={styles.galleryDateText}>{formatGalleryDate(photo.created_at)}</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -503,10 +501,7 @@ export default function DexDetailScreen({ route, navigation }) {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity
-              style={styles.modalClose}
-              onPress={() => setSelectedImage(null)}
-            >
+            <TouchableOpacity style={styles.modalClose} onPress={() => setSelectedImage(null)}>
               <Ionicons name="close" size={28} color={colors.surface} />
             </TouchableOpacity>
             <Text style={styles.modalCounter}>
@@ -530,9 +525,7 @@ export default function DexDetailScreen({ route, navigation }) {
                 {selectedImage.title ? (
                   <Text style={styles.modalTitle}>{selectedImage.title}</Text>
                 ) : null}
-                <Text style={styles.modalDate}>
-                  {formatGalleryDate(selectedImage.created_at)}
-                </Text>
+                <Text style={styles.modalDate}>{formatGalleryDate(selectedImage.created_at)}</Text>
               </>
             )}
           </View>
@@ -555,10 +548,7 @@ export default function DexDetailScreen({ route, navigation }) {
               />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                styles.navBtn,
-                selectedIndex === gallery.length - 1 && styles.navBtnDisabled,
-              ]}
+              style={[styles.navBtn, selectedIndex === gallery.length - 1 && styles.navBtnDisabled]}
               onPress={() => {
                 if (selectedIndex < gallery.length - 1) {
                   setSelectedImage(gallery[selectedIndex + 1]);
@@ -570,11 +560,7 @@ export default function DexDetailScreen({ route, navigation }) {
               <Ionicons
                 name="chevron-forward"
                 size={28}
-                color={
-                  selectedIndex === gallery.length - 1
-                    ? colors.textSecondary
-                    : colors.surface
-                }
+                color={selectedIndex === gallery.length - 1 ? colors.textSecondary : colors.surface}
               />
             </TouchableOpacity>
           </View>

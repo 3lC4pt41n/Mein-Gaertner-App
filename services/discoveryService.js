@@ -243,9 +243,7 @@ export async function fetchMyDiscoveriesForSpecies(speciesId, userId) {
   if (error) throw error;
 
   // Only return entries that have location data
-  return (data || []).filter(
-    (d) => d.latitude != null && d.longitude != null
-  );
+  return (data || []).filter((d) => d.latitude != null && d.longitude != null);
 }
 
 /**
