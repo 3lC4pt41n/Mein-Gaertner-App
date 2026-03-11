@@ -470,25 +470,13 @@ export default function AddPlantScreen() {
               (['save', 'done'].includes(step) && i === 0) ? (
                 <Ionicons name="checkmark" size={14} color={colors.surface} />
               ) : (
-                <Text
-                  style={[
-                    styles.stepNum,
-                    step === s && styles.stepNumActive,
-                  ]}
-                >
+                <Text style={[styles.stepNum, step === s && styles.stepNumActive]}>
                   {i + 1}
                 </Text>
               )}
             </View>
-            <Text
-              style={[
-                styles.stepLabel,
-                step === s && styles.stepLabelActive,
-              ]}
-            >
-              {t(
-                `plants.step${s.charAt(0).toUpperCase() + s.slice(1)}`
-              )}
+            <Text style={[styles.stepLabel, step === s && styles.stepLabelActive]}>
+              {t(`plants.step${s.charAt(0).toUpperCase() + s.slice(1)}`)}
             </Text>
           </View>
         ))}
@@ -498,19 +486,9 @@ export default function AddPlantScreen() {
       {step === 'photo' && (
         <DSCard>
           <View style={{ alignItems: 'center', gap: spacing.md }}>
-            <Ionicons
-              name="camera-outline"
-              size={48}
-              color={colors.textTertiary}
-            />
-            <Text style={styles.photoHint}>
-              {t('plants.cameraOpening')}
-            </Text>
-            <DSButton
-              onPress={takePhoto}
-              fullWidth
-              icon="camera-outline"
-            >
+            <Ionicons name="camera-outline" size={48} color={colors.textTertiary} />
+            <Text style={styles.photoHint}>{t('plants.cameraOpening')}</Text>
+            <DSButton onPress={takePhoto} fullWidth icon="camera-outline">
               {t('plants.retakePhoto')}
             </DSButton>
           </View>
@@ -521,11 +499,7 @@ export default function AddPlantScreen() {
       {step === 'save' && (
         <DSCard>
           {imageUri && (
-            <Image
-              source={{ uri: imageUri }}
-              style={styles.preview}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
           )}
 
           {/* ── Recognize vs Manual choice ──── */}
@@ -564,9 +538,7 @@ export default function AddPlantScreen() {
           {scanMode && (
             <>
               {scanMode === 'manual' && (
-                <Text style={styles.manualDisclaimer}>
-                  {t('plants.manualDisclaimer')}
-                </Text>
+                <Text style={styles.manualDisclaimer}>{t('plants.manualDisclaimer')}</Text>
               )}
 
               <DSInput
@@ -590,37 +562,19 @@ export default function AddPlantScreen() {
               />
 
               {/* Zone picker */}
-              <Text style={styles.fieldLabel}>
-                {t('plants.zoneOptional')}
-              </Text>
-              <TouchableOpacity
-                style={styles.zonePicker}
-                onPress={openZonePicker}
-              >
+              <Text style={styles.fieldLabel}>{t('plants.zoneOptional')}</Text>
+              <TouchableOpacity style={styles.zonePicker} onPress={openZonePicker}>
                 <Ionicons
                   name="home-outline"
                   size={18}
-                  color={
-                    selectedZone
-                      ? colors.primaryLight
-                      : colors.textDisabled
-                  }
+                  color={selectedZone ? colors.primaryLight : colors.textDisabled}
                 />
                 <Text
-                  style={[
-                    styles.zonePickerText,
-                    selectedZone && { color: colors.textPrimary },
-                  ]}
+                  style={[styles.zonePickerText, selectedZone && { color: colors.textPrimary }]}
                 >
-                  {selectedZone
-                    ? selectedZone.name
-                    : t('plants.selectZoneOptional')}
+                  {selectedZone ? selectedZone.name : t('plants.selectZoneOptional')}
                 </Text>
-                <Ionicons
-                  name="chevron-down"
-                  size={18}
-                  color={colors.textTertiary}
-                />
+                <Ionicons name="chevron-down" size={18} color={colors.textTertiary} />
               </TouchableOpacity>
 
               <DSButton
