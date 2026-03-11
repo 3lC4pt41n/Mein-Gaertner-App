@@ -15,7 +15,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { safeLaunchCamera } from '../services/imagePickerHelper';
+import { safeLaunchCamera, safeLaunchLibrary } from '../services/imagePickerHelper';
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
@@ -187,29 +187,10 @@ export default function SettingsScreen({ navigation }) {
   // HANDLERS
   // =====================================================================
 
-  const handleAvatarChange = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert(t('common.error'), t('profile.cameraRequired'));
-      return;
-    }
-    const result = await safeLaunchCamera({
-      base64: true,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (result.canceled) return;
-
-    const asset = result.assets?.[0];
-    if (!asset?.base64) {
-      Alert.alert(t('common.error'), t('profile.photoReadError'));
-      return;
-    }
-
+  const processAvatarGeneration = async (base64, isGeneric = false) => {
     setGeneratingAvatar(true);
     try {
-      const avatarData = await generateGardenerAvatar(asset.base64, language);
+      const avatarData = await generateGardenerAvatar(base64, language, isGeneric);
       if (!avatarData?.avatar_path) throw new Error(t('profile.avatarCreateError'));
 
       await supabase.auth.updateUser({
@@ -222,6 +203,61 @@ export default function SettingsScreen({ navigation }) {
     } finally {
       setGeneratingAvatar(false);
     }
+  };
+
+  const handlePickFromCamera = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(t('common.error'), t('profile.cameraRequired'));
+      return;
+    }
+    const result = await safeLaunchCamera({
+      base64: true,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+    const asset = result.assets?.[0];
+    if (!asset?.base64) {
+      Alert.alert(t('common.error'), t('profile.photoReadError'));
+      return;
+    }
+    await processAvatarGeneration(asset.base64);
+  };
+
+  const handlePickFromGallery = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(t('common.error'), t('profile.libraryRequired'));
+      return;
+    }
+    const result = await safeLaunchLibrary({
+      base64: true,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+    const asset = result.assets?.[0];
+    if (!asset?.base64) {
+      Alert.alert(t('common.error'), t('profile.photoReadError'));
+      return;
+    }
+    await processAvatarGeneration(asset.base64);
+  };
+
+  const handleGenerateGenericAvatar = async () => {
+    await processAvatarGeneration(null, true);
+  };
+
+  const handleAvatarChange = () => {
+    Alert.alert(t('profile.avatarSourceTitle'), t('profile.avatarSourceMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('profile.avatarFromCamera'), onPress: handlePickFromCamera },
+      { text: t('profile.avatarFromGallery'), onPress: handlePickFromGallery },
+      { text: t('profile.avatarGeneric'), onPress: handleGenerateGenericAvatar },
+    ]);
   };
 
   const handleSaveProfile = async () => {
@@ -370,7 +406,7 @@ export default function SettingsScreen({ navigation }) {
                 </View>
               ) : (
                 <View style={styles.avatarBadge}>
-                  <Ionicons name="camera" size={14} color="#FFFFFF" />
+                  <Ionicons name="brush" size={14} color="#FFFFFF" />
                 </View>
               )}
             </View>

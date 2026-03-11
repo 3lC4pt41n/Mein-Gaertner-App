@@ -233,9 +233,13 @@ export async function chatWithBen(text, imageUrl, language) {
 }
 
 // User-Foto -> personalisierter Gaertner-Avatar
-export async function generateGardenerAvatar(base64Image, language) {
-  return callEdgeFunction('ai-gardener-avatar', {
-    base64: base64Image,
-    language,
-  });
+// Wenn generateGeneric = true, wird kein Foto benötigt (generischer Avatar)
+export async function generateGardenerAvatar(base64Image, language, generateGeneric = false) {
+  const body = { language };
+  if (generateGeneric) {
+    body.generate_generic = true;
+  } else {
+    body.base64 = base64Image;
+  }
+  return callEdgeFunction('ai-gardener-avatar', body);
 }
