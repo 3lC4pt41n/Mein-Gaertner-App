@@ -157,7 +157,11 @@ export default function PlantDetailScreen({ route }) {
           if (cached) {
             setPlantDetails(cached);
             // Auch in plants-Tabelle speichern, damit nächster Aufruf sofort da ist
-            supabase.from('plants').update({ details: cached }).eq('id', plant.id).then(() => {});
+            supabase
+              .from('plants')
+              .update({ details: cached })
+              .eq('id', plant.id)
+              .then(() => {});
             found = true;
           }
         } catch {
@@ -198,22 +202,31 @@ export default function PlantDetailScreen({ route }) {
     }
   };
 
-  const handleGenerateDetails = useCallback(async (forceRefresh = false) => {
-    setGeneratingDetails(true);
-    try {
-      const lang = await fetchCurrentUserLanguage();
-      const result = await generatePlantDetails(plant.name, plant.note, lang, plant.species_id, forceRefresh);
-      if (result?.details) {
-        await supabase.from('plants').update({ details: result.details }).eq('id', plant.id);
-        setPlantDetails(result.details);
-        Alert.alert(t('common.success'), t('plants.detailsGenerated'));
+  const handleGenerateDetails = useCallback(
+    async (forceRefresh = false) => {
+      setGeneratingDetails(true);
+      try {
+        const lang = await fetchCurrentUserLanguage();
+        const result = await generatePlantDetails(
+          plant.name,
+          plant.note,
+          lang,
+          plant.species_id,
+          forceRefresh
+        );
+        if (result?.details) {
+          await supabase.from('plants').update({ details: result.details }).eq('id', plant.id);
+          setPlantDetails(result.details);
+          Alert.alert(t('common.success'), t('plants.detailsGenerated'));
+        }
+      } catch (e) {
+        Alert.alert(t('common.error'), friendlyError(e));
+      } finally {
+        setGeneratingDetails(false);
       }
-    } catch (e) {
-      Alert.alert(t('common.error'), friendlyError(e));
-    } finally {
-      setGeneratingDetails(false);
-    }
-  }, [plant.id, plant.name, plant.note, plant.species_id]);
+    },
+    [plant.id, plant.name, plant.note, plant.species_id]
+  );
 
   // Healthcheck mit Foto-Auswahl: letztes Galerie-Foto oder neues Foto
   const handleStartHealthcheck = useCallback(async () => {
