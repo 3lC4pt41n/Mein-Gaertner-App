@@ -32,7 +32,10 @@ export async function safeLaunchCamera(options = {}) {
   } catch (error) {
     if (options.allowsEditing && isCropUnsupportedError(error)) {
       // Crop wird nicht unterstützt — Fallback ohne Editor (kein Sentry-Error nötig)
-      console.warn('[imagePickerHelper] Crop-Editor nicht verfügbar, Fallback ohne Editing', error.message);
+      console.warn(
+        '[imagePickerHelper] Crop-Editor nicht verfügbar, Fallback ohne Editing',
+        error.message
+      );
       return await ImagePicker.launchCameraAsync({
         ...options,
         allowsEditing: false,
@@ -52,7 +55,10 @@ export async function safeLaunchLibrary(options = {}) {
   } catch (error) {
     if (options.allowsEditing && isCropUnsupportedError(error)) {
       // Crop wird nicht unterstützt — Fallback ohne Editor (kein Sentry-Error nötig)
-      console.warn('[imagePickerHelper] Crop-Editor nicht verfügbar, Fallback ohne Editing', error.message);
+      console.warn(
+        '[imagePickerHelper] Crop-Editor nicht verfügbar, Fallback ohne Editing',
+        error.message
+      );
       return await ImagePicker.launchImageLibraryAsync({
         ...options,
         allowsEditing: false,

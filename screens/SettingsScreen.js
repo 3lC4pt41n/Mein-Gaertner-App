@@ -575,13 +575,13 @@ export default function SettingsScreen({ navigation }) {
               } else {
                 Alert.alert(
                   t('common.error'),
-                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.'
                 );
               }
             } catch {
               Alert.alert(
                 t('common.error'),
-                t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.'
               );
             }
           }}
@@ -599,13 +599,13 @@ export default function SettingsScreen({ navigation }) {
                 } else {
                   Alert.alert(
                     t('common.error'),
-                    t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                    t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.'
                   );
                 }
               } catch {
                 Alert.alert(
                   t('common.error'),
-                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.',
+                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.'
                 );
               }
             }}
