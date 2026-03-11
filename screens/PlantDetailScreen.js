@@ -172,6 +172,7 @@ export default function PlantDetailScreen({ route }) {
     { key: 'diary', label: t('plants.tabDiary') },
     { key: 'gallery', label: t('plants.tabGallery') },
     { key: 'care', label: t('plants.tabCare') },
+    { key: 'properties', label: t('plants.tabProperties') },
     { key: 'health', label: t('plants.tabHealth') },
   ];
 
@@ -541,6 +542,68 @@ export default function PlantDetailScreen({ route }) {
     [details, plantDetails, generatingDetails, handleGenerateDetails]
   );
 
+  // Render function for the nested properties structure (dangers, benefits, compounds)
+  const propertiesTabContent = useCallback(() => {
+    const propsData = details?.properties;
+    // Fallback: if old extras schema exists, show it as flat key-value
+    if (!propsData && details?.extras) {
+      return detailsTabContent('extras');
+    }
+    if (!propsData) {
+      return (
+        <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
+          <Text style={{ color: colors.textDisabled, marginBottom: spacing.md }}>
+            {t('plants.noDetails')}
+          </Text>
+          {!plantDetails && (
+            <DSButton
+              variant="secondary"
+              icon="document-text-outline"
+              onPress={handleGenerateDetails}
+              disabled={generatingDetails}
+              size="sm"
+            >
+              {generatingDetails ? t('common.loading') : t('plants.generateDetails')}
+            </DSButton>
+          )}
+        </View>
+      );
+    }
+    const sections = ['dangers', 'benefits', 'compounds'];
+    return (
+      <View>
+        {sections.map((sectionKey) => {
+          const section = propsData[sectionKey];
+          if (!section) return null;
+          const title = section._title || sectionKey;
+          const entries = Object.entries(section).filter(([k]) => k !== '_title');
+          return (
+            <View key={sectionKey} style={{ marginBottom: spacing.lg }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: colors.textPrimary,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                {title}
+              </Text>
+              {entries.map(([k, v]) => (
+                <View key={k} style={{ marginBottom: spacing.md, marginLeft: spacing.xs }}>
+                  <Text style={{ fontWeight: 'bold', color: colors.textPrimary, fontSize: 14 }}>
+                    {k}
+                  </Text>
+                  <Text style={{ marginLeft: spacing.xs, color: colors.textSecondary }}>{v}</Text>
+                </View>
+              ))}
+            </View>
+          );
+        })}
+      </View>
+    );
+  }, [details, plantDetails, generatingDetails, handleGenerateDetails, detailsTabContent]);
+
   const width = Math.min(Dimensions.get('window').width, 500) - 40;
   const isVirtualizedTab = tab === 'diary' || tab === 'gallery';
 
@@ -713,7 +776,11 @@ export default function PlantDetailScreen({ route }) {
           {/* Tab Content (care, health, overview) — memoized for performance */}
           {tab !== 'tasks' && (
             <View style={styles.card}>
-              {tab === 'health' ? healthTabContent : detailsTabContent(tab)}
+              {tab === 'health'
+                ? healthTabContent
+                : tab === 'properties'
+                  ? propertiesTabContent()
+                  : detailsTabContent(tab)}
             </View>
           )}
         </ScrollView>

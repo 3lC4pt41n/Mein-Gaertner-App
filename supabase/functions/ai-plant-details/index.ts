@@ -49,15 +49,30 @@ const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
     "Schnitt": "...",
     "Umtopfen": "...",
     "Rankhilfe": "...",
-    "Besondere Hinweise": "..."
-  },
-  "extras": {
-    "Zier- & Nutzwert": "...",
-    "Giftigkeit": "...",
-    "Vermehrung": "...",
     "Typische Schädlinge": "...",
     "Krankheiten": "...",
-    "Fun Fact / Kultur": "..."
+    "Besondere Hinweise": "..."
+  },
+  "properties": {
+    "dangers": {
+      "_title": "⚠️ Gefahren",
+      "Giftigkeit": "Giftigkeit für Menschen, Hunde, Katzen beschreiben",
+      "Verwechslungsgefahr": "Ähnliche Arten nennen, mit denen verwechselt werden kann",
+      "Wucherverhalten": "Ausbreitungsverhalten beschreiben"
+    },
+    "benefits": {
+      "_title": "🌿 Nutzen",
+      "Essbare Pflanze": "Essbare Teile und Zubereitung beschreiben, oder 'Nicht essbar'",
+      "Nährstoffe": "Wichtige Vitamine und Mineralstoffe",
+      "Tierfutter": "Eignung als Futter für Haustiere/Wildtiere",
+      "Bodenindikator": "Was die Pflanze über den Boden verrät"
+    },
+    "compounds": {
+      "_title": "🧪 Wirkstoffe",
+      "Wirkstoff 1 (Name)": "Konzentration → Wirkung",
+      "Wirkstoff 2 (Name)": "Konzentration → Wirkung",
+      "Mineralstoffe": "Wichtige Mineralstoffe auflisten"
+    }
   }
 }`,
   en: `{
@@ -82,15 +97,30 @@ const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
     "Pruning": "...",
     "Repotting": "...",
     "Support / Trellis": "...",
-    "Special Notes": "..."
-  },
-  "extras": {
-    "Ornamental / Practical Value": "...",
-    "Toxicity": "...",
-    "Propagation": "...",
     "Common Pests": "...",
     "Diseases": "...",
-    "Fun Fact / Culture": "..."
+    "Special Notes": "..."
+  },
+  "properties": {
+    "dangers": {
+      "_title": "⚠️ Dangers",
+      "Toxicity": "Describe toxicity for humans, dogs, cats",
+      "Confusion risk": "Name similar species that can be confused with this one",
+      "Invasive behavior": "Describe spreading behavior"
+    },
+    "benefits": {
+      "_title": "🌿 Benefits",
+      "Edible plant": "Describe edible parts and preparation, or 'Not edible'",
+      "Nutrients": "Important vitamins and minerals",
+      "Animal feed": "Suitability as feed for pets/wildlife",
+      "Soil indicator": "What the plant reveals about soil conditions"
+    },
+    "compounds": {
+      "_title": "🧪 Active compounds",
+      "Compound 1 (Name)": "Concentration → Effect",
+      "Compound 2 (Name)": "Concentration → Effect",
+      "Minerals": "List important minerals"
+    }
   }
 }`,
   fr: `{
@@ -112,18 +142,33 @@ const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
     "Substrat / Sol": "...",
     "Arrosage": "...",
     "Fertilisation": "...",
-    "Taille": "...",
+    "Taille (coupe)": "...",
     "Rempotage": "...",
     "Tuteur / Support": "...",
-    "Remarques spéciales": "..."
-  },
-  "extras": {
-    "Valeur ornementale / utilitaire": "...",
-    "Toxicité": "...",
-    "Multiplication": "...",
     "Ravageurs fréquents": "...",
     "Maladies": "...",
-    "Info intéressante / culture": "..."
+    "Remarques spéciales": "..."
+  },
+  "properties": {
+    "dangers": {
+      "_title": "⚠️ Dangers",
+      "Toxicité": "Décrire la toxicité pour les humains, chiens, chats",
+      "Risque de confusion": "Espèces similaires pouvant prêter à confusion",
+      "Comportement envahissant": "Décrire le comportement de propagation"
+    },
+    "benefits": {
+      "_title": "🌿 Bienfaits",
+      "Plante comestible": "Parties comestibles et préparation, ou 'Non comestible'",
+      "Nutriments": "Vitamines et minéraux importants",
+      "Alimentation animale": "Aptitude comme nourriture pour animaux",
+      "Indicateur de sol": "Ce que la plante révèle sur le sol"
+    },
+    "compounds": {
+      "_title": "🧪 Principes actifs",
+      "Principe actif 1 (Nom)": "Concentration → Effet",
+      "Principe actif 2 (Nom)": "Concentration → Effet",
+      "Minéraux": "Lister les minéraux importants"
+    }
   }
 }`,
   it: `{
@@ -148,15 +193,30 @@ const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
     "Potatura": "...",
     "Rinvaso": "...",
     "Sostegno / Tutore": "...",
-    "Note speciali": "..."
-  },
-  "extras": {
-    "Valore ornamentale / pratico": "...",
-    "Tossicità": "...",
-    "Propagazione": "...",
     "Parassiti comuni": "...",
     "Malattie": "...",
-    "Curiosità / cultura": "..."
+    "Note speciali": "..."
+  },
+  "properties": {
+    "dangers": {
+      "_title": "⚠️ Pericoli",
+      "Tossicità": "Descrivere la tossicità per umani, cani, gatti",
+      "Rischio di confusione": "Specie simili con cui può essere confusa",
+      "Comportamento invasivo": "Descrivere il comportamento di diffusione"
+    },
+    "benefits": {
+      "_title": "🌿 Benefici",
+      "Pianta commestibile": "Parti commestibili e preparazione, o 'Non commestibile'",
+      "Nutrienti": "Vitamine e minerali importanti",
+      "Alimentazione animale": "Idoneità come mangime per animali",
+      "Indicatore del suolo": "Cosa rivela la pianta sul terreno"
+    },
+    "compounds": {
+      "_title": "🧪 Principi attivi",
+      "Principio attivo 1 (Nome)": "Concentrazione → Effetto",
+      "Principio attivo 2 (Nome)": "Concentrazione → Effetto",
+      "Minerali": "Elencare i minerali importanti"
+    }
   }
 }`,
   es: `{
@@ -181,15 +241,30 @@ const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
     "Poda": "...",
     "Trasplante": "...",
     "Soporte / Tutor": "...",
-    "Notas especiales": "..."
-  },
-  "extras": {
-    "Valor ornamental / práctico": "...",
-    "Toxicidad": "...",
-    "Propagación": "...",
     "Plagas comunes": "...",
     "Enfermedades": "...",
-    "Dato curioso / cultura": "..."
+    "Notas especiales": "..."
+  },
+  "properties": {
+    "dangers": {
+      "_title": "⚠️ Peligros",
+      "Toxicidad": "Describir toxicidad para humanos, perros, gatos",
+      "Riesgo de confusión": "Especies similares con las que puede confundirse",
+      "Comportamiento invasivo": "Describir el comportamiento de propagación"
+    },
+    "benefits": {
+      "_title": "🌿 Beneficios",
+      "Planta comestible": "Partes comestibles y preparación, o 'No comestible'",
+      "Nutrientes": "Vitaminas y minerales importantes",
+      "Alimento animal": "Aptitud como alimento para animales",
+      "Indicador de suelo": "Lo que la planta revela sobre el suelo"
+    },
+    "compounds": {
+      "_title": "🧪 Principios activos",
+      "Principio activo 1 (Nombre)": "Concentración → Efecto",
+      "Principio activo 2 (Nombre)": "Concentración → Efecto",
+      "Minerales": "Listar minerales importantes"
+    }
   }
 }`,
   ru: `{
@@ -214,15 +289,30 @@ const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
     "Обрезка": "...",
     "Пересадка": "...",
     "Опора": "...",
-    "Особые указания": "..."
-  },
-  "extras": {
-    "Декоративная / Практическая ценность": "...",
-    "Токсичность": "...",
-    "Размножение": "...",
     "Типичные вредители": "...",
     "Болезни": "...",
-    "Интересный факт": "..."
+    "Особые указания": "..."
+  },
+  "properties": {
+    "dangers": {
+      "_title": "⚠️ Опасности",
+      "Токсичность": "Описать токсичность для людей, собак, кошек",
+      "Риск путаницы": "Похожие виды, с которыми можно спутать",
+      "Инвазивное поведение": "Описать поведение распространения"
+    },
+    "benefits": {
+      "_title": "🌿 Польза",
+      "Съедобное растение": "Съедобные части и приготовление, или 'Не съедобно'",
+      "Питательные вещества": "Важные витамины и минералы",
+      "Корм для животных": "Пригодность в качестве корма для животных",
+      "Индикатор почвы": "Что растение говорит о почве"
+    },
+    "compounds": {
+      "_title": "🧪 Активные вещества",
+      "Вещество 1 (Название)": "Концентрация → Действие",
+      "Вещество 2 (Название)": "Концентрация → Действие",
+      "Минералы": "Перечислить важные минералы"
+    }
   }
 }`,
 };
@@ -460,7 +550,7 @@ ${schema}
 Rules:
 - Write all content strictly in ${languagePromptName}.
 - Output one language only (no bilingual text, no translations).
-- Keep top-level keys exactly: overview, care, extras.
+- Keep top-level keys exactly: overview, care, properties.
 - No markdown, no comments, no explanations.`;
 
     let result;
