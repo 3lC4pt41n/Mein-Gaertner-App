@@ -48,7 +48,9 @@
       }
     },
     "updates": {
-      "url": "https://u.expo.dev/e2da4aab-3bb5-491b-b009-e3fb2b557bdc"
+      "url": "https://u.expo.dev/e2da4aab-3bb5-491b-b009-e3fb2b557bdc",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 3000
     },
     "plugins": [
       "@react-native-community/datetimepicker",
