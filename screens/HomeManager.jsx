@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, Modal, TouchableOpacity, SectionList, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, Modal, TouchableOpacity, SectionList, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../supabase';
@@ -469,7 +469,10 @@ export default function HomeManager() {
       />
       {/* ── Location/Zone Modal ──────────────────────── */}
       <Modal visible={dialogVisible} animationType="slide" transparent onRequestClose={closeModal}>
-        <View style={styles.overlay}>
+        <KeyboardAvoidingView
+          style={styles.overlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>
               {editing?.type === 'location'
@@ -529,7 +532,7 @@ export default function HomeManager() {
               </DSButton>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* ── Zone Picker Modal for Unassigned Plants ──── */}

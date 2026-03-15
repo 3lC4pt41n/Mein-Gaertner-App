@@ -119,6 +119,15 @@ export default function PlantDetailScreen({ route }) {
     plant.image_url?.startsWith('http') ? plant.image_url : null
   );
 
+  // Reset state when navigating to a different plant (prevents stale details)
+  useEffect(() => {
+    setPlantDetails(plant.details || null);
+    setHealthcheck(null);
+    setLoading(true);
+    setTab('overview');
+    setResolvedImageUrl(plant.image_url?.startsWith('http') ? plant.image_url : null);
+  }, [plant.id]);
+
   useEffect(() => {
     if (plant.image_url && !plant.image_url.startsWith('http')) {
       getPlantImageUrl(plant.image_url).then((url) => {
