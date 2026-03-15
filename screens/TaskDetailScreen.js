@@ -189,8 +189,8 @@ export default function TaskDetailScreen({ route, navigation }) {
         }}
         onPress={handleDelete}
       >
-        <Ionicons name="trash-outline" size={18} color={colors.error} style={{ marginRight: 6 }} />
-        <Text style={{ color: colors.error, fontSize: 14 }}>{t('tasks.deleteTask')}</Text>
+        <Ionicons name="trash-outline" size={18} color={colors.danger} style={{ marginRight: 6 }} />
+        <Text style={{ color: colors.danger, fontSize: 14 }}>{t('tasks.deleteTask')}</Text>
       </TouchableOpacity>
 
       {/* Healthcheck Quickstart */}
