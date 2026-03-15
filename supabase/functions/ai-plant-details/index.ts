@@ -315,6 +315,54 @@ const DETAILS_SCHEMA_BY_LANGUAGE: Record<SupportedLanguage, string> = {
     }
   }
 }`,
+  tr: `{
+  "overview": {
+    "Yaygın Ad": "...",
+    "Botanik Adı": "...",
+    "Aile": "...",
+    "Anavatanı": "...",
+    "Büyüme Tipi": "...",
+    "Boyut": "...",
+    "Çiçeklenme Dönemi": "...",
+    "Ömür": "...",
+    "Öne Çıkan Özellik": "..."
+  },
+  "care": {
+    "Işık": "...",
+    "Sıcaklık Aralığı": "...",
+    "Hava Nemi": "...",
+    "Toprak / Substrat": "...",
+    "Sulama": "...",
+    "Gübreleme": "...",
+    "Budama": "...",
+    "Saksı Değişimi": "...",
+    "Destek / Herek": "...",
+    "Yaygın Zararlılar": "...",
+    "Hastalıklar": "...",
+    "Özel Notlar": "..."
+  },
+  "properties": {
+    "dangers": {
+      "_title": "⚠️ Tehlikeler",
+      "Toksisite": "İnsanlar, köpekler, kediler için toksisiteyi açıklayın",
+      "Karıştırma Riski": "Karıştırılabilecek benzer türleri belirtin",
+      "İstilacı Davranış": "Yayılma davranışını açıklayın"
+    },
+    "benefits": {
+      "_title": "🌿 Faydalar",
+      "Yenilebilir Bitki": "Yenilebilir kısımları ve hazırlığını açıklayın veya 'Yenilemez'",
+      "Besin Değerleri": "Önemli vitaminler ve mineraller",
+      "Hayvan Yemi": "Evcil hayvanlar/yaban hayatı için yem olarak uygunluk",
+      "Toprak Göstergesi": "Bitkinin toprak koşulları hakkında ne söylediği"
+    },
+    "compounds": {
+      "_title": "🧪 Aktif Bileşenler",
+      "Bileşen 1 (Adı)": "Konsantrasyon → Etki",
+      "Bileşen 2 (Adı)": "Konsantrasyon → Etki",
+      "Mineraller": "Önemli mineralleri listeleyin"
+    }
+  }
+}`,
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────
