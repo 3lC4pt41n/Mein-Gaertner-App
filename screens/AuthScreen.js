@@ -441,7 +441,7 @@ export default function AuthScreen({
       <View style={styles.legalFooter}>
         <TouchableOpacity
           onPress={async () => {
-            const url = 'https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html';
+            const url = 'https://tsllrwaixvhuadrfsskt.supabase.co/functions/v1/privacy-policy';
             try {
               const supported = await Linking.canOpenURL(url);
               if (supported) {
@@ -465,7 +465,7 @@ export default function AuthScreen({
         <Text style={styles.legalSeparator}>·</Text>
         <TouchableOpacity
           onPress={async () => {
-            const url = 'https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html';
+            const url = 'https://tsllrwaixvhuadrfsskt.supabase.co/functions/v1/terms';
             try {
               const supported = await Linking.canOpenURL(url);
               if (supported) {

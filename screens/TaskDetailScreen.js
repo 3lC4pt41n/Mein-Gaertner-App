@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { getTaskTypeIcon, getTaskTypeI18nKey, normalizeTaskType } from '../constants/taskTypes';
-import { fetchTask, completeTask, skipTask } from '../services/taskService';
+import { fetchTask, completeTask, skipTask, deleteTask } from '../services/taskService';
 import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 
@@ -43,6 +43,24 @@ export default function TaskDetailScreen({ route, navigation }) {
     } catch (e) {
       Alert.alert(t('common.error'), e.message);
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(t('tasks.deleteTitle'), t('tasks.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteTask(task.id, task.user_id);
+            navigation.goBack();
+          } catch (e) {
+            Alert.alert(t('common.error'), e.message);
+          }
+        },
+      },
+    ]);
   };
 
   if (loading) return <ActivityIndicator style={{ marginTop: 50 }} color={colors.primaryLight} />;
@@ -158,6 +176,22 @@ export default function TaskDetailScreen({ route, navigation }) {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Delete Button */}
+      <TouchableOpacity
+        style={{
+          marginTop: spacing.xl,
+          alignSelf: 'center',
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: spacing.sm,
+          paddingHorizontal: spacing.md,
+        }}
+        onPress={handleDelete}
+      >
+        <Ionicons name="trash-outline" size={18} color={colors.error} style={{ marginRight: 6 }} />
+        <Text style={{ color: colors.error, fontSize: 14 }}>{t('tasks.deleteTask')}</Text>
+      </TouchableOpacity>
 
       {/* Healthcheck Quickstart */}
       {normalizeTaskType(task.type) === 'healthcheck' && (

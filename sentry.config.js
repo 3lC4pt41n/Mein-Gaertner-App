@@ -39,8 +39,10 @@ Sentry.init({
   // Bekannte, behandelte Fehler nicht an Sentry senden
   ignoreErrors: [
     // Crop-Editor auf manchen Android-Geräten nicht verfügbar — Fallback greift automatisch
-    'not available in the current platform',
-    'UnsupportedPlatformError',
+    /not available in the current platform/i,
+    /UnsupportedPlatformError/i,
+    // Linking.openURL kann auf manchen Geräten fehlschlagen — try/catch zeigt Alert
+    /Unable to open URL/i,
   ],
 
   // Vor dem Senden: User-Email / IP entfernen

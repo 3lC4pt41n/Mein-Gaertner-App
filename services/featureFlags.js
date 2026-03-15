@@ -18,6 +18,6 @@
 // Ticket: n/a (re-evaluate post-launch)
 
 // ── Terms of Service Link ────────────────────────────────────────────────────
-// Published at: https://3lc4pt41n.github.io/Mein-Gaertner-App/terms.html
+// Served by Supabase Edge Function: /functions/v1/terms
 // Status: LIVE — enabled for store submission.
 export const SHOW_TERMS_LINK = true;

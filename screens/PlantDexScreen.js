@@ -91,7 +91,7 @@ const PlantDexScreen = () => {
   const navigation = useNavigation();
   const [species, setSpecies] = useState([]);
   const [progress, setProgress] = useState({ total: 0, discovered: 0, firstDiscoveries: 0 });
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('discovered');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);

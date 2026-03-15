@@ -1,8 +1,88 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 
-// Single source of truth: GitHub Pages hosts the canonical privacy policy.
-// This edge function redirects there to avoid content drift between two copies.
-const CANONICAL_URL = 'https://3lc4pt41n.github.io/Mein-Gaertner-App/privacy-policy.html';
+const HTML = `<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Datenschutzerklärung – FloraScout</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.7; color: #1d1d1f; background: #f5f5f7; padding: 2rem 1rem;
+      }
+      .container {
+        max-width: 680px; margin: 0 auto; background: #fff; padding: 2.5rem;
+        border-radius: 14px; border: 1px solid #e5e5ea;
+      }
+      h1 { font-size: 26px; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+      .subtitle { color: #6e6e73; font-size: 14px; margin-bottom: 2rem; }
+      h2 { font-size: 18px; margin-top: 1.8rem; margin-bottom: 0.6rem; letter-spacing: -0.01em; }
+      p, li { margin-bottom: 0.6rem; font-size: 15px; }
+      ul { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+      a { color: #2e7d32; text-decoration: none; }
+      .footer {
+        margin-top: 2rem; padding-top: 1.2rem; border-top: 1px solid #e5e5ea;
+        color: #9b9ba0; font-size: 12px; text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Datenschutzerklärung</h1>
+      <p class="subtitle">FloraScout – Dein smarter Pflanzenbegleiter</p>
+
+      <h2>1. Verantwortlicher</h2>
+      <p>Tim Mergenthaler<br />E-Mail: <a href="mailto:timergenthaler@gmail.com">timergenthaler@gmail.com</a></p>
+
+      <h2>2. Welche Daten wir erheben</h2>
+      <p>Wenn du „FloraScout" nutzt, verarbeiten wir folgende Daten:</p>
+      <ul>
+        <li><strong>Kontodaten:</strong> E-Mail-Adresse und Passwort (verschlüsselt gespeichert) bei der Registrierung.</li>
+        <li><strong>Profildaten:</strong> Name, bevorzugte Sprache und optionales Profilbild.</li>
+        <li><strong>Pflanzendaten:</strong> Informationen zu deinen Pflanzen (Name, Standort, Fotos, Pflegehinweise).</li>
+        <li><strong>Kamerabilder:</strong> Fotos, die du zur KI-Pflanzenerkennung aufnimmst. Diese werden zur Analyse an OpenAI übermittelt und nicht dauerhaft gespeichert.</li>
+        <li><strong>Chat-Verlauf:</strong> Nachrichten mit dem KI-Assistenten werden zur Verbesserung des Gesprächskontexts gespeichert.</li>
+        <li><strong>Push-Token:</strong> Geräte-Token für Benachrichtigungen (z.B. Pflege-Erinnerungen).</li>
+        <li><strong>Kaufdaten:</strong> In-App-Käufe werden über RevenueCat verarbeitet. Wir speichern keine Zahlungsinformationen.</li>
+      </ul>
+
+      <h2>3. Zweck der Verarbeitung</h2>
+      <ul>
+        <li>Bereitstellung der App-Funktionen (Pflanzenverwaltung, KI-Erkennung, Aufgaben)</li>
+        <li>Authentifizierung und Kontosicherheit</li>
+        <li>Versand von Pflege-Erinnerungen per Push-Benachrichtigung</li>
+        <li>Verwaltung von Abonnements und Käufen</li>
+      </ul>
+
+      <h2>4. Dienste Dritter</h2>
+      <ul>
+        <li><strong>Supabase</strong> (EU/US) – Datenbank, Authentifizierung und Dateispeicher. <a href="https://supabase.com/privacy" target="_blank">Datenschutz</a></li>
+        <li><strong>OpenAI</strong> (US) – KI-Pflanzenerkennung und Chat-Assistent. <a href="https://openai.com/privacy" target="_blank">Datenschutz</a></li>
+        <li><strong>RevenueCat</strong> (US) – Verwaltung von In-App-Käufen und Abonnements. <a href="https://www.revenuecat.com/privacy" target="_blank">Datenschutz</a></li>
+        <li><strong>Expo / EAS</strong> (US) – App-Distribution und Over-the-Air-Updates. <a href="https://expo.dev/privacy" target="_blank">Datenschutz</a></li>
+      </ul>
+
+      <h2>5. Speicherdauer</h2>
+      <p>Deine Daten werden gespeichert, solange du ein aktives Konto hast. Nach Löschung deines Kontos werden alle personenbezogenen Daten innerhalb von 30 Tagen entfernt.</p>
+
+      <h2>6. Deine Rechte</h2>
+      <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung und Datenübertragbarkeit. Kontaktiere uns unter <a href="mailto:timergenthaler@gmail.com">timergenthaler@gmail.com</a>.</p>
+
+      <h2>7. Kinder</h2>
+      <p>Die App richtet sich nicht an Kinder unter 16 Jahren. Wir erheben wissentlich keine Daten von Minderjährigen.</p>
+
+      <h2>8. Keine Datenweitergabe zu Werbezwecken</h2>
+      <p>Wir verkaufen oder teilen deine personenbezogenen Daten nicht mit Dritten zu Werbezwecken.</p>
+
+      <h2>9. Änderungen</h2>
+      <p>Wir können diese Datenschutzerklärung aktualisieren. Die aktuelle Version ist immer unter dieser URL abrufbar.</p>
+
+      <div class="footer">Stand: März 2026 · © FloraScout – Tim Mergenthaler</div>
+    </div>
+  </body>
+</html>`;
 
 serve((req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -14,10 +94,10 @@ serve((req: Request) => {
     });
   }
 
-  return new Response(null, {
-    status: 301,
+  return new Response(HTML, {
+    status: 200,
     headers: {
-      Location: CANONICAL_URL,
+      'Content-Type': 'text/html; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'public, max-age=86400',
     },
