@@ -49,3 +49,5 @@ jobs:
           supabase functions deploy privacy-policy --no-verify-jwt
           supabase functions deploy weather-proxy --no-verify-jwt
           supabase functions deploy delete-account --no-verify-jwt
+          supabase functions deploy send-email --no-verify-jwt
+          supabase functions deploy terms --no-verify-jwt
