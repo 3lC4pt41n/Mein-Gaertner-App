@@ -60,6 +60,8 @@ export default function AddTaskDialog({
     d.setHours(8, 0, 0, 0);
     return d;
   });
+  const [showDate, setShowDate] = useState(false);
+  const [showTime, setShowTime] = useState(false);
   const [note, setNote] = useState('');
   const [recurring, setRecurring] = useState(false);
   const [intervalDays, setIntervalDays] = useState(5);
@@ -108,6 +110,8 @@ export default function AddTaskDialog({
       setLoadingPlants(false);
     }
   };
+
+  const formatLocalDate = (d) => `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
 
   const formatLocalTime = (d) =>
     `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -343,12 +347,12 @@ export default function AddTaskDialog({
                 placeholder={t('tasks.datePlaceholder')}
                 style={{ marginBottom: spacing.md }}
               />
-            ) : (
+            ) : Platform.OS === 'ios' ? (
               <View style={{ marginBottom: spacing.md }}>
                 <NativeDateTimePicker
                   value={date}
                   mode="date"
-                  display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                  display="inline"
                   onChange={(event, selectedDate) => {
                     if (selectedDate) {
                       const nd = new Date(date);
@@ -360,7 +364,7 @@ export default function AddTaskDialog({
                       setDate(nd);
                     }
                   }}
-                  style={Platform.OS === 'ios' ? { marginBottom: spacing.sm } : undefined}
+                  style={{ marginBottom: spacing.sm }}
                 />
                 <NativeDateTimePicker
                   value={date}
@@ -375,6 +379,91 @@ export default function AddTaskDialog({
                     }
                   }}
                 />
+              </View>
+            ) : (
+              <View style={{ marginBottom: spacing.md }}>
+                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                  <TouchableOpacity
+                    onPress={() => setShowDate(true)}
+                    style={{
+                      flex: 1,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      borderRadius: radius.md,
+                      padding: spacing.md,
+                      backgroundColor: colors.surfaceSecondary,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Ionicons
+                      name="calendar-outline"
+                      size={18}
+                      color={colors.textSecondary}
+                      style={{ marginRight: spacing.sm }}
+                    />
+                    <Text style={{ color: colors.textPrimary, fontSize: 15 }}>
+                      {formatLocalDate(date)}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setShowTime(true)}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      borderRadius: radius.md,
+                      padding: spacing.md,
+                      backgroundColor: colors.surfaceSecondary,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Ionicons
+                      name="time-outline"
+                      size={18}
+                      color={colors.textSecondary}
+                      style={{ marginRight: spacing.sm }}
+                    />
+                    <Text style={{ color: colors.textPrimary, fontSize: 15 }}>
+                      {formatLocalTime(date)}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                {showDate && (
+                  <NativeDateTimePicker
+                    value={date}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDate(false);
+                      if (selectedDate) {
+                        const nd = new Date(date);
+                        nd.setFullYear(
+                          selectedDate.getFullYear(),
+                          selectedDate.getMonth(),
+                          selectedDate.getDate()
+                        );
+                        setDate(nd);
+                      }
+                    }}
+                  />
+                )}
+                {showTime && (
+                  <NativeDateTimePicker
+                    value={date}
+                    mode="time"
+                    is24Hour={true}
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowTime(false);
+                      if (selectedDate) {
+                        const nd = new Date(date);
+                        nd.setHours(selectedDate.getHours(), selectedDate.getMinutes());
+                        setDate(nd);
+                      }
+                    }}
+                  />
+                )}
               </View>
             )}
 
