@@ -7,15 +7,16 @@ import fr from './locales/fr.json';
 import it from './locales/it.json';
 import es from './locales/es.json';
 import ru from './locales/ru.json';
+import tr from './locales/tr.json';
 
-const i18n = new I18n({ de, en, fr, it, es, ru });
+const i18n = new I18n({ de, en, fr, it, es, ru, tr });
 
 i18n.defaultLocale = 'de';
 i18n.enableFallback = true;
 
 // Initial: Gerätesprache verwenden (wird durch Profile-Sprache überschrieben)
 const deviceLocale = getLocales()?.[0]?.languageCode ?? 'de';
-const SUPPORTED = ['de', 'en', 'fr', 'it', 'es', 'ru'];
+const SUPPORTED = ['de', 'en', 'fr', 'it', 'es', 'ru', 'tr'];
 i18n.locale = SUPPORTED.includes(deviceLocale) ? deviceLocale : 'de';
 
 export default i18n;

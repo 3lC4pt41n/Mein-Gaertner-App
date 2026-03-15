@@ -2,7 +2,7 @@ import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 import { Resend } from "npm:resend@4.0.0";
 
 // ─── Language utilities (inlined from _shared/language.ts) ───────────────────
-type SupportedLanguage = "de" | "en" | "fr" | "it" | "es" | "ru";
+type SupportedLanguage = "de" | "en" | "fr" | "it" | "es" | "ru" | "tr";
 
 const LANGUAGE_ALIASES: Record<string, SupportedLanguage> = {
   de: "de", deutsch: "de", german: "de",
@@ -11,6 +11,7 @@ const LANGUAGE_ALIASES: Record<string, SupportedLanguage> = {
   it: "it", italian: "it", italiano: "it", italienisch: "it",
   es: "es", espanol: "es", "español": "es", spanish: "es", spanisch: "es",
   ru: "ru", "русский": "ru", russian: "ru",
+  tr: "tr", turkish: "tr", "türkçe": "tr", "türkisch": "tr",
 };
 
 function normalizeLanguage(input?: string | null): SupportedLanguage {
@@ -114,6 +115,14 @@ const subjects: Record<SupportedLanguage, Record<EmailActionType, string>> = {
     magiclink: "Ваша ссылка для входа",
     email_change: "Подтвердите новый адрес электронной почты",
     reauthentication: "Требуется подтверждение",
+  },
+  tr: {
+    signup: "E-posta adresini onayla",
+    recovery: "Yeni şifre belirle",
+    invite: "Davet edildiniz",
+    magiclink: "Giriş bağlantınız",
+    email_change: "Yeni e-posta adresini onayla",
+    reauthentication: "Onay gerekli",
   },
 };
 
@@ -499,6 +508,68 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
       cta: "",
       fallback: "",
       footer: "Вы не запрашивали это? Просто проигнорируйте это письмо.",
+      outside: "",
+    },
+  },
+  tr: {
+    signup: {
+      subtitle: "Akıllı bitki yardımcınız",
+      title: "Hesabı Etkinleştir",
+      desc: "Bahçeye hoş geldiniz. Hesabınızı etkinleştirmek için lütfen e-posta adresinizi onaylayın.",
+      note: "Bu bağlantının süresi sınırlıdır.",
+      cta: "Hesabı Etkinleştir",
+      fallback: "Düğme çalışmıyorsa bu bağlantıyı tarayıcınıza kopyalayın:",
+      footer: "Hesap oluşturmadınız mı? Bu e-postayı görmezden gelin.",
+      outside: "Bu e-postayı beklemiyordunuz ise herhangi bir işlem yapmanız gerekmez.",
+    },
+    recovery: {
+      subtitle: "Akıllı bitki yardımcınız",
+      title: "Yeni Şifre Belirle",
+      desc: "Şifrenizi sıfırlama talebinde bulundunuz. Yeni bir şifre seçmek için aşağıya tıklayın.",
+      note: "Bu siz değilseniz bu e-postayı görmezden gelebilirsiniz.",
+      cta: "Şifreyi Sıfırla",
+      fallback: "Bağlantıyı manuel olarak açın:",
+      footer: "Güvenlik notu: Şifrenizi asla kimseyle paylaşmayın.",
+      outside: "",
+    },
+    invite: {
+      subtitle: "Akıllı bitki yardımcınız",
+      title: "Davet Edildiniz",
+      desc: "<strong>FloraScout</strong>'u kullanabilirsiniz – düzenli, sağlıklı ve yeşil bir bitki bakımı için.",
+      note: "Başlamak için hesabınızı ayarlayın.",
+      cta: "Daveti Kabul Et",
+      fallback: "Bağlantıyı manuel olarak açın:",
+      footer: "FloraScout'u tanımıyor musunuz? Bu e-postayı görmezden gelin.",
+      outside: "",
+    },
+    magiclink: {
+      subtitle: "Akıllı bitki yardımcınız",
+      title: "Güvenli Giriş",
+      desc: "Giriş yapmak için bu bağlantıyı kullanın. Tek bir tıklama yeterli.",
+      note: "Bu bağlantı tek kullanımlıktır ve kısa sürede sona erer.",
+      cta: "Şimdi Giriş Yap",
+      fallback: "Bağlantıyı manuel olarak açın:",
+      footer: "Bu girişi talep etmediyseniz bu e-postayı görmezden gelin.",
+      outside: "",
+    },
+    email_change: {
+      subtitle: "Akıllı bitki yardımcınız",
+      title: "E-posta Adresini Onayla",
+      desc: "E-posta adresinizi değiştirmek istiyorsunuz. Lütfen aşağıdaki düğme ile değişikliği onaylayın.",
+      note: "",
+      cta: "E-postayı Değiştir",
+      fallback: "Bağlantıyı manuel olarak açın:",
+      footer: "Bu değişikliği talep etmediyseniz bu e-postayı görmezden gelin.",
+      outside: "",
+    },
+    reauthentication: {
+      subtitle: "Akıllı bitki yardımcınız",
+      title: "Onay Gerekli",
+      desc: "Devam etmek için aşağıdaki kodu girin:",
+      note: "",
+      cta: "",
+      fallback: "",
+      footer: "Bunu talep etmediyseniz bu e-postayı görmezden gelin.",
       outside: "",
     },
   },
