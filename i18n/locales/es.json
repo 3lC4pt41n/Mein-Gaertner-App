@@ -268,7 +268,9 @@
     "skipped": "Omitida",
     "skipTitle": "¿Omitir tarea?",
     "skipMessage": "La tarea se marcará como omitida.",
-    "skip": "Omitir"
+    "skip": "Omitir",
+    "completedDiary": "{{type}} completado",
+    "everyNDays": "Cada {{days}} días"
   },
   "assistant": {
     "placeholder": "Escribe un mensaje a Ben …",
@@ -481,6 +483,8 @@
     "loadMore": "Cargar más",
     "today": "Hoy",
     "yesterday": "Ayer",
+    "endOfList": "Eso es todo",
+    "entries": "entradas",
     "types": {
       "manual": "Nota",
       "healthcheck": "Chequeo de salud",

@@ -2,6 +2,7 @@ import { supabase } from '../supabase';
 import { addAutoDiaryEntry } from './diaryService';
 import { getTaskWeight, computeNextDueAt } from './scoringHelpers';
 import { requestWithPolicy } from './networkPolicy';
+import { t } from '../i18n';
 
 // Re-export for backwards compatibility and tests
 export { getTaskWeight, calcTaskPoints, calcSkipPoints, computeNextDueAt } from './scoringHelpers';
@@ -170,7 +171,7 @@ export async function createRecurringTask({
         user_id,
         type,
         due_at,
-        note: note || `Alle ${interval_days} Tage`,
+        note: note || t('tasks.everyNDays', { days: interval_days }),
         state: 'DUE',
         template_id: tpl.id,
         dedupe_key: dedupeKey,
@@ -253,7 +254,7 @@ export async function completeTask(task, user_id) {
       plant_id: task.plant_id,
       user_id: user_id,
       type: 'task',
-      title: `${task.type} erledigt`,
+      title: t('tasks.completedDiary', { type: t('tasks.taskTypes.' + task.type) }),
       note: task.note || null,
       meta: { task_type: task.type, late: isLate },
     }).catch((e) => console.warn('Diary auto-entry error:', e.message));
@@ -341,7 +342,7 @@ async function rescheduleFromTemplate(templateId, completedDueAt, userId) {
       state: 'DUE',
       template_id: templateId,
       dedupe_key: dedupeKey,
-      note: `Alle ${tpl.interval_days} Tage`,
+      note: t('tasks.everyNDays', { days: tpl.interval_days }),
     });
 
     // 23505 = duplicate key → schon vorhanden (OK)
@@ -394,7 +395,7 @@ export async function catchUpMissedTasks(userId) {
         state: 'DUE',
         template_id: tpl.id,
         dedupe_key: dedupeKey,
-        note: `Alle ${tpl.interval_days} Tage`,
+        note: t('tasks.everyNDays', { days: tpl.interval_days }),
       });
 
       if (insertError && insertError.code !== '23505') {

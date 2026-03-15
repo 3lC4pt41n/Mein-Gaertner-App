@@ -268,7 +268,9 @@
     "skipped": "Atlandı",
     "skipTitle": "Görev atlansın mı?",
     "skipMessage": "Görev atlandı olarak işaretlenecek.",
-    "skip": "Atla"
+    "skip": "Atla",
+    "completedDiary": "{{type}} tamamlandı",
+    "everyNDays": "Her {{days}} günde bir"
   },
   "assistant": {
     "placeholder": "Ben'e bir mesaj yaz …",
@@ -502,6 +504,8 @@
     "loadMore": "Daha fazla yükle",
     "today": "Bugün",
     "yesterday": "Dün",
+    "endOfList": "Hepsi bu",
+    "entries": "girdi",
     "types": {
       "manual": "Not",
       "healthcheck": "Sağlık Kontrolü",

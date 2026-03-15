@@ -268,7 +268,9 @@
     "skipped": "Ignorée",
     "skipTitle": "Ignorer la tâche ?",
     "skipMessage": "La tâche sera marquée comme ignorée.",
-    "skip": "Ignorer"
+    "skip": "Ignorer",
+    "completedDiary": "{{type}} terminé",
+    "everyNDays": "Tous les {{days}} jours"
   },
   "assistant": {
     "placeholder": "Écrivez un message à Ben …",
@@ -481,6 +483,8 @@
     "loadMore": "Charger plus",
     "today": "Aujourd'hui",
     "yesterday": "Hier",
+    "endOfList": "C'est tout",
+    "entries": "entrées",
     "types": {
       "manual": "Note",
       "healthcheck": "Bilan santé",

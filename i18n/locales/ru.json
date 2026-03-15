@@ -268,7 +268,9 @@
     "skipped": "Пропущено",
     "skipTitle": "Пропустить задачу?",
     "skipMessage": "Задача будет отмечена как пропущенная.",
-    "skip": "Пропустить"
+    "skip": "Пропустить",
+    "completedDiary": "{{type}} выполнено",
+    "everyNDays": "Каждые {{days}} дней"
   },
   "assistant": {
     "placeholder": "Напишите сообщение Бену …",
@@ -481,6 +483,8 @@
     "loadMore": "Загрузить ещё",
     "today": "Сегодня",
     "yesterday": "Вчера",
+    "endOfList": "Это всё",
+    "entries": "записей",
     "types": {
       "manual": "Заметка",
       "healthcheck": "Проверка здоровья",

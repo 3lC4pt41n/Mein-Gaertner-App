@@ -268,7 +268,9 @@
     "skipped": "Übersprungen",
     "skipTitle": "Aufgabe überspringen?",
     "skipMessage": "Die Aufgabe wird als übersprungen markiert.",
-    "skip": "Überspringen"
+    "skip": "Überspringen",
+    "completedDiary": "{{type}} erledigt",
+    "everyNDays": "Alle {{days}} Tage"
   },
   "assistant": {
     "placeholder": "Schreib Ben eine Nachricht …",
@@ -502,6 +504,8 @@
     "loadMore": "Mehr laden",
     "today": "Heute",
     "yesterday": "Gestern",
+    "endOfList": "Das war's",
+    "entries": "Einträge",
     "types": {
       "manual": "Notiz",
       "healthcheck": "Healthcheck",

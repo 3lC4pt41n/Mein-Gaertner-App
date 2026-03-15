@@ -268,7 +268,9 @@
     "skipped": "Saltata",
     "skipTitle": "Saltare l'attività?",
     "skipMessage": "L'attività verrà contrassegnata come saltata.",
-    "skip": "Salta"
+    "skip": "Salta",
+    "completedDiary": "{{type}} completato",
+    "everyNDays": "Ogni {{days}} giorni"
   },
   "assistant": {
     "placeholder": "Scrivi un messaggio a Ben …",
@@ -481,6 +483,8 @@
     "loadMore": "Carica altro",
     "today": "Oggi",
     "yesterday": "Ieri",
+    "endOfList": "Questo è tutto",
+    "entries": "voci",
     "types": {
       "manual": "Nota",
       "healthcheck": "Controllo salute",
