@@ -104,8 +104,8 @@ describe('getLanguageLabel', () => {
 });
 
 describe('LANGUAGE_OPTIONS', () => {
-  it('contains 6 supported languages', () => {
-    expect(LANGUAGE_OPTIONS).toHaveLength(6);
+  it('contains 7 supported languages', () => {
+    expect(LANGUAGE_OPTIONS).toHaveLength(7);
   });
 
   it('each option has code and label', () => {
