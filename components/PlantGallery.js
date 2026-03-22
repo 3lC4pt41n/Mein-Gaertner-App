@@ -11,6 +11,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchGallery } from '../services/diaryService';
 import { getPlantImageUrl } from '../services/uploadService';
@@ -116,7 +117,16 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto, ListH
         onPress={() => handleImagePress(item, index)}
         activeOpacity={0.8}
       >
-        <Image source={{ uri: item.image_url }} style={styles.galleryImage} resizeMode="cover" />
+        <ExpoImage
+          source={{ uri: item.image_url }}
+          style={styles.galleryImage}
+          contentFit="cover"
+          cachePolicy="disk"
+          transition={200}
+          placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
+          placeholderContentFit="cover"
+          recyclingKey={item.id}
+        />
         <View style={styles.badgeContainer}>
           <Text style={styles.badge}>{typeBadges[item.type] || '📌'}</Text>
         </View>
@@ -200,10 +210,11 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto, ListH
 
           {selectedImage && (
             <View style={styles.imageContainer}>
-              <Image
+              <ExpoImage
                 source={{ uri: selectedImage.image_url }}
                 style={styles.fullImage}
-                resizeMode="contain"
+                contentFit="contain"
+                cachePolicy="disk"
               />
             </View>
           )}

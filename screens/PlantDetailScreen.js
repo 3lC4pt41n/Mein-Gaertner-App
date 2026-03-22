@@ -3,7 +3,6 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -13,6 +12,7 @@ import {
   SectionList,
   Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -709,7 +709,11 @@ export default function PlantDetailScreen({ route }) {
               marginBottom: spacing.sm,
               backgroundColor: colors.border,
             }}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={200}
+            placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
+            placeholderContentFit="cover"
           />
         )}
         <Text style={styles.title}>{plant.name}</Text>

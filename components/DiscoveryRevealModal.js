@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  Image,
   Modal,
   Animated,
   StyleSheet,
@@ -11,6 +10,7 @@ import {
   Share,
   Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
@@ -174,7 +174,13 @@ export default function DiscoveryRevealModal({
             ]}
           >
             {imageUri ? (
-              <Image source={{ uri: imageUri }} style={styles.image} />
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.image}
+                contentFit="cover"
+                cachePolicy="disk"
+                transition={200}
+              />
             ) : (
               <View style={styles.imagePlaceholder}>
                 <Ionicons name="leaf" size={60} color={colors.primary} />

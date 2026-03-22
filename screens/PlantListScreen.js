@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
@@ -13,6 +12,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { supabase } from '../supabase';
@@ -47,7 +47,17 @@ function PlantImage({ uri, style, placeholderStyle }) {
   }, [uri]);
 
   if (resolved) {
-    return <Image source={{ uri: resolved }} style={style} />;
+    return (
+      <ExpoImage
+        source={{ uri: resolved }}
+        style={style}
+        contentFit="cover"
+        cachePolicy="disk"
+        transition={200}
+        placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
+        placeholderContentFit="cover"
+      />
+    );
   }
   return (
     <View style={placeholderStyle}>

@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   ActivityIndicator,
   Dimensions,
@@ -12,6 +11,7 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
+import { Image } from 'expo-image';
 import MapView, { Circle, Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
@@ -278,7 +278,15 @@ export default function DexDetailScreen({ route, navigation }) {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Hero Image (responsive) */}
       {species.image_url ? (
-        <Image source={{ uri: species.image_url }} style={styles.heroImage} />
+        <Image
+          source={{ uri: species.image_url }}
+          style={styles.heroImage}
+          contentFit="cover"
+          cachePolicy="disk"
+          transition={300}
+          placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
+          placeholderContentFit="cover"
+        />
       ) : (
         <View style={styles.heroPlaceholder}>
           <Ionicons name="leaf" size={80} color={colors.primary} />
@@ -452,7 +460,9 @@ export default function DexDetailScreen({ route, navigation }) {
                 <Image
                   source={{ uri: photo.image_url }}
                   style={styles.galleryImage}
-                  resizeMode="cover"
+                  contentFit="cover"
+                  cachePolicy="disk"
+                  transition={200}
                 />
                 <View style={styles.galleryDateOverlay}>
                   <Text style={styles.galleryDateText}>{formatGalleryDate(photo.created_at)}</Text>
@@ -514,7 +524,8 @@ export default function DexDetailScreen({ route, navigation }) {
               <Image
                 source={{ uri: selectedImage.image_url }}
                 style={styles.modalImage}
-                resizeMode="contain"
+                contentFit="contain"
+                cachePolicy="disk"
               />
             </View>
           )}
@@ -577,7 +588,6 @@ const styles = StyleSheet.create({
   heroImage: {
     width: '100%',
     height: HERO_HEIGHT,
-    resizeMode: 'cover',
     backgroundColor: colors.primarySurface,
   },
   heroPlaceholder: {

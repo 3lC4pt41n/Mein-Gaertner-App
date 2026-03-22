@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { safeLaunchCamera } from '../services/imagePickerHelper';
@@ -254,15 +255,17 @@ export default function AssistantScreen() {
           marginRight: spacing.sm,
         }}
       />
-      <View>
+      <View style={{ flex: 1, flexShrink: 1 }}>
         {item.image_url && (
-          <Image
+          <ExpoImage
             source={{ uri: item.image_url }}
             style={{ width: 150, height: 150, borderRadius: 10, marginBottom: spacing.xs }}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={200}
           />
         )}
-        <Text>{item.content}</Text>
+        <Text style={{ flexWrap: 'wrap' }}>{item.content}</Text>
         <Text style={{ fontSize: 10, color: colors.textTertiary }}>
           {item.sender === 'user' ? t('assistant.you') : GARDENER_NAME}
         </Text>
