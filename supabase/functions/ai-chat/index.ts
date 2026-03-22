@@ -1,10 +1,15 @@
 // Edge Function: Chat mit Ben (Pflanzen-Coach)
+// Hybrid: PlantNet API für Bildidentifikation + GPT-4o für Konversation
 // POST Body: { text?: string, image_url?: string, language?: string }
 // History wird server-seitig aus der DB geladen (nicht mehr vom Client gesendet)
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { callOpenAI } from '../_shared/openai.ts';
+import {
+  identifyPlantFromUrl,
+  formatPlantNetContext,
+} from '../_shared/plantnet.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -115,7 +120,8 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
 function buildSystemPrompt(
   languagePromptName: string,
   gardenContext: string,
-  memorySummary: string | null
+  memorySummary: string | null,
+  plantNetContext: string | null = null
 ): string {
   let prompt = `## ROLE
 You are "Ben", a smart, witty and charming plant coach. Expert in plants and gardening.
@@ -142,6 +148,13 @@ Playful but always respectful, friendly and encouraging.
 - When the user asks you to remind them, schedule something, or create a care plan, use these tools.
 - After creating a task, confirm what you created in a friendly message.
 - For recurring tasks, suggest reasonable intervals based on plant type and season.`;
+
+  if (plantNetContext) {
+    prompt += `\n\n## PLANT IDENTIFICATION (from the user's latest image)\n${plantNetContext}
+- Use this identification to inform your response about the plant in the image.
+- If the identification is confident (>50%), reference the plant by its name.
+- If uncertain, mention what it might be and ask the user for more details.`;
+  }
 
   if (memorySummary) {
     prompt += `\n\n## PREVIOUS CONVERSATION CONTEXT\n${memorySummary}`;
@@ -595,18 +608,26 @@ serve(async (req) => {
     }
 
     // Sprache (DB-Profil) + Garden Context + Memory + Plants parallel laden
-    const [userLang, gardenContext, memoryData, plantsData] = await Promise.all([
+    // Wenn ein Bild dabei ist, PlantNet parallel starten
+    const langCode = (language || 'de').split('-')[0];
+    const plantNetPromise = image_url
+      ? identifyPlantFromUrl(image_url, langCode)
+      : Promise.resolve(null);
+
+    const [userLang, gardenContext, memoryData, plantsData, plantNetResult] = await Promise.all([
       getUserLanguage(serviceClient, userId, language),
       loadGardenContext(serviceClient, userId),
       serviceClient.from('chat_memory').select('summary').eq('user_id', userId).maybeSingle(),
       serviceClient.from('plants').select('id, name').eq('user_id', userId),
+      plantNetPromise,
     ]);
 
     const finalLanguage = userLang;
     const languagePromptName = getLanguagePromptName(finalLanguage);
     const memorySummary = memoryData?.data?.summary || null;
     const userPlants = plantsData?.data || [];
-    const systemPrompt = buildSystemPrompt(languagePromptName, gardenContext, memorySummary);
+    const plantNetContext = formatPlantNetContext(plantNetResult);
+    const systemPrompt = buildSystemPrompt(languagePromptName, gardenContext, memorySummary, plantNetContext);
 
     // Token-Budget fuer History berechnen
     const systemTokens = estimateTokens(systemPrompt);
@@ -675,7 +696,11 @@ serve(async (req) => {
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { language: finalLanguage },
+      metadata: {
+        language: finalLanguage,
+        plantnet_used: !!plantNetContext,
+        plantnet_best_match: plantNetResult?.bestMatch || null,
+      },
     });
 
     // Summary Memory im Hintergrund aktualisieren (blockiert Response nicht)

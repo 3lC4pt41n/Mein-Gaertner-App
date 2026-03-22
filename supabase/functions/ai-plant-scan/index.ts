@@ -1,8 +1,13 @@
 // Edge Function: Pflanze erkennen (Foto → Name + Hinweis)
+// Hybrid-Ansatz: PlantNet API für Identifikation + GPT-4o für Pflegetipp
 // POST Body: { base64: string } (base64-kodiertes Bild)
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { callOpenAI } from '../_shared/openai.ts';
+import {
+  identifyPlantFromBase64,
+  formatPlantNetContext,
+} from '../_shared/plantnet.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -81,18 +86,40 @@ serve(async (req) => {
 
     const resolvedLanguage = await getUserLanguage(serviceClient, userId, language);
     const languagePromptName = getLanguagePromptName(resolvedLanguage);
+    const langCode = resolvedLanguage.split('-')[0] || 'de';
 
-    // OpenAI Call: Pflanze erkennen
-    let result;
-    try {
-      result = await callOpenAI({
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Identify the plant in this photo and return JSON in exactly this format:
+    // ─── Schritt 1: PlantNet für Identifikation (parallel starten) ────
+    const plantNetPromise = identifyPlantFromBase64(base64, langCode);
+
+    // ─── Schritt 2: PlantNet-Ergebnis abwarten ────
+    const plantNetResult = await plantNetPromise;
+    const plantNetContext = formatPlantNetContext(plantNetResult);
+
+    // ─── Schritt 3: GPT-4o mit PlantNet-Kontext für Pflegetipp ────
+    // Wenn PlantNet erfolgreich: GPT-4o bekommt die Identifikation als Kontext
+    // und muss nur noch den Pflegetipp generieren (günstiger, schneller, genauer).
+    // Wenn PlantNet fehlschlägt: GPT-4o übernimmt die komplette Identifikation (Fallback).
+    const hasPlantNet = !!plantNetContext;
+
+    const promptText = hasPlantNet
+      ? `A plant identification AI has analyzed this photo. Here are the results:
+
+${plantNetContext}
+
+Based on this identification AND the photo, return JSON in exactly this format:
+{
+  "name": "Botanical name (use the PlantNet result if confidence > 20%)",
+  "note": "One concise care tip sentence",
+  "plant_type": "category"
+}
+Rules:
+- Write the note in ${languagePromptName}.
+- Output one language only, no extra text.
+- Trust the PlantNet identification if confidence is reasonable (> 20%).
+- If the photo clearly shows something different from PlantNet's result, use your own judgment.
+- Classify plant_type into exactly one of: houseplant, succulent, flowering, tree, herb, wild, groundcover, other.
+- Choose the single best-fitting category.`
+      : `Identify the plant in this photo and return JSON in exactly this format:
 {
   "name": "Botanical name",
   "note": "One concise care tip sentence",
@@ -103,8 +130,16 @@ Rules:
 - Output one language only, no extra text.
 - If uncertain, still provide your best estimate.
 - Classify plant_type into exactly one of: houseplant, succulent, flowering, tree, herb, wild, groundcover, other.
-- Choose the single best-fitting category.`,
-              },
+- Choose the single best-fitting category.`;
+
+    let result;
+    try {
+      result = await callOpenAI({
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: promptText },
               {
                 type: 'image_url',
                 image_url: { url: `data:image/jpeg;base64,${base64}` },
@@ -129,7 +164,12 @@ Rules:
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { language: resolvedLanguage },
+      metadata: {
+        language: resolvedLanguage,
+        plantnet_used: hasPlantNet,
+        plantnet_best_match: plantNetResult?.bestMatch || null,
+        plantnet_confidence: plantNetResult?.results?.[0]?.score || null,
+      },
     });
 
     // Antwort parsen
