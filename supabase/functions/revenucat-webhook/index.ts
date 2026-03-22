@@ -7,13 +7,13 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 // Credit-Pakete (müssen mit RevenueCat Product IDs übereinstimmen)
 const PACKAGES: Record<string, { credits: number; type: string }> = {
   // Einmalkauf
-  credits_starter: { credits: 500, type: 'one_time' },
-  credits_standard: { credits: 1500, type: 'one_time' },
-  credits_pro: { credits: 5000, type: 'one_time' },
+  credits_starter: { credits: 150, type: 'one_time' },
+  credits_standard: { credits: 450, type: 'one_time' },
+  credits_pro: { credits: 1000, type: 'one_time' },
   // Abo (monatliche Credits)
-  sub_hobby: { credits: 300, type: 'subscription_renewal' },
-  sub_gaertner: { credits: 1000, type: 'subscription_renewal' },
-  sub_profi: { credits: 3000, type: 'subscription_renewal' },
+  sub_hobby: { credits: 200, type: 'subscription_renewal' },
+  sub_gaertner: { credits: 600, type: 'subscription_renewal' },
+  sub_profi: { credits: 1200, type: 'subscription_renewal' },
 };
 
 // Abo-Plan Mapping
