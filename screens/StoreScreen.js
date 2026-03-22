@@ -123,9 +123,9 @@ export default function StoreScreen({ isAdmin }) {
           ]);
           return;
         }
-        rcPackage = offerings.current.availablePackages.find(
-          (p) => p.product.identifier === pkg.id
-        );
+        rcPackage =
+          offerings.current.availablePackages.find((p) => p.identifier === pkg.id) ||
+          offerings.current.availablePackages.find((p) => p.product.identifier === pkg.id);
       }
 
       if (!rcPackage) {

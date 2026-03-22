@@ -117,17 +117,24 @@ export async function getPackagesWithLivePrices() {
   const offerings = await getOfferings();
   const available = offerings?.current?.availablePackages || [];
 
-  // Build lookup: product identifier → priceString
+  // Build lookup: package identifier → priceString
+  // On Android, product.identifier for subscriptions includes the base plan
+  // (e.g. "sub_hobby:sub-hobby-monthly"), so we match by RC package identifier
+  // which always equals our custom package ID (e.g. "sub_hobby").
   const priceMap = {};
   for (const pkg of available) {
-    priceMap[pkg.product.identifier] = pkg.product.priceString;
+    priceMap[pkg.identifier] = pkg.product.priceString;
+    priceMap[pkg.product.identifier] = pkg.product.priceString; // fallback
   }
 
   const mapPrices = (packages) =>
     packages.map((p) => ({
       ...p,
       price: priceMap[p.id] || p.price, // live price or hardcoded fallback
-      _rcPackage: available.find((rc) => rc.product.identifier === p.id) || null,
+      _rcPackage:
+        available.find((rc) => rc.identifier === p.id) ||
+        available.find((rc) => rc.product.identifier === p.id) ||
+        null,
     }));
 
   return {
