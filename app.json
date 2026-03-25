@@ -28,7 +28,14 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Wird benötigt, um Pflanzen zu fotografieren und per KI zu erkennen.",
-        "NSLocationWhenInUseUsageDescription": "Wird für Wetter-Daten und die Weltkarte der Pflanzenfunde verwendet."
+        "NSLocationWhenInUseUsageDescription": "Wird für Wetter-Daten und die Weltkarte der Pflanzenfunde verwendet.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.628599136159-he3ol9eiu12221033qgqrukvjgra9u23"
+            ]
+          }
+        ]
       }
     },
     "android": {
