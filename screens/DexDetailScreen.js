@@ -47,6 +47,15 @@ const DEFAULT_SPECIES_REGION = {
 // builds (whose manifest doesn't include the flag yet) still renders the map.
 const MAPS_KEY_AVAILABLE = Constants.expoConfig?.extra?.googleMapsEnabled ?? true;
 
+function normalizeName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
 function heatColor(count) {
   if (count >= 15) return 'rgba(244, 67, 54, 0.50)';
   if (count >= 8) return 'rgba(255, 87, 34, 0.45)';
@@ -273,6 +282,8 @@ export default function DexDetailScreen({ route, navigation }) {
   }
 
   const displayName = formatDisplayName(species.canonical_name);
+  const localName = typeof species.local_name === 'string' ? species.local_name.trim() : '';
+  const showLocalName = localName && normalizeName(localName) !== normalizeName(displayName);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -295,7 +306,12 @@ export default function DexDetailScreen({ route, navigation }) {
 
       {/* Name + Actions Row */}
       <View style={styles.nameRow}>
-        <Text style={styles.speciesName}>{displayName}</Text>
+        <View style={styles.nameBlock}>
+          {showLocalName ? <Text style={styles.localName}>{localName}</Text> : null}
+          <Text style={[styles.speciesName, showLocalName && styles.speciesNameSecondary]}>
+            {displayName}
+          </Text>
+        </View>
         <TouchableOpacity
           onPress={handleShare}
           style={styles.shareButton}
@@ -604,11 +620,25 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     gap: spacing.sm,
   },
-  speciesName: {
+  nameBlock: {
     flex: 1,
+    gap: 2,
+  },
+  localName: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  speciesName: {
     fontSize: 24,
     fontWeight: '700',
     color: colors.textPrimary,
+  },
+  speciesNameSecondary: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    fontStyle: 'italic',
   },
   shareButton: {
     padding: spacing.sm,

@@ -11,6 +11,15 @@ import { formatDisplayName } from '../services/discoveryService';
 // no manual timeout needed — the library handles retries & caching internally.
 const BLURHASH_PLACEHOLDER = 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.';
 
+function normalizeName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
 /**
  * DexCard — A single species card in the Plant Dex grid.
  *
@@ -25,6 +34,9 @@ const DexCard = memo(({ species, discovered, isFirstDiscoverer, slotNumber, onPr
   };
 
   const displayName = formatDisplayName(species.canonical_name);
+  const localName = typeof species.local_name === 'string' ? species.local_name.trim() : '';
+  const showLocalName = localName && normalizeName(localName) !== normalizeName(displayName);
+  const accessibilityName = showLocalName ? `${localName}, ${displayName}` : displayName;
 
   return (
     <TouchableOpacity
@@ -34,7 +46,7 @@ const DexCard = memo(({ species, discovered, isFirstDiscoverer, slotNumber, onPr
       accessibilityRole="button"
       accessibilityLabel={
         discovered
-          ? `${displayName}, ${isFirstDiscoverer ? t('dex.firstDiscoverer') : t('dex.discoverers')}`
+          ? `${accessibilityName}, ${isFirstDiscoverer ? t('dex.firstDiscoverer') : t('dex.discoverers')}`
           : t('dex.notDiscovered')
       }
     >
@@ -72,10 +84,20 @@ const DexCard = memo(({ species, discovered, isFirstDiscoverer, slotNumber, onPr
             </View>
           )}
 
-          {/* Species Name (properly formatted) */}
-          <Text style={styles.speciesName} numberOfLines={2}>
-            {displayName}
-          </Text>
+          {/* Species Name */}
+          <View style={styles.nameBlock}>
+            {showLocalName ? (
+              <Text style={styles.localName} numberOfLines={2}>
+                {localName}
+              </Text>
+            ) : null}
+            <Text
+              style={[styles.speciesName, showLocalName && styles.speciesNameSecondary]}
+              numberOfLines={2}
+            >
+              {displayName}
+            </Text>
+          </View>
 
           {/* Discoverers Count */}
           <View style={styles.discoverersBadge}>
@@ -165,15 +187,31 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     padding: spacing.xs,
   },
+  nameBlock: {
+    minHeight: 52,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
+    gap: 2,
+  },
+  localName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary,
+    textAlign: 'center',
+  },
   speciesName: {
     fontSize: 13,
     fontWeight: '600',
     color: colors.textPrimary,
-    paddingHorizontal: spacing.sm,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xs,
     textAlign: 'center',
-    minHeight: 36,
+  },
+  speciesNameSecondary: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    fontStyle: 'italic',
   },
 
   /* Undiscovered State */
@@ -215,6 +253,7 @@ DexCard.propTypes = {
   species: PropTypes.shape({
     id: PropTypes.string,
     canonical_name: PropTypes.string,
+    local_name: PropTypes.string,
     image_url: PropTypes.string,
     total_discoverers: PropTypes.number,
   }).isRequired,

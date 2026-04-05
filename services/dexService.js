@@ -1,11 +1,95 @@
 import { supabase } from '../supabase';
+import i18n from '../i18n';
 import { getPlantImageUrl, getPlantImageUrls } from './uploadService';
+import { normalizeLanguage } from './languageService';
+
+const LOCAL_NAME_KEYS = {
+  de: 'Deutscher Name',
+  en: 'Common Name',
+  fr: 'Nom commun',
+  it: 'Nome comune',
+  es: 'Nombre común',
+  ru: 'Народное название',
+  tr: 'Yaygın Ad',
+};
+
+const EMPTY_DETAIL_VALUES = new Set([
+  '-',
+  '—',
+  'n/a',
+  'na',
+  'unknown',
+  'unbekannt',
+  'keine angabe',
+  'nicht bekannt',
+]);
 
 function isRenderableImageUrl(value) {
   return (
     typeof value === 'string' &&
     (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:image/'))
   );
+}
+
+function normalizeName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function cleanDetailValue(value) {
+  if (typeof value !== 'string') return null;
+  const cleaned = value.trim();
+  if (!cleaned || EMPTY_DETAIL_VALUES.has(cleaned.toLowerCase())) return null;
+  return cleaned;
+}
+
+export function extractLocalSpeciesName(details, language = i18n.locale) {
+  if (!details || typeof details !== 'object') return null;
+
+  const overview = details.overview;
+  if (!overview || typeof overview !== 'object') return null;
+
+  const normalizedLanguage = normalizeLanguage(language);
+  const preferredKey = LOCAL_NAME_KEYS[normalizedLanguage];
+  const candidateKeys = [
+    preferredKey,
+    ...Object.values(LOCAL_NAME_KEYS).filter((key) => key !== preferredKey),
+  ].filter(Boolean);
+
+  for (const key of candidateKeys) {
+    const value = cleanDetailValue(overview[key]);
+    if (value) return value;
+  }
+
+  return null;
+}
+
+async function fetchLocalNamesForSpecies(speciesIds, language = i18n.locale) {
+  const uniqueSpeciesIds = [...new Set((speciesIds || []).filter(Boolean))];
+  if (!uniqueSpeciesIds.length) return {};
+
+  try {
+    const normalizedLanguage = normalizeLanguage(language);
+    const { data, error } = await supabase
+      .from('species_details')
+      .select('species_id, details')
+      .in('species_id', uniqueSpeciesIds)
+      .eq('language', normalizedLanguage);
+
+    if (error) return {};
+
+    return (data || []).reduce((acc, row) => {
+      const localName = extractLocalSpeciesName(row.details, normalizedLanguage);
+      if (localName) acc[row.species_id] = localName;
+      return acc;
+    }, {});
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -88,7 +172,20 @@ export async function fetchDex(userId, filter = 'all') {
     result = result.filter((s) => s.isFirstDiscoverer);
   }
 
-  return result;
+  const localNamesBySpecies = await fetchLocalNamesForSpecies(
+    result.filter((species) => species.discovered).map((species) => species.id)
+  );
+
+  return result.map((species) => {
+    const localName = localNamesBySpecies[species.id] || null;
+    return {
+      ...species,
+      local_name:
+        localName && normalizeName(localName) !== normalizeName(species.canonical_name)
+          ? localName
+          : null,
+    };
+  });
 }
 
 /**
@@ -223,6 +320,10 @@ export async function fetchSpeciesDetail(speciesId) {
     .single();
 
   if (error) throw error;
+  const localNamesBySpecies = await fetchLocalNamesForSpecies([speciesId]);
+  const localName = localNamesBySpecies[speciesId] || null;
+  data.local_name =
+    localName && normalizeName(localName) !== normalizeName(data.canonical_name) ? localName : null;
   if (data?.image_url) {
     data.image_url = (await getPlantImageUrl(data.image_url)) || data.image_url;
   }
