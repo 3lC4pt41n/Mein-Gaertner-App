@@ -16,6 +16,11 @@ Scan plants with your camera, let AI identify them, build your species collectio
 [![TypeScript](https://img.shields.io/badge/TypeScript-JavaScript-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
+## Core Documents
+
+- [VISION.md](VISION.md) — product north star, user promise, and strategic decision filter
+- [ARCHITECTURE.md](ARCHITECTURE.md) — system context, runtime flows, data model, and delivery pipeline
+
 ## Features
 
 - **AI Plant Scanner** — Snap a photo and GPT-4o identifies the plant automatically
@@ -33,24 +38,24 @@ Scan plants with your camera, let AI identify them, build your species collectio
 
 ## Tech Stack
 
-| Component     | Technology                                           |
-| ------------- | ---------------------------------------------------- |
-| Framework     | React Native 0.81 + Expo SDK 54                      |
-| Language      | JavaScript (JSX) / TypeScript (Edge Functions)       |
-| Backend       | Supabase (PostgreSQL, Auth, Storage, Edge Functions) |
+| Component     | Technology                                                |
+| ------------- | --------------------------------------------------------- |
+| Framework     | React Native 0.81 + Expo SDK 54                           |
+| Language      | JavaScript (JSX) / TypeScript (Edge Functions)            |
+| Backend       | Supabase (PostgreSQL, Auth, Storage, Edge Functions)      |
 | AI            | OpenAI GPT-4o + DALL-E 2 (server-side via Edge Functions) |
-| Payments      | RevenueCat (iOS + Android)                           |
-| Weather       | OpenWeather API                                      |
-| Navigation    | React Navigation 6                                   |
-| i18n          | i18n-js (6 languages)                                |
-| Notifications | expo-notifications                                   |
-| Location      | expo-location                                        |
-| Images        | expo-image (disk + memory cache, blurhash)           |
-| Maps          | react-native-maps (Google Maps)                      |
-| Tests         | Jest 29 + React Testing Library                      |
-| Crash Monitor | Sentry (DSGVO-compliant, PII-filtered)               |
-| Linting       | ESLint + Prettier                                    |
-| CI/CD         | GitHub Actions + EAS Build/Submit                    |
+| Payments      | RevenueCat (iOS + Android)                                |
+| Weather       | OpenWeather API                                           |
+| Navigation    | React Navigation 6                                        |
+| i18n          | i18n-js (6 languages)                                     |
+| Notifications | expo-notifications                                        |
+| Location      | expo-location                                             |
+| Images        | expo-image (disk + memory cache, blurhash)                |
+| Maps          | react-native-maps (Google Maps)                           |
+| Tests         | Jest 29 + React Testing Library                           |
+| Crash Monitor | Sentry (DSGVO-compliant, PII-filtered)                    |
+| Linting       | ESLint + Prettier                                         |
+| CI/CD         | GitHub Actions + EAS Build/Submit                         |
 
 ## Quick Start
 

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FloraScout – Dein KI-Pflanzenexperte für den Garten</title>
+<meta name="description" content="FloraScout erkennt Pflanzen, diagnostiziert Krankheiten und gibt dir personalisierte Pflegetipps – alles mit KI. Jetzt kostenlos laden.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --green-primary: #5a7d5a;
+  --green-dark: #3d5c3d;
+  --green-light: #e8f0e8;
+  --green-badge: #eef4ee;
+  --green-badge-text: #4a6b4a;
+  --bg: #f7f3ee;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --text-muted: #9a9a9a;
+  --border: #e8e4df;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-lg: 24px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03);
+  --shadow-card-hover: 0 8px 30px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+  --max-width: 1140px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(247, 243, 238, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  padding: 0 24px;
+}
+
+.nav-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.nav-logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--green-primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+}
+
+.nav-logo span {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.3px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: var(--text-primary);
+}
+
+.nav-cta {
+  background: var(--green-primary);
+  color: white !important;
+  padding: 9px 20px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.nav-cta:hover {
+  background: var(--green-dark) !important;
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* HERO */
+.hero {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 100px 24px 80px;
+  text-align: center;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: var(--green-badge);
+  color: var(--green-badge-text);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 28px;
+  letter-spacing: 0.2px;
+}
+
+.hero h1 {
+  font-size: clamp(36px, 5.5vw, 60px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.hero h1 .highlight {
+  color: var(--green-primary);
+}
+
+.hero-sub {
+  font-size: clamp(16px, 2vw, 18px);
+  color: var(--text-secondary);
+  max-width: 560px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green-primary);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--green-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(90, 125, 90, 0.3);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  border-color: #ccc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* HERO PHONE MOCKUP */
+.hero-visual {
+  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+}
+
+.phone-mockup {
+  width: 280px;
+  height: 560px;
+  background: linear-gradient(145deg, #2d4a2d, #4a7a4a, #6b9f6b);
+  border-radius: 36px;
+  padding: 12px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.1) inset;
+  position: relative;
+  overflow: hidden;
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: #f0f8f0;
+  border-radius: 26px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-header {
+  background: var(--green-primary);
+  color: white;
+  padding: 40px 20px 16px;
+  text-align: left;
+}
+
+.phone-header small {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.phone-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.phone-content {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plant-card {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.plant-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.plant-icon.tomato { background: #fef2f2; }
+.plant-icon.basil { background: #f0fdf4; }
+.plant-icon.rose { background: #fdf2f8; }
+
+.plant-info h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.plant-info p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.plant-score {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-primary);
+  background: var(--green-light);
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+/* SECTIONS */
+.section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.section-header h2 {
+  font-size: clamp(26px, 3.5vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  margin-bottom: 12px;
+}
+
+.section-header p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* STEPS */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.step-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 36px 28px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+
+.step-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  background: var(--green-light);
+  color: var(--green-primary);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.step-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+
+.step-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* FEATURES */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+
+.feature-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
+}
+
+.feature-emoji {
+  font-size: 28px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.feature-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.2px;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* TESTIMONIAL / SOCIAL PROOF */
+.social-proof {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 48px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.stars {
+  font-size: 24px;
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+}
+
+.social-proof blockquote {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.7;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.social-proof cite {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--green-primary);
+  letter-spacing: -1px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* CTA */
+.cta-section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.cta-box {
+  background: var(--green-primary);
+  border-radius: var(--radius-lg);
+  padding: 64px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+
+.cta-box::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: -40px;
+  width: 150px;
+  height: 150px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+}
+
+.cta-box h2 {
+  font-size: clamp(24px, 3.5vw, 32px);
+  font-weight: 800;
+  color: white;
+  margin-bottom: 14px;
+  letter-spacing: -0.6px;
+  position: relative;
+  z-index: 1;
+}
+
+.cta-box p {
+  font-size: 16px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  color: var(--green-dark);
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.btn-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.25);
+  transition: background 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+
+.btn-cta-secondary:hover {
+  background: rgba(255,255,255,0.25);
+  transform: translateY(-2px);
+}
+
+/* FOOTER */
+footer {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 24px 24px 40px;
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--text-secondary);
+}
+
+.footer-copy {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate {
+  opacity: 0;
+  animation: fadeUp 0.7s ease-out forwards;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .mobile-menu-btn { display: block; }
+
+  .hero { padding: 60px 20px 60px; }
+
+  .steps-grid,
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .stats-row {
+    gap: 24px;
+  }
+
+  .cta-box {
+    padding: 40px 24px;
+  }
+
+  .phone-mockup {
+    width: 240px;
+    height: 480px;
+  }
+
+  .social-proof {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-buttons,
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-cta-primary,
+  .btn-cta-secondary {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+  }
+
+  .stats-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">🌿</div>
+      <span>FloraScout</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#so-funktionierts">So funktioniert's</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#download" class="nav-cta">App laden</a></li>
+    </ul>
+    <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="animate">
+    <span class="hero-badge">KI-Pflanzenexperte – jetzt in der Beta</span>
+  </div>
+  <h1 class="animate delay-1">
+    Dein Garten verdient<br>
+    einen <span class="highlight">FloraScout.</span>
+  </h1>
+  <p class="hero-sub animate delay-2">
+    Scanne Pflanzen, erkenne Krankheiten und erhalte individuelle
+    Pflegetipps – alles mit KI. Dein digitaler Gärtner, immer in der Tasche.
+  </p>
+  <div class="hero-buttons animate delay-3">
+    <a href="#" class="btn-primary"> App Store</a>
+    <a href="#" class="btn-secondary">▶ Google Play</a>
+  </div>
+
+  <!-- Phone Mockup -->
+  <div class="hero-visual animate delay-4">
+    <div class="phone-mockup">
+      <div class="phone-screen">
+        <div class="phone-header">
+          <small>Guten Morgen, Tim 👋</small>
+          <h3>Dein Garten</h3>
+        </div>
+        <div class="phone-content">
+          <div class="plant-card">
+            <div class="plant-icon tomato">🍅</div>
+            <div class="plant-info">
+              <h4>Tomate 'San Marzano'</h4>
+              <p>Braucht Wasser heute</p>
+            </div>
+            <span class="plant-score">92%</span>
+          </div>
+          <div class="plant-card">
+            <div class="plant-icon basil">🌿</div>
+            <div class="plant-info">
+              <h4>Basilikum</h4>
+              <p>Alles bestens!</p>
+            </div>
+            <span class="plant-score">98%</span>
+          </div>
+          <div class="plant-card">
+            <div class="plant-icon rose">🌹</div>
+            <div class="plant-info">
+              <h4>Kletterrose</h4>
+              <p>Blattläuse erkannt</p>
+            </div>
+            <span class="plant-score" style="color:#dc6b4a;background:#fef2f2;">67%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SO FUNKTIONIERT'S -->
+<section class="section" id="so-funktionierts">
+  <div class="section-header">
+    <h2>So funktioniert's</h2>
+    <p>Drei einfache Schritte zum grünen Daumen</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <h3>Pflanze scannen</h3>
+      <p>Halte dein Handy auf eine Pflanze – FloraScout erkennt sie in Sekunden aus über 30.000 Arten.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">2</div>
+      <h3>Diagnose erhalten</h3>
+      <p>Die KI analysiert den Zustand deiner Pflanze und erkennt Krankheiten, Schädlinge und Nährstoffmangel.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">3</div>
+      <h3>Richtig pflegen</h3>
+      <p>Bekomme personalisierte Pflegetipps basierend auf Standort, Wetter und Jahreszeit.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-header">
+    <h2>Was FloraScout kann</h2>
+    <p>Entwickelt für echte Gärtner – mit KI und Herz</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-emoji">📸</span>
+      <h3>Sofortige Erkennung</h3>
+      <p>Fotografiere jede Pflanze und erhalte in Sekunden den Namen, die Art und alle Pflegehinweise.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-emoji">🔬</span>
+      <h3>Krankheits-Diagnose</h3>
+      <p>KI-gestützte Analyse erkennt über 200 Pflanzenkrankheiten und Schädlinge frühzeitig.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-emoji">🌦️</span>
+      <h3>Wetter-Tipps</h3>
+      <p>Automatische Pflegehinweise basierend auf dem lokalen Wetter und deinem Standort.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-emoji">💧</span>
+      <h3>Gieß-Erinnerungen</h3>
+      <p>Vergiss nie wieder das Gießen – smarte Erinnerungen passend zu jeder Pflanze.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-emoji">📊</span>
+      <h3>Gesundheits-Score</h3>
+      <p>Verfolge die Gesundheit deiner Pflanzen mit einem einfachen Score-System über die Zeit.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-emoji">🌍</span>
+      <h3>30.000+ Arten</h3>
+      <p>Die umfangreichste Pflanzendatenbank – von der Zimmerpflanze bis zum Obstbaum.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="section">
+  <div class="social-proof">
+    <div class="stars">⭐⭐⭐⭐⭐</div>
+    <blockquote>
+      „FloraScout hat meinen Garten gerettet. Die Krankheitserkennung
+      ist unglaublich präzise – besser als jedes Gartenbuch."
+    </blockquote>
+    <cite>– Lena M., Hobbygärtnerin aus Berlin</cite>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-number">50K+</div>
+        <div class="stat-label">Aktive Gärtner</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">4.8</div>
+        <div class="stat-label">App Store Bewertung</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">2M+</div>
+        <div class="stat-label">Pflanzen erkannt</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="download">
+  <div class="cta-box">
+    <h2>Bereit für einen grüneren Garten?</h2>
+    <p>Lade FloraScout kostenlos herunter und entdecke, was deine Pflanzen brauchen.</p>
+    <div class="cta-buttons">
+      <a href="#" class="btn-cta-primary"> App Store</a>
+      <a href="#" class="btn-cta-secondary">▶ Google Play</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a href="#">Datenschutz</a>
+    <a href="#">AGB</a>
+    <a href="#">Impressum</a>
+    <a href="#">Kontakt</a>
+  </div>
+  <p class="footer-copy">© 2026 FloraScout · Tim Ergenthaler, Berlin</p>
+</footer>
+
+<!-- Scroll Animation Observer -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Intersection Observer for scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.step-card, .feature-card, .social-proof, .cta-box').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+
+  // Mobile menu toggle
+  const menuBtn = document.querySelector('.mobile-menu-btn');
+  const navLinks = document.querySelector('.nav-links');
+  if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+      navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+      navLinks.style.flexDirection = 'column';
+      navLinks.style.position = 'absolute';
+      navLinks.style.top = '64px';
+      navLinks.style.left = '0';
+      navLinks.style.right = '0';
+      navLinks.style.background = 'rgba(247,243,238,0.98)';
+      navLinks.style.padding = '20px';
+      navLinks.style.gap = '16px';
+      navLinks.style.alignItems = 'center';
+      navLinks.style.borderBottom = '1px solid var(--border)';
+    });
+  }
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>
