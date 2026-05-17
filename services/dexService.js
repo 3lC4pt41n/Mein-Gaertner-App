@@ -153,8 +153,7 @@ export async function fetchDex(userId, filter = 'all') {
   // canonical_name (see .order('canonical_name') above). If a new species is added
   // whose name sorts earlier alphabetically, all subsequent dex numbers shift.
   // This is acceptable for the MVP but means dex numbers are NOT permanent IDs.
-  // For stable IDs, a `species.dex_number` column in the DB is needed
-  // (see HANDOFF.md → "Bekannte Tech Debt").
+  // For stable IDs, a dedicated `species.dex_number` column in the DB is needed.
   let result = (allSpecies || []).map((species, idx) => ({
     ...species,
     image_url:

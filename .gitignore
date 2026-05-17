@@ -12,6 +12,18 @@ dist/
 coverage/
 .claude/
 supabase/.temp/
+
+# Local-only workspace (private business data, credentials, local notes)
+_local/
+
+# Office lock files (should never be committed)
+.~lock.*#
+~$*.xlsx
+~$*.docx
+
+# Apple AuthKeys — never in repo
+AuthKey_*.p8
+
 AUDIT_*.md
 ABNAHME_*.md
 ACTION_PLAN_*.md

@@ -12,12 +12,12 @@
 
 Die App macht an **4 Stellen** LLM-Calls über Supabase Edge Functions:
 
-| # | Edge Function | Trigger (UI) | Service-Methode | Kosten | Modell |
-|---|---|---|---|---|---|
-| 1 | `ai-plant-scan` | AddPlantScreen → Kamera | `aiService.recognizePlant()` | 12 Credits | gpt-4o (Vision) |
-| 2 | `ai-plant-details` | AddPlantScreen → "Details generieren" ODER PlantDetailScreen → "Details generieren" | `aiService.generatePlantDetails()` | 15 Credits | gpt-4o |
-| 3 | `ai-healthcheck` | AddPlantScreen / PlantDetailScreen → "Healthcheck" | `aiService.performHealthcheck()` | 8 Credits | gpt-4o (Vision) |
-| 4 | `ai-chat` | AssistantScreen → Chat mit "Ben" | `aiService.chatWithBen()` | 3 Credits | gpt-4o |
+| #   | Edge Function      | Trigger (UI)                                                                        | Service-Methode                    | Kosten     | Modell          |
+| --- | ------------------ | ----------------------------------------------------------------------------------- | ---------------------------------- | ---------- | --------------- |
+| 1   | `ai-plant-scan`    | AddPlantScreen → Kamera                                                             | `aiService.recognizePlant()`       | 12 Credits | gpt-4o (Vision) |
+| 2   | `ai-plant-details` | AddPlantScreen → "Details generieren" ODER PlantDetailScreen → "Details generieren" | `aiService.generatePlantDetails()` | 15 Credits | gpt-4o          |
+| 3   | `ai-healthcheck`   | AddPlantScreen / PlantDetailScreen → "Healthcheck"                                  | `aiService.performHealthcheck()`   | 8 Credits  | gpt-4o (Vision) |
+| 4   | `ai-chat`          | AssistantScreen → Chat mit "Ben"                                                    | `aiService.chatWithBen()`          | 3 Credits  | gpt-4o          |
 
 ### 1.2 Der kritische Pfad: `ai-plant-details`
 
@@ -64,25 +64,26 @@ OpenAI: 100 × ~500-600 Tokens Output = ~50.000-60.000 Tokens
 ```
 
 **Wichtig:** Es existiert BEREITS eine `species`-Tabelle mit `description` und `care_summary` Feldern – diese werden aber **nicht** mit den generierten Details befüllt. Die species-Tabelle hat nur:
+
 - `canonical_name` (beim Erstentdecken gesetzt)
 - `description` → leer / manuell
 - `care_summary` → leer JSONB `{}`
 
 ### 1.4 Datenklassifikation: Universell vs. User-spezifisch
 
-| Datenfeld | Scope | Aktueller Speicherort | Sollte sein |
-|---|---|---|---|
-| Botanischer Name, Familie, Herkunft | **Universell** (Species-Level) | `plants.details.overview` | `species.details_cache` |
-| Lebensform, Größe, Blütezeit | **Universell** | `plants.details.overview` | `species.details_cache` |
-| Licht, Temperatur, Gießen, Düngen | **Universell** | `plants.details.care` | `species.details_cache` |
-| Giftigkeit, Vermehrung, Schädlinge | **Universell** | `plants.details.extras` | `species.details_cache` |
-| Fun Fact / Kultur | **Universell** | `plants.details.extras` | `species.details_cache` |
-| Pflanzen-Foto | **User-spezifisch** | `plants.image_url` | bleibt |
-| Standort / Zone | **User-spezifisch** | `plants.zone_id` | bleibt |
-| Nickname / Benutzername | **User-spezifisch** | `plants.name` (editierbar) | bleibt |
-| Persönliche Notiz | **User-spezifisch** | `plants.note` | bleibt |
-| Healthcheck-Ergebnisse | **User-spezifisch** | `plant_healthchecks` | bleibt |
-| Tagebuch-Einträge | **User-spezifisch** | `plant_diary` | bleibt |
+| Datenfeld                           | Scope                          | Aktueller Speicherort      | Sollte sein             |
+| ----------------------------------- | ------------------------------ | -------------------------- | ----------------------- |
+| Botanischer Name, Familie, Herkunft | **Universell** (Species-Level) | `plants.details.overview`  | `species.details_cache` |
+| Lebensform, Größe, Blütezeit        | **Universell**                 | `plants.details.overview`  | `species.details_cache` |
+| Licht, Temperatur, Gießen, Düngen   | **Universell**                 | `plants.details.care`      | `species.details_cache` |
+| Giftigkeit, Vermehrung, Schädlinge  | **Universell**                 | `plants.details.extras`    | `species.details_cache` |
+| Fun Fact / Kultur                   | **Universell**                 | `plants.details.extras`    | `species.details_cache` |
+| Pflanzen-Foto                       | **User-spezifisch**            | `plants.image_url`         | bleibt                  |
+| Standort / Zone                     | **User-spezifisch**            | `plants.zone_id`           | bleibt                  |
+| Nickname / Benutzername             | **User-spezifisch**            | `plants.name` (editierbar) | bleibt                  |
+| Persönliche Notiz                   | **User-spezifisch**            | `plants.note`              | bleibt                  |
+| Healthcheck-Ergebnisse              | **User-spezifisch**            | `plant_healthchecks`       | bleibt                  |
+| Tagebuch-Einträge                   | **User-spezifisch**            | `plant_diary`              | bleibt                  |
 
 **Erkenntnis:** ~95% der `plants.details` JSON-Felder sind universell und identisch für jede Monstera, unabhängig vom User.
 
@@ -245,34 +246,36 @@ WHERE LOWER(TRIM(p.name)) = s.canonical_name
 ### 3.1 Credit-Einsparungen
 
 **Annahmen (konservativ):**
+
 - 500 aktive User
 - Durchschnittlich 4 Pflanzen pro User = 2.000 Plant-Instanzen
 - 300 unique Species im Dex
 - 80% der User generieren Details für ihre Pflanzen
 - Durchschnittlich 6,7 User pro Species (2.000 / 300)
 
-| Metrik | IST (On-Demand) | SOLL (Zentraler Dex) | Einsparung |
-|---|---|---|---|
-| Detail-Generierungen | 1.600 Calls (80% von 2.000) | 300 Calls (1x pro Species) | **1.300 Calls (−81%)** |
-| Credit-Verbrauch | 1.600 × 15 = **24.000 Credits** | 300 × 15 = **4.500 Credits** | **19.500 Credits (−81%)** |
-| OpenAI-Tokens (Output) | ~960.000 Tokens | ~180.000 Tokens | **780.000 Tokens** |
-| OpenAI-Kosten (Output @ $10/1M) | ~$9,60 | ~$1,80 | **$7,80 (−81%)** |
-| OpenAI-Kosten (Input @ $2.50/1M) | ~$2,00 | ~$0,38 | **$1,62** |
+| Metrik                           | IST (On-Demand)                 | SOLL (Zentraler Dex)         | Einsparung                |
+| -------------------------------- | ------------------------------- | ---------------------------- | ------------------------- |
+| Detail-Generierungen             | 1.600 Calls (80% von 2.000)     | 300 Calls (1x pro Species)   | **1.300 Calls (−81%)**    |
+| Credit-Verbrauch                 | 1.600 × 15 = **24.000 Credits** | 300 × 15 = **4.500 Credits** | **19.500 Credits (−81%)** |
+| OpenAI-Tokens (Output)           | ~960.000 Tokens                 | ~180.000 Tokens              | **780.000 Tokens**        |
+| OpenAI-Kosten (Output @ $10/1M)  | ~$9,60                          | ~$1,80                       | **$7,80 (−81%)**          |
+| OpenAI-Kosten (Input @ $2.50/1M) | ~$2,00                          | ~$0,38                       | **$1,62**                 |
 
 **Bei Wachstum auf 5.000 User:**
+
 - IST: 16.000 × 15 = **240.000 Credits**, ~$96 OpenAI-Kosten
 - SOLL: 500 × 15 = **7.500 Credits**, ~$3 OpenAI-Kosten (Species-Katalog wächst langsam)
 - **Einsparung: 97% der LLM-Kosten für Plant Details**
 
 ### 3.2 Latenz-Verbesserung
 
-| Aktion | IST (Latenz) | SOLL (Latenz) | Verbesserung |
-|---|---|---|---|
-| Pflanze scannen | ~3-5s (LLM Vision) | ~3-5s (LLM Vision) | Keine Änderung |
-| Details anzeigen (erstmals) | ~4-8s (LLM-Call + Parse) | ~50-100ms (DB-Read) | **40-160x schneller** |
-| Details anzeigen (Species bereits im Dex) | ~4-8s (erneuter LLM-Call) | **Sofort** (0ms, cached) | **∞ schneller** |
-| PlantDexScreen laden | ~200ms (nur DB) | ~200ms (mit Details!) | Details jetzt inkl. |
-| DexDetailScreen | ~100ms (species nur) | ~100ms (mit vollen Details) | Mehr Content, gleiche Speed |
+| Aktion                                    | IST (Latenz)              | SOLL (Latenz)               | Verbesserung                |
+| ----------------------------------------- | ------------------------- | --------------------------- | --------------------------- |
+| Pflanze scannen                           | ~3-5s (LLM Vision)        | ~3-5s (LLM Vision)          | Keine Änderung              |
+| Details anzeigen (erstmals)               | ~4-8s (LLM-Call + Parse)  | ~50-100ms (DB-Read)         | **40-160x schneller**       |
+| Details anzeigen (Species bereits im Dex) | ~4-8s (erneuter LLM-Call) | **Sofort** (0ms, cached)    | **∞ schneller**             |
+| PlantDexScreen laden                      | ~200ms (nur DB)           | ~200ms (mit Details!)       | Details jetzt inkl.         |
+| DexDetailScreen                           | ~100ms (species nur)      | ~100ms (mit vollen Details) | Mehr Content, gleiche Speed |
 
 ### 3.3 Nicht-monetäre Vorteile
 
@@ -353,13 +356,13 @@ sequenceDiagram
 
 **Konkrete UX-Gewinne:**
 
-| Vorher | Nachher | Psychologischer Effekt |
-|---|---|---|
-| Leerer Pflanzensteckbrief bis User 15 Cr zahlt | Voller Steckbrief sofort nach Scan | **Sofortige Belohnung** – Dopamin beim Sammeln |
-| "Details generieren" Button als Paywall | Details sind Teil des Dex (inklusiv) | **Kein Verlustangst-Moment** |
-| 4-8s Wartezeit bei Details | 0ms – bereits im Cache | **Flow-Zustand** bleibt erhalten |
-| Leere DexDetailScreen | Vollständige Artenbeschreibung | **Sammler-Motivation** steigt |
-| Inkonsistente Infos (LLM-Varianz) | Einheitliche, geprüfte Infos | **Vertrauen** in die App |
+| Vorher                                         | Nachher                              | Psychologischer Effekt                         |
+| ---------------------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| Leerer Pflanzensteckbrief bis User 15 Cr zahlt | Voller Steckbrief sofort nach Scan   | **Sofortige Belohnung** – Dopamin beim Sammeln |
+| "Details generieren" Button als Paywall        | Details sind Teil des Dex (inklusiv) | **Kein Verlustangst-Moment**                   |
+| 4-8s Wartezeit bei Details                     | 0ms – bereits im Cache               | **Flow-Zustand** bleibt erhalten               |
+| Leere DexDetailScreen                          | Vollständige Artenbeschreibung       | **Sammler-Motivation** steigt                  |
+| Inkonsistente Infos (LLM-Varianz)              | Einheitliche, geprüfte Infos         | **Vertrauen** in die App                       |
 
 ### 4.3 Gamification-Potenzial
 
@@ -502,7 +505,7 @@ const { data: plant } = await supabase
     name: plantName,
     note: plantNote,
     image_url: imageUrl,
-    species_id: discovery?.speciesId,  // NEU
+    species_id: discovery?.speciesId, // NEU
   })
   .select()
   .single();
@@ -561,9 +564,9 @@ useEffect(() => {
 }, [discovery]);
 
 // Button nur anzeigen wenn KEIN Cache:
-{!hasCachedDetails && (
-  <DSButton title="Details generieren" onPress={handleGenerateDetails} />
-)}
+{
+  !hasCachedDetails && <DSButton title="Details generieren" onPress={handleGenerateDetails} />;
+}
 ```
 
 **4d. `services/dexService.js` – Details im Dex mitladen:**
@@ -574,8 +577,8 @@ const { data: allSpecies } = await supabase
   .from('species')
   .select(
     'id, canonical_name, first_discovered_by, first_discovered_at, ' +
-    'image_url, description, care_summary, total_discoverers, plant_type, ' +
-    `details_${language}`  // NEU
+      'image_url, description, care_summary, total_discoverers, plant_type, ' +
+      `details_${language}` // NEU
   )
   .order('canonical_name', { ascending: true });
 ```
@@ -585,11 +588,11 @@ const { data: allSpecies } = await supabase
 **Zeitaufwand:** ~1h
 **Entscheidung erforderlich:**
 
-| Option | Beschreibung | Empfehlung |
-|---|---|---|
-| A: Details werden kostenlos | Universelle Infos aus dem Dex kosten nichts | ✅ **Empfohlen** – maximale UX |
-| B: Reduzierte Kosten | 5 Credits statt 15 (nur DB-Read) | Kompromiss |
-| C: Nur Erstgenerierung kostet | Wer eine neue Art erstmals generiert, zahlt. Alle danach gratis | Fair & gamifiziert |
+| Option                        | Beschreibung                                                    | Empfehlung                     |
+| ----------------------------- | --------------------------------------------------------------- | ------------------------------ |
+| A: Details werden kostenlos   | Universelle Infos aus dem Dex kosten nichts                     | ✅ **Empfohlen** – maximale UX |
+| B: Reduzierte Kosten          | 5 Credits statt 15 (nur DB-Read)                                | Kompromiss                     |
+| C: Nur Erstgenerierung kostet | Wer eine neue Art erstmals generiert, zahlt. Alle danach gratis | Fair & gamifiziert             |
 
 **Empfehlung: Option C** – Der Erstentdecker "sponsort" den Dex-Eintrag (15 Credits), alle anderen profitieren kostenlos. Das verstärkt den Entdecker-Anreiz.
 
@@ -600,19 +603,26 @@ const { data: allSpecies } = await supabase
 ```javascript
 // Script: scripts/seed-dex-details.js
 const TOP_100_PLANTS = [
-  'monstera deliciosa', 'ficus lyrata', 'sansevieria trifasciata',
-  'pothos aureus', 'calathea orbifolia', 'philodendron hederaceum',
+  'monstera deliciosa',
+  'ficus lyrata',
+  'sansevieria trifasciata',
+  'pothos aureus',
+  'calathea orbifolia',
+  'philodendron hederaceum',
   // ... 94 weitere
 ];
 
 for (const species of TOP_100_PLANTS) {
   for (const lang of ['de', 'en', 'fr', 'it', 'es']) {
     const details = await generatePlantDetails(species, '', lang);
-    await supabase.from('species').update({
-      [`details_${lang}`]: details,
-      details_generated_at: new Date().toISOString(),
-      details_model: 'gpt-4o (seed)',
-    }).eq('canonical_name', species);
+    await supabase
+      .from('species')
+      .update({
+        [`details_${lang}`]: details,
+        details_generated_at: new Date().toISOString(),
+        details_model: 'gpt-4o (seed)',
+      })
+      .eq('canonical_name', species);
   }
 }
 // Einmalkosten: 100 × 5 Sprachen × ~$0.06 = ~$30
@@ -624,14 +634,14 @@ for (const species of TOP_100_PLANTS) {
 
 ### Prioritätsreihenfolge
 
-| Phase | Aufwand | Impact | Prio |
-|---|---|---|---|
-| 1: Schema-Erweiterung | 2h | Fundament | 🔴 Sofort |
-| 2: Backfill | 3h | Bestandsdaten nutzen | 🔴 Sofort |
-| 3: Edge Function Cache | 4h | Kernlogik | 🟠 Diese Woche |
-| 4: Client-Anpassung | 4h | UX-Verbesserung | 🟠 Diese Woche |
-| 5: Credit-Modell | 1h | Monetarisierung | 🟡 Nach Testing |
-| 6: Seed Top-100 | 2h | Day-1 Experience | 🟡 Vor nächstem Release |
+| Phase                  | Aufwand | Impact               | Prio                    |
+| ---------------------- | ------- | -------------------- | ----------------------- |
+| 1: Schema-Erweiterung  | 2h      | Fundament            | 🔴 Sofort               |
+| 2: Backfill            | 3h      | Bestandsdaten nutzen | 🔴 Sofort               |
+| 3: Edge Function Cache | 4h      | Kernlogik            | 🟠 Diese Woche          |
+| 4: Client-Anpassung    | 4h      | UX-Verbesserung      | 🟠 Diese Woche          |
+| 5: Credit-Modell       | 1h      | Monetarisierung      | 🟡 Nach Testing         |
+| 6: Seed Top-100        | 2h      | Day-1 Experience     | 🟡 Vor nächstem Release |
 
 **Gesamtaufwand:** ~16h Entwicklung + Testing
 **Erwartete Einsparung:** 81-97% der LLM-Kosten für Plant Details
@@ -645,7 +655,7 @@ for (const species of TOP_100_PLANTS) {
 
 ---
 
-*Dieses Dokument dient als Entscheidungsgrundlage. Alle Code-Beispiele sind als Konzeptvorschläge zu verstehen und müssen vor der Implementierung gegen die aktuelle Codebasis getestet werden.*
+_Dieses Dokument dient als Entscheidungsgrundlage. Alle Code-Beispiele sind als Konzeptvorschläge zu verstehen und müssen vor der Implementierung gegen die aktuelle Codebasis getestet werden._
 
 ---
 
@@ -722,6 +732,7 @@ CREATE INDEX IF NOT EXISTS idx_plants_species_id ON public.plants(species_id);
 ```
 
 **Vorteile:**
+
 - Keine neue Migration pro Sprache.
 - Saubere PK auf `(species_id, language)`.
 - Klare Trennung zwischen Pflanzeninstanz (`plants`) und Artwissen (`species_details`).
@@ -773,9 +784,9 @@ Damit sind unnötige Abbuchungen minimiert, und parallele Misses werden stark re
   - nach `logDiscovery(...)` ein Update auf `plants.species_id` durchführen.
 - `PlantDetailScreen`:
   - Details-Fallback-Reihenfolge:
-    1) `plants.details` (legacy),
-    2) `species_details.details` per `(species_id, language)`,
-    3) erst dann CTA „Details generieren“.
+    1. `plants.details` (legacy),
+    2. `species_details.details` per `(species_id, language)`,
+    3. erst dann CTA „Details generieren“.
 - `DexDetailScreen`:
   - kann zusätzlich `species_details` lesen, um volle Steckbriefe anzuzeigen.
 
@@ -797,7 +808,8 @@ Damit sind unnötige Abbuchungen minimiert, und parallele Misses werden stark re
 - Backfill über `discovery_events.plant_id` ausführen.
 
 **Abnahmekriterium:**
-- >90% bestehender Plants haben `species_id` (je nach Datenlage).
+
+- > 90% bestehender Plants haben `species_id` (je nach Datenlage).
 
 ### Phase 2 – Edge Function `ai-plant-details` cache-first (1 Tag)
 
@@ -807,6 +819,7 @@ Damit sind unnötige Abbuchungen minimiert, und parallele Misses werden stark re
 - Antwortfelder ergänzen: `source`, `credits_used`.
 
 **Abnahmekriterium:**
+
 - Zweiter Request für gleiche `(species_id, language)` kostet 0 Credits.
 
 ### Phase 3 – Client-Anpassungen (1 Tag)
@@ -817,6 +830,7 @@ Damit sind unnötige Abbuchungen minimiert, und parallele Misses werden stark re
 - Optional: UX-Text für „Details aus Dex geladen“.
 
 **Abnahmekriterium:**
+
 - Bei bestehendem Species-Cache erscheint kein zusätzlicher Credit-Abzug.
 
 ### Phase 4 – Backfill von Detaildaten (0.5-1 Tag)
@@ -825,6 +839,7 @@ Damit sind unnötige Abbuchungen minimiert, und parallele Misses werden stark re
 - Konfliktregel: frühester Datensatz gewinnt, spätere nur wenn Ziel leer.
 
 **Abnahmekriterium:**
+
 - Häufige Arten sind direkt mit Inhalt verfügbar.
 
 ### Phase 5 – Rollout & Monitoring (0.5 Tag)
@@ -837,6 +852,7 @@ Damit sind unnötige Abbuchungen minimiert, und parallele Misses werden stark re
 - Feature Flag für „Cache-first Details“ (schnelles Rollback).
 
 **Abnahmekriterium (nach 7 Tagen):**
+
 - Cache-Hit-Rate >60% (ansteigend),
 - Credits für `plant_details` signifikant reduziert,
 - keine erhöhte Error-Rate.

@@ -10,16 +10,32 @@ Scan plants with your camera, let AI identify them, build your species collectio
 </p>
 -->
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: BSL 1.1](https://img.shields.io/badge/License-BSL_1.1-orange.svg)](LICENSE)
 [![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?logo=react)](https://reactnative.dev)
 [![Expo SDK 54](https://img.shields.io/badge/Expo%20SDK-54-000020?logo=expo)](https://docs.expo.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-JavaScript-3178C6?logo=typescript)](https://www.typescriptlang.org)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+## Status
+
+Active side-project. Plant Pokedex with AI scanner.
+
+Source-available under BSL 1.1, converts to MIT on 2030-05-20.
+Bandwidth limited. Response when time allows. No support SLA.
 
 ## Core Documents
 
 - [VISION.md](VISION.md) — product north star, user promise, and strategic decision filter
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system context, runtime flows, data model, and delivery pipeline
+
+## Documentation
+
+- [docs/architecture/](docs/architecture/) — subsystem notes and deeper technical analysis
+- [docs/audits/](docs/audits/) — audit snapshots, fix reports, and repository reviews
+- [docs/roadmap/](docs/roadmap/) — launch and release-readiness roadmaps
+- [docs/planning/](docs/planning/) — implementation plans and quality follow-ups
+- [docs/prompts/](docs/prompts/) — prompt-engineering analysis
+- [docs/STORE_SUBMISSION_CHECKLIST.md](docs/STORE_SUBMISSION_CHECKLIST.md) — store submission checklist
+- [docs/INCIDENT_RUNBOOK.md](docs/INCIDENT_RUNBOOK.md) — incident handling guide
 
 ## Features
 
@@ -33,7 +49,7 @@ Scan plants with your camera, let AI identify them, build your species collectio
 - **Crash Monitoring** — Sentry integration with DSGVO-compliant PII filtering (no email/IP)
 - **Onboarding Carousel** — 3-step swipeable intro for new users (value prop, features, credits)
 - **In-App Feedback** — Users can submit bug reports and feature requests directly from the app
-- **6 Languages** — German, English, French, Italian, Spanish, Russian
+- **7 Languages** — German, English, French, Italian, Spanish, Russian, Turkish
 - **Additional Features** — Plant diary with photos, push notifications, avatar generation, credit system
 
 ## Tech Stack
@@ -47,7 +63,7 @@ Scan plants with your camera, let AI identify them, build your species collectio
 | Payments      | RevenueCat (iOS + Android)                                |
 | Weather       | OpenWeather API                                           |
 | Navigation    | React Navigation 6                                        |
-| i18n          | i18n-js (6 languages)                                     |
+| i18n          | i18n-js (7 languages)                                     |
 | Notifications | expo-notifications                                        |
 | Location      | expo-location                                             |
 | Images        | expo-image (disk + memory cache, blurhash)                |
@@ -191,16 +207,6 @@ Users can purchase credits via subscriptions or one-time purchases. Beta testers
 
 See `services/pricingConfig.js` for the single source of truth.
 
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on:
-
-- Reporting bugs
-- Suggesting features
-- Development setup
-- Code style & conventions
-- Pull request process
-
 ## Deployment
 
 ### Edge Functions & Database
@@ -213,6 +219,8 @@ git push origin main
 ```
 
 Functions are deployed without JWT verification but validate all requests via custom headers.
+Local store submission credentials are expected under `_local/credentials/` and are injected in CI
+from repository secrets.
 
 ### App Builds
 
@@ -249,9 +257,7 @@ npx jest --coverage
 
 ## License
 
-Proprietary © 2026 Tim Mergenthaler. All rights reserved.
-
-See [LICENSE](LICENSE) for details.
+Source-available under [BSL 1.1](LICENSE). The repository converts to MIT on 2030-05-20.
 
 ---
 

@@ -40,12 +40,12 @@
       "ios": {
         "ascAppId": "6759793273",
         "appleTeamId": "28BN8BX5M8",
-        "ascApiKeyPath": "./asc-api-key.p8",
+        "ascApiKeyPath": "./_local/credentials/AuthKey_VQF5PUJ7FN.p8",
         "ascApiKeyId": "VQF5PUJ7FN",
         "ascApiKeyIssuerId": "c1062983-69bb-4e51-a003-57a1b331a806"
       },
       "android": {
-        "serviceAccountKeyPath": "./google-service-account.json",
+        "serviceAccountKeyPath": "./_local/credentials/google-service-account.json",
         "track": "internal",
         "releaseStatus": "draft"
       }
