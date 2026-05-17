@@ -1,0 +1,55 @@
+name: Deploy Landing Page
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - index.html
+      - landing-page.html
+      - docs/**
+      - store-assets/**
+      - assets/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/configure-pages@v5
+
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p _site
+          cp index.html _site/index.html
+          cp landing-page.html _site/landing-page.html
+          cp -R docs _site/docs
+          cp -R store-assets _site/store-assets
+          cp -R assets _site/assets
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
