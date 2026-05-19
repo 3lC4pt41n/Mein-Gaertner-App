@@ -19,7 +19,7 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
-import { SUPABASE_URL, SUPABASE_ANON_KEY, supabase } from '../supabase.js';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, supabase } from '../supabase.js';
 import { fetchWithPolicy } from './networkPolicy';
 
 // API Configuration - use Supabase Edge Function proxy
@@ -32,10 +32,10 @@ const getAuthHeaders = async () => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session?.access_token) return { apikey: SUPABASE_ANON_KEY };
+  if (!session?.access_token) return { apikey: SUPABASE_PUBLISHABLE_KEY };
   return {
     Authorization: `Bearer ${session.access_token}`,
-    apikey: SUPABASE_ANON_KEY,
+    apikey: SUPABASE_PUBLISHABLE_KEY,
   };
 };
 

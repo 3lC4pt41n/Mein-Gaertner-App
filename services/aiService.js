@@ -1,4 +1,4 @@
-import { supabase, SUPABASE_ANON_KEY } from '../supabase';
+import { supabase, SUPABASE_PUBLISHABLE_KEY } from '../supabase';
 import { requestWithPolicy } from './networkPolicy';
 
 function isAuthFailure(error, parsed) {
@@ -45,7 +45,7 @@ async function invokeEdge(functionName, body, accessToken, { useExplicitAuthHead
   if (useExplicitAuthHeader && accessToken) {
     invokeOptions.headers = {
       Authorization: `Bearer ${accessToken}`,
-      apikey: SUPABASE_ANON_KEY,
+      apikey: SUPABASE_PUBLISHABLE_KEY,
     };
   }
 

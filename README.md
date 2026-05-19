@@ -111,7 +111,8 @@ Create a `.env.local` file with:
 
 ```
 EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+SUPABASE_SECRET_KEY=your_supabase_secret_key
 OPENAI_API_KEY=your_openai_key
 OPENWEATHER_API_KEY=your_openweather_key
 REVENUECAT_API_KEY_IOS=your_ios_key

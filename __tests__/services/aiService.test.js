@@ -1,5 +1,5 @@
 import { supabase } from '../../supabase';
-const { SUPABASE_ANON_KEY } = require('../../supabase');
+const { SUPABASE_PUBLISHABLE_KEY } = require('../../supabase');
 
 // We need to mock auth.getSession before importing aiService
 supabase.auth.getSession = jest.fn().mockResolvedValue({
@@ -33,7 +33,7 @@ describe('aiService', () => {
       const result = await recognizePlant('base64data', 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-plant-scan', {
         body: { base64: 'base64data', language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(result).toEqual({ name: 'Monstera', note: 'Tropical plant' });
     });
@@ -82,7 +82,7 @@ describe('aiService', () => {
       await generatePlantDetails('Monstera', 'Care note', 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-plant-details', {
         body: { name: 'Monstera', note: 'Care note', language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
     });
   });
@@ -97,7 +97,7 @@ describe('aiService', () => {
       const result = await performHealthcheck('https://image.url', 'Rose', 'en');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-healthcheck', {
         body: { image_url: 'https://image.url', plant_name: 'Rose', language: 'en' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(result).toEqual({ score: 85 });
     });
@@ -113,7 +113,7 @@ describe('aiService', () => {
       const result = await chatWithBen('Hi Ben', null, 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(result).toEqual({ reply: 'Hello!' });
     });
@@ -148,11 +148,11 @@ describe('aiService', () => {
       expect(supabase.auth.getSession).toHaveBeenCalledTimes(2);
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(1, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(supabase.auth.signOut).not.toHaveBeenCalled();
     });
@@ -180,7 +180,7 @@ describe('aiService', () => {
       expect(result).toEqual({ reply: 'Recovered with new token' });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer refreshed-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer refreshed-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
     });
 
@@ -203,11 +203,11 @@ describe('aiService', () => {
       expect(supabase.functions.invoke).toHaveBeenCalledTimes(2);
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(1, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(supabase.auth.signOut).not.toHaveBeenCalled();
     });
@@ -237,11 +237,11 @@ describe('aiService', () => {
       expect(result).toEqual({ reply: 'Recovered by SDK headers' });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(1, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(2, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },
-        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_ANON_KEY },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(supabase.functions.invoke).toHaveBeenNthCalledWith(3, 'ai-chat', {
         body: { text: 'Hi Ben', image_url: undefined, language: 'de' },

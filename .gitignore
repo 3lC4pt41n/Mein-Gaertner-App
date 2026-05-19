@@ -3,6 +3,8 @@ node_modules/
 .DS_Store
 npm-debug.log
 .env
+.env.local
+.env.*.local
 google-service-account.json
 *.p8
 *.jks

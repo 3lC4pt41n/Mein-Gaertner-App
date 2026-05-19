@@ -6,6 +6,15 @@ const RATE_LIMIT_MAP = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_REQUESTS = 30; // 30 requests per minute per user
 
+const requireEnv = (...keys: string[]) => {
+  for (const key of keys) {
+    const value = Deno.env.get(key);
+    if (value) return value;
+  }
+
+  throw new Error(`Missing required environment variable. Tried: ${keys.join(', ')}`);
+};
+
 /**
  * Check and enforce rate limiting by user ID (not spoofable like IP)
  */
@@ -78,8 +87,8 @@ serve(async (req: Request) => {
   }
 
   const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
+    requireEnv('SUPABASE_URL'),
+    requireEnv('SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_ANON_KEY'),
     { global: { headers: { Authorization: authHeader } } }
   );
 

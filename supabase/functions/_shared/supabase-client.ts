@@ -1,13 +1,29 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 
-// Service-Role-Client für serverseitige Operationen (Balance-Updates etc.)
-export function getServiceClient() {
-  return createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+function requireEnv(...keys: string[]) {
+  for (const key of keys) {
+    const value = Deno.env.get(key);
+    if (value) return value;
+  }
+
+  throw new Error(`Missing required environment variable. Tried: ${keys.join(', ')}`);
 }
 
-// Anon-Client mit User-JWT für RLS-geschützte Queries
+// Secret-Key-Client für serverseitige Operationen (Balance-Updates etc.)
+export function getServiceClient() {
+  return createClient(
+    requireEnv('SUPABASE_URL'),
+    requireEnv('SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY')
+  );
+}
+
+// Publishable-Client mit User-JWT für RLS-geschützte Queries
 export function getUserClient(authHeader: string) {
-  return createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
-    global: { headers: { Authorization: authHeader } },
-  });
+  return createClient(
+    requireEnv('SUPABASE_URL'),
+    requireEnv('SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_ANON_KEY'),
+    {
+      global: { headers: { Authorization: authHeader } },
+    }
+  );
 }

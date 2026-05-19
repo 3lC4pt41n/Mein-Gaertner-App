@@ -107,6 +107,7 @@ jest.mock('react-native-purchases', () => ({
 // Mock supabase
 jest.mock('./supabase', () => ({
   SUPABASE_URL: 'https://test.supabase.co',
+  SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
   SUPABASE_ANON_KEY: 'test-anon-key',
   supabase: {
     auth: {
