@@ -3,6 +3,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:8081',
   'http://localhost:3000',
   'https://3lc4pt41n.github.io',
+  'https://florascout.app',
+  'https://www.florascout.app',
 ];
 
 const DEFAULT_ALLOWED_HEADERS = 'authorization, x-client-info, apikey, content-type';

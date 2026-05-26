@@ -754,6 +754,90 @@
         color: rgba(255, 255, 255, 0.72);
       }
 
+      .waitlist-panel {
+        margin-top: 24px;
+        padding: 20px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .waitlist-panel h3 {
+        margin: 0;
+        font-size: 1.14rem;
+        letter-spacing: -0.03em;
+      }
+
+      .waitlist-panel p {
+        margin-top: 10px;
+      }
+
+      .waitlist-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .waitlist-field {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .waitlist-field input {
+        width: 100%;
+        min-height: 52px;
+        padding: 0 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.94);
+        color: var(--ink);
+        font-size: 0.98rem;
+        outline: none;
+      }
+
+      .waitlist-field input:focus {
+        border-color: rgba(240, 219, 132, 0.9);
+        box-shadow: 0 0 0 3px rgba(240, 219, 132, 0.18);
+      }
+
+      .waitlist-field input::placeholder {
+        color: #6c756e;
+      }
+
+      .waitlist-submit[disabled] {
+        opacity: 0.72;
+        cursor: progress;
+        transform: none;
+      }
+
+      .waitlist-note {
+        margin-top: 10px;
+        font-size: 0.84rem;
+        color: rgba(255, 255, 255, 0.68);
+      }
+
+      .waitlist-status {
+        margin-top: 12px;
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .waitlist-status.is-success {
+        color: #d7f7bf;
+      }
+
+      .waitlist-status.is-error {
+        color: #ffd2c5;
+      }
+
+      .waitlist-honeypot {
+        position: absolute;
+        left: -9999px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
       .download-stack {
         position: relative;
         min-height: 440px;
@@ -984,6 +1068,14 @@
           width: 100%;
         }
 
+        .waitlist-form {
+          grid-template-columns: 1fr;
+        }
+
+        .waitlist-submit {
+          width: 100%;
+        }
+
         .hero-visual {
           min-height: 480px;
         }
@@ -1093,11 +1185,9 @@
                 >
                 <a
                   class="btn btn-secondary"
-                  data-platform="android"
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Fuer Android</a
+                  data-android-waitlist
+                  href="#android-waitlist"
+                  >Android Warteliste</a
                 >
                 <a class="btn btn-ghost" href="#screens">Screens ansehen</a>
               </div>
@@ -1549,7 +1639,7 @@
               <div>
                 <span class="eyebrow">Download</span>
                 <h2>FloraScout auf iPhone und Android oeffnen.</h2>
-                <p>
+                <p class="download-lead">
                   Wenn du eine Pflanzen-App willst, die nicht beim Erkennen stehen bleibt, sondern
                   dir Ordnung, Kontext und naechste Schritte gibt, ist das der richtige Einstieg.
                 </p>
@@ -1565,17 +1655,53 @@
                   >
                   <a
                     class="btn btn-secondary"
-                    data-platform="android"
-                    href="#"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >Android Seite</a
+                    data-android-waitlist
+                    href="#android-waitlist"
+                    >Android Warteliste</a
                   >
                 </div>
 
                 <p class="download-meta">
                   Direkter Zugang zu Dex, Healthcheck, Aufgaben, Shop und Ben.
                 </p>
+
+                <div id="android-waitlist" class="waitlist-panel">
+                  <h3>Android-Beta per Warteliste</h3>
+                  <p id="android-waitlist-body">
+                    Fuer Android fuehre ich Tester aktuell manuell. Trag deine E-Mail ein, dann
+                    melde ich mich, sobald ich dich freischalten kann.
+                  </p>
+
+                  <form id="android-waitlist-form" class="waitlist-form" novalidate>
+                    <label class="waitlist-field">
+                      <span class="sr-only">E-Mail fuer Android-Warteliste</span>
+                      <input
+                        id="android-waitlist-email"
+                        name="email"
+                        type="email"
+                        inputmode="email"
+                        autocomplete="email"
+                        placeholder="deine@email.de"
+                        required
+                      />
+                    </label>
+
+                    <div class="waitlist-honeypot" aria-hidden="true">
+                      <label for="android-waitlist-website">Website</label>
+                      <input id="android-waitlist-website" name="website" type="text" tabindex="-1" />
+                    </div>
+
+                    <button id="android-waitlist-submit" class="btn btn-secondary waitlist-submit" type="submit">
+                      Auf Warteliste setzen
+                    </button>
+                  </form>
+
+                  <p id="android-waitlist-note" class="waitlist-note">
+                    Mit dem Eintrag nutzt du deine E-Mail nur fuer Android-Beta-Updates und
+                    Testeinladungen.
+                  </p>
+                  <p id="android-waitlist-status" class="waitlist-status" hidden></p>
+                </div>
               </div>
 
               <div class="download-stack" aria-hidden="true">
@@ -1632,7 +1758,7 @@
             eyebrow: 'Pflanzen-Dex · Gesundheit · Aufgaben · KI-Gaertner',
             title: 'Die Pflanzen-App, die vom ersten Scan bis zur naechsten Giessaufgabe mitdenkt.',
             lead: 'FloraScout verbindet <strong>Sammlung, Pflegeplanung, Healthchecks und Chat</strong> in einem System fuer Wohnung, Balkon und Garten. Statt zehn loser Tools bekommst du eine klare Routine fuer alles, was nach dem Erkennen wirklich zaehlt.',
-            buttons: ['Fuer iPhone', 'Fuer Android', 'Screens ansehen'],
+            buttons: ['Fuer iPhone', 'Android Warteliste', 'Screens ansehen'],
             note: 'Die Screenshots auf dieser Seite bleiben vorerst deutsch.',
             tags: [
               'Raeume und Zonen',
@@ -1793,8 +1919,23 @@
             eyebrow: 'Download',
             title: 'FloraScout auf iPhone und Android oeffnen.',
             body: 'Wenn du eine Pflanzen-App willst, die nicht beim Erkennen stehen bleibt, sondern dir Ordnung, Kontext und naechste Schritte gibt, ist das der richtige Einstieg.',
-            buttons: ['iPhone Seite', 'Android Seite'],
+            buttons: ['iPhone Seite', 'Android Warteliste'],
             meta: 'Direkter Zugang zu Dex, Healthcheck, Aufgaben, Shop und Ben.',
+            waitlist: {
+              title: 'Android-Beta per Warteliste',
+              body: 'Fuer Android fuehre ich Tester aktuell manuell. Trag deine E-Mail ein, dann melde ich mich, sobald ich dich freischalten kann.',
+              placeholder: 'deine@email.de',
+              emailLabel: 'E-Mail fuer Android-Warteliste',
+              submit: 'Auf Warteliste setzen',
+              loading: 'Wird eingetragen...',
+              legal:
+                'Mit dem Eintrag nutzt du deine E-Mail nur fuer Android-Beta-Updates und Testeinladungen.',
+              success:
+                'Danke. Ich habe deine E-Mail fuer die Android-Warteliste vorgemerkt.',
+              invalid: 'Bitte gib eine gueltige E-Mail-Adresse ein.',
+              error:
+                'Die Warteliste konnte gerade nicht gespeichert werden. Schreib mir notfalls direkt an timergenthaler@gmail.com.',
+            },
           },
           footer: [
             'Datenschutz',
@@ -1818,7 +1959,7 @@
             eyebrow: 'Plant Dex · Health · Tasks · AI gardener',
             title: 'The plant app that thinks ahead from the first scan to the next watering task.',
             lead: 'FloraScout brings together <strong>collection, care planning, health checks and chat</strong> in one system for home, balcony and garden. Instead of ten disconnected tools, you get one clear routine for what happens after identification.',
-            buttons: ['For iPhone', 'For Android', 'See screens'],
+            buttons: ['For iPhone', 'Android waitlist', 'See screens'],
             note: 'The screenshots on this page remain in German for now.',
             tags: [
               'Rooms and zones',
@@ -1979,8 +2120,22 @@
             eyebrow: 'Download',
             title: 'Open FloraScout on iPhone and Android.',
             body: 'If you want a plant app that does not stop at identification but gives you order, context and next steps, this is the right entry point.',
-            buttons: ['iPhone page', 'Android page'],
+            buttons: ['iPhone page', 'Android waitlist'],
             meta: 'Direct access to dex, health check, tasks, shop and Ben.',
+            waitlist: {
+              title: 'Android beta via waitlist',
+              body: 'Android testers are currently added manually. Leave your email and I will reach out as soon as I can unlock access for you.',
+              placeholder: 'you@example.com',
+              emailLabel: 'Email for Android waitlist',
+              submit: 'Join waitlist',
+              loading: 'Joining...',
+              legal:
+                'Your email will only be used for Android beta updates and tester invitations.',
+              success: 'Thanks. Your email is now on the Android waitlist.',
+              invalid: 'Please enter a valid email address.',
+              error:
+                'The waitlist could not be saved right now. If needed, email timergenthaler@gmail.com directly.',
+            },
           },
           footer: ['Privacy', 'Terms', 'Legal notice', 'Delete account', 'Contact'],
         },
@@ -1999,7 +2154,7 @@
             title:
               'L’application plantes qui réfléchit du premier scan jusqu’à la prochaine tâche d’arrosage.',
             lead: 'FloraScout réunit <strong>collection, planification des soins, bilans de santé et chat</strong> dans un seul système pour la maison, le balcon et le jardin. Au lieu de dix outils séparés, vous obtenez une routine claire pour tout ce qui vient après l’identification.',
-            buttons: ['Pour iPhone', 'Pour Android', 'Voir les écrans'],
+            buttons: ['Pour iPhone', 'Liste d’attente Android', 'Voir les écrans'],
             note: 'Les captures d’écran de cette page restent pour l’instant en allemand.',
             tags: [
               'Pièces et zones',
@@ -2160,8 +2315,23 @@
             eyebrow: 'Téléchargement',
             title: 'Ouvrir FloraScout sur iPhone et Android.',
             body: 'Si vous cherchez une application plantes qui ne s’arrête pas à l’identification mais apporte ordre, contexte et prochaines étapes, c’est le bon point d’entrée.',
-            buttons: ['Page iPhone', 'Page Android'],
+            buttons: ['Page iPhone', 'Liste d’attente Android'],
             meta: 'Accès direct au dex, au bilan de santé, aux tâches, à la boutique et à Ben.',
+            waitlist: {
+              title: 'Bêta Android via liste d’attente',
+              body: 'Pour Android, j’ajoute actuellement les testeurs manuellement. Laissez votre e-mail et je vous contacterai dès que je pourrai vous ouvrir l’accès.',
+              placeholder: 'vous@exemple.com',
+              emailLabel: 'E-mail pour la liste d’attente Android',
+              submit: 'Rejoindre la liste',
+              loading: 'Inscription en cours...',
+              legal:
+                'Votre e-mail sera utilisé uniquement pour les mises à jour de la bêta Android et les invitations de test.',
+              success:
+                'Merci. Votre e-mail a bien été ajouté à la liste d’attente Android.',
+              invalid: 'Veuillez saisir une adresse e-mail valide.',
+              error:
+                'La liste d’attente n’a pas pu être enregistrée pour le moment. Si besoin, écrivez directement à timergenthaler@gmail.com.',
+            },
           },
           footer: [
             'Confidentialité',
@@ -2186,7 +2356,7 @@
             title:
               'L’app per le piante che ragiona dal primo scan fino al prossimo compito di annaffiatura.',
             lead: 'FloraScout riunisce <strong>collezione, pianificazione della cura, controlli di salute e chat</strong> in un solo sistema per casa, balcone e giardino. Invece di dieci strumenti scollegati, ottieni una routine chiara per tutto ciò che succede dopo il riconoscimento.',
-            buttons: ['Per iPhone', 'Per Android', 'Vedi schermate'],
+            buttons: ['Per iPhone', 'Lista d’attesa Android', 'Vedi schermate'],
             note: 'Gli screenshot di questa pagina restano per ora in tedesco.',
             tags: [
               'Stanze e zone',
@@ -2347,8 +2517,23 @@
             eyebrow: 'Download',
             title: 'Apri FloraScout su iPhone e Android.',
             body: 'Se vuoi un’app per le piante che non si fermi al riconoscimento ma ti dia ordine, contesto e prossimi passi, questo è il punto di ingresso giusto.',
-            buttons: ['Pagina iPhone', 'Pagina Android'],
+            buttons: ['Pagina iPhone', 'Lista d’attesa Android'],
             meta: 'Accesso diretto a dex, controllo salute, attività, shop e Ben.',
+            waitlist: {
+              title: 'Beta Android tramite lista d’attesa',
+              body: 'Per Android sto ancora aggiungendo i tester manualmente. Lascia la tua e-mail e ti contatterò appena potrò attivare l’accesso.',
+              placeholder: 'tu@esempio.com',
+              emailLabel: 'E-mail per la lista d’attesa Android',
+              submit: 'Entra in lista',
+              loading: 'Inserimento in corso...',
+              legal:
+                'La tua e-mail verrà usata solo per aggiornamenti sulla beta Android e inviti ai test.',
+              success:
+                'Grazie. La tua e-mail è stata aggiunta alla lista d’attesa Android.',
+              invalid: 'Inserisci un indirizzo e-mail valido.',
+              error:
+                'Al momento non è stato possibile salvare la lista d’attesa. Se serve, scrivi direttamente a timergenthaler@gmail.com.',
+            },
           },
           footer: ['Privacy', 'Condizioni', 'Note legali', 'Elimina account', 'Contatto'],
         },
@@ -2367,7 +2552,7 @@
             title:
               'La app de plantas que piensa desde el primer escaneo hasta la siguiente tarea de riego.',
             lead: 'FloraScout reúne <strong>colección, planificación del cuidado, chequeos de salud y chat</strong> en un solo sistema para casa, balcón y jardín. En lugar de diez herramientas sueltas, obtienes una rutina clara para todo lo que ocurre después de identificar la planta.',
-            buttons: ['Para iPhone', 'Para Android', 'Ver pantallas'],
+            buttons: ['Para iPhone', 'Lista de espera Android', 'Ver pantallas'],
             note: 'Las capturas de esta página seguirán en alemán por ahora.',
             tags: [
               'Habitaciones y zonas',
@@ -2528,8 +2713,23 @@
             eyebrow: 'Descarga',
             title: 'Abre FloraScout en iPhone y Android.',
             body: 'Si quieres una app de plantas que no se quede en la identificación sino que te dé orden, contexto y próximos pasos, este es el punto de entrada correcto.',
-            buttons: ['Página iPhone', 'Página Android'],
+            buttons: ['Página iPhone', 'Lista de espera Android'],
             meta: 'Acceso directo al dex, chequeo de salud, tareas, tienda y Ben.',
+            waitlist: {
+              title: 'Beta de Android mediante lista de espera',
+              body: 'En Android todavía doy acceso a los testers manualmente. Deja tu correo y te escribiré en cuanto pueda habilitarte el acceso.',
+              placeholder: 'tu@ejemplo.com',
+              emailLabel: 'Correo para la lista de espera de Android',
+              submit: 'Entrar en la lista',
+              loading: 'Guardando...',
+              legal:
+                'Tu correo solo se utilizará para novedades de la beta de Android e invitaciones de prueba.',
+              success:
+                'Gracias. Tu correo ya está en la lista de espera de Android.',
+              invalid: 'Introduce un correo electrónico válido.',
+              error:
+                'Ahora mismo no se pudo guardar la lista de espera. Si hace falta, escribe directamente a timergenthaler@gmail.com.',
+            },
           },
           footer: ['Privacidad', 'Condiciones', 'Aviso legal', 'Eliminar cuenta', 'Contacto'],
         },
@@ -2548,7 +2748,7 @@
             title:
               'Приложение для растений, которое думает от первого скана до следующей задачи по поливу.',
             lead: 'FloraScout объединяет <strong>коллекцию, планирование ухода, проверки состояния и чат</strong> в одной системе для дома, балкона и сада. Вместо десяти разрозненных инструментов вы получаете понятный рабочий цикл для всего, что происходит после распознавания.',
-            buttons: ['Для iPhone', 'Для Android', 'Посмотреть экраны'],
+            buttons: ['Для iPhone', 'Лист ожидания Android', 'Посмотреть экраны'],
             note: 'Скриншоты на этой странице пока остаются на немецком языке.',
             tags: [
               'Комнаты и зоны',
@@ -2710,8 +2910,23 @@
             eyebrow: 'Загрузка',
             title: 'Откройте FloraScout на iPhone и Android.',
             body: 'Если вам нужно приложение для растений, которое не останавливается на распознавании, а даёт порядок, контекст и следующие шаги, это правильная точка входа.',
-            buttons: ['Страница iPhone', 'Страница Android'],
+            buttons: ['Страница iPhone', 'Лист ожидания Android'],
             meta: 'Прямой доступ к дексу, проверке состояния, задачам, магазину и Ben.',
+            waitlist: {
+              title: 'Android-бета через лист ожидания',
+              body: 'Для Android я пока добавляю тестировщиков вручную. Оставьте e-mail, и я напишу вам, как только смогу открыть доступ.',
+              placeholder: 'you@example.com',
+              emailLabel: 'E-mail для листа ожидания Android',
+              submit: 'Встать в лист ожидания',
+              loading: 'Сохраняем...',
+              legal:
+                'Ваш e-mail будет использоваться только для новостей по Android-бете и приглашений на тестирование.',
+              success:
+                'Спасибо. Ваш e-mail добавлен в лист ожидания Android.',
+              invalid: 'Введите корректный адрес электронной почты.',
+              error:
+                'Сейчас не удалось сохранить заявку. При необходимости напишите напрямую на timergenthaler@gmail.com.',
+            },
           },
           footer: [
             'Конфиденциальность',
@@ -2735,7 +2950,7 @@
             eyebrow: 'Bitki deksi · Sağlık · Görevler · Yapay zekâ bahçıvanı',
             title: 'İlk taramadan sonraki sulama görevine kadar düşünen bitki uygulaması.',
             lead: 'FloraScout; <strong>koleksiyonu, bakım planlamasını, sağlık kontrollerini ve sohbeti</strong> ev, balkon ve bahçe için tek bir sistemde bir araya getirir. Birbirinden kopuk on araç yerine, tanımlamadan sonra gereken her şey için net bir akış elde edersiniz.',
-            buttons: ['iPhone için', 'Android için', 'Ekranları gör'],
+            buttons: ['iPhone için', 'Android bekleme listesi', 'Ekranları gör'],
             note: 'Bu sayfadaki ekran görüntüleri şimdilik Almanca kalıyor.',
             tags: [
               'Odalar ve bölgeler',
@@ -2896,8 +3111,23 @@
             eyebrow: 'İndir',
             title: 'FloraScout’u iPhone ve Android’de açın.',
             body: 'Tanımlamayla sınırlı kalmayıp size düzen, bağlam ve sonraki adımları veren bir bitki uygulaması istiyorsanız doğru giriş noktası burası.',
-            buttons: ['iPhone sayfası', 'Android sayfası'],
+            buttons: ['iPhone sayfası', 'Android bekleme listesi'],
             meta: 'Dex, sağlık kontrolü, görevler, mağaza ve Ben’e doğrudan erişim.',
+            waitlist: {
+              title: 'Bekleme listesiyle Android beta',
+              body: 'Android tarafında test kullanıcılarını şu anda manuel ekliyorum. E-posta adresini bırak, erişimi açabildiğim anda sana yazayım.',
+              placeholder: 'sen@ornek.com',
+              emailLabel: 'Android bekleme listesi için e-posta',
+              submit: 'Bekleme listesine katıl',
+              loading: 'Kaydediliyor...',
+              legal:
+                'E-posta adresin yalnızca Android beta güncellemeleri ve test davetleri için kullanılacaktır.',
+              success:
+                'Teşekkürler. E-posta adresin Android bekleme listesine eklendi.',
+              invalid: 'Lütfen geçerli bir e-posta adresi girin.',
+              error:
+                'Bekleme listesi şu anda kaydedilemedi. Gerekirse doğrudan timergenthaler@gmail.com adresine yaz.',
+            },
           },
           footer: ['Gizlilik', 'Koşullar', 'Yasal bildirim', 'Hesabı sil', 'İletişim'],
         },
@@ -2921,16 +3151,38 @@
       const screensHeading = document.querySelector('#screens .section-heading');
       const shotCards = document.querySelectorAll('.shot-card');
       const downloadBox = document.querySelector('#download .download-box > div:first-child');
+      const downloadLead = downloadBox.querySelector('.download-lead');
+      const downloadMeta = downloadBox.querySelector('.download-meta');
+      const waitlistButtons = document.querySelectorAll('[data-android-waitlist]');
+      const waitlistPanel = document.getElementById('android-waitlist');
+      const waitlistHeading = waitlistPanel.querySelector('h3');
+      const waitlistBody = document.getElementById('android-waitlist-body');
+      const waitlistEmailLabel = waitlistPanel.querySelector('.sr-only');
+      const waitlistForm = document.getElementById('android-waitlist-form');
+      const waitlistEmail = document.getElementById('android-waitlist-email');
+      const waitlistWebsite = document.getElementById('android-waitlist-website');
+      const waitlistSubmit = document.getElementById('android-waitlist-submit');
+      const waitlistNote = document.getElementById('android-waitlist-note');
+      const waitlistStatus = document.getElementById('android-waitlist-status');
       const footerLinks = document.querySelectorAll('.footer-links a');
       const pageDescription = document.getElementById('page-description');
       const ogTitle = document.getElementById('og-title');
       const ogDescription = document.getElementById('og-description');
+      const WAITLIST_ENDPOINT =
+        'https://tsllrwaixvhuadrfsskt.supabase.co/functions/v1/android-waitlist';
 
-      const getStoreLinks = (lang) => {
+      const getStoreLinks = () => {
         return {
           ios: 'https://testflight.apple.com/join/u6WPy83b',
-          android: 'https://play.google.com/store/apps/details?id=com.elcaptain.digitalergaertner',
         };
+      };
+
+      const setWaitlistStatus = (message, kind = '', translationKey = '') => {
+        waitlistStatus.textContent = message;
+        waitlistStatus.hidden = !message;
+        waitlistStatus.dataset.kind = kind;
+        waitlistStatus.dataset.translationKey = translationKey;
+        waitlistStatus.className = kind ? `waitlist-status is-${kind}` : 'waitlist-status';
       };
 
       const getDictionary = (lang) => ({
@@ -2978,7 +3230,7 @@
 
       const applyTranslations = (lang) => {
         const dictionary = getDictionary(lang);
-        const storeLinks = getStoreLinks(lang);
+        const storeLinks = getStoreLinks();
 
         document.documentElement.lang = lang;
         document.title = dictionary.meta.title;
@@ -3049,14 +3301,36 @@
           card.querySelector('p').textContent = shot.body;
         });
 
-        const downloadParagraphs = downloadBox.querySelectorAll('p');
         downloadBox.querySelector('.eyebrow').textContent = dictionary.download.eyebrow;
         downloadBox.querySelector('h2').textContent = dictionary.download.title;
-        downloadParagraphs[0].textContent = dictionary.download.body;
+        downloadLead.textContent = dictionary.download.body;
         downloadBox.querySelectorAll('.download-actions a').forEach((button, index) => {
           button.textContent = dictionary.download.buttons[index];
         });
-        downloadParagraphs[1].textContent = dictionary.download.meta;
+        downloadMeta.textContent = dictionary.download.meta;
+        waitlistHeading.textContent = dictionary.download.waitlist.title;
+        waitlistBody.textContent = dictionary.download.waitlist.body;
+        waitlistEmail.placeholder = dictionary.download.waitlist.placeholder;
+        waitlistEmail.setAttribute('aria-label', dictionary.download.waitlist.emailLabel);
+        waitlistEmailLabel.textContent = dictionary.download.waitlist.emailLabel;
+        if (waitlistSubmit.getAttribute('aria-busy') !== 'true') {
+          waitlistSubmit.textContent = dictionary.download.waitlist.submit;
+        }
+        waitlistNote.textContent = dictionary.download.waitlist.legal;
+        waitlistButtons.forEach((button) => {
+          button.href = '#android-waitlist';
+          button.removeAttribute('target');
+          button.removeAttribute('rel');
+        });
+
+        const statusTranslationKey = waitlistStatus.dataset.translationKey;
+        if (statusTranslationKey && dictionary.download.waitlist[statusTranslationKey]) {
+          setWaitlistStatus(
+            dictionary.download.waitlist[statusTranslationKey],
+            waitlistStatus.dataset.kind || '',
+            statusTranslationKey
+          );
+        }
 
         footerLinks.forEach((link, index) => {
           link.textContent = dictionary.footer[index];
@@ -3079,6 +3353,62 @@
         persistLanguage(nextLanguage);
         replaceLanguageInUrl(nextLanguage);
         applyTranslations(nextLanguage);
+      });
+
+      waitlistForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const lang = SUPPORTED_LANGUAGES.includes(languageSelect.value) ? languageSelect.value : 'de';
+        const dictionary = getDictionary(lang);
+        const waitlistDictionary = dictionary.download.waitlist;
+        const email = waitlistEmail.value.trim();
+
+        if (!waitlistEmail.checkValidity()) {
+          waitlistEmail.reportValidity();
+          setWaitlistStatus(waitlistDictionary.invalid, 'error', 'invalid');
+          return;
+        }
+
+        if (waitlistWebsite.value.trim()) {
+          waitlistForm.reset();
+          setWaitlistStatus(waitlistDictionary.success, 'success', 'success');
+          return;
+        }
+
+        waitlistSubmit.disabled = true;
+        waitlistSubmit.setAttribute('aria-busy', 'true');
+        waitlistSubmit.textContent = waitlistDictionary.loading;
+        setWaitlistStatus('', '');
+
+        try {
+          const response = await fetch(WAITLIST_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email,
+              language: lang,
+              source: 'landing-page',
+              page_url: window.location.href,
+              website: '',
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Waitlist request failed with status ${response.status}`);
+          }
+
+          waitlistForm.reset();
+          setWaitlistStatus(waitlistDictionary.success, 'success', 'success');
+        } catch (error) {
+          console.error('Android waitlist signup failed', error);
+          setWaitlistStatus(waitlistDictionary.error, 'error', 'error');
+        } finally {
+          waitlistSubmit.disabled = false;
+          waitlistSubmit.removeAttribute('aria-busy');
+          waitlistSubmit.textContent = waitlistDictionary.submit;
+        }
       });
 
       applyTranslations(initialLanguage);
