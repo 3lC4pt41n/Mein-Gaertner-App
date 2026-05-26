@@ -2903,26 +2903,6 @@
         },
       };
 
-      const APPLE_STOREFRONTS = {
-        de: 'de',
-        en: 'us',
-        fr: 'fr',
-        it: 'it',
-        es: 'es',
-        ru: 'ru',
-        tr: 'tr',
-      };
-
-      const PLAY_LANGUAGES = {
-        de: 'de',
-        en: 'en',
-        fr: 'fr',
-        it: 'it',
-        es: 'es',
-        ru: 'ru',
-        tr: 'tr',
-      };
-
       const languageSelect = document.getElementById('language-select');
       const languageLabel = document.querySelector('.language-picker label');
       const navLinks = document.querySelectorAll('.nav-links a');
@@ -2947,12 +2927,9 @@
       const ogDescription = document.getElementById('og-description');
 
       const getStoreLinks = (lang) => {
-        const appleStorefront = APPLE_STOREFRONTS[lang] || 'us';
-        const playLanguage = PLAY_LANGUAGES[lang] || 'en';
-
         return {
-          ios: `https://apps.apple.com/${appleStorefront}/search?term=FloraScout`,
-          android: `https://play.google.com/store/search?q=FloraScout&c=apps&hl=${playLanguage}`,
+          ios: 'https://testflight.apple.com/join/u6WPy83b',
+          android: 'https://play.google.com/store/apps/details?id=com.elcaptain.digitalergaertner',
         };
       };
 
