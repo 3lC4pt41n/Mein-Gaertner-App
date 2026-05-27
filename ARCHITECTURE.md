@@ -4,6 +4,8 @@
 
 FloraScout is a mobile-first gardening system built around an Expo React Native client, a Supabase backend, and a server-side AI layer implemented as Supabase Edge Functions.
 
+Species recognition is intentionally hybrid: PlantNet provides the first-pass plant identification, while OpenAI models add care context, structured outputs, and fallback behavior when PlantNet is weak or unavailable.
+
 The architecture optimizes for four things:
 
 - `fast iteration` through OTA-capable JavaScript changes
@@ -21,6 +23,7 @@ flowchart LR
   App --> Storage["Supabase Storage"]
   App --> Edge["Supabase Edge Functions"]
   App --> Sentry["Sentry"]
+  Edge --> PlantNet["PlantNet API"]
   Edge --> OpenAI["OpenAI models"]
   Edge --> Weather["OpenWeather API"]
   Edge --> RevenueCat["RevenueCat webhooks and SDK"]
@@ -48,7 +51,8 @@ flowchart LR
 
 ### External integrations
 
-- OpenAI for plant scan, plant details, health check, assistant chat, and avatar generation
+- PlantNet for primary species recognition from scan images
+- OpenAI for care-context enrichment, plant details, health check, assistant chat, avatar generation, and scan fallback handling
 - RevenueCat for subscriptions and one-time credit packs
 - OpenWeather for weather-derived care context
 - Sentry for crash and error monitoring
@@ -140,13 +144,19 @@ sequenceDiagram
   participant A as AddPlantScreen
   participant AI as aiService
   participant EF as ai-plant-scan
+  participant PN as PlantNet
+  participant OAI as OpenAI
   participant DB as Supabase DB
   participant DX as discoveryService
 
   U->>A: Take plant photo
   A->>AI: recognizePlant(base64, language)
   AI->>EF: Invoke edge function with auth
-  EF-->>AI: name, note, plant_type
+  EF->>PN: Identify species candidates
+  PN-->>EF: Best match + confidence
+  EF->>OAI: Generate care hint and fallback from PlantNet context
+  OAI-->>EF: name, note, plant_type
+  EF-->>AI: normalized scan result + PlantNet metadata
   AI-->>A: normalized scan result
   A->>DB: save plant row
   A->>DX: log discovery
@@ -155,6 +165,8 @@ sequenceDiagram
   DX-->>A: discovery metadata
   A-->>U: reveal modal and saved plant
 ```
+
+PlantNet is the default recognizer in this flow. OpenAI sits behind it to turn the match into user-facing care guidance and to provide a fallback path when PlantNet confidence is insufficient.
 
 ### Health check and diary loop
 
@@ -329,24 +341,25 @@ erDiagram
 
 ## Edge Function Topology
 
-| Function             | Purpose                                            |
-| -------------------- | -------------------------------------------------- |
-| `ai-plant-scan`      | image-to-species recognition and care hint         |
-| `ai-plant-details`   | structured species detail generation with cache    |
-| `ai-healthcheck`     | plant health scoring and recommendation generation |
-| `ai-chat`            | assistant chat and structured tool behavior        |
-| `ai-gardener-avatar` | personalized or generic avatar generation          |
-| `weather-proxy`      | weather access without exposing raw client secrets |
-| `revenucat-webhook`  | credit and subscription synchronization            |
-| `delete-account`     | GDPR-style account deletion flow                   |
-| `privacy-policy`     | legal endpoint                                     |
-| `terms`              | legal endpoint                                     |
-| `send-email`         | transactional outbound email support               |
+| Function             | Purpose                                                            |
+| -------------------- | ------------------------------------------------------------------ |
+| `ai-plant-scan`      | PlantNet-based species recognition plus GPT care hint and fallback |
+| `ai-plant-details`   | structured species detail generation with cache                    |
+| `ai-healthcheck`     | plant health scoring and recommendation generation                 |
+| `ai-chat`            | assistant chat and structured tool behavior                        |
+| `ai-gardener-avatar` | personalized or generic avatar generation                          |
+| `weather-proxy`      | weather access without exposing raw client secrets                 |
+| `revenucat-webhook`  | credit and subscription synchronization                            |
+| `delete-account`     | GDPR-style account deletion flow                                   |
+| `privacy-policy`     | legal endpoint                                                     |
+| `terms`              | legal endpoint                                                     |
+| `send-email`         | transactional outbound email support                               |
 
 Shared server-side concerns live in `supabase/functions/_shared/`:
 
 - auth resolution
 - credits and refunds
+- PlantNet invocation and response normalization
 - OpenAI invocation
 - language helpers
 - validation
