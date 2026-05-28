@@ -3,8 +3,9 @@
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_IMAGE_GEN_URL = 'https://api.openai.com/v1/images/generations';
 
-// GPT-4o Preise (Stand Feb 2026 – ggf. anpassen)
+// OpenAI Preise (Stand 2026-05-28 – ggf. anpassen)
 const PRICING: Record<string, { input: number; output: number }> = {
+  'gpt-5.5': { input: 5.0 / 1_000_000, output: 30.0 / 1_000_000 },
   'gpt-4o': { input: 2.5 / 1_000_000, output: 10.0 / 1_000_000 },
   'gpt-4o-mini': { input: 0.15 / 1_000_000, output: 0.6 / 1_000_000 },
 };
@@ -52,14 +53,19 @@ export async function callOpenAI(params: {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) throw new Error('OPENAI_API_KEY nicht konfiguriert');
 
-  const model = params.model || 'gpt-4o';
+  const model = params.model || 'gpt-5.5';
 
   const body: Record<string, any> = {
     model,
     messages: params.messages,
-    max_tokens: params.max_tokens || 1500,
-    temperature: params.temperature ?? 0.3,
+    max_completion_tokens: params.max_tokens || 1500,
   };
+
+  // GPT-5.5 rejects non-default temperature values on Chat Completions.
+  // Keep older model behavior, but let GPT-5.5 use its server default.
+  if (!model.startsWith('gpt-5.5')) {
+    body.temperature = params.temperature ?? 0.3;
+  }
 
   if (params.tools) {
     body.tools = params.tools;
@@ -93,7 +99,7 @@ export async function callOpenAI(params: {
   const completion_tokens = usage.completion_tokens || 0;
   const total_tokens = prompt_tokens + completion_tokens;
 
-  const pricing = PRICING[model] || PRICING['gpt-4o'];
+  const pricing = PRICING[model] || PRICING['gpt-5.5'];
   const cost_usd = prompt_tokens * pricing.input + completion_tokens * pricing.output;
 
   const message = json.choices?.[0]?.message || {};

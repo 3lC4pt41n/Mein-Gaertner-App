@@ -22,16 +22,16 @@ Relevante Dateien:
 
 ### 1.1 Übersicht aller LLM-Interaktionen
 
-| ID  | Datei & Zeile                                                                                                                              | Zweck                                                    | Model                         |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- | ----------------------------- |
-| P1  | [ai-plant-scan/index.ts:88](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-plant-scan/index.ts:88)             | Pflanze aus Foto erkennen (Name + kurzer Tipp)           | `gpt-4o` (Default aus Helper) |
-| P2  | [ai-plant-details/index.ts:468](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-plant-details/index.ts:468)     | Steckbrief/Details generieren (JSON)                     | `gpt-4o` (Default)            |
-| P3  | [ai-healthcheck/index.ts:195](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-healthcheck/index.ts:195)         | Bildbasierter Healthcheck (Score + Tabelle + Empfehlung) | `gpt-4o` (Default)            |
-| P4  | [ai-chat/index.ts:629](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-chat/index.ts:629)                       | Ben-Chat Antwortgenerierung mit Garden-Kontext + History | `gpt-4o` (Default)            |
-| P4b | [ai-chat/index.ts:657](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-chat/index.ts:657)                       | Finale Antwort nach Tool-Execution                       | `gpt-4o` (Default)            |
-| P5  | [ai-chat/index.ts:504](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-chat/index.ts:504)                       | Rolling Conversation Summary für Memory                  | `gpt-4o-mini`                 |
-| P6  | [ai-gardener-avatar/index.ts:90](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-gardener-avatar/index.ts:90)   | Gesichtsbeschreibung aus User-Foto (Vision-Schritt)      | `gpt-4o`                      |
-| P7  | [ai-gardener-avatar/index.ts:115](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-gardener-avatar/index.ts:115) | Avatar-Bild erzeugen                                     | `dall-e-3`                    |
+| ID  | Datei & Zeile                                                                                                                              | Zweck                                                    | Model                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- | ------------------------------ |
+| P1  | [ai-plant-scan/index.ts:88](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-plant-scan/index.ts:88)             | Pflanze aus Foto erkennen (Name + kurzer Tipp)           | `gpt-5.5` (Default aus Helper) |
+| P2  | [ai-plant-details/index.ts:468](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-plant-details/index.ts:468)     | Steckbrief/Details generieren (JSON)                     | `gpt-5.5` (Default)            |
+| P3  | [ai-healthcheck/index.ts:195](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-healthcheck/index.ts:195)         | Bildbasierter Healthcheck (Score + Tabelle + Empfehlung) | `gpt-5.5` (Default)            |
+| P4  | [ai-chat/index.ts:629](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-chat/index.ts:629)                       | Ben-Chat Antwortgenerierung mit Garden-Kontext + History | `gpt-5.5` (Default)            |
+| P4b | [ai-chat/index.ts:657](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-chat/index.ts:657)                       | Finale Antwort nach Tool-Execution                       | `gpt-5.5` (Default)            |
+| P5  | [ai-chat/index.ts:504](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-chat/index.ts:504)                       | Rolling Conversation Summary für Memory                  | `gpt-4o-mini`                  |
+| P6  | [ai-gardener-avatar/index.ts:90](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-gardener-avatar/index.ts:90)   | Gesichtsbeschreibung aus User-Foto (Vision-Schritt)      | `gpt-5.5`                      |
+| P7  | [ai-gardener-avatar/index.ts:115](/Users/tim.esanum/Documents/GitHub/Mein-Gaertner-App/supabase/functions/ai-gardener-avatar/index.ts:115) | Avatar-Bild erzeugen                                     | `dall-e-3`                     |
 
 Tool-Definitionen:
 

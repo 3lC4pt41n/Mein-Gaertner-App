@@ -2,7 +2,7 @@
 
 **A real-world plant Pokédex for hobby gardeners.**
 
-Scan plants with your camera, let PlantNet identify the species, use GPT-4o for care context and fallback logic, build your collection, track care tasks, and compete on leaderboards — all in one app.
+Scan plants with your camera, let PlantNet identify the species, use GPT-5.5 for care context and fallback logic, build your collection, track care tasks, and compete on leaderboards — all in one app.
 
 <!-- Hero image: To add a screenshot or GIF, place the file at docs/hero.png and uncomment:
 <p align="center">
@@ -40,7 +40,7 @@ Bandwidth limited. Response when time allows. No support SLA.
 
 ## Features
 
-- **Hybrid Plant Scanner** — Snap a photo, let PlantNet identify the species, and use GPT-4o for care context and fallback handling
+- **Hybrid Plant Scanner** — Snap a photo, let PlantNet identify the species, and use GPT-5.5 for care context and fallback handling
 - **Plant Dex** — Build your plant encyclopedia with discovery tracking and explorer status
 - **Care Tasks** — Create one-time or recurring tasks with automatic rescheduling and calendar view
 - **AI Health Check** — Get a plant health score (0-100) via image analysis
@@ -55,24 +55,24 @@ Bandwidth limited. Response when time allows. No support SLA.
 
 ## Tech Stack
 
-| Component     | Technology                                                               |
-| ------------- | ------------------------------------------------------------------------ |
-| Framework     | React Native 0.81 + Expo SDK 54                                          |
-| Language      | JavaScript (JSX) / TypeScript (Edge Functions)                           |
-| Backend       | Supabase (PostgreSQL, Auth, Storage, Edge Functions)                     |
-| AI            | PlantNet API + OpenAI GPT-4o + DALL-E 2 (server-side via Edge Functions) |
-| Payments      | RevenueCat (iOS + Android)                                               |
-| Weather       | OpenWeather API                                                          |
-| Navigation    | React Navigation 6                                                       |
-| i18n          | i18n-js (7 languages)                                                    |
-| Notifications | expo-notifications                                                       |
-| Location      | expo-location                                                            |
-| Images        | expo-image (disk + memory cache, blurhash)                               |
-| Maps          | react-native-maps (Google Maps)                                          |
-| Tests         | Jest 29 + React Testing Library                                          |
-| Crash Monitor | Sentry (DSGVO-compliant, PII-filtered)                                   |
-| Linting       | ESLint + Prettier                                                        |
-| CI/CD         | GitHub Actions + EAS Build/Submit                                        |
+| Component     | Technology                                                                |
+| ------------- | ------------------------------------------------------------------------- |
+| Framework     | React Native 0.81 + Expo SDK 54                                           |
+| Language      | JavaScript (JSX) / TypeScript (Edge Functions)                            |
+| Backend       | Supabase (PostgreSQL, Auth, Storage, Edge Functions)                      |
+| AI            | PlantNet API + OpenAI GPT-5.5 + DALL-E 2 (server-side via Edge Functions) |
+| Payments      | RevenueCat (iOS + Android)                                                |
+| Weather       | OpenWeather API                                                           |
+| Navigation    | React Navigation 6                                                        |
+| i18n          | i18n-js (7 languages)                                                     |
+| Notifications | expo-notifications                                                        |
+| Location      | expo-location                                                             |
+| Images        | expo-image (disk + memory cache, blurhash)                                |
+| Maps          | react-native-maps (Google Maps)                                           |
+| Tests         | Jest 29 + React Testing Library                                           |
+| Crash Monitor | Sentry (DSGVO-compliant, PII-filtered)                                    |
+| Linting       | ESLint + Prettier                                                         |
+| CI/CD         | GitHub Actions + EAS Build/Submit                                         |
 
 ## Quick Start
 

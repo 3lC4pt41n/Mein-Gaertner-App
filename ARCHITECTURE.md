@@ -4,7 +4,7 @@
 
 FloraScout is a mobile-first gardening system built around an Expo React Native client, a Supabase backend, and a server-side AI layer implemented as Supabase Edge Functions.
 
-Species recognition is intentionally hybrid: PlantNet provides the first-pass plant identification, while OpenAI models add care context, structured outputs, and fallback behavior when PlantNet is weak or unavailable.
+Species recognition is intentionally hybrid: PlantNet provides the first-pass plant identification, while OpenAI GPT-5.5 adds care context, structured outputs, and fallback behavior when PlantNet is weak or unavailable.
 
 The architecture optimizes for four things:
 
@@ -24,7 +24,7 @@ flowchart LR
   App --> Edge["Supabase Edge Functions"]
   App --> Sentry["Sentry"]
   Edge --> PlantNet["PlantNet API"]
-  Edge --> OpenAI["OpenAI models"]
+  Edge --> OpenAI["OpenAI GPT-5.5"]
   Edge --> Weather["OpenWeather API"]
   Edge --> RevenueCat["RevenueCat webhooks and SDK"]
   DB --> Views["Views / RPCs / RLS"]
@@ -52,7 +52,7 @@ flowchart LR
 ### External integrations
 
 - PlantNet for primary species recognition from scan images
-- OpenAI for care-context enrichment, plant details, health check, assistant chat, avatar generation, and scan fallback handling
+- OpenAI GPT-5.5 for care-context enrichment, plant details, health check, assistant chat, avatar generation, and scan fallback handling
 - RevenueCat for subscriptions and one-time credit packs
 - OpenWeather for weather-derived care context
 - Sentry for crash and error monitoring

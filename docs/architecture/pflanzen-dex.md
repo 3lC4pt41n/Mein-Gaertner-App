@@ -12,12 +12,12 @@
 
 Die App macht an **4 Stellen** LLM-Calls über Supabase Edge Functions:
 
-| #   | Edge Function      | Trigger (UI)                                                                        | Service-Methode                    | Kosten     | Modell          |
-| --- | ------------------ | ----------------------------------------------------------------------------------- | ---------------------------------- | ---------- | --------------- |
-| 1   | `ai-plant-scan`    | AddPlantScreen → Kamera                                                             | `aiService.recognizePlant()`       | 12 Credits | gpt-4o (Vision) |
-| 2   | `ai-plant-details` | AddPlantScreen → "Details generieren" ODER PlantDetailScreen → "Details generieren" | `aiService.generatePlantDetails()` | 15 Credits | gpt-4o          |
-| 3   | `ai-healthcheck`   | AddPlantScreen / PlantDetailScreen → "Healthcheck"                                  | `aiService.performHealthcheck()`   | 8 Credits  | gpt-4o (Vision) |
-| 4   | `ai-chat`          | AssistantScreen → Chat mit "Ben"                                                    | `aiService.chatWithBen()`          | 3 Credits  | gpt-4o          |
+| #   | Edge Function      | Trigger (UI)                                                                        | Service-Methode                    | Kosten     | Modell             |
+| --- | ------------------ | ----------------------------------------------------------------------------------- | ---------------------------------- | ---------- | ------------------ |
+| 1   | `ai-plant-scan`    | AddPlantScreen → Kamera                                                             | `aiService.recognizePlant()`       | 12 Credits | PlantNet + gpt-5.5 |
+| 2   | `ai-plant-details` | AddPlantScreen → "Details generieren" ODER PlantDetailScreen → "Details generieren" | `aiService.generatePlantDetails()` | 15 Credits | gpt-5.5            |
+| 3   | `ai-healthcheck`   | AddPlantScreen / PlantDetailScreen → "Healthcheck"                                  | `aiService.performHealthcheck()`   | 8 Credits  | gpt-5.5 (Vision)   |
+| 4   | `ai-chat`          | AssistantScreen → Chat mit "Ben"                                                    | `aiService.chatWithBen()`          | 3 Credits  | gpt-5.5            |
 
 ### 1.2 Der kritische Pfad: `ai-plant-details`
 
@@ -32,7 +32,7 @@ Edge Function: ai-plant-details/index.ts
     ↓
 15 Credits abgezogen (atomar, Zeile 242)
     ↓
-OpenAI gpt-4o Call mit Prompt + Schema (Zeile 276-279)
+OpenAI gpt-5.5 Call mit Prompt + Schema (Zeile 276-279)
     ↓
 JSON zurück: { overview, care, extras }
     ↓
@@ -142,7 +142,7 @@ erDiagram
         jsonb details_it "NEU: Cached Details (Italiano)"
         jsonb details_es "NEU: Cached Details (Español)"
         timestamptz details_generated_at "NEU: Wann generiert"
-        text details_model "NEU: gpt-4o Version"
+        text details_model "NEU: gpt-5.5 Version"
     }
 
     PLANTS {
@@ -432,7 +432,7 @@ WITH first_details AS (
 UPDATE public.species s
 SET details_de = fd.details,
     details_generated_at = NOW(),
-    details_model = 'gpt-4o (backfill from user data)'
+    details_model = 'gpt-5.5 (backfill from user data)'
 FROM first_details fd
 WHERE s.id = fd.species_id
   AND s.details_de IS NULL;
@@ -620,7 +620,7 @@ for (const species of TOP_100_PLANTS) {
       .update({
         [`details_${lang}`]: details,
         details_generated_at: new Date().toISOString(),
-        details_model: 'gpt-4o (seed)',
+        details_model: 'gpt-5.5 (seed)',
       })
       .eq('canonical_name', species);
   }

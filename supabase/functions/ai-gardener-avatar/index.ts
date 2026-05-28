@@ -1,5 +1,5 @@
 // Edge Function: User-Foto -> persoenlicher Gaertner-Avatar
-// 2-Step Pipeline: GPT-4o Vision describes the person, DALL-E 3 generates the avatar
+// 2-Step Pipeline: GPT-5.5 Vision describes the person, DALL-E 3 generates the avatar
 // POST Body: { base64?: string, language?: string, generate_generic?: boolean }
 // When generate_generic is true, base64 is not required – a random gardener is generated.
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
@@ -22,10 +22,34 @@ function getRandomGenericDescription(): string {
   const ages = ['mid-20s', 'early 30s', 'late 30s', 'mid-40s', 'early 50s', 'late 50s'];
   const genders = ['female', 'male'];
   const skinTones = ['fair', 'light', 'medium', 'olive', 'tan', 'brown', 'dark brown'];
-  const hairColors = ['blonde', 'light brown', 'brown', 'dark brown', 'auburn', 'red', 'black', 'gray', 'silver'];
-  const hairStyles = ['short and neat', 'medium-length and wavy', 'long and straight', 'curly', 'shoulder-length', 'tied back in a ponytail'];
+  const hairColors = [
+    'blonde',
+    'light brown',
+    'brown',
+    'dark brown',
+    'auburn',
+    'red',
+    'black',
+    'gray',
+    'silver',
+  ];
+  const hairStyles = [
+    'short and neat',
+    'medium-length and wavy',
+    'long and straight',
+    'curly',
+    'shoulder-length',
+    'tied back in a ponytail',
+  ];
   const eyeColors = ['blue', 'green', 'brown', 'hazel', 'dark brown', 'gray'];
-  const features = ['with freckles', 'with laugh lines', 'with dimples', 'with a kind expression', 'with rosy cheeks', 'with a warm smile'];
+  const features = [
+    'with freckles',
+    'with laugh lines',
+    'with dimples',
+    'with a kind expression',
+    'with rosy cheeks',
+    'with a warm smile',
+  ];
 
   const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
@@ -113,7 +137,7 @@ serve(async (req) => {
     } else {
       const normalizedBase64 = base64.includes(',') ? base64.split(',')[1] : base64;
       visionResult = await callOpenAI({
-        model: 'gpt-4o',
+        model: 'gpt-5.5',
         max_tokens: 500,
         temperature: 0.3,
         messages: [
@@ -189,7 +213,10 @@ Composition and style — follow exactly:
       cost_credits: cost,
       openai_cost_usd: visionResult?.cost_usd ?? 0,
       model: generate_generic ? imageResult.model : `${visionResult.model}+${imageResult.model}`,
-      metadata: { language: resolvedLanguage, avatar_type: generate_generic ? 'generic' : 'personalized' },
+      metadata: {
+        language: resolvedLanguage,
+        avatar_type: generate_generic ? 'generic' : 'personalized',
+      },
     });
 
     return new Response(

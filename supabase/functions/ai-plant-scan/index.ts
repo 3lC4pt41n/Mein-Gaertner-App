@@ -1,13 +1,10 @@
 // Edge Function: Pflanze erkennen (Foto → Name + Hinweis)
-// Hybrid-Ansatz: PlantNet API für Identifikation + GPT-4o für Pflegetipp
+// Hybrid-Ansatz: PlantNet API für Identifikation + GPT-5.5 für Pflegetipp
 // POST Body: { base64: string } (base64-kodiertes Bild)
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { callOpenAI } from '../_shared/openai.ts';
-import {
-  identifyPlantFromBase64,
-  formatPlantNetContext,
-} from '../_shared/plantnet.ts';
+import { identifyPlantFromBase64, formatPlantNetContext } from '../_shared/plantnet.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -95,10 +92,10 @@ serve(async (req) => {
     const plantNetResult = await plantNetPromise;
     const plantNetContext = formatPlantNetContext(plantNetResult);
 
-    // ─── Schritt 3: GPT-4o mit PlantNet-Kontext für Pflegetipp ────
-    // Wenn PlantNet erfolgreich: GPT-4o bekommt die Identifikation als Kontext
+    // ─── Schritt 3: GPT-5.5 mit PlantNet-Kontext für Pflegetipp ────
+    // Wenn PlantNet erfolgreich: GPT-5.5 bekommt die Identifikation als Kontext
     // und muss nur noch den Pflegetipp generieren (günstiger, schneller, genauer).
-    // Wenn PlantNet fehlschlägt: GPT-4o übernimmt die komplette Identifikation (Fallback).
+    // Wenn PlantNet fehlschlägt: GPT-5.5 übernimmt die komplette Identifikation (Fallback).
     const hasPlantNet = !!plantNetContext;
 
     const promptText = hasPlantNet
@@ -186,7 +183,14 @@ Rules:
 
     // Ensure plant_type is a valid category
     const validTypes = [
-      'houseplant', 'succulent', 'flowering', 'tree', 'herb', 'wild', 'groundcover', 'other',
+      'houseplant',
+      'succulent',
+      'flowering',
+      'tree',
+      'herb',
+      'wild',
+      'groundcover',
+      'other',
     ];
     if (!parsed.plant_type || !validTypes.includes(parsed.plant_type)) {
       parsed.plant_type = 'other';
