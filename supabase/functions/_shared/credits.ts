@@ -1,4 +1,4 @@
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { SupabaseClient } from 'npm:@supabase/supabase-js@2.50.2';
 
 // Credit-Kosten pro Aktion (in Credits, 1 Credit ≈ 1 Cent OpenAI-Kosten)
 export const CREDIT_COSTS: Record<string, number> = {

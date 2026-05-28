@@ -3,7 +3,7 @@
 // POST Body: { text?: string, image_url?: string, language?: string }
 // History wird server-seitig aus der DB geladen (nicht mehr vom Client gesendet)
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { SupabaseClient } from 'npm:@supabase/supabase-js@2.50.2';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { callOpenAI } from '../_shared/openai.ts';
 import {

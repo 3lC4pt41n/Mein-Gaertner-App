@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { createClient } from 'npm:@supabase/supabase-js@2.50.2';
 
 function requireEnv(...keys: string[]) {
   for (const key of keys) {

@@ -1,4 +1,4 @@
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { SupabaseClient } from 'npm:@supabase/supabase-js@2.50.2';
 import { corsHeaders as defaultCorsHeaders } from './credits.ts';
 
 // ─── Rate-Limit-Konfiguration pro Aktion ────────────────────────────
