@@ -135,21 +135,29 @@ export async function callOpenAIImageGenerate(params: {
 
   const model = params.model || 'dall-e-3';
 
+  const body: Record<string, any> = {
+    model,
+    prompt: params.prompt,
+    n: 1,
+    size: params.size || '1024x1024',
+    quality: params.quality || 'standard',
+    response_format: 'b64_json',
+  };
+
+  // `style` is a DALL-E 3-specific field. Keeping it scoped prevents image
+  // generation from breaking if the model is changed to another OpenAI image
+  // model that rejects unknown style parameters.
+  if (model === 'dall-e-3') {
+    body.style = params.style || 'natural';
+  }
+
   const res = await fetch(OPENAI_IMAGE_GEN_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      prompt: params.prompt,
-      n: 1,
-      size: params.size || '1024x1024',
-      quality: params.quality || 'standard',
-      style: params.style || 'natural',
-      response_format: 'b64_json',
-    }),
+    body: JSON.stringify(body),
   });
 
   const json = await res.json();

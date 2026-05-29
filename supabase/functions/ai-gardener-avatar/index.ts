@@ -1,5 +1,5 @@
 // Edge Function: User-Foto -> persoenlicher Gaertner-Avatar
-// 2-Step Pipeline: GPT-5.5 Vision describes the person, DALL-E 3 generates the avatar
+// 2-Step Pipeline: GPT-4o Vision describes the person, DALL-E 3 generates the avatar
 // POST Body: { base64?: string, language?: string, generate_generic?: boolean }
 // When generate_generic is true, base64 is not required – a random gardener is generated.
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
@@ -137,7 +137,7 @@ serve(async (req) => {
     } else {
       const normalizedBase64 = base64.includes(',') ? base64.split(',')[1] : base64;
       visionResult = await callOpenAI({
-        model: 'gpt-5.5',
+        model: 'gpt-4o',
         max_tokens: 500,
         temperature: 0.3,
         messages: [

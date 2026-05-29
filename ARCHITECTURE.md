@@ -52,7 +52,8 @@ flowchart LR
 ### External integrations
 
 - PlantNet for primary species recognition from scan images
-- OpenAI GPT-5.5 for care-context enrichment, plant details, health check, assistant chat, avatar generation, and scan fallback handling
+- OpenAI GPT-5.5 for care-context enrichment, plant details, health check, assistant chat, and scan fallback handling
+- OpenAI GPT-4o Vision + DALL-E 3 for personalized and generic gardener avatar generation
 - RevenueCat for subscriptions and one-time credit packs
 - OpenWeather for weather-derived care context
 - Sentry for crash and error monitoring

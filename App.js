@@ -275,16 +275,10 @@ function AppContent() {
     return <AuthScreen onPasswordRecoveryDetected={handlePasswordRecoveryDetected} />;
   }
 
-  const profileIncomplete =
-    !profile?.profile_setup_skipped &&
-    (!profile?.username ||
-      !profile?.first_name ||
-      !profile?.last_name ||
-      !profile?.country ||
-      !profile?.language);
+  const profileIncomplete = !profile?.username || !profile?.language;
 
   if (profileIncomplete) {
-    return <ProfileCompleteScreen user={user} profile={profile} onDone={refreshProfile} showSkip />;
+    return <ProfileCompleteScreen user={user} profile={profile} onDone={refreshProfile} />;
   }
 
   if (showWelcome) {

@@ -1,13 +1,22 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Alert, Text, Image, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { safeLaunchCamera, safeLaunchLibrary } from '../services/imagePickerHelper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { safeLaunchCamera, safeLaunchLibrary } from '../services/imagePickerHelper';
 import { supabase } from '../supabase';
 import { LANGUAGE_OPTIONS, normalizeLanguage } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
-import { colors, spacing } from '../theme/tokens';
+import { colors, radius, spacing } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
@@ -16,11 +25,8 @@ import { t } from '../i18n';
 
 const DRAFT_KEY = 'profile_draft';
 
-// In-memory cache that survives component remounts within the same app session.
-// When supabase.auth.updateUser() triggers an auth state change, the component
-// may unmount/remount and useState would re-initialise from stale profile props.
-// This cache provides the form values synchronously on remount, before the async
-// AsyncStorage draft can be loaded.
+// In-memory cache survives auth-state remounts while avatar generation updates
+// user metadata. Keep it intentionally small: onboarding only needs two fields.
 let formCache = null;
 
 async function createAvatarSignedUrl(path) {
@@ -31,13 +37,30 @@ async function createAvatarSignedUrl(path) {
   return data?.signedUrl || null;
 }
 
-export default function ProfileCompleteScreen({ user, profile, onDone, showSkip }) {
-  const [username, setUsername] = useState(() => formCache?.username ?? profile?.username ?? '');
-  const [firstName, setFirstName] = useState(
-    () => formCache?.firstName ?? profile?.first_name ?? ''
+function AvatarOption({ icon, title, subtitle, onPress, disabled }) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.75}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.avatarOption, disabled && styles.avatarOptionDisabled]}
+    >
+      <View style={styles.avatarOptionIcon}>
+        <Ionicons name={icon} size={22} color={colors.primary} />
+      </View>
+      <View style={styles.avatarOptionCopy}>
+        <Text style={styles.avatarOptionTitle}>{title}</Text>
+        <Text style={styles.avatarOptionSubtitle}>{subtitle}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+    </TouchableOpacity>
   );
-  const [lastName, setLastName] = useState(() => formCache?.lastName ?? profile?.last_name ?? '');
-  const [country, setCountry] = useState(() => formCache?.country ?? profile?.country ?? '');
+}
+
+export default function ProfileCompleteScreen({ user, profile, onDone }) {
+  const [username, setUsername] = useState(() => formCache?.username ?? profile?.username ?? '');
   const [language, setLanguage] = useState(
     () => formCache?.language ?? normalizeLanguage(profile?.language)
   );
@@ -47,35 +70,33 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null);
   const draftLoaded = useRef(false);
 
-  // Keep in-memory cache in sync with form fields so remounts pick up latest values
   useEffect(() => {
-    formCache = { username, firstName, lastName, country, language };
-  }, [username, firstName, lastName, country, language]);
+    formCache = { username, language };
+  }, [username, language]);
 
-  // Restore draft form data from AsyncStorage as a fallback
-  // (handles app restart during avatar generation where formCache is lost)
   useEffect(() => {
     if (draftLoaded.current) return;
     draftLoaded.current = true;
-    // Only restore from AsyncStorage if we didn't already have values from formCache
-    if (formCache && (formCache.username || formCache.firstName)) return;
+    if (formCache?.username) return;
+
     AsyncStorage.getItem(DRAFT_KEY).then((raw) => {
       if (!raw) return;
       try {
-        const d = JSON.parse(raw);
-        if (d.username) setUsername(d.username);
-        if (d.firstName) setFirstName(d.firstName);
-        if (d.lastName) setLastName(d.lastName);
-        if (d.country) setCountry(d.country);
-        if (d.language) setLanguage(d.language);
+        const draft = JSON.parse(raw);
+        if (draft.username) setUsername(draft.username);
+        if (draft.language) setLanguage(normalizeLanguage(draft.language));
       } catch (_e) {
-        // ignore
+        // Ignore stale or malformed local drafts.
       }
     });
   }, []);
 
   useEffect(() => {
-    if (!avatarPath) return;
+    if (!avatarPath) {
+      setAvatarPreviewUrl(null);
+      return;
+    }
+
     createAvatarSignedUrl(avatarPath)
       .then(setAvatarPreviewUrl)
       .catch(() => setAvatarPreviewUrl(null));
@@ -84,11 +105,8 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
   const processAvatarGeneration = async (base64, isGeneric = false) => {
     setGeneratingAvatar(true);
     try {
-      // Persist form data before avatar call (auth state change may re-mount component)
-      await AsyncStorage.setItem(
-        DRAFT_KEY,
-        JSON.stringify({ username, firstName, lastName, country, language })
-      );
+      await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify({ username, language }));
+
       const avatarData = await generateGardenerAvatar(base64, language, isGeneric);
       if (!avatarData?.avatar_path) {
         throw new Error(t('profile.avatarCreateError'));
@@ -115,18 +133,22 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       Alert.alert(t('common.error'), t('profile.cameraRequired'));
       return;
     }
+
     const result = await safeLaunchCamera({
+      mediaTypes: ['images'],
       base64: true,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
     if (result.canceled) return;
+
     const asset = result.assets?.[0];
     if (!asset?.base64) {
       Alert.alert(t('common.error'), t('profile.photoReadError'));
       return;
     }
+
     await processAvatarGeneration(asset.base64);
   };
 
@@ -136,32 +158,27 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       Alert.alert(t('common.error'), t('profile.libraryRequired'));
       return;
     }
+
     const result = await safeLaunchLibrary({
+      mediaTypes: ['images'],
       base64: true,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
     if (result.canceled) return;
+
     const asset = result.assets?.[0];
     if (!asset?.base64) {
       Alert.alert(t('common.error'), t('profile.photoReadError'));
       return;
     }
+
     await processAvatarGeneration(asset.base64);
   };
 
   const handleGenerateGenericAvatar = async () => {
     await processAvatarGeneration(null, true);
-  };
-
-  const handleAvatarAction = () => {
-    Alert.alert(t('profile.avatarSourceTitle'), t('profile.avatarSourceMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('profile.avatarFromCamera'), onPress: handlePickFromCamera },
-      { text: t('profile.avatarFromGallery'), onPress: handlePickFromGallery },
-      { text: t('profile.avatarGeneric'), onPress: handleGenerateGenericAvatar },
-    ]);
   };
 
   const handleSave = async () => {
@@ -170,24 +187,15 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
       return;
     }
 
-    // Validate all required fields before saving
     const missing = [];
     if (!username.trim()) missing.push(t('profile.username'));
-    if (!firstName.trim()) missing.push(t('profile.firstName'));
-    if (!lastName.trim()) missing.push(t('profile.lastName'));
-    if (!country.trim()) missing.push(t('profile.country'));
     if (!language) missing.push(t('profile.language'));
 
     if (missing.length > 0) {
       Alert.alert(
-        t('common.validation') || 'Pflichtfelder',
-        (t('profile.missingFields') || 'Bitte fülle alle Felder aus') + ':\n' + missing.join(', ')
+        t('common.validation') || 'Validation',
+        `${t('profile.missingFields') || 'Please fill in'}:\n${missing.join(', ')}`
       );
-      return;
-    }
-
-    if (!avatarPath) {
-      Alert.alert(t('profile.avatarMissing'), t('profile.avatarMissingMessage'));
       return;
     }
 
@@ -195,7 +203,11 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ username, first_name: firstName, last_name: lastName, country, language })
+        .update({
+          username: username.trim(),
+          language,
+          profile_setup_skipped: false,
+        })
         .eq('id', user.id);
 
       if (error) {
@@ -217,11 +229,13 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
     label: opt.label,
   }));
 
+  const busy = saving || generatingAvatar;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* ── Profile Fields ── */}
       <DSCard variant="elevated" padding="lg">
         <Text style={styles.heading}>{t('profile.completeProfile')}</Text>
+        <Text style={styles.intro}>{t('profile.profileIntro')}</Text>
 
         <DSInput
           label={t('profile.username')}
@@ -229,24 +243,8 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
           value={username}
           onChangeText={setUsername}
           placeholder={t('profile.usernamePlaceholder')}
-        />
-        <DSInput
-          label={t('profile.firstName')}
-          icon="person-outline"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-        <DSInput
-          label={t('profile.lastName')}
-          icon="person-outline"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        <DSInput
-          label={t('profile.country')}
-          icon="globe-outline"
-          value={country}
-          onChangeText={setCountry}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
 
         <Text style={styles.fieldLabel}>{t('profile.language')}</Text>
@@ -256,79 +254,69 @@ export default function ProfileCompleteScreen({ user, profile, onDone, showSkip 
           onSelect={setLanguage}
           variant="pills"
           scrollable
-          style={{ marginBottom: spacing.md }}
+          style={styles.languageChips}
         />
       </DSCard>
 
-      {/* ── Avatar ── */}
       <DSCard variant="elevated" padding="lg">
         <Text style={styles.subheading}>{t('profile.avatarStep')}</Text>
+        <Text style={styles.avatarHint}>{t('profile.avatarOptionalHint')}</Text>
 
         <View style={styles.avatarContainer}>
-          {avatarPreviewUrl ? (
-            <Image source={{ uri: avatarPreviewUrl }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={48} color={colors.textTertiary} />
-            </View>
-          )}
+          <View style={styles.avatarPreview}>
+            {avatarPreviewUrl ? (
+              <Image source={{ uri: avatarPreviewUrl }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons name="person" size={48} color={colors.textTertiary} />
+              </View>
+            )}
+
+            {generatingAvatar && (
+              <View style={styles.avatarOverlay}>
+                <ActivityIndicator size="small" color={colors.surface} />
+              </View>
+            )}
+          </View>
         </View>
 
-        {generatingAvatar && (
-          <ActivityIndicator
-            size="small"
-            color={colors.primaryLight}
-            style={{ marginBottom: spacing.sm }}
+        <View style={styles.avatarActions}>
+          <AvatarOption
+            icon="sparkles-outline"
+            title={t('profile.avatarGeneric')}
+            subtitle={t('profile.avatarGenericHint')}
+            onPress={handleGenerateGenericAvatar}
+            disabled={busy}
           />
-        )}
-
-        <DSButton
-          icon="brush-outline"
-          onPress={handleAvatarAction}
-          disabled={saving || generatingAvatar}
-          fullWidth
-        >
-          {avatarPreviewUrl ? t('profile.retakeAvatar') : t('profile.avatarButton')}
-        </DSButton>
+          <AvatarOption
+            icon="camera-outline"
+            title={t('profile.avatarFromCamera')}
+            subtitle={t('profile.avatarCameraHint')}
+            onPress={handlePickFromCamera}
+            disabled={busy}
+          />
+          <AvatarOption
+            icon="images-outline"
+            title={t('profile.avatarFromGallery')}
+            subtitle={t('profile.avatarGalleryHint')}
+            onPress={handlePickFromGallery}
+            disabled={busy}
+          />
+        </View>
       </DSCard>
 
-      {/* ── Save ── */}
       <DSButton
         onPress={handleSave}
-        disabled={saving || generatingAvatar}
+        disabled={busy}
         fullWidth
         loading={saving}
         icon="checkmark-circle-outline"
-        style={{ marginTop: spacing.sm }}
+        style={styles.saveButton}
       >
         {t('profile.saveProfile')}
       </DSButton>
 
-      {showSkip && (
-        <DSButton
-          variant="ghost"
-          onPress={async () => {
-            try {
-              await supabase
-                .from('profiles')
-                .update({ profile_setup_skipped: true })
-                .eq('id', user.id);
-              await AsyncStorage.removeItem(DRAFT_KEY);
-              formCache = null;
-            } catch (_e) {
-              // Best-effort
-            }
-            onDone && onDone();
-          }}
-          disabled={saving || generatingAvatar}
-          fullWidth
-          style={{ marginTop: spacing.sm }}
-        >
-          {t('common.skip')}
-        </DSButton>
-      )}
-
-      <View style={{ height: spacing.xxxl }} />
+      <View style={styles.bottomSpacer} />
     </ScrollView>
   );
 }
@@ -340,13 +328,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  intro: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textSecondary,
     marginBottom: spacing.lg,
   },
   subheading: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.textPrimary,
-    marginBottom: spacing.md,
+    marginBottom: spacing.xs,
   },
   fieldLabel: {
     fontSize: 14,
@@ -354,7 +348,22 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
-  avatarContainer: { alignItems: 'center', marginBottom: spacing.md },
+  languageChips: {
+    marginBottom: spacing.sm,
+  },
+  avatarHint: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  avatarPreview: {
+    position: 'relative',
+  },
   avatar: {
     width: 120,
     height: 120,
@@ -369,5 +378,57 @@ const styles = StyleSheet.create({
     backgroundColor: colors.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.overlay,
+  },
+  avatarActions: {
+    gap: spacing.sm,
+  },
+  avatarOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: 72,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  avatarOptionDisabled: {
+    opacity: 0.55,
+  },
+  avatarOptionIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarOptionCopy: {
+    flex: 1,
+  },
+  avatarOptionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  avatarOptionSubtitle: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
+  },
+  saveButton: {
+    marginTop: spacing.sm,
+  },
+  bottomSpacer: {
+    height: spacing.xxxl,
   },
 });
