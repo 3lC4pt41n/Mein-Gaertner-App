@@ -165,7 +165,6 @@ serve(async (req) => {
       model: 'dall-e-3',
       size: '1024x1024',
       quality: 'standard',
-      style: 'natural',
       prompt: `Illustrated avatar portrait of a gardener. IMPORTANT — match the gender and all physical features exactly as described below:
 
 ${personDescription}

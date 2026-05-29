@@ -128,7 +128,6 @@ export async function callOpenAIImageGenerate(params: {
   model?: string;
   size?: '1024x1024' | '1024x1792' | '1792x1024';
   quality?: 'standard' | 'hd';
-  style?: 'vivid' | 'natural';
 }): Promise<OpenAIImageResponse> {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) throw new Error('OPENAI_API_KEY nicht konfiguriert');
@@ -143,13 +142,6 @@ export async function callOpenAIImageGenerate(params: {
     quality: params.quality || 'standard',
     response_format: 'b64_json',
   };
-
-  // `style` is a DALL-E 3-specific field. Keeping it scoped prevents image
-  // generation from breaking if the model is changed to another OpenAI image
-  // model that rejects unknown style parameters.
-  if (model === 'dall-e-3') {
-    body.style = params.style || 'natural';
-  }
 
   const res = await fetch(OPENAI_IMAGE_GEN_URL, {
     method: 'POST',
