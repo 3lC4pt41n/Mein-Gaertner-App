@@ -219,6 +219,13 @@ const tabButtonStyles = StyleSheet.create({
   },
 });
 
+function updateTimeOnlyContext(previousContext) {
+  return buildContext({
+    location: previousContext?.location || null,
+    weather: previousContext?.weather || null,
+  });
+}
+
 // ---------- App Content (uses AuthContext) ---------
 function AppContent() {
   const {
@@ -243,6 +250,7 @@ function AppContent() {
     }
 
     let mounted = true;
+    let timeInterval;
 
     async function refreshContext() {
       try {
@@ -261,9 +269,15 @@ function AppContent() {
     }
 
     refreshContext();
+    timeInterval = setInterval(() => {
+      if (mounted) {
+        setContext((previousContext) => updateTimeOnlyContext(previousContext));
+      }
+    }, 60 * 1000);
 
     return () => {
       mounted = false;
+      if (timeInterval) clearInterval(timeInterval);
     };
   }, [user?.id]);
 

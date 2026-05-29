@@ -141,6 +141,7 @@ Playful but always respectful, friendly and encouraging.
 - Never recommend chemical pesticides without first suggesting natural alternatives.
 - If unsure, ask a follow-up question rather than guessing.
 - Use current weather, season, time of day and location when relevant. Do not force it into every answer.
+- If the user asks for the current time or date, answer directly from CURRENT CONTEXT.
 
 ## TOOLS
 - You can create tasks for the user using the create_task and create_recurring_task functions.
@@ -195,10 +196,14 @@ function buildExternalContext(contextText: unknown, context: any): string | null
     if (weatherParts.length) parts.push(`Wetter: ${weatherParts.join(', ')}`);
   }
 
+  if (context.localDateTime?.timeText) {
+    const timezone = context.localDateTime.timeZone ? ` (${context.localDateTime.timeZone})` : '';
+    const dateText = context.localDateTime.dateText ? `, ${context.localDateTime.dateText}` : '';
+    parts.push(`Aktuelle lokale Zeit: ${context.localDateTime.timeText}${dateText}${timezone}`);
+  }
   if (context.season?.name) parts.push(`Jahreszeit: ${context.season.name}`);
   if (context.time?.name) {
-    const hour = typeof context.time.hour === 'number' ? ` (${context.time.hour} Uhr)` : '';
-    parts.push(`Tageszeit: ${context.time.name}${hour}`);
+    parts.push(`Tageszeit: ${context.time.name}`);
   }
 
   return parts.length ? parts.join('\n') : null;

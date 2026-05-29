@@ -1,7 +1,7 @@
 // contextUtils.js - Sammelt Wetter, Saison, Tageszeit und Standort
 
 import { getCurrentSeason } from './seasonUtils';
-import { getTimeOfDay } from './timeUtils';
+import { getLocalDateTime, getTimeOfDay } from './timeUtils';
 
 function getWeatherTemperature(weather) {
   return weather?.temperature ?? weather?.temp ?? null;
@@ -16,6 +16,7 @@ function getWeatherWindSpeed(weather) {
 }
 
 export function buildContext({ location, weather } = {}) {
+  const now = new Date();
   const normalizedLocation = location
     ? {
         ...location,
@@ -30,8 +31,9 @@ export function buildContext({ location, weather } = {}) {
     location: normalizedLocation,
     weather: weather || null,
     season: getCurrentSeason(location?.latitude),
-    time: getTimeOfDay(),
-    localTime: new Date().toISOString(),
+    time: getTimeOfDay(now),
+    localDateTime: getLocalDateTime(now),
+    localTime: now.toISOString(),
   };
 }
 
@@ -62,7 +64,15 @@ export function formatContextForPrompt(context) {
   }
 
   if (context.season) parts.push(`Jahreszeit: ${context.season.name}`);
-  if (context.time) parts.push(`Tageszeit: ${context.time.name} (${context.time.hour} Uhr)`);
+  if (context.localDateTime) {
+    const timezone = context.localDateTime.timeZone ? ` (${context.localDateTime.timeZone})` : '';
+    parts.push(
+      `Aktuelle lokale Zeit: ${context.localDateTime.timeText}, ${context.localDateTime.dateText}${timezone}`
+    );
+  } else if (context.time) {
+    parts.push(`Aktuelle lokale Zeit: ${context.time.formattedTime || `${context.time.hour} Uhr`}`);
+  }
+  if (context.time) parts.push(`Tageszeit: ${context.time.name}`);
 
   return parts.join('\n');
 }
