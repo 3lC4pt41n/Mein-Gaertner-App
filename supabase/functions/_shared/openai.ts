@@ -41,6 +41,14 @@ function base64ToBytes(base64: string): Uint8Array {
   return bytes;
 }
 
+async function imageUrlToBytes(url: string): Promise<Uint8Array> {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`OpenAI Error: Bild konnte nicht geladen werden (${res.status})`);
+  }
+  return new Uint8Array(await res.arrayBuffer());
+}
+
 export async function callOpenAI(params: {
   messages: any[];
   model?: string;
@@ -140,7 +148,6 @@ export async function callOpenAIImageGenerate(params: {
     n: 1,
     size: params.size || '1024x1024',
     quality: params.quality || 'standard',
-    response_format: 'b64_json',
   };
 
   const res = await fetch(OPENAI_IMAGE_GEN_URL, {
@@ -158,13 +165,16 @@ export async function callOpenAIImageGenerate(params: {
     throw new Error(`OpenAI Error: ${json.error.message}`);
   }
 
-  const outputBase64 = json.data?.[0]?.b64_json;
-  if (!outputBase64) {
+  const image = json.data?.[0];
+  const outputBase64 = image?.b64_json;
+  const outputUrl = image?.url;
+
+  if (!outputBase64 && !outputUrl) {
     throw new Error('OpenAI Error: Kein Bild erhalten');
   }
 
   return {
-    image_bytes: base64ToBytes(outputBase64),
+    image_bytes: outputBase64 ? base64ToBytes(outputBase64) : await imageUrlToBytes(outputUrl),
     model,
   };
 }
