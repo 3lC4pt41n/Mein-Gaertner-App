@@ -31,7 +31,7 @@ jobs:
 
       - name: Push database migrations
         id: db_push
-        run: supabase db push
+        run: supabase db push --include-all
 
       - name: Deploy Edge Functions
         run: |
