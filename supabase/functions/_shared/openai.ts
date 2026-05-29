@@ -128,26 +128,26 @@ export async function callOpenAI(params: {
 }
 
 /**
- * Generate an image with DALL-E 3 via /v1/images/generations.
+ * Generate an image via /v1/images/generations.
  * Returns the raw image bytes (PNG) and model name.
  */
 export async function callOpenAIImageGenerate(params: {
   prompt: string;
   model?: string;
-  size?: '1024x1024' | '1024x1792' | '1792x1024';
-  quality?: 'standard' | 'hd';
+  size?: '1024x1024' | '1024x1536' | '1536x1024' | 'auto';
+  quality?: 'auto' | 'low' | 'medium' | 'high';
 }): Promise<OpenAIImageResponse> {
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) throw new Error('OPENAI_API_KEY nicht konfiguriert');
 
-  const model = params.model || 'dall-e-3';
+  const model = params.model || 'gpt-image-1';
 
   const body: Record<string, any> = {
     model,
     prompt: params.prompt,
     n: 1,
     size: params.size || '1024x1024',
-    quality: params.quality || 'standard',
+    quality: params.quality || 'medium',
   };
 
   const res = await fetch(OPENAI_IMAGE_GEN_URL, {

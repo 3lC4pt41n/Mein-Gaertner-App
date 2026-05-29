@@ -160,11 +160,11 @@ serve(async (req) => {
       personDescription = visionResult.content;
     }
 
-    // ----- Step 2: DALL-E 3 — generate illustrated gardener avatar -----
+    // ----- Step 2: Generate illustrated gardener avatar -----
     const imageResult = await callOpenAIImageGenerate({
-      model: 'dall-e-3',
+      model: 'gpt-image-1',
       size: '1024x1024',
-      quality: 'standard',
+      quality: 'medium',
       prompt: `Illustrated avatar portrait of a gardener. IMPORTANT — match the gender and all physical features exactly as described below:
 
 ${personDescription}
