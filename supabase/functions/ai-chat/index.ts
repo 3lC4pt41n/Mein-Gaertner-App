@@ -27,11 +27,94 @@ import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
 // ─── Garden Context: Pflanzen, Healthchecks, Tasks laden ────────────
 
+function truncateText(value: unknown, maxLength = 120): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (!normalized) return null;
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 1)}…` : normalized;
+}
+
+function findDetailsValue(source: Record<string, unknown>, keys: string[]): string | null {
+  const entries = Object.entries(source || {});
+  for (const expectedKey of keys) {
+    const normalizedExpected = expectedKey.toLowerCase();
+    const match = entries.find(([key]) => key.toLowerCase().includes(normalizedExpected));
+    const value = match?.[1];
+    const text = truncateText(value, 80);
+    if (text) return text;
+  }
+  return null;
+}
+
+function summarizePlantDetails(details: unknown): string | null {
+  if (!details || typeof details !== 'object' || Array.isArray(details)) return null;
+
+  const typedDetails = details as Record<string, any>;
+  const overview = typedDetails.overview || {};
+  const care = typedDetails.care || {};
+  const parts: string[] = [];
+
+  const commonName = findDetailsValue(overview, [
+    'Deutscher Name',
+    'Common Name',
+    'Nom commun',
+    'Nome comune',
+    'Nombre común',
+    'Обычное название',
+    'Yaygın ad',
+  ]);
+  const growthType = findDetailsValue(overview, [
+    'Lebensform',
+    'Growth Type',
+    'Type de croissance',
+    'Tipo di crescita',
+    'Tipo de crecimiento',
+    'Форма роста',
+    'Büyüme tipi',
+  ]);
+  const light = findDetailsValue(care, ['Licht', 'Light', 'Lumière', 'Luce', 'Luz', 'Свет', 'Işık']);
+  const watering = findDetailsValue(care, [
+    'Gießen',
+    'Watering',
+    'Arrosage',
+    'Annaffiatura',
+    'Riego',
+    'Полив',
+    'Sulama',
+  ]);
+  const temperature = findDetailsValue(care, [
+    'Temperatur',
+    'Temperature',
+    'Température',
+    'Temperatura',
+    'Температура',
+    'Sıcaklık',
+  ]);
+  const specialNotes = findDetailsValue(care, [
+    'Besondere Hinweise',
+    'Special Notes',
+    'Notes particulières',
+    'Note speciali',
+    'Notas especiales',
+    'Особые примечания',
+    'Özel notlar',
+  ]);
+
+  if (commonName) parts.push(`Name: ${commonName}`);
+  if (growthType) parts.push(`Typ: ${growthType}`);
+  if (light) parts.push(`Licht: ${light}`);
+  if (watering) parts.push(`Wasser: ${watering}`);
+  if (temperature) parts.push(`Temperatur: ${temperature}`);
+  if (specialNotes) parts.push(`Hinweis: ${specialNotes}`);
+
+  return parts.length ? parts.slice(0, 5).join('; ') : null;
+}
+
 async function loadGardenContext(serviceClient: SupabaseClient, userId: string): Promise<string> {
   // Pflanzen laden
   const { data: plants } = await serviceClient
     .from('plants')
-    .select('id, name, note, zone_id, created_at')
+    .select('id, name, note, zone_id, details, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
@@ -88,13 +171,18 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
     const hc = latestHC[plant.id];
     const plantTasks = tasksByPlant[plant.id] || [];
     const zone = plant.zone_id ? zoneMap[plant.zone_id] : null;
+    const note = truncateText(plant.note, 120);
+    const details = summarizePlantDetails(plant.details);
 
     context += `- ${plant.name}`;
     if (zone) context += ` [${zone}]`;
+    if (note) context += ` | Notiz: ${note}`;
+    if (details) context += ` | Details: ${details}`;
     if (hc) {
       const daysAgo = Math.floor((Date.now() - new Date(hc.created_at).getTime()) / 86400000);
       context += ` | Health: ${hc.healthscore}/100 (${daysAgo}d ago)`;
-      if (hc.recommendation) context += ` | Tip: ${hc.recommendation}`;
+      const healthTip = truncateText(hc.recommendation || hc.summary, 140);
+      if (healthTip) context += ` | Tip: ${healthTip}`;
     }
     if (plantTasks.length > 0) {
       const taskStr = plantTasks
