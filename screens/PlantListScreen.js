@@ -24,6 +24,7 @@ import ErrorState from '../components/ErrorState';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
+import { getSeasonalTip } from '../utils/seasonUtils';
 
 // Native animation auf Android aktivieren
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -64,6 +65,50 @@ function PlantImage({ uri, style, placeholderStyle }) {
       <Ionicons name="leaf-outline" size={32} color={colors.textTertiary} />
     </View>
   );
+}
+
+function getContextTip(context) {
+  const weather = context?.weather;
+  const season = context?.season;
+  const temperature = weather?.temperature ?? weather?.temp;
+
+  if (typeof temperature === 'number' && temperature > 30) {
+    return {
+      icon: 'sunny-outline',
+      title: 'Heute heiß',
+      body: `${temperature}°C: Prüfe durstige Pflanzen und vermeide direkte Mittagssonne bei empfindlichen Arten.`,
+    };
+  }
+
+  if (typeof temperature === 'number' && temperature < 2) {
+    return {
+      icon: 'snow-outline',
+      title: 'Frost im Blick',
+      body: `${temperature}°C: Schütze Balkon- und Gartenpflanzen vor Kälte und gieße nur sparsam.`,
+    };
+  }
+
+  if (weather?.rain_mm > 0) {
+    return {
+      icon: 'rainy-outline',
+      title: 'Regen erkannt',
+      body: 'Outdoor-Pflanzen brauchen heute vermutlich weniger zusätzliches Wasser.',
+    };
+  }
+
+  if (season) {
+    return {
+      icon: 'leaf-outline',
+      title: `${season.icon} ${season.name}`,
+      body: getSeasonalTip(season),
+    };
+  }
+
+  return {
+    icon: 'time-outline',
+    title: 'Kontext aktiv',
+    body: 'FloraScout berücksichtigt Wetter, Saison und Tageszeit für bessere Pflegetipps.',
+  };
 }
 
 // Fetch plants, healthscores & signed URLs in parallel (nicht sequentiell!)
@@ -182,7 +227,7 @@ async function getGroupedPlants(userId) {
   }));
 }
 
-export default function PlantListScreen() {
+export default function PlantListScreen({ context }) {
   const [index, setIndex] = useState(0);
   const routes = [
     { key: 'all', title: t('plants.tabAll') },
@@ -196,6 +241,7 @@ export default function PlantListScreen() {
   const navigation = useNavigation();
   const { userId } = useAuth();
   const [expandedZones, setExpandedZones] = useState({}); // { [zoneId]: true }
+  const contextTip = useMemo(() => getContextTip(context), [context]);
 
   // Reload plant list every time screen gains focus (e.g. after adding a plant)
   useFocusEffect(
@@ -397,6 +443,18 @@ export default function PlantListScreen() {
 
   return (
     <View style={styles.screenContainer}>
+      {contextTip && (
+        <View style={styles.contextBanner}>
+          <View style={styles.contextIcon}>
+            <Ionicons name={contextTip.icon} size={20} color={colors.primary} />
+          </View>
+          <View style={styles.contextCopy}>
+            <Text style={styles.contextTitle}>{contextTip.title}</Text>
+            <Text style={styles.contextBody}>{contextTip.body}</Text>
+          </View>
+        </View>
+      )}
+
       {/* Plant Dex CTA */}
       <TouchableOpacity
         style={plantDexStyles.ctaBar}
@@ -437,6 +495,41 @@ const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  contextBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primarySurface,
+    borderRadius: radius.md,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    ...shadows.sm,
+  },
+  contextIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contextCopy: {
+    flex: 1,
+  },
+  contextTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  contextBody: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
   },
   homesScrollView: {
     flex: 1,

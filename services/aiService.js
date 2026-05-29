@@ -1,5 +1,6 @@
 import { supabase, SUPABASE_PUBLISHABLE_KEY } from '../supabase';
 import { requestWithPolicy } from './networkPolicy';
+import { formatContextForPrompt } from '../utils/contextUtils';
 
 function isAuthFailure(error, parsed) {
   // Only treat as auth failure when we have strong signals.
@@ -226,12 +227,19 @@ export async function performHealthcheck(imageUrl, plantName, language) {
 
 // Chat-Nachricht an Ben senden
 // History wird server-seitig geladen, nicht mehr vom Client gesendet
-export async function chatWithBen(text, imageUrl, language) {
-  return callEdgeFunction('ai-chat', {
+export async function chatWithBen(text, imageUrl, language, context) {
+  const body = {
     text: text || undefined,
     image_url: imageUrl || undefined,
     language,
-  });
+  };
+
+  if (context) {
+    body.context = context;
+    body.contextText = formatContextForPrompt(context);
+  }
+
+  return callEdgeFunction('ai-chat', body);
 }
 
 // User-Foto -> personalisierter Gaertner-Avatar

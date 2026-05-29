@@ -29,7 +29,7 @@ import CreditBar from '../components/CreditBar';
 
 const GARDENER_NAME = 'Ben';
 
-export default function AssistantScreen() {
+export default function AssistantScreen({ context }) {
   const { userId: user_id, user } = useAuth();
   const navigation = useNavigation();
   const [input, setInput] = useState('');
@@ -191,7 +191,7 @@ export default function AssistantScreen() {
   // GPT-Antwort über Edge Function (History wird server-seitig geladen)
   const getBenAnswer = async (text = '', image_url = null) => {
     try {
-      const data = await chatWithBen(text, image_url, language);
+      const data = await chatWithBen(text, image_url, language, context);
       const content = data?.content || t('assistant.noAnswer');
 
       const msg = { user_id, sender: GARDENER_NAME, content };

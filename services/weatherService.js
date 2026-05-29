@@ -45,6 +45,13 @@ const CACHE_KEY_FORECAST = '@weather_forecast';
 const CACHE_KEY_LOCATION = '@user_location';
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 const LOCATION_TTL = 30 * 60 * 1000; // 30 minutes
+const FALLBACK_LOCATION = {
+  latitude: 52.52,
+  longitude: 13.405,
+  city: 'Berlin',
+  country: 'DE',
+  fallback: true,
+};
 
 /**
  * Check if cached data is still valid
@@ -127,22 +134,60 @@ const fetchWeatherFromAPI = async (latitude, longitude) => {
     }
 
     const data = await response.json();
+    const temp = Math.round(data.main.temp);
+    const windSpeed = Math.round(data.wind.speed * 10) / 10;
+    const weatherText = data.weather?.[0]?.main || data.weather?.[0]?.description || null;
+    const weatherIcon = data.weather?.[0]?.icon || null;
+    const timestamp = data.dt || Math.floor(Date.now() / 1000);
+    const sunrise = data.sys?.sunrise;
+    const sunset = data.sys?.sunset;
 
     return {
-      temp: Math.round(data.main.temp),
+      temp,
+      temperature: temp,
       feels_like: Math.round(data.main.feels_like),
       humidity: data.main.humidity,
-      description: data.weather[0].main,
-      icon: data.weather[0].icon,
+      description: weatherText,
+      weatherText,
+      icon: weatherIcon,
+      weatherIcon,
+      weatherCode: data.weather?.[0]?.id ?? null,
       rain_mm: data.rain?.['1h'] || 0,
-      wind_speed: Math.round(data.wind.speed * 10) / 10,
+      wind_speed: windSpeed,
+      windSpeed,
       city: data.name,
-      country: data.sys.country,
+      country: data.sys?.country,
+      isDay:
+        typeof sunrise === 'number' && typeof sunset === 'number'
+          ? timestamp >= sunrise && timestamp < sunset
+          : undefined,
     };
   } catch (error) {
     console.warn('Error fetching weather from API:', error.message);
     return null;
   }
+};
+
+export const getCurrentLocation = async () => {
+  const location = await getLocation();
+  if (!location || location.denied) return FALLBACK_LOCATION;
+  return location;
+};
+
+export const getWeather = async (latitude, longitude, { cache = false } = {}) => {
+  if (typeof latitude !== 'number' || typeof longitude !== 'number') return null;
+
+  const weather = await fetchWeatherFromAPI(latitude, longitude);
+  if (weather && cache) {
+    await AsyncStorage.setItem(
+      CACHE_KEY_WEATHER,
+      JSON.stringify({
+        data: weather,
+        timestamp: Date.now(),
+      })
+    );
+  }
+  return weather;
 };
 
 /**

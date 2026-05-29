@@ -1,5 +1,17 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, Modal, TouchableOpacity, SectionList, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Alert,
+  Modal,
+  TouchableOpacity,
+  SectionList,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../supabase';
@@ -12,6 +24,51 @@ import DSCard from '../theme/DSCard';
 import DSInput from '../theme/DSInput';
 import DSChipGroup from '../theme/DSChips';
 
+function ContextSummary({ context }) {
+  const season = context?.season;
+  const time = context?.time;
+  const weather = context?.weather;
+  const city = context?.location?.city || weather?.city;
+  const temperature = weather?.temperature ?? weather?.temp;
+  const weatherText = weather?.weatherText || weather?.description || 'Wetter';
+
+  if (!season && !time && !weather) return null;
+
+  return (
+    <View style={styles.contextCard}>
+      <View style={styles.contextHeader}>
+        <Ionicons name="compass-outline" size={18} color={colors.primary} />
+        <Text style={styles.contextTitle}>Aktueller Kontext</Text>
+      </View>
+      <View style={styles.contextPills}>
+        {season && (
+          <View style={styles.contextPill}>
+            <Text style={styles.contextPillText}>
+              {season.icon} {season.name}
+            </Text>
+          </View>
+        )}
+        {time && (
+          <View style={styles.contextPill}>
+            <Text style={styles.contextPillText}>
+              {time.icon} {time.name}
+            </Text>
+          </View>
+        )}
+        {weather && (
+          <View style={styles.contextPill}>
+            <Text style={styles.contextPillText}>
+              🌦️ {weatherText}
+              {temperature !== null && temperature !== undefined ? ` · ${temperature}°C` : ''}
+              {city ? ` · ${city}` : ''}
+            </Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
 const getZoneTypes = () => [
   { key: 'room', label: t('home.zoneTypes.room'), icon: 'home-outline' },
   { key: 'balcony', label: t('home.zoneTypes.balcony'), icon: 'sunny-outline' },
@@ -19,7 +76,7 @@ const getZoneTypes = () => [
   { key: 'greenhouse', label: t('home.zoneTypes.greenhouse'), icon: 'flower-outline' },
 ];
 
-export default function HomeManager() {
+export default function HomeManager({ context }) {
   const [locations, setLocations] = useState([]);
   const [unassignedPlants, setUnassignedPlants] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
@@ -140,10 +197,7 @@ export default function HomeManager() {
         .update({ zone_id: zone.id })
         .eq('id', zonePickerPlant.id);
       if (error) throw error;
-      Alert.alert(
-        t('common.success'),
-        t('plants.zoneAssigned', { zone: zone.name })
-      );
+      Alert.alert(t('common.success'), t('plants.zoneAssigned', { zone: zone.name }));
       setZonePickerVisible(false);
       setZonePickerPlant(null);
       reload();
@@ -331,6 +385,8 @@ export default function HomeManager() {
         keyExtractor={(l) => l.id}
         ListHeaderComponent={() => (
           <>
+            <ContextSummary context={context} />
+
             {/* Plant Dex Progress Card */}
             <TouchableOpacity
               style={styles.dexProgressCard}
@@ -447,11 +503,7 @@ export default function HomeManager() {
                 </View>
               </View>
               {unassignedPlants.map((p) => (
-                <TouchableOpacity
-                  key={p.id}
-                  onPress={() => openZonePicker(p)}
-                  activeOpacity={0.7}
-                >
+                <TouchableOpacity key={p.id} onPress={() => openZonePicker(p)} activeOpacity={0.7}>
                   <View style={styles.zoneRow}>
                     <View style={styles.zoneInfo}>
                       <Ionicons name="leaf-outline" size={18} color={colors.textTertiary} />
@@ -540,12 +592,18 @@ export default function HomeManager() {
         visible={zonePickerVisible}
         animationType="slide"
         transparent
-        onRequestClose={() => { setZonePickerVisible(false); setZonePickerPlant(null); }}
+        onRequestClose={() => {
+          setZonePickerVisible(false);
+          setZonePickerPlant(null);
+        }}
       >
         <TouchableOpacity
           style={styles.pickerOverlay}
           activeOpacity={1}
-          onPressOut={() => { setZonePickerVisible(false); setZonePickerPlant(null); }}
+          onPressOut={() => {
+            setZonePickerVisible(false);
+            setZonePickerPlant(null);
+          }}
         >
           <TouchableOpacity style={styles.pickerSheet} activeOpacity={1}>
             <Text style={styles.pickerTitle}>
@@ -581,7 +639,13 @@ export default function HomeManager() {
                 )}
                 ListEmptyComponent={
                   <View style={{ alignItems: 'center', padding: spacing.lg }}>
-                    <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: spacing.md }}>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        color: colors.textSecondary,
+                        marginBottom: spacing.md,
+                      }}
+                    >
                       {t('home.noZones')}
                     </Text>
                   </View>
@@ -589,13 +653,23 @@ export default function HomeManager() {
               />
             ) : (
               <View style={{ alignItems: 'center', padding: spacing.lg }}>
-                <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: spacing.md }}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: colors.textSecondary,
+                    marginBottom: spacing.md,
+                  }}
+                >
                   {t('home.noZones')}
                 </Text>
               </View>
             )}
             {savingZone && (
-              <ActivityIndicator size="large" color={colors.primaryLight} style={{ marginTop: spacing.md }} />
+              <ActivityIndicator
+                size="large"
+                color={colors.primaryLight}
+                style={{ marginTop: spacing.md }}
+              />
             )}
           </TouchableOpacity>
         </TouchableOpacity>
@@ -608,6 +682,45 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.lg,
     paddingBottom: 40,
+  },
+
+  // Kontext
+  contextCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.primarySurface,
+    ...shadows.sm,
+  },
+  contextHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  contextTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: 0.2,
+  },
+  contextPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  contextPill: {
+    backgroundColor: colors.primarySurface,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  contextPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textPrimary,
   },
 
   // Dex Progress Card

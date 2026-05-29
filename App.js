@@ -2,7 +2,7 @@
 // -----------------------------------------------------------
 import './sentry.config'; // ← Sentry MUSS als erstes geladen werden
 import { Sentry } from './sentry.config';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -40,19 +40,19 @@ import {
   registerForPushNotifications,
   addNotificationResponseListener,
 } from './services/notificationService';
+import { getCurrentLocation, getWeather } from './services/weatherService';
+import { buildContext } from './utils/contextUtils';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 // ---------- Plant Stack (Plants + Dex) ---------------------------
-function PlantStack() {
+function PlantStack({ context }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Meine Pflanzen"
-        component={PlantListScreen}
-        options={{ title: t('nav.plantStackTitle') }}
-      />
+      <Stack.Screen name="Meine Pflanzen" options={{ title: t('nav.plantStackTitle') }}>
+        {(props) => <PlantListScreen {...props} context={context} />}
+      </Stack.Screen>
       <Stack.Screen
         name="PlantDetail"
         component={PlantDetailScreen}
@@ -87,14 +87,12 @@ function AddPlantStack() {
 }
 
 // ---------- Assistant Stack (Chat tab) --------
-function AssistantTabStack() {
+function AssistantTabStack({ context }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="AssistantMain"
-        component={AssistantScreen}
-        options={{ title: t('nav.assistant') }}
-      />
+      <Stack.Screen name="AssistantMain" options={{ title: t('nav.assistant') }}>
+        {(props) => <AssistantScreen {...props} context={context} />}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }
@@ -154,12 +152,11 @@ function MoreStack({ isAdmin }) {
 }
 
 // ---------- Home Stack (Home + Settings) -------------
-function HomeStack() {
+function HomeStack({ context }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="HomeMain"
-        component={HomeManager}
         options={({ navigation }) => ({
           title: t('nav.home'),
           headerRight: () => (
@@ -174,7 +171,9 @@ function HomeStack() {
             </TouchableOpacity>
           ),
         })}
-      />
+      >
+        {(props) => <HomeManager {...props} context={context} />}
+      </Stack.Screen>
       <Stack.Screen
         name="Settings"
         component={SettingsScreen}
@@ -235,6 +234,38 @@ function AppContent() {
     dismissWelcome,
   } = useAuth();
   const navigationRef = useRef(null);
+  const [context, setContext] = useState(() => buildContext({ location: null, weather: null }));
+
+  useEffect(() => {
+    if (!user?.id) {
+      setContext(buildContext({ location: null, weather: null }));
+      return undefined;
+    }
+
+    let mounted = true;
+
+    async function refreshContext() {
+      try {
+        const location = await getCurrentLocation();
+        const weather =
+          location?.latitude && location?.longitude
+            ? await getWeather(location.latitude, location.longitude)
+            : null;
+        if (mounted) setContext(buildContext({ location, weather }));
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[App] Kontext konnte nicht geladen werden:', error?.message);
+        }
+        if (mounted) setContext(buildContext({ location: null, weather: null }));
+      }
+    }
+
+    refreshContext();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   // --- Push Notification Registration (after login, respects preference) ---
   useEffect(() => {
@@ -307,13 +338,13 @@ function AppContent() {
         })}
       >
         <Tab.Screen name="Zuhause" options={{ title: t('nav.home'), tabBarLabel: t('nav.home') }}>
-          {() => <HomeStack />}
+          {() => <HomeStack context={context} />}
         </Tab.Screen>
         <Tab.Screen
           name="MeinePflanzenTab"
           options={{ title: t('nav.plants'), tabBarLabel: t('nav.plants') }}
         >
-          {() => <PlantStack />}
+          {() => <PlantStack context={context} />}
         </Tab.Screen>
         <Tab.Screen
           name="Pflanze hinzufügen"
@@ -330,7 +361,7 @@ function AppContent() {
           name="MeinGärtnerTab"
           options={{ title: t('nav.assistant'), tabBarLabel: t('nav.assistant') }}
         >
-          {() => <AssistantTabStack />}
+          {() => <AssistantTabStack context={context} />}
         </Tab.Screen>
         <Tab.Screen name="Mehr" options={{ title: t('nav.more'), tabBarLabel: t('nav.more') }}>
           {() => <MoreStack isAdmin={isAdmin} />}

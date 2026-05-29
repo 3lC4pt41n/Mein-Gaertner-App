@@ -1,15 +1,12 @@
 // Edge Function: Chat mit Ben (Pflanzen-Coach)
-// Hybrid: PlantNet API für Bildidentifikation + GPT-4o für Konversation
+// Hybrid: PlantNet API für Bildidentifikation + GPT-5.5 für Konversation
 // POST Body: { text?: string, image_url?: string, language?: string }
 // History wird server-seitig aus der DB geladen (nicht mehr vom Client gesendet)
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { SupabaseClient } from 'npm:@supabase/supabase-js@2.50.2';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { callOpenAI } from '../_shared/openai.ts';
-import {
-  identifyPlantFromUrl,
-  formatPlantNetContext,
-} from '../_shared/plantnet.ts';
+import { identifyPlantFromUrl, formatPlantNetContext } from '../_shared/plantnet.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -121,7 +118,8 @@ function buildSystemPrompt(
   languagePromptName: string,
   gardenContext: string,
   memorySummary: string | null,
-  plantNetContext: string | null = null
+  plantNetContext: string | null = null,
+  externalContext: string | null = null
 ): string {
   let prompt = `## ROLE
 You are "Ben", a smart, witty and charming plant coach. Expert in plants and gardening.
@@ -142,12 +140,17 @@ Playful but always respectful, friendly and encouraging.
 - For plant diagnosis: ask about light, watering frequency, and recent changes before guessing.
 - Never recommend chemical pesticides without first suggesting natural alternatives.
 - If unsure, ask a follow-up question rather than guessing.
+- Use current weather, season, time of day and location when relevant. Do not force it into every answer.
 
 ## TOOLS
 - You can create tasks for the user using the create_task and create_recurring_task functions.
 - When the user asks you to remind them, schedule something, or create a care plan, use these tools.
 - After creating a task, confirm what you created in a friendly message.
 - For recurring tasks, suggest reasonable intervals based on plant type and season.`;
+
+  if (externalContext) {
+    prompt += `\n\n## CURRENT CONTEXT\n${externalContext}`;
+  }
 
   if (plantNetContext) {
     prompt += `\n\n## PLANT IDENTIFICATION (from the user's latest image)\n${plantNetContext}
@@ -161,6 +164,44 @@ Playful but always respectful, friendly and encouraging.
   }
 
   return prompt;
+}
+
+function buildExternalContext(contextText: unknown, context: any): string | null {
+  if (typeof contextText === 'string' && contextText.trim()) {
+    return contextText.trim();
+  }
+
+  if (!context || typeof context !== 'object') return null;
+
+  const parts: string[] = [];
+  const weather = context.weather || null;
+  const location = context.location || null;
+  const city = location?.city || weather?.city;
+  const country = location?.country || weather?.country;
+  const weatherText = weather?.weatherText || weather?.description;
+  const temperature = weather?.temperature ?? weather?.temp;
+  const windSpeed = weather?.windSpeed ?? weather?.wind_speed;
+
+  if (city) parts.push(`Ort: ${country ? `${city}, ${country}` : city}`);
+
+  if (weather) {
+    const weatherParts: string[] = [];
+    if (weatherText) weatherParts.push(String(weatherText));
+    if (typeof temperature === 'number') weatherParts.push(`${temperature}°C`);
+    if (typeof weather.humidity === 'number') weatherParts.push(`Luftfeuchte ${weather.humidity}%`);
+    if (typeof windSpeed === 'number') weatherParts.push(`Wind ${windSpeed} km/h`);
+    if (typeof weather.isDay === 'boolean')
+      weatherParts.push(weather.isDay ? 'Tageslicht' : 'Nacht');
+    if (weatherParts.length) parts.push(`Wetter: ${weatherParts.join(', ')}`);
+  }
+
+  if (context.season?.name) parts.push(`Jahreszeit: ${context.season.name}`);
+  if (context.time?.name) {
+    const hour = typeof context.time.hour === 'number' ? ` (${context.time.hour} Uhr)` : '';
+    parts.push(`Tageszeit: ${context.time.name}${hour}`);
+  }
+
+  return parts.length ? parts.join('\n') : null;
 }
 
 // ─── Function Calling: Tool Definitions ────────────
@@ -229,7 +270,10 @@ function getNonEmptyString(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function parseToolArguments(rawArgs: unknown): { args: Record<string, unknown> | null; error?: string } {
+function parseToolArguments(rawArgs: unknown): {
+  args: Record<string, unknown> | null;
+  error?: string;
+} {
   if (typeof rawArgs !== 'string') {
     return { args: null, error: 'Tool arguments must be a JSON string.' };
   }
@@ -295,8 +339,9 @@ async function handleToolCall(
   }
 
   // Find plant by name (case-insensitive partial match)
-  const plant = plants.find((p: any) =>
-    typeof p?.name === 'string' && p.name.toLowerCase().includes(plantName.toLowerCase())
+  const plant = plants.find(
+    (p: any) =>
+      typeof p?.name === 'string' && p.name.toLowerCase().includes(plantName.toLowerCase())
   );
 
   if (!plant) {
@@ -571,7 +616,7 @@ serve(async (req) => {
     const userId = await getUserIdFromAuth(serviceClient, authHeader);
 
     // Body parsen (history wird NICHT mehr vom Client gesendet)
-    const { text, image_url, language: requestedLanguage } = await req.json();
+    const { text, image_url, language: requestedLanguage, context, contextText } = await req.json();
 
     // Input-Validierung
     const validationErr = validationErrorResponse(
@@ -627,7 +672,14 @@ serve(async (req) => {
     const memorySummary = memoryData?.data?.summary || null;
     const userPlants = plantsData?.data || [];
     const plantNetContext = formatPlantNetContext(plantNetResult);
-    const systemPrompt = buildSystemPrompt(languagePromptName, gardenContext, memorySummary, plantNetContext);
+    const externalContext = buildExternalContext(contextText, context);
+    const systemPrompt = buildSystemPrompt(
+      languagePromptName,
+      gardenContext,
+      memorySummary,
+      plantNetContext,
+      externalContext
+    );
 
     // Token-Budget fuer History berechnen
     const systemTokens = estimateTokens(systemPrompt);
@@ -698,6 +750,7 @@ serve(async (req) => {
       model: result.model,
       metadata: {
         language: finalLanguage,
+        context_used: !!externalContext,
         plantnet_used: !!plantNetContext,
         plantnet_best_match: plantNetResult?.bestMatch || null,
       },
