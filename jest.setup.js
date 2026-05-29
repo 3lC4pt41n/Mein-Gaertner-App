@@ -49,6 +49,7 @@ jest.mock('expo-image-picker', () => ({
 
 // Mock expo-location
 jest.mock('expo-location', () => ({
+  getForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
   requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
   getCurrentPositionAsync: jest.fn().mockResolvedValue({
     coords: { latitude: 52.52, longitude: 13.405 },

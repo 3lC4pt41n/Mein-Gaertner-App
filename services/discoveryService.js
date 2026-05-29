@@ -2,30 +2,58 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../supabase';
 
-const LOCATION_CACHE_KEY = '@weather_location'; // shared with weatherService
+const LOCATION_CACHE_KEY = '@user_location'; // shared with weatherService
+const LEGACY_LOCATION_CACHE_KEY = '@weather_location';
+const LOCATION_TTL = 30 * 60 * 1000;
+
+const getFreshCachedLocation = async () => {
+  const cacheKeys = [LOCATION_CACHE_KEY, LEGACY_LOCATION_CACHE_KEY];
+
+  for (const cacheKey of cacheKeys) {
+    try {
+      const cached = await AsyncStorage.getItem(cacheKey);
+      if (!cached) continue;
+
+      const { latitude, longitude, timestamp } = JSON.parse(cached);
+      if (
+        typeof latitude === 'number' &&
+        typeof longitude === 'number' &&
+        timestamp &&
+        Date.now() - timestamp < LOCATION_TTL
+      ) {
+        return { latitude, longitude };
+      }
+    } catch {
+      // Ignore corrupt cache entries and fall back to permission/GPS.
+    }
+  }
+
+  return null;
+};
+
+const ensureForegroundLocationPermission = async () => {
+  const currentPermission = await Location.getForegroundPermissionsAsync();
+  if (currentPermission.status === 'granted') return true;
+  if (currentPermission.canAskAgain === false) return false;
+
+  const requestedPermission = await Location.requestForegroundPermissionsAsync();
+  return requestedPermission.status === 'granted';
+};
 
 /**
  * Best-effort GPS location for discovery events.
  * Returns { latitude, longitude } or null (never throws, never blocks UI).
  * Re-uses the 30-min cached location from weatherService when available.
+ * Requests foreground permission at discovery time if no fresh cache exists.
  */
 export async function getDiscoveryLocation() {
   try {
-    // 1. Check cache first (shared with weatherService)
-    const cached = await AsyncStorage.getItem(LOCATION_CACHE_KEY);
-    if (cached) {
-      const { latitude, longitude, timestamp } = JSON.parse(cached);
-      // Accept cache within 30 min
-      if (Date.now() - timestamp < 30 * 60 * 1000) {
-        return { latitude, longitude };
-      }
-    }
+    const cachedLocation = await getFreshCachedLocation();
+    if (cachedLocation) return cachedLocation;
 
-    // 2. Check permission without prompting
-    const { status } = await Location.getForegroundPermissionsAsync();
-    if (status !== 'granted') return null;
+    const hasPermission = await ensureForegroundLocationPermission();
+    if (!hasPermission) return null;
 
-    // 3. Get current position (balanced accuracy, 5s timeout)
     const loc = await Location.getCurrentPositionAsync({
       accuracy: Location.Accuracy.Balanced,
       timeout: 5000,
@@ -33,7 +61,6 @@ export async function getDiscoveryLocation() {
 
     const { latitude, longitude } = loc.coords;
 
-    // Update shared cache
     await AsyncStorage.setItem(
       LOCATION_CACHE_KEY,
       JSON.stringify({ latitude, longitude, timestamp: Date.now() })
