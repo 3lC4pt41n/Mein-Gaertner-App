@@ -592,6 +592,46 @@ Previous summary to update/extend: ${previousSummary}`,
   }
 }
 
+function hasAssistantContent(result: any): boolean {
+  return typeof result?.content === 'string' && result.content.trim().length > 0;
+}
+
+function mergeOpenAIResults(primary: any, fallback: any): any {
+  return {
+    ...fallback,
+    prompt_tokens: (primary?.prompt_tokens || 0) + (fallback?.prompt_tokens || 0),
+    completion_tokens: (primary?.completion_tokens || 0) + (fallback?.completion_tokens || 0),
+    total_tokens: (primary?.total_tokens || 0) + (fallback?.total_tokens || 0),
+    cost_usd: (primary?.cost_usd || 0) + (fallback?.cost_usd || 0),
+    model:
+      primary?.model && fallback?.model && primary.model !== fallback.model
+        ? `${primary.model}+${fallback.model}`
+        : fallback?.model || primary?.model,
+  };
+}
+
+async function retryEmptyChatAnswer(
+  result: any,
+  chatMessages: any[],
+  languagePromptName: string
+): Promise<any> {
+  if (hasAssistantContent(result)) return result;
+
+  const retryResult = await callOpenAI({
+    messages: [
+      ...chatMessages,
+      {
+        role: 'system',
+        content: `Your previous response was empty. Answer the user's latest message now in ${languagePromptName}. Do not call tools. If the user confirmed a suggestion, complete the requested answer directly in text. Keep it concise and helpful.`,
+      },
+    ],
+    temperature: 0.4,
+    max_tokens: 400,
+  });
+
+  return mergeOpenAIResults(result, retryResult);
+}
+
 // ─── Main Handler ────────────
 
 serve(async (req) => {
@@ -732,6 +772,12 @@ serve(async (req) => {
           temperature: 0.7,
           max_tokens: 500,
         });
+      }
+
+      result = await retryEmptyChatAnswer(result, chatMessages, languagePromptName);
+
+      if (!hasAssistantContent(result)) {
+        throw new Error('Ben hat gerade leer geantwortet. Bitte versuche es erneut.');
       }
     } catch (e) {
       await refundCredits(serviceClient, userId, cost);
