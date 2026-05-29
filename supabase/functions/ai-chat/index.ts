@@ -110,6 +110,111 @@ function summarizePlantDetails(details: unknown): string | null {
   return parts.length ? parts.slice(0, 5).join('; ') : null;
 }
 
+type UserZone = {
+  id: string;
+  name: string;
+  type: string;
+  locationId: string;
+  locationName: string;
+  displayName: string;
+};
+
+function formatLocationName(location: any): string {
+  return (
+    truncateText(location?.name, 60) ||
+    truncateText(location?.label, 60) ||
+    truncateText(location?.locality, 60) ||
+    'Zuhause'
+  );
+}
+
+function formatZoneDisplayName(zone: UserZone): string {
+  return `${zone.locationName} › ${zone.name} (${zone.type})`;
+}
+
+function formatNameList(values: string[], maxItems = 24): string {
+  const visible = values.slice(0, maxItems);
+  const rest = values.length - visible.length;
+  return rest > 0 ? `${visible.join(', ')} (+${rest} weitere)` : visible.join(', ');
+}
+
+async function loadUserZones(
+  serviceClient: SupabaseClient,
+  userId: string
+): Promise<UserZone[]> {
+  const { data: locations } = await serviceClient
+    .from('locations')
+    .select('id, name, label, locality')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+
+  const locationRows = locations || [];
+  const locationIds = locationRows.map((location: any) => location.id).filter(Boolean);
+  if (locationIds.length === 0) return [];
+
+  const locationMap = new Map(
+    locationRows.map((location: any) => [
+      location.id,
+      {
+        ...location,
+        displayName: formatLocationName(location),
+      },
+    ])
+  );
+
+  const { data: zones } = await serviceClient
+    .from('zones')
+    .select('id, name, type, location_id')
+    .in('location_id', locationIds)
+    .order('name', { ascending: true });
+
+  return (zones || []).map((zone: any) => {
+    const location = locationMap.get(zone.location_id);
+    const locationName = location?.displayName || 'Zuhause';
+    return {
+      id: zone.id,
+      name: zone.name,
+      type: zone.type || 'room',
+      locationId: zone.location_id,
+      locationName,
+      displayName: `${locationName} › ${zone.name} (${zone.type || 'room'})`,
+    };
+  });
+}
+
+function matchZoneByName(
+  zones: UserZone[],
+  requestedName: string
+): { zone: UserZone | null; error?: string } {
+  const query = requestedName.trim().toLowerCase();
+  const exactMatches = zones.filter(
+    (zone) => zone.name.toLowerCase() === query || zone.displayName.toLowerCase() === query
+  );
+  const matches =
+    exactMatches.length > 0
+      ? exactMatches
+      : zones.filter(
+          (zone) =>
+            zone.name.toLowerCase().includes(query) ||
+            zone.displayName.toLowerCase().includes(query)
+        );
+
+  if (matches.length === 1) return { zone: matches[0] };
+
+  const availableZones = zones.map((zone) => zone.displayName);
+  if (matches.length === 0) {
+    return {
+      zone: null,
+      error: `Zone "${requestedName}" not found. Available zones: ${formatNameList(availableZones)}`,
+    };
+  }
+
+  return {
+    zone: null,
+    error: `Zone "${requestedName}" is ambiguous. Available matches: ${formatNameList(matches.map((zone) => zone.displayName))}`,
+  };
+}
+
 async function loadGardenContext(serviceClient: SupabaseClient, userId: string): Promise<string> {
   // Pflanzen laden
   const { data: plants } = await serviceClient
@@ -152,27 +257,23 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
     tasksByPlant[t.plant_id].push(t);
   }
 
-  // Zonen
-  const zoneIds = plants.map((p: any) => p.zone_id).filter(Boolean);
+  // Zonen + Zuhause
+  const userZones = await loadUserZones(serviceClient, userId);
   const zoneMap: Record<string, string> = {};
-  if (zoneIds.length > 0) {
-    const { data: zones } = await serviceClient
-      .from('zones')
-      .select('id, name, type')
-      .in('id', zoneIds);
-    for (const z of zones || []) {
-      zoneMap[z.id] = `${z.name} (${z.type})`;
-    }
+  for (const zone of userZones) {
+    zoneMap[zone.id] = formatZoneDisplayName(zone);
   }
 
   // Kompaktes Text-Format
   let context = `USER'S GARDEN (${plants.length} plants):\n`;
+  const unassignedPlants: string[] = [];
   for (const plant of plants) {
     const hc = latestHC[plant.id];
     const plantTasks = tasksByPlant[plant.id] || [];
     const zone = plant.zone_id ? zoneMap[plant.zone_id] : null;
     const note = truncateText(plant.note, 120);
     const details = summarizePlantDetails(plant.details);
+    if (!zone) unassignedPlants.push(plant.name);
 
     context += `- ${plant.name}`;
     if (zone) context += ` [${zone}]`;
@@ -195,6 +296,10 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
       context += ` | Tasks: ${taskStr}`;
     }
     context += '\n';
+  }
+
+  if (unassignedPlants.length > 0) {
+    context += `OHNE ZONE (${unassignedPlants.length} Pflanzen): ${formatNameList(unassignedPlants)}\n`;
   }
 
   return context;
@@ -233,7 +338,9 @@ Playful but always respectful, friendly and encouraging.
 
 ## TOOLS
 - You can create tasks for the user using the create_task and create_recurring_task functions.
+- You can assign an existing plant to an existing zone using assign_plant_to_zone.
 - When the user asks you to remind them, schedule something, or create a care plan, use these tools.
+- When the user asks you to sort or move a plant into a room/zone, use assign_plant_to_zone.
 - After creating a task, confirm what you created in a friendly message.
 - For recurring tasks, suggest reasonable intervals based on plant type and season.`;
 
@@ -349,6 +456,27 @@ function buildTools() {
         },
       },
     },
+    {
+      type: 'function',
+      function: {
+        name: 'assign_plant_to_zone',
+        description: "Assign one of the user's plants to an existing zone or room",
+        parameters: {
+          type: 'object',
+          properties: {
+            plant_name: {
+              type: 'string',
+              description: 'Name of the plant (must match an existing plant)',
+            },
+            zone_name: {
+              type: 'string',
+              description: "Name of the target zone or room (must match one of the user's zones)",
+            },
+          },
+          required: ['plant_name', 'zone_name'],
+        },
+      },
+    },
   ];
 }
 
@@ -440,6 +568,42 @@ async function handleToolCall(
   if (!plant) {
     return JSON.stringify({
       error: `Plant "${plantName}" not found. Available plants: ${plants.map((p: any) => p.name).join(', ')}`,
+    });
+  }
+
+  if (fnName === 'assign_plant_to_zone') {
+    const zoneName = getNonEmptyString(args.zone_name);
+    if (!zoneName) {
+      return JSON.stringify({ error: 'zone_name is required and must be a non-empty string.' });
+    }
+
+    const zones = await loadUserZones(serviceClient, userId);
+    if (zones.length === 0) {
+      return JSON.stringify({
+        error: 'No zones exist yet. Ask the user to create a home and zone first.',
+      });
+    }
+
+    const zoneMatch = matchZoneByName(zones, zoneName);
+    if (!zoneMatch.zone) {
+      return JSON.stringify({ error: zoneMatch.error || 'Zone not found.' });
+    }
+
+    const { error } = await serviceClient
+      .from('plants')
+      .update({ zone_id: zoneMatch.zone.id })
+      .eq('id', plant.id)
+      .eq('user_id', userId);
+
+    if (error) {
+      return JSON.stringify({ error: error.message });
+    }
+
+    return JSON.stringify({
+      success: true,
+      plant_name: plant.name,
+      zone_name: zoneMatch.zone.name,
+      zone_label: zoneMatch.zone.displayName,
     });
   }
 
