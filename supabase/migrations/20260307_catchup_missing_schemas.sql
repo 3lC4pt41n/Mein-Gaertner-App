@@ -33,6 +33,7 @@ CREATE OR REPLACE FUNCTION public.deduct_credits(
 RETURNS INTEGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   v_new_balance INTEGER;
@@ -63,6 +64,7 @@ CREATE OR REPLACE FUNCTION public.refund_credits(
 RETURNS INTEGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   v_new_balance INTEGER;

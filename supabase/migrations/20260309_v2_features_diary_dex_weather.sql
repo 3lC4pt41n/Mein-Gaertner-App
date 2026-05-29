@@ -26,30 +26,45 @@ CREATE INDEX IF NOT EXISTS idx_plant_diary_type ON public.plant_diary(type);
 ALTER TABLE public.plant_diary ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own diary entries
-CREATE POLICY "Users can view own diary entries"
-  ON public.plant_diary FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can view own diary entries"
+    ON public.plant_diary FOR SELECT
+    USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Users can insert their own diary entries
-CREATE POLICY "Users can insert own diary entries"
-  ON public.plant_diary FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can insert own diary entries"
+    ON public.plant_diary FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Users can update their own diary entries
-CREATE POLICY "Users can update own diary entries"
-  ON public.plant_diary FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can update own diary entries"
+    ON public.plant_diary FOR UPDATE
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Users can delete their own diary entries
-CREATE POLICY "Users can delete own diary entries"
-  ON public.plant_diary FOR DELETE
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can delete own diary entries"
+    ON public.plant_diary FOR DELETE
+    USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Service role bypass for edge functions
-CREATE POLICY "Service role full access diary"
-  ON public.plant_diary FOR ALL
-  USING (auth.role() = 'service_role');
+DO $$ BEGIN
+  CREATE POLICY "Service role full access diary"
+    ON public.plant_diary FOR ALL
+    USING (auth.role() = 'service_role');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 2. Extend species table for Dex features

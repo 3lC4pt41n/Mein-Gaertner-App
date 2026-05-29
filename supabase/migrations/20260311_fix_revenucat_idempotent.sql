@@ -9,9 +9,18 @@
 --    A full UNIQUE constraint works with ON CONFLICT (column) DO NOTHING.
 --    NULL values are always unique in PostgreSQL, so this is safe.
 DROP INDEX IF EXISTS transactions_provider_transaction_id_unique;
-ALTER TABLE public.transactions
-  ADD CONSTRAINT transactions_provider_transaction_id_key
-  UNIQUE (provider_transaction_id);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'transactions_provider_transaction_id_key'
+      AND conrelid = 'public.transactions'::regclass
+  ) THEN
+    ALTER TABLE public.transactions
+      ADD CONSTRAINT transactions_provider_transaction_id_key
+      UNIQUE (provider_transaction_id);
+  END IF;
+END $$;
 
 -- 2) Create RPC function for idempotent credit purchase (RETURNING-based)
 CREATE OR REPLACE FUNCTION public.credit_purchase(

@@ -27,16 +27,11 @@ jobs:
       - name: Repair already-applied migrations missing from tracking
         run: |
           supabase migration repair --status applied 20250101
-          supabase migration repair --status applied 20260321
+          supabase migration repair --status reverted 20260307 20260307210744 20260309114332 20260311144441 20260321
 
       - name: Push database migrations
         id: db_push
-        continue-on-error: true
         run: supabase db push
-
-      - name: Warn if db push failed
-        if: steps.db_push.outcome == 'failure'
-        run: echo "::warning::supabase db push failed — check migration drift. Edge Functions will still deploy."
 
       - name: Deploy Edge Functions
         run: |
