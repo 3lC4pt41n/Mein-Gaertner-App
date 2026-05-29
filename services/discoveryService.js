@@ -213,11 +213,17 @@ export async function fetchMyDiscoveries(userId) {
  * Returns privacy-safe ~1km² grid cells.
  */
 export async function fetchHeatmapGrid() {
-  const { data, error } = await supabase
+  const { data, error } = await supabase.rpc('get_heatmap_grid');
+  if (!error) return data ?? [];
+
+  // Fallback for clients that receive the JS bundle before the migration lands.
+  if (error.code !== '42883' && error.code !== 'PGRST202') throw error;
+
+  const { data: viewData, error: viewError } = await supabase
     .from('heatmap_grid')
     .select('grid_lat, grid_lon, discovery_count, species_count, first_discoveries');
-  if (error) throw error;
-  return data ?? [];
+  if (viewError) throw viewError;
+  return viewData ?? [];
 }
 
 /**
@@ -227,13 +233,20 @@ export async function fetchHeatmapGrid() {
 export async function fetchHeatmapGridBySpecies(speciesId) {
   if (!speciesId) return [];
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase.rpc('get_heatmap_species_grid', {
+    p_species_id: speciesId,
+  });
+
+  if (!error) return data ?? [];
+  if (error.code !== '42883' && error.code !== 'PGRST202') throw error;
+
+  const { data: viewData, error: viewError } = await supabase
     .from('heatmap_species_grid')
     .select('grid_lat, grid_lon, discovery_count, first_discoveries')
     .eq('species_id', speciesId);
 
-  if (error) throw error;
-  return data ?? [];
+  if (viewError) throw viewError;
+  return viewData ?? [];
 }
 
 /**
