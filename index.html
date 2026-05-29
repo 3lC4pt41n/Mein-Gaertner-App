@@ -449,6 +449,112 @@
         line-height: 1.62;
       }
 
+      .context-section {
+        padding: 0 0 62px;
+      }
+
+      .context-panel {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+        gap: 28px;
+        align-items: center;
+        overflow: hidden;
+        padding: 34px;
+        border-radius: 34px;
+        background:
+          radial-gradient(circle at top left, rgba(204, 244, 177, 0.72), transparent 36%),
+          linear-gradient(135deg, rgba(18, 55, 35, 0.96), rgba(47, 125, 58, 0.9));
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 30px 80px rgba(18, 55, 35, 0.22);
+        color: #ffffff;
+      }
+
+      .context-panel::after {
+        content: '';
+        position: absolute;
+        inset: auto -80px -120px auto;
+        width: 300px;
+        height: 300px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        filter: blur(2px);
+      }
+
+      .context-copy {
+        position: relative;
+        z-index: 1;
+        max-width: 560px;
+      }
+
+      .context-copy .eyebrow {
+        color: rgba(230, 255, 213, 0.86);
+      }
+
+      .context-copy h2 {
+        margin: 14px 0 16px;
+        max-width: 12ch;
+        font-size: clamp(2.1rem, 4vw, 4rem);
+        line-height: 0.95;
+        letter-spacing: -0.08em;
+      }
+
+      .context-copy p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 1.04rem;
+        line-height: 1.72;
+      }
+
+      .context-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .context-card {
+        min-height: 230px;
+        padding: 22px;
+        border-radius: 26px;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ink);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        box-shadow: 0 22px 46px rgba(17, 35, 26, 0.16);
+      }
+
+      .context-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 28px;
+        border-radius: 18px;
+        background: rgba(52, 134, 59, 0.1);
+        color: var(--green-dark);
+        font-family: 'Sora', 'Manrope', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 900;
+        letter-spacing: -0.06em;
+      }
+
+      .context-card strong {
+        display: block;
+        margin-bottom: 10px;
+        font-family: 'Sora', 'Manrope', sans-serif;
+        font-size: 1.18rem;
+        letter-spacing: -0.04em;
+      }
+
+      .context-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.58;
+      }
+
       .section {
         padding: 52px 0;
       }
@@ -1006,10 +1112,19 @@
         }
 
         .metrics-grid,
+        .context-panel,
         .band-points,
         .ops-grid,
         .gallery-grid {
           grid-template-columns: 1fr;
+        }
+
+        .context-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .context-card {
+          min-height: auto;
         }
 
         .band-visual {
@@ -1090,6 +1205,19 @@
 
         .phone-right {
           right: 10%;
+        }
+
+        .context-section {
+          padding-bottom: 42px;
+        }
+
+        .context-panel {
+          padding: 24px;
+          border-radius: 28px;
+        }
+
+        .context-copy h2 {
+          max-width: none;
         }
 
         .story-band,
@@ -1254,6 +1382,49 @@
                 Schritte, nicht nur Text.
               </p>
             </article>
+          </div>
+        </section>
+
+        <section class="context-section" aria-labelledby="context-title">
+          <div class="wrap context-panel">
+            <div class="context-copy">
+              <span class="eyebrow">Live-Kontext</span>
+              <h2 id="context-title">Ben denkt mit Saison, Wetter und Uhrzeit.</h2>
+              <p>
+                Pflegehinweise sind nicht statisch. FloraScout gibt dem KI-Gaertner den aktuellen
+                Kontext aus Jahreszeit, lokalem Wetter und Tageszeit, damit Antworten besser zum
+                Moment passen.
+              </p>
+            </div>
+
+            <div class="context-grid" aria-label="Kontextsignale">
+              <article class="context-card">
+                <span class="context-icon">01</span>
+                <strong>Saison</strong>
+                <p>
+                  Sommer, Winter oder Uebergangszeit veraendern Licht, Wachstum und
+                  Pflegeintervalle.
+                </p>
+              </article>
+
+              <article class="context-card">
+                <span class="context-icon">02</span>
+                <strong>Wetter</strong>
+                <p>
+                  Temperatur, Luftfeuchte, Wind und Tageslicht helfen bei Giessen, Standort und
+                  Healthchecks.
+                </p>
+              </article>
+
+              <article class="context-card">
+                <span class="context-icon">03</span>
+                <strong>Zeit</strong>
+                <p>
+                  Ben weiss, ob es morgens, abends oder spaet ist und kann Aufgaben passend
+                  einordnen.
+                </p>
+              </article>
+            </div>
           </div>
         </section>
 
@@ -1796,6 +1967,25 @@
               body: 'Chat, Healthcheck und Aufgaben greifen ineinander. Aus Beobachtungen werden naechste Schritte, nicht nur Text.',
             },
           ],
+          context: {
+            eyebrow: 'Live-Kontext',
+            title: 'Ben denkt mit Saison, Wetter und Uhrzeit.',
+            body: 'Pflegehinweise sind nicht statisch. FloraScout gibt dem KI-Gaertner den aktuellen Kontext aus Jahreszeit, lokalem Wetter und Tageszeit, damit Antworten besser zum Moment passen.',
+            cards: [
+              {
+                title: 'Saison',
+                body: 'Sommer, Winter oder Uebergangszeit veraendern Licht, Wachstum und Pflegeintervalle.',
+              },
+              {
+                title: 'Wetter',
+                body: 'Temperatur, Luftfeuchte, Wind und Tageslicht helfen bei Giessen, Standort und Healthchecks.',
+              },
+              {
+                title: 'Zeit',
+                body: 'Ben weiss, ob es morgens, abends oder spaet ist und kann Aufgaben passend einordnen.',
+              },
+            ],
+          },
           product: {
             eyebrow: 'Produkt',
             title: 'Ein durchgehender Flow statt einzelner Pflanzen-Gimmicks.',
@@ -1997,6 +2187,25 @@
               body: 'Chat, health checks and tasks work together, turning observations into clear next steps.',
             },
           ],
+          context: {
+            eyebrow: 'Live context',
+            title: 'Ben sees season, weather and time before answering.',
+            body: 'Care advice is not static. FloraScout gives the AI gardener current season, local weather and time of day so answers fit the actual moment.',
+            cards: [
+              {
+                title: 'Season',
+                body: 'Summer, winter and shoulder seasons change light, growth speed and care intervals.',
+              },
+              {
+                title: 'Weather',
+                body: 'Temperature, humidity, wind and daylight inform watering, placement and health checks.',
+              },
+              {
+                title: 'Time',
+                body: 'Ben knows whether it is morning, evening or late and can frame tasks accordingly.',
+              },
+            ],
+          },
           product: {
             eyebrow: 'Product',
             title: 'One continuous flow instead of isolated plant gimmicks.',
@@ -2192,6 +2401,25 @@
               body: 'Le chat, les bilans de santé et les tâches fonctionnent ensemble pour transformer les observations en prochaines actions.',
             },
           ],
+          context: {
+            eyebrow: 'Contexte en direct',
+            title: 'Ben tient compte de la saison, de la météo et de l’heure.',
+            body: 'Les conseils de soin ne sont pas statiques. FloraScout donne au jardinier IA la saison actuelle, la météo locale et le moment de la journée afin que les réponses collent mieux à la situation réelle.',
+            cards: [
+              {
+                title: 'Saison',
+                body: 'Été, hiver et intersaisons changent la lumière, la croissance et les rythmes de soin.',
+              },
+              {
+                title: 'Météo',
+                body: 'Température, humidité, vent et lumière aident pour l’arrosage, l’emplacement et les bilans.',
+              },
+              {
+                title: 'Heure',
+                body: 'Ben sait si c’est le matin, le soir ou tard et peut adapter les tâches au bon moment.',
+              },
+            ],
+          },
           product: {
             eyebrow: 'Produit',
             title: 'Un flux continu plutôt qu’une suite de gadgets pour plantes.',
@@ -2394,6 +2622,25 @@
               body: 'Chat, controlli di salute e attività lavorano insieme e trasformano le osservazioni in prossimi passi chiari.',
             },
           ],
+          context: {
+            eyebrow: 'Contesto live',
+            title: 'Ben considera stagione, meteo e ora prima di rispondere.',
+            body: 'I consigli di cura non sono statici. FloraScout dà al giardiniere IA stagione attuale, meteo locale e momento della giornata, così le risposte sono più adatte alla situazione reale.',
+            cards: [
+              {
+                title: 'Stagione',
+                body: 'Estate, inverno e mezze stagioni cambiano luce, ritmo di crescita e intervalli di cura.',
+              },
+              {
+                title: 'Meteo',
+                body: 'Temperatura, umidità, vento e luce aiutano per irrigazione, posizione e controlli di salute.',
+              },
+              {
+                title: 'Ora',
+                body: 'Ben sa se è mattina, sera o tardi e può inquadrare le attività nel momento giusto.',
+              },
+            ],
+          },
           product: {
             eyebrow: 'Prodotto',
             title: 'Un flusso continuo invece di singoli gadget per piante.',
@@ -2589,6 +2836,25 @@
               body: 'Chat, chequeos de salud y tareas trabajan juntos y convierten observaciones en próximos pasos claros.',
             },
           ],
+          context: {
+            eyebrow: 'Contexto en vivo',
+            title: 'Ben considera estación, clima y hora antes de responder.',
+            body: 'Los consejos de cuidado no son estáticos. FloraScout da al jardinero IA la estación actual, el clima local y la hora del día para que las respuestas encajen mejor con el momento real.',
+            cards: [
+              {
+                title: 'Estación',
+                body: 'Verano, invierno y entretiempo cambian la luz, el crecimiento y los intervalos de cuidado.',
+              },
+              {
+                title: 'Clima',
+                body: 'Temperatura, humedad, viento y luz ayudan con riego, ubicación y chequeos de salud.',
+              },
+              {
+                title: 'Hora',
+                body: 'Ben sabe si es mañana, tarde o noche y puede situar las tareas en el momento adecuado.',
+              },
+            ],
+          },
           product: {
             eyebrow: 'Producto',
             title: 'Un flujo continuo en lugar de gadgets aislados para plantas.',
@@ -2792,6 +3058,25 @@
               body: 'Чат, проверки состояния и задачи работают вместе и превращают наблюдения в понятные следующие шаги.',
             },
           ],
+          context: {
+            eyebrow: 'Живой контекст',
+            title: 'Ben учитывает сезон, погоду и время перед ответом.',
+            body: 'Советы по уходу не должны быть статичными. FloraScout передаёт ИИ-садовнику текущий сезон, местную погоду и время суток, чтобы ответы лучше соответствовали реальному моменту.',
+            cards: [
+              {
+                title: 'Сезон',
+                body: 'Лето, зима и переходные сезоны меняют освещение, рост и интервалы ухода.',
+              },
+              {
+                title: 'Погода',
+                body: 'Температура, влажность, ветер и свет помогают с поливом, размещением и проверками.',
+              },
+              {
+                title: 'Время',
+                body: 'Ben понимает, утро сейчас, вечер или уже поздно, и может точнее формулировать задачи.',
+              },
+            ],
+          },
           product: {
             eyebrow: 'Продукт',
             title: 'Единый поток вместо набора разрозненных фишек.',
@@ -2993,6 +3278,25 @@
               body: 'Sohbet, sağlık kontrolleri ve görevler birlikte çalışır ve gözlemleri net sonraki adımlara dönüştürür.',
             },
           ],
+          context: {
+            eyebrow: 'Canlı bağlam',
+            title: 'Ben cevap vermeden önce mevsimi, havayı ve saati dikkate alır.',
+            body: 'Bakım önerileri statik değildir. FloraScout yapay zekâ bahçıvanına güncel mevsimi, yerel hava durumunu ve günün saatini verir; böylece cevaplar gerçek ana daha iyi uyar.',
+            cards: [
+              {
+                title: 'Mevsim',
+                body: 'Yaz, kış ve geçiş dönemleri ışığı, büyüme hızını ve bakım aralıklarını değiştirir.',
+              },
+              {
+                title: 'Hava',
+                body: 'Sıcaklık, nem, rüzgâr ve gün ışığı sulama, konum ve sağlık kontrollerine yardımcı olur.',
+              },
+              {
+                title: 'Saat',
+                body: 'Ben sabah mı, akşam mı yoksa geç saat mi olduğunu bilir ve görevleri buna göre çerçeveler.',
+              },
+            ],
+          },
           product: {
             eyebrow: 'Ürün',
             title: 'Dağınık bitki özellikleri yerine tek bir akış.',
@@ -3160,6 +3464,8 @@
       const heroNote = document.querySelector('.hero-note');
       const heroTags = document.querySelectorAll('.hero-tags span');
       const metricCards = document.querySelectorAll('.metric-card');
+      const contextCopy = document.querySelector('.context-copy');
+      const contextCards = document.querySelectorAll('.context-card');
       const productHeading = document.querySelector('#produkt .section-heading');
       const storyBands = document.querySelectorAll('.story-band');
       const opsHeading = document.querySelector('.ops-heading');
@@ -3279,6 +3585,15 @@
           card.querySelector('span').textContent = metric.label;
           card.querySelector('h2').textContent = metric.title;
           card.querySelector('p').textContent = metric.body;
+        });
+
+        contextCopy.querySelector('.eyebrow').textContent = dictionary.context.eyebrow;
+        contextCopy.querySelector('h2').textContent = dictionary.context.title;
+        contextCopy.querySelector('p').textContent = dictionary.context.body;
+        contextCards.forEach((card, index) => {
+          const contextCard = dictionary.context.cards[index];
+          card.querySelector('strong').textContent = contextCard.title;
+          card.querySelector('p').textContent = contextCard.body;
         });
 
         productHeading.querySelector('.eyebrow').textContent = dictionary.product.eyebrow;
