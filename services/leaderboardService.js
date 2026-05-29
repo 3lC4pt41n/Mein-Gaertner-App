@@ -10,8 +10,8 @@
  *   leaderboard_public view for every "my rank" request. With RPC, only
  *   a single-row result (or a small neighborhood) is returned.
  *
- *   getLeaderboard() still reads from the view with .limit(50), which is
- *   acceptable because Top-N queries are inherently bounded.
+ *   getLeaderboard() uses a bounded SECURITY DEFINER RPC so public ranking
+ *   data stays aggregated and raw discovery rows remain protected by RLS.
  *
  *   The RPCs use SECURITY DEFINER + SET search_path = public to prevent
  *   search_path hijacking (Supabase best practice).
@@ -60,7 +60,7 @@ function assignDenseRanks(entries, scoreCol) {
 }
 
 /**
- * Leaderboard Top-N abrufen (aus leaderboard_public View).
+ * Leaderboard Top-N abrufen (aggregiert per SECURITY DEFINER RPC).
  *
  * @param {'week'|'month'|'all'} timeWindow
  * @param {'gardener'|'discovery'} type
@@ -68,6 +68,16 @@ function assignDenseRanks(entries, scoreCol) {
  */
 export async function getLeaderboard(timeWindow = 'week', type = 'gardener', limit = 50) {
   const scoreCol = SCORE_COLUMNS[type]?.[timeWindow] || SCORE_COLUMNS.gardener.week;
+
+  const { data: rpcData, error: rpcError } = await supabase.rpc('get_leaderboard_public', {
+    p_score_column: scoreCol,
+    p_limit: limit,
+  });
+
+  if (!rpcError) return assignDenseRanks(rpcData || [], scoreCol);
+
+  // Fallback for app bundles that reach users before the migration deploys.
+  if (rpcError.code !== '42883' && rpcError.code !== 'PGRST202') throw rpcError;
 
   const { data, error } = await supabase
     .from('leaderboard_public')
