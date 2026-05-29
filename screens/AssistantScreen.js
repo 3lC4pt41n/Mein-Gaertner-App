@@ -36,10 +36,11 @@ export default function AssistantScreen({ context }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState('de');
-  const [userAvatarUrl, setUserAvatarUrl] = useState(null);
+  const [gardenerAvatarUrl, setGardenerAvatarUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const flatListRef = useRef();
+  const gardenerAvatarPath = user?.user_metadata?.gardener_avatar_path;
 
   useEffect(() => {
     if (!user_id) return;
@@ -53,24 +54,25 @@ export default function AssistantScreen({ context }) {
         }
       }
 
-      const avatarPath = user?.user_metadata?.gardener_avatar_path;
-      if (avatarPath) {
+      if (gardenerAvatarPath) {
         try {
           const { data: signedData, error: signedError } = await supabase.storage
             .from('chat-images')
-            .createSignedUrl(avatarPath, 60 * 60 * 24 * 30);
+            .createSignedUrl(gardenerAvatarPath, 60 * 60 * 24 * 30);
 
           if (!signedError && signedData?.signedUrl) {
-            setUserAvatarUrl(signedData.signedUrl);
+            setGardenerAvatarUrl(signedData.signedUrl);
           }
         } catch (error) {
           if (__DEV__) {
             console.warn('[AssistantScreen] avatar URL resolve failed:', error?.message);
           }
         }
+      } else {
+        setGardenerAvatarUrl(null);
       }
     })();
-  }, [user_id]);
+  }, [user_id, gardenerAvatarPath]);
 
   // Initial: letzte 30 Messages laden
   useEffect(() => {
@@ -225,11 +227,15 @@ export default function AssistantScreen({ context }) {
 
   // Avatar wählen
   const getAvatar = (sender) => {
-    if (sender === GARDENER_NAME) return require('../assets/avatars/ben.png');
-    if (sender === 'user' && userAvatarUrl) return { uri: userAvatarUrl };
     if (sender === 'user') return require('../assets/avatars/tim.png');
-    // Fallback: All bot/system senders get the gardener avatar
+    if (gardenerAvatarUrl) return { uri: gardenerAvatarUrl };
     return require('../assets/avatars/ben.png');
+  };
+
+  const handleGardenerAvatarError = () => {
+    if (gardenerAvatarUrl) {
+      setGardenerAvatarUrl(null);
+    }
   };
 
   // Bubble
@@ -246,15 +252,32 @@ export default function AssistantScreen({ context }) {
         alignItems: 'flex-end',
       }}
     >
-      <Image
-        source={getAvatar(item.sender)}
-        style={{
-          width: spacing.xxxl,
-          height: spacing.xxxl,
-          borderRadius: radius.lg,
-          marginRight: spacing.sm,
-        }}
-      />
+      {item.sender === 'user' ? (
+        <Image
+          source={getAvatar(item.sender)}
+          resizeMode="cover"
+          style={{
+            width: spacing.xxxl,
+            height: spacing.xxxl,
+            borderRadius: radius.lg,
+            marginRight: spacing.sm,
+            backgroundColor: colors.primarySurface,
+          }}
+        />
+      ) : (
+        <Image
+          source={getAvatar(item.sender)}
+          resizeMode="cover"
+          onError={handleGardenerAvatarError}
+          style={{
+            width: spacing.xxxl,
+            height: spacing.xxxl,
+            borderRadius: radius.lg,
+            marginRight: spacing.sm,
+            backgroundColor: colors.primarySurface,
+          }}
+        />
+      )}
       <View style={{ flex: 1, flexShrink: 1 }}>
         {item.image_url && (
           <ExpoImage
@@ -316,7 +339,9 @@ export default function AssistantScreen({ context }) {
               }}
             >
               <Image
-                source={require('../assets/avatars/ben.png')}
+                source={getAvatar(GARDENER_NAME)}
+                onError={handleGardenerAvatarError}
+                resizeMode="cover"
                 style={{ width: 80, height: 80, borderRadius: 40, marginBottom: spacing.lg }}
               />
               <Text
