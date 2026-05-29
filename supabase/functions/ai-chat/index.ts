@@ -138,6 +138,19 @@ function formatNameList(values: string[], maxItems = 24): string {
   return rest > 0 ? `${visible.join(', ')} (+${rest} weitere)` : visible.join(', ');
 }
 
+function formatTaskDueDate(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) return 'ohne Datum';
+  const due = new Date(value);
+  if (isNaN(due.getTime())) return 'ohne Datum';
+  return `${String(due.getDate()).padStart(2, '0')}.${String(due.getMonth() + 1).padStart(2, '0')}.`;
+}
+
+function formatTaskForContext(task: any): string {
+  const due = task?.due_at ? new Date(task.due_at) : null;
+  const overdue = due && !isNaN(due.getTime()) && due < new Date();
+  return `${task.type} (fällig ${formatTaskDueDate(task.due_at)}${overdue ? ', OVERDUE' : ''})`;
+}
+
 async function loadUserZones(
   serviceClient: SupabaseClient,
   userId: string
@@ -245,7 +258,7 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
   // Faellige Tasks
   const { data: tasks } = await serviceClient
     .from('tasks')
-    .select('plant_id, type, due_at, state, note')
+    .select('id, plant_id, type, due_at, state, note, template_id')
     .eq('user_id', userId)
     .in('state', ['DUE', 'OPEN'])
     .order('due_at', { ascending: true })
@@ -287,11 +300,7 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
     }
     if (plantTasks.length > 0) {
       const taskStr = plantTasks
-        .map((t: any) => {
-          const due = new Date(t.due_at);
-          const overdue = due < new Date();
-          return `${t.type}${overdue ? ' (OVERDUE)' : ''}`;
-        })
+        .map((t: any) => formatTaskForContext(t))
         .join(', ');
       context += ` | Tasks: ${taskStr}`;
     }
@@ -338,9 +347,12 @@ Playful but always respectful, friendly and encouraging.
 
 ## TOOLS
 - You can create tasks for the user using the create_task and create_recurring_task functions.
+- You can complete due tasks using complete_task and reschedule due tasks using reschedule_task.
 - You can assign an existing plant to an existing zone using assign_plant_to_zone.
 - When the user asks you to remind them, schedule something, or create a care plan, use these tools.
 - When the user asks you to sort or move a plant into a room/zone, use assign_plant_to_zone.
+- When the user says they completed a care action, use complete_task.
+- When the user asks to move a due date, use reschedule_task.
 - After creating a task, confirm what you created in a friendly message.
 - For recurring tasks, suggest reasonable intervals based on plant type and season.`;
 
@@ -477,12 +489,71 @@ function buildTools() {
         },
       },
     },
+    {
+      type: 'function',
+      function: {
+        name: 'complete_task',
+        description: "Complete the user's next due care task for one plant",
+        parameters: {
+          type: 'object',
+          properties: {
+            plant_name: {
+              type: 'string',
+              description: 'Name of the plant (must match an existing plant)',
+            },
+            task_type: {
+              type: 'string',
+              enum: ['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges'],
+              description: 'Type of due task to complete',
+            },
+          },
+          required: ['plant_name', 'task_type'],
+        },
+      },
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'reschedule_task',
+        description: "Reschedule the user's next due care task for one plant",
+        parameters: {
+          type: 'object',
+          properties: {
+            plant_name: {
+              type: 'string',
+              description: 'Name of the plant (must match an existing plant)',
+            },
+            task_type: {
+              type: 'string',
+              enum: ['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges'],
+              description: 'Type of due task to reschedule',
+            },
+            new_due_date: {
+              type: 'string',
+              description: 'New due date in ISO format (YYYY-MM-DD)',
+            },
+          },
+          required: ['plant_name', 'task_type', 'new_due_date'],
+        },
+      },
+    },
   ];
 }
 
 // ─── Tool Call Handler ────────────
 
-const TOOL_TASK_TYPES = new Set(['Gießen', 'Düngen', 'Umtopfen', 'Healthcheck', 'Sonstiges']);
+const TOOL_TASK_TYPES = new Set([
+  'Gießen',
+  'Düngen',
+  'Umtopfen',
+  'Healthcheck',
+  'Sonstiges',
+  'watering',
+  'fertilizing',
+  'repotting',
+  'healthcheck',
+  'other',
+]);
 const NOTE_MAX_LENGTH = 500;
 
 function getNonEmptyString(value: unknown): string | null {
@@ -535,6 +606,69 @@ function parseOptionalNote(input: unknown): { note: string | null; error?: strin
     return { note: null, error: `note must be <= ${NOTE_MAX_LENGTH} characters.` };
   }
   return { note: trimmed.length ? trimmed : null };
+}
+
+function normalizeTaskType(value: string): string {
+  const key = value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '');
+
+  const aliases: Record<string, string> = {
+    giessen: 'watering',
+    gießen: 'watering',
+    watering: 'watering',
+    wasser: 'watering',
+    duenngen: 'fertilizing',
+    dungen: 'fertilizing',
+    duengen: 'fertilizing',
+    fertilizing: 'fertilizing',
+    fertilizer: 'fertilizing',
+    umtopfen: 'repotting',
+    repotting: 'repotting',
+    healthcheck: 'healthcheck',
+    gesundheitscheck: 'healthcheck',
+    sonstiges: 'other',
+    other: 'other',
+  };
+
+  return aliases[key] || key;
+}
+
+function taskTypeMatches(storedType: string, requestedType: string): boolean {
+  return normalizeTaskType(storedType) === normalizeTaskType(requestedType);
+}
+
+async function findNextDueTaskForPlant(
+  serviceClient: SupabaseClient,
+  userId: string,
+  plant: any,
+  taskType: string
+): Promise<{ task: any | null; error?: string }> {
+  const { data, error } = await serviceClient
+    .from('tasks')
+    .select('id, plant_id, type, due_at, state, note, template_id')
+    .eq('user_id', userId)
+    .eq('plant_id', plant.id)
+    .eq('state', 'DUE')
+    .order('due_at', { ascending: true });
+
+  if (error) return { task: null, error: error.message };
+
+  const dueTasks = data || [];
+  const matches = dueTasks.filter((task: any) => taskTypeMatches(task.type, taskType));
+  if (matches.length > 0) return { task: matches[0] };
+
+  if (dueTasks.length === 0) {
+    return { task: null, error: `No due tasks found for ${plant.name}.` };
+  }
+
+  const available = dueTasks.map((task: any) => `${task.type} (${formatTaskDueDate(task.due_at)})`);
+  return {
+    task: null,
+    error: `No due ${taskType} task found for ${plant.name}. Available due tasks: ${formatNameList(available)}`,
+  };
 }
 
 async function handleToolCall(
@@ -611,6 +745,62 @@ async function handleToolCall(
   if (!taskType || !TOOL_TASK_TYPES.has(taskType)) {
     return JSON.stringify({
       error: `task_type must be one of: ${Array.from(TOOL_TASK_TYPES).join(', ')}`,
+    });
+  }
+
+  if (fnName === 'complete_task') {
+    const taskResult = await findNextDueTaskForPlant(serviceClient, userId, plant, taskType);
+    if (!taskResult.task) {
+      return JSON.stringify({ error: taskResult.error || 'Due task not found.' });
+    }
+
+    const { data, error } = await serviceClient.rpc('complete_task_rpc', {
+      p_task_id: taskResult.task.id,
+    });
+
+    if (error) {
+      return JSON.stringify({ error: error.message });
+    }
+
+    return JSON.stringify({
+      success: true,
+      plant_name: plant.name,
+      task_type: taskResult.task.type,
+      task_id: taskResult.task.id,
+      result: data,
+    });
+  }
+
+  if (fnName === 'reschedule_task') {
+    const due = parseDueDate(args.new_due_date);
+    if (!due) {
+      return JSON.stringify({
+        error: 'new_due_date must be a valid date string in format YYYY-MM-DD.',
+      });
+    }
+
+    const taskResult = await findNextDueTaskForPlant(serviceClient, userId, plant, taskType);
+    if (!taskResult.task) {
+      return JSON.stringify({ error: taskResult.error || 'Due task not found.' });
+    }
+
+    const { error } = await serviceClient
+      .from('tasks')
+      .update({ due_at: due.dueAt })
+      .eq('id', taskResult.task.id)
+      .eq('user_id', userId)
+      .eq('state', 'DUE');
+
+    if (error) {
+      return JSON.stringify({ error: error.message });
+    }
+
+    return JSON.stringify({
+      success: true,
+      plant_name: plant.name,
+      task_type: taskResult.task.type,
+      task_id: taskResult.task.id,
+      new_due_date: due.dueDate,
     });
   }
 

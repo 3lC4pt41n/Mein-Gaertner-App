@@ -81,6 +81,16 @@ async function insertTasksWithNoteFallback(payload, { single = false } = {}) {
   return retryResult;
 }
 
+function isMissingCompleteTaskRpcError(error) {
+  const msg = (error?.message || '').toLowerCase();
+  return (
+    error?.code === '42883' ||
+    error?.code === 'PGRST202' ||
+    (msg.includes('complete_task_rpc') &&
+      (msg.includes('schema cache') || msg.includes('function')))
+  );
+}
+
 export async function fetchTasks(user_id, { page = 0 } = {}) {
   return requestWithPolicy(
     async () => {
@@ -215,6 +225,16 @@ export async function fetchTaskRuns(task_id) {
  * Bei wiederkehrenden Tasks: automatisch nächsten Task erstellen.
  */
 export async function completeTask(task, user_id) {
+  const { data, error } = await supabase.rpc('complete_task_rpc', { p_task_id: task.id });
+
+  if (!error) return data;
+  if (!isMissingCompleteTaskRpcError(error)) throw error;
+
+  console.warn('[taskService] complete_task_rpc fehlt; verwende Legacy-Completion.');
+  return completeTaskLegacy(task, user_id);
+}
+
+async function completeTaskLegacy(task, user_id) {
   // 1. Task als COMPLETED setzen — nur wenn noch DUE (idempotent)
   const { data: updated, error } = await supabase
     .from('tasks')
