@@ -9,6 +9,7 @@ supabase.auth.signOut = jest.fn().mockResolvedValue({});
 
 const {
   recognizePlant,
+  recognizePlantFromImageUrl,
   generatePlantDetails,
   performHealthcheck,
   chatWithBen,
@@ -33,6 +34,23 @@ describe('aiService', () => {
       const result = await recognizePlant('base64data', 'de');
       expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-plant-scan', {
         body: { base64: 'base64data', language: 'de' },
+        headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
+      });
+      expect(result).toEqual({ name: 'Monstera', note: 'Tropical plant' });
+    });
+
+    it('calls ai-plant-scan edge function with image URL and language', async () => {
+      supabase.functions.invoke.mockResolvedValue({
+        data: { name: 'Monstera', note: 'Tropical plant' },
+        error: null,
+      });
+
+      const result = await recognizePlantFromImageUrl(
+        'https://project.supabase.co/storage/x.jpg',
+        'de'
+      );
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('ai-plant-scan', {
+        body: { image_url: 'https://project.supabase.co/storage/x.jpg', language: 'de' },
         headers: { Authorization: 'Bearer mock-token', apikey: SUPABASE_PUBLISHABLE_KEY },
       });
       expect(result).toEqual({ name: 'Monstera', note: 'Tropical plant' });

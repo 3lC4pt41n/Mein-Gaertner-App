@@ -1,10 +1,14 @@
 // Edge Function: Pflanze erkennen (Foto → Name + Hinweis)
 // Hybrid-Ansatz: PlantNet API für Identifikation + GPT-5.5 für Pflegetipp
-// POST Body: { base64: string } (base64-kodiertes Bild)
+// POST Body: { base64?: string, image_url?: string }
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { callOpenAI } from '../_shared/openai.ts';
-import { identifyPlantFromBase64, formatPlantNetContext } from '../_shared/plantnet.ts';
+import {
+  identifyPlantFromBase64,
+  identifyPlantFromUrl,
+  formatPlantNetContext,
+} from '../_shared/plantnet.ts';
 import {
   CREDIT_COSTS,
   deductCreditsAtomic,
@@ -13,7 +17,12 @@ import {
   getUserIdFromAuth,
 } from '../_shared/credits.ts';
 import { getLanguagePromptName, getUserLanguage } from '../_shared/language.ts';
-import { validateBase64, validateLanguage, validationErrorResponse } from '../_shared/validate.ts';
+import {
+  validateBase64,
+  validateImageUrl,
+  validateLanguage,
+  validationErrorResponse,
+} from '../_shared/validate.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
@@ -40,14 +49,17 @@ serve(async (req) => {
     const userId = await getUserIdFromAuth(serviceClient, authHeader);
 
     // Body parsen
-    const { base64, language: requestedLanguage } = await req.json();
+    const { base64, image_url, language: requestedLanguage } = await req.json();
 
     // Input-Validierung (VOR Credit-Abzug)
-    const vErr = validationErrorResponse([validateBase64(base64, 10_000_000)], corsHeaders);
+    const vErr = validationErrorResponse(
+      [validateBase64(base64, 10_000_000), validateImageUrl(image_url)],
+      corsHeaders
+    );
     if (vErr) return vErr;
 
-    if (!base64) {
-      return new Response(JSON.stringify({ error: 'base64 Bild fehlt' }), {
+    if (!base64 && !image_url) {
+      return new Response(JSON.stringify({ error: 'Bild fehlt' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -86,7 +98,10 @@ serve(async (req) => {
     const langCode = resolvedLanguage.split('-')[0] || 'de';
 
     // ─── Schritt 1: PlantNet für Identifikation (parallel starten) ────
-    const plantNetPromise = identifyPlantFromBase64(base64, langCode);
+    const imageForVision = image_url || `data:image/jpeg;base64,${base64}`;
+    const plantNetPromise = image_url
+      ? identifyPlantFromUrl(image_url, langCode)
+      : identifyPlantFromBase64(base64, langCode);
 
     // ─── Schritt 2: PlantNet-Ergebnis abwarten ────
     const plantNetResult = await plantNetPromise;
@@ -139,7 +154,7 @@ Rules:
               { type: 'text', text: promptText },
               {
                 type: 'image_url',
-                image_url: { url: `data:image/jpeg;base64,${base64}` },
+                image_url: { url: imageForVision },
               },
             ],
           },
@@ -163,6 +178,7 @@ Rules:
       model: result.model,
       metadata: {
         language: resolvedLanguage,
+        image_input: image_url ? 'storage_url' : 'base64',
         plantnet_used: hasPlantNet,
         plantnet_best_match: plantNetResult?.bestMatch || null,
         plantnet_confidence: plantNetResult?.results?.[0]?.score || null,

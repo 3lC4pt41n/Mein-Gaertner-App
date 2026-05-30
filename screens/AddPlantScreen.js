@@ -12,12 +12,15 @@ import {
   StyleSheet,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system/legacy';
 import { safeLaunchCamera } from '../services/imagePickerHelper';
 import { Ionicons } from '@expo/vector-icons';
 import { savePlantToSupabase, saveHealthcheck } from '../services/plantService';
 import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
-import { recognizePlant, generatePlantDetails, performHealthcheck } from '../services/aiService';
+import {
+  recognizePlantFromImageUrl,
+  generatePlantDetails,
+  performHealthcheck,
+} from '../services/aiService';
 import { logDiscovery, getDiscoveryLocation } from '../services/discoveryService';
 import { supabase } from '../supabase';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -94,7 +97,7 @@ export default function AddPlantScreen() {
   const [note, setNote] = useState('');
   const [plantType, setPlantType] = useState(null);
   const [imageUri, setImageUri] = useState(null);
-  const [base64Image, setBase64Image] = useState(null);
+  const [uploadedImagePath, setUploadedImagePath] = useState(null);
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState('de');
 
@@ -150,8 +153,9 @@ export default function AddPlantScreen() {
     setRecognizedSpeciesName('');
     setNameEditedByUser(false);
     setNote('');
+    setPlantType(null);
     setImageUri(null);
-    setBase64Image(null);
+    setUploadedImagePath(null);
     setSelectedZone(null);
     setSavedPlant(null);
     setScanMode(null);
@@ -191,7 +195,6 @@ export default function AddPlantScreen() {
       return;
     }
     const result = await safeLaunchCamera({
-      base64: true,
       allowsEditing: true,
       quality: 0.6,
     });
@@ -199,21 +202,13 @@ export default function AddPlantScreen() {
     if (result.canceled) return;
 
     const uri = result.assets[0].uri;
-    let base64 = result.assets[0].base64 || null;
-    if (!base64 && uri) {
-      try {
-        base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
-      } catch {
-        base64 = null;
-      }
-    }
-    if (!base64) {
+    if (!uri) {
       Alert.alert(t('common.error'), t('dialog.imagePickerError'));
       return;
     }
 
     setImageUri(uri);
-    setBase64Image(base64);
+    setUploadedImagePath(null);
     setStep('save');
   }, []);
 
@@ -231,11 +226,22 @@ export default function AddPlantScreen() {
 
   // ── Step 2: AI recognition (costs credits) ─
   const handleRecognize = async () => {
-    if (!base64Image) return;
+    if (!imageUri || !userId) return;
     setLoading(true);
     setScanMode('ai');
     try {
-      const data = await recognizePlant(base64Image, language);
+      let imagePath = uploadedImagePath;
+      if (!imagePath) {
+        imagePath = await uploadPlantImage(imageUri, userId);
+        setUploadedImagePath(imagePath);
+      }
+
+      const imageUrl = await getPlantImageUrl(imagePath);
+      if (!imageUrl) {
+        throw new Error(t('plants.noImageForHealthcheck'));
+      }
+
+      const data = await recognizePlantFromImageUrl(imageUrl, language);
       const detectedName = typeof data?.name === 'string' ? data.name.trim() : '';
       setRecognizedSpeciesName(detectedName || '');
       setName(detectedName || t('plants.noNameRecognized'));
@@ -284,9 +290,12 @@ export default function AddPlantScreen() {
     setLoading(true);
 
     // Upload image — returns storage path (not signed URL)
-    let uploadedPath = null;
+    let uploadedPath = uploadedImagePath;
     try {
-      uploadedPath = await uploadPlantImage(imageUri, userId);
+      if (!uploadedPath) {
+        uploadedPath = await uploadPlantImage(imageUri, userId);
+        setUploadedImagePath(uploadedPath);
+      }
     } catch (e) {
       Alert.alert(t('plants.uploadError'), e.message);
       setLoading(false);

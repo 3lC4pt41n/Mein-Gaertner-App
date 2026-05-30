@@ -21,7 +21,8 @@ export function friendlyError(error) {
     lower.includes('econnrefused') ||
     lower.includes('enotfound') ||
     lower.includes('dns') ||
-    lower.includes('internet')
+    lower.includes('internet') ||
+    lower.includes('failed to send a request to the edge function')
   ) {
     return t('common.networkError');
   }

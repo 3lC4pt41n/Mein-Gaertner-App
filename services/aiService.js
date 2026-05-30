@@ -206,6 +206,15 @@ export async function recognizePlant(base64Image, language) {
   });
 }
 
+// Pflanze erkennen über eine Supabase Storage Signed URL.
+// Vermeidet große Base64-JSON-Requests, die auf iOS instabil werden können.
+export async function recognizePlantFromImageUrl(imageUrl, language) {
+  return callEdgeFunction('ai-plant-scan', {
+    image_url: imageUrl,
+    language,
+  });
+}
+
 // Pflanzen-Details generieren (Name → Details JSON)
 // species_id ist optional – wenn vorhanden, nutzt die Edge Function den Dex-Cache.
 // forceRefresh: true → Cache überspringen und neu generieren (z.B. Schema-Update)
