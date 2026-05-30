@@ -917,7 +917,8 @@ async function handleToolCall(
 async function loadAndPrepareHistory(
   serviceClient: SupabaseClient,
   userId: string,
-  budgetTokens: number
+  budgetTokens: number,
+  currentImageUrl: string | null = null
 ): Promise<any[]> {
   // Mehr laden als noetig, dann per Token-Budget filtern
   const { data: allMessages, error } = await serviceClient
@@ -930,7 +931,21 @@ async function loadAndPrepareHistory(
   if (error || !allMessages) return [];
 
   const ordered = allMessages.reverse(); // chronologisch
-  const selected = selectMessagesWithinBudget(ordered, budgetTokens);
+  let selected = selectMessagesWithinBudget(ordered, budgetTokens);
+
+  // The client stores the current image message before invoking this function.
+  // If the request also carries image_url, we append that image explicitly below
+  // as the current turn and remove the just-saved DB copy to avoid duplicates.
+  if (currentImageUrl) {
+    const latestCurrentImageIndex = selected
+      .map((msg: any, index: number) => ({ msg, index }))
+      .reverse()
+      .find(({ msg }: any) => msg.sender === 'user' && (msg.image_path || msg.image_url))?.index;
+
+    if (latestCurrentImageIndex !== undefined) {
+      selected = selected.filter((_: any, index: number) => index !== latestCurrentImageIndex);
+    }
+  }
   const imageIndexes = selected
     .map((msg: any, index: number) => ({ index, hasImage: !!(msg.image_path || msg.image_url) }))
     .filter((entry: any) => entry.hasImage)
@@ -984,6 +999,26 @@ async function loadAndPrepareHistory(
   }
 
   return prepared;
+}
+
+async function buildCurrentImageTurn(text: string | undefined, imageUrl: string): Promise<any | null> {
+  try {
+    const imageForVision = await resolveImageForVision(imageUrl);
+    const turnText =
+      text && text.trim()
+        ? text.trim()
+        : 'React specifically to this plant photo. Mention what you can see and, if possible, identify the plant.';
+
+    return {
+      role: 'user',
+      content: [
+        { type: 'text', text: turnText },
+        { type: 'image_url', image_url: { url: imageForVision } },
+      ],
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ─── Summary Memory: Rolling Zusammenfassung aktualisieren ────────────
@@ -1192,14 +1227,22 @@ serve(async (req) => {
     const historyBudget = Math.max(0, 6000 - systemTokens - maxOutputTokens);
 
     // History server-seitig laden (Token-Budget basiert)
-    const historyMessages = await loadAndPrepareHistory(serviceClient, userId, historyBudget);
+    const historyMessages = await loadAndPrepareHistory(
+      serviceClient,
+      userId,
+      historyBudget,
+      image_url || null
+    );
 
     // Chat-Nachrichten aufbauen
     const chatMessages: any[] = [{ role: 'system', content: systemPrompt }, ...historyMessages];
 
-    // Bild- und Text-Nachrichten sind bereits in historyMessages vom DB-Load
-    // enthalten (der Client speichert sie vor dem RPC-Aufruf).
-    // Kein erneutes Anhaengen noetig — das wuerde Duplikate erzeugen.
+    if (image_url) {
+      const currentImageTurn = await buildCurrentImageTurn(text, image_url);
+      if (currentImageTurn) {
+        chatMessages.push(currentImageTurn);
+      }
+    }
 
     // OpenAI Call (Credits bereits abgezogen, Refund bei Fehler)
     let result;
