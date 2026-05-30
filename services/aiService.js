@@ -2,6 +2,9 @@ import { supabase, SUPABASE_PUBLISHABLE_KEY } from '../supabase';
 import { requestWithPolicy } from './networkPolicy';
 import { formatContextForPrompt } from '../utils/contextUtils';
 
+const AI_EDGE_POLICY = { timeout: 90000, retries: 0 };
+const AVATAR_EDGE_POLICY = { timeout: 120000, retries: 0 };
+
 function isAuthFailure(error, parsed) {
   // Only treat as auth failure when we have strong signals.
   // NEVER match on vague substrings like 'session' – too many false positives.
@@ -208,19 +211,27 @@ async function callEdgeFunction(functionName, body, policyOptions = {}) {
 
 // Pflanze erkennen (Foto → Name + Note)
 export async function recognizePlant(base64Image, language) {
-  return callEdgeFunction('ai-plant-scan', {
-    base64: base64Image,
-    language,
-  });
+  return callEdgeFunction(
+    'ai-plant-scan',
+    {
+      base64: base64Image,
+      language,
+    },
+    AI_EDGE_POLICY
+  );
 }
 
 // Pflanze erkennen über eine Supabase Storage Signed URL.
 // Vermeidet große Base64-JSON-Requests, die auf iOS instabil werden können.
 export async function recognizePlantFromImageUrl(imageUrl, language) {
-  return callEdgeFunction('ai-plant-scan', {
-    image_url: imageUrl,
-    language,
-  });
+  return callEdgeFunction(
+    'ai-plant-scan',
+    {
+      image_url: imageUrl,
+      language,
+    },
+    AI_EDGE_POLICY
+  );
 }
 
 // Pflanzen-Details generieren (Name → Details JSON)
@@ -230,7 +241,7 @@ export async function generatePlantDetails(name, note, language, speciesId, forc
   const body = { name, note, language };
   if (speciesId) body.species_id = speciesId;
   if (forceRefresh) body.force_refresh = true;
-  return callEdgeFunction('ai-plant-details', body);
+  return callEdgeFunction('ai-plant-details', body, AI_EDGE_POLICY);
 }
 
 // Healthcheck durchführen (Bild-URL → Healthcheck JSON)
@@ -242,7 +253,7 @@ export async function performHealthcheck(imageUrl, plantName, language) {
       plant_name: plantName,
       language,
     },
-    { timeout: 90000, retries: 0 }
+    AI_EDGE_POLICY
   );
 }
 
@@ -260,7 +271,7 @@ export async function chatWithBen(text, imageUrl, language, context) {
     body.contextText = formatContextForPrompt(context);
   }
 
-  return callEdgeFunction('ai-chat', body);
+  return callEdgeFunction('ai-chat', body, AI_EDGE_POLICY);
 }
 
 // User-Foto -> personalisierter Gaertner-Avatar
@@ -272,5 +283,5 @@ export async function generateGardenerAvatar(base64Image, language, generateGene
   } else {
     body.base64 = base64Image;
   }
-  return callEdgeFunction('ai-gardener-avatar', body);
+  return callEdgeFunction('ai-gardener-avatar', body, AVATAR_EDGE_POLICY);
 }

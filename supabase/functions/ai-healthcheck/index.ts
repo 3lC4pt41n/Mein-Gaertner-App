@@ -21,6 +21,7 @@ import {
   validateLanguage,
   validationErrorResponse,
 } from '../_shared/validate.ts';
+import { resolveImageForVision } from '../_shared/vision-image.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
@@ -106,36 +107,6 @@ Rules:
 - Keep all JSON keys exactly as shown.
 - Rating scale: 0 = critical, 100 = excellent.
 - Return only valid JSON (no markdown, comments or explanation).`;
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const chunkSize = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.subarray(i, i + chunkSize);
-    binary += String.fromCharCode(...Array.from(chunk));
-  }
-  return btoa(binary);
-}
-
-async function resolveImageForVision(imageUrl: string): Promise<string> {
-  if (imageUrl.startsWith('data:image/')) return imageUrl;
-
-  const response = await fetch(imageUrl);
-  if (!response.ok) {
-    throw new Error(`Bild konnte nicht geladen werden (${response.status})`);
-  }
-
-  const contentTypeHeader = response.headers.get('content-type') || 'image/jpeg';
-  const contentType = contentTypeHeader.split(';')[0].trim().toLowerCase();
-  const safeContentType = contentType.startsWith('image/') ? contentType : 'image/jpeg';
-  const bytes = new Uint8Array(await response.arrayBuffer());
-
-  if (bytes.length === 0) {
-    throw new Error('Bild konnte nicht geladen werden');
-  }
-
-  return `data:${safeContentType};base64,${bytesToBase64(bytes)}`;
 }
 
 serve(async (req) => {

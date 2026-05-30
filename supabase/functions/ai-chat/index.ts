@@ -22,8 +22,11 @@ import {
   validateLanguage,
   validationErrorResponse,
 } from '../_shared/validate.ts';
+import { resolveImageForVision } from '../_shared/vision-image.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
+
+const MAX_VISION_IMAGES_IN_HISTORY = 2;
 
 // ─── Garden Context: Pflanzen, Healthchecks, Tasks laden ────────────
 
@@ -928,19 +931,27 @@ async function loadAndPrepareHistory(
 
   const ordered = allMessages.reverse(); // chronologisch
   const selected = selectMessagesWithinBudget(ordered, budgetTokens);
+  const imageIndexes = selected
+    .map((msg: any, index: number) => ({ index, hasImage: !!(msg.image_path || msg.image_url) }))
+    .filter((entry: any) => entry.hasImage)
+    .map((entry: any) => entry.index);
+  const imageIndexesToSend = new Set(imageIndexes.slice(-MAX_VISION_IMAGES_IN_HISTORY));
 
   // Signed URLs fuer Bilder generieren
   const prepared: any[] = [];
-  for (const msg of selected) {
+  for (let index = 0; index < selected.length; index++) {
+    const msg = selected[index];
     let imageUrl: string | null = null;
 
-    // Nur echte Storage-Pfade verarbeiten (keine data: URIs oder base64)
-    if (msg.image_path && !msg.image_path.startsWith('data:')) {
+    // Nur die neuesten Bildnachrichten als Vision-Input senden. Aeltere Bilder
+    // bleiben als Text-Marker im Verlauf, damit Requests klein und stabil bleiben.
+    if (imageIndexesToSend.has(index) && msg.image_path && !msg.image_path.startsWith('data:')) {
       const { data: signedData } = await serviceClient.storage
         .from('chat-images')
         .createSignedUrl(msg.image_path, 60 * 60);
       if (signedData?.signedUrl) imageUrl = signedData.signedUrl;
     } else if (
+      imageIndexesToSend.has(index) &&
       msg.image_url &&
       !msg.image_url.startsWith('data:') &&
       msg.image_url.startsWith('http')
@@ -951,13 +962,20 @@ async function loadAndPrepareHistory(
 
     const role = msg.sender === 'user' ? 'user' : 'assistant';
     if (imageUrl) {
-      prepared.push({
-        role,
-        content: [
-          ...(msg.content && msg.content !== '[Bild]' ? [{ type: 'text', text: msg.content }] : []),
-          { type: 'image_url', image_url: { url: imageUrl } },
-        ],
-      });
+      try {
+        const imageForVision = await resolveImageForVision(imageUrl);
+        prepared.push({
+          role,
+          content: [
+            ...(msg.content && msg.content !== '[Bild]'
+              ? [{ type: 'text', text: msg.content }]
+              : []),
+            { type: 'image_url', image_url: { url: imageForVision } },
+          ],
+        });
+      } catch {
+        prepared.push({ role, content: msg.content || '[Bild]' });
+      }
     } else {
       // Kein Bild (oder base64) — nur Text senden
       const text = msg.content || '[Bild]';

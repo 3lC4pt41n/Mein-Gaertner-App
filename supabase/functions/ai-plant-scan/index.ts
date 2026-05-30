@@ -23,6 +23,7 @@ import {
   validateLanguage,
   validationErrorResponse,
 } from '../_shared/validate.ts';
+import { base64ToVisionDataUrl, resolveImageForVision } from '../_shared/vision-image.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
@@ -71,6 +72,18 @@ serve(async (req) => {
     const rateLimitResp = await checkRateLimit(serviceClient, userId, 'plant_scan', corsHeaders);
     if (rateLimitResp) return rateLimitResp;
 
+    let imageForVision: string;
+    try {
+      imageForVision = image_url
+        ? await resolveImageForVision(image_url)
+        : base64ToVisionDataUrl(base64);
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message || 'Bild konnte nicht geladen werden' }), {
+        status: 422,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
     const cost = CREDIT_COSTS.plant_scan;
     let newBalance: number;
@@ -98,7 +111,6 @@ serve(async (req) => {
     const langCode = resolvedLanguage.split('-')[0] || 'de';
 
     // ─── Schritt 1: PlantNet für Identifikation (parallel starten) ────
-    const imageForVision = image_url || `data:image/jpeg;base64,${base64}`;
     const plantNetPromise = image_url
       ? identifyPlantFromUrl(image_url, langCode)
       : identifyPlantFromBase64(base64, langCode);
@@ -178,7 +190,7 @@ Rules:
       model: result.model,
       metadata: {
         language: resolvedLanguage,
-        image_input: image_url ? 'storage_url' : 'base64',
+        image_input: image_url ? 'server_resolved_data_url' : 'base64',
         plantnet_used: hasPlantNet,
         plantnet_best_match: plantNetResult?.bestMatch || null,
         plantnet_confidence: plantNetResult?.results?.[0]?.score || null,
