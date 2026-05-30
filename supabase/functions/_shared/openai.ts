@@ -83,7 +83,9 @@ export async function callOpenAI(params: {
     body.tool_choice = params.tool_choice;
   }
 
-  if (params.response_format) {
+  // GPT-5.5 rejects Chat Completions response_format in this setup.
+  // Prompts still request strict JSON and callers keep their parser guards.
+  if (params.response_format && !model.startsWith('gpt-5.5')) {
     body.response_format = params.response_format;
   }
 

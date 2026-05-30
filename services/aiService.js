@@ -41,7 +41,12 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function invokeEdge(functionName, body, accessToken, { useExplicitAuthHeader = true } = {}) {
+async function invokeEdge(
+  functionName,
+  body,
+  accessToken,
+  { useExplicitAuthHeader = true, timeout = 45000, retries = 1 } = {}
+) {
   const invokeOptions = { body };
   if (useExplicitAuthHeader && accessToken) {
     invokeOptions.headers = {
@@ -51,8 +56,8 @@ async function invokeEdge(functionName, body, accessToken, { useExplicitAuthHead
   }
 
   return requestWithPolicy(() => supabase.functions.invoke(functionName, invokeOptions), {
-    timeout: 45000,
-    retries: 1,
+    timeout,
+    retries,
     label: `ai.${functionName}`,
   });
 }
@@ -105,7 +110,7 @@ async function parseInvokeError(error) {
 // Helper: Edge Function aufrufen über den Supabase Client.
 // Authorization + apikey werden explizit gesetzt, um stale function headers in RN zu vermeiden.
 // Wrapped with requestWithPolicy for timeout + retry on transient failures.
-async function callEdgeFunction(functionName, body) {
+async function callEdgeFunction(functionName, body, policyOptions = {}) {
   let accessToken = await getAccessToken();
   if (!accessToken) {
     const err = new Error('Nicht eingeloggt');
@@ -117,6 +122,7 @@ async function callEdgeFunction(functionName, body) {
   // AI calls get a generous timeout (image uploads can be large) and 1 retry
   let { data, error } = await invokeEdge(functionName, body, accessToken, {
     useExplicitAuthHeader: true,
+    ...policyOptions,
   });
 
   // Auth-recovery: one explicit retry with a freshly-read access token.
@@ -129,6 +135,7 @@ async function callEdgeFunction(functionName, body) {
     const latestToken = (await getAccessToken({ waitForHydration: false })) || accessToken;
     const explicitRetry = await invokeEdge(functionName, body, latestToken, {
       useExplicitAuthHeader: true,
+      ...policyOptions,
     });
     data = explicitRetry.data;
     error = explicitRetry.error;
@@ -140,6 +147,7 @@ async function callEdgeFunction(functionName, body) {
       if (isAuthFailure(error, parsedAfterExplicit)) {
         const sdkFallback = await invokeEdge(functionName, body, null, {
           useExplicitAuthHeader: false,
+          ...policyOptions,
         });
         data = sdkFallback.data;
         error = sdkFallback.error;
@@ -227,11 +235,15 @@ export async function generatePlantDetails(name, note, language, speciesId, forc
 
 // Healthcheck durchführen (Bild-URL → Healthcheck JSON)
 export async function performHealthcheck(imageUrl, plantName, language) {
-  return callEdgeFunction('ai-healthcheck', {
-    image_url: imageUrl,
-    plant_name: plantName,
-    language,
-  });
+  return callEdgeFunction(
+    'ai-healthcheck',
+    {
+      image_url: imageUrl,
+      plant_name: plantName,
+      language,
+    },
+    { timeout: 90000, retries: 0 }
+  );
 }
 
 // Chat-Nachricht an Ben senden

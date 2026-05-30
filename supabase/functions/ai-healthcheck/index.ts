@@ -108,6 +108,36 @@ Rules:
 - Return only valid JSON (no markdown, comments or explanation).`;
 }
 
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode(...Array.from(chunk));
+  }
+  return btoa(binary);
+}
+
+async function resolveImageForVision(imageUrl: string): Promise<string> {
+  if (imageUrl.startsWith('data:image/')) return imageUrl;
+
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Bild konnte nicht geladen werden (${response.status})`);
+  }
+
+  const contentTypeHeader = response.headers.get('content-type') || 'image/jpeg';
+  const contentType = contentTypeHeader.split(';')[0].trim().toLowerCase();
+  const safeContentType = contentType.startsWith('image/') ? contentType : 'image/jpeg';
+  const bytes = new Uint8Array(await response.arrayBuffer());
+
+  if (bytes.length === 0) {
+    throw new Error('Bild konnte nicht geladen werden');
+  }
+
+  return `data:${safeContentType};base64,${bytesToBase64(bytes)}`;
+}
+
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req, 'POST, OPTIONS');
   const blockedOrigin = rejectDisallowedOrigin(req, corsHeaders);
@@ -151,6 +181,18 @@ serve(async (req) => {
     const rateLimitResp = await checkRateLimit(serviceClient, userId, 'healthcheck', corsHeaders);
     if (rateLimitResp) return rateLimitResp;
 
+    let imageForVision: string;
+    try {
+      // Resolve Supabase signed URLs server-side. iOS must not depend on OpenAI
+      // being able to fetch short-lived storage URLs directly.
+      imageForVision = await resolveImageForVision(image_url);
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message || 'Bild konnte nicht geladen werden' }), {
+        status: 422,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
     const cost = CREDIT_COSTS.healthcheck;
     let newBalance: number;
@@ -177,7 +219,7 @@ serve(async (req) => {
     const languagePromptName = getLanguagePromptName(resolvedLanguage);
     const healthcheckPrompt = buildHealthcheckPrompt(resolvedLanguage, languagePromptName);
 
-    // OpenAI Call — response_format forces valid JSON output
+    // OpenAI Call — prompt enforces JSON; parser below guards invalid output.
     const messages: any[] = [
       { role: 'system', content: 'You are a plant health analyst. Always respond with valid JSON only.' },
       { role: 'user', content: healthcheckPrompt },
@@ -185,7 +227,7 @@ serve(async (req) => {
         role: 'user',
         content: [
           ...(plant_name ? [{ type: 'text', text: `Die Pflanze heißt: ${plant_name}` }] : []),
-          { type: 'image_url', image_url: { url: image_url } },
+          { type: 'image_url', image_url: { url: imageForVision } },
         ],
       },
     ];
@@ -253,7 +295,7 @@ serve(async (req) => {
       cost_credits: cost,
       openai_cost_usd: result.cost_usd,
       model: result.model,
-      metadata: { plant_name, language: resolvedLanguage },
+      metadata: { plant_name, language: resolvedLanguage, image_input: 'server_resolved_data_url' },
     });
 
     return new Response(
