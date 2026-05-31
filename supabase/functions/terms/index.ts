@@ -74,7 +74,7 @@ const HTML = `<!doctype html>
       <p>Es gilt das Recht der Bundesrepublik Deutschland. Gerichtsstand ist der Wohnsitz des Anbieters, soweit gesetzlich zulässig.</p>
 
       <h2>11. Kontakt</h2>
-      <p>Bei Fragen zu diesen Nutzungsbedingungen: <a href="mailto:timergenthaler@gmail.com">timergenthaler@gmail.com</a></p>
+      <p>Bei Fragen zu diesen Nutzungsbedingungen: <a href="mailto:tim.mergenthaler@florascout.app">tim.mergenthaler@florascout.app</a></p>
 
       <div class="footer">Stand: März 2026 · © FloraScout – Tim Mergenthaler</div>
     </div>

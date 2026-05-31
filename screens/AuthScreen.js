@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { supabase, SUPABASE_URL } from '../supabase';
+import { supabase } from '../supabase';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import i18n, { t } from '../i18n';
@@ -21,10 +21,9 @@ import i18n, { t } from '../i18n';
 const APP_SCHEME = 'digitalergaertner';
 const OAUTH_REDIRECT_PATH = 'auth/callback';
 const PASSWORD_RESET_PATH = 'auth/reset-password';
-const FUNCTIONS_BASE_URL = `${SUPABASE_URL.replace(/\/$/, '')}/functions/v1`;
 const LEGAL_URLS = {
-  privacy: `${FUNCTIONS_BASE_URL}/privacy-policy`,
-  terms: `${FUNCTIONS_BASE_URL}/terms`,
+  privacy: 'https://florascout.app/privacy-policy.html',
+  terms: 'https://florascout.app/terms.html',
 };
 const RESEND_COOLDOWN_SECONDS = 60;
 

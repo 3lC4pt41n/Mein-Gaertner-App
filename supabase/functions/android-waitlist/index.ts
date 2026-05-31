@@ -13,7 +13,7 @@ type WaitlistPayload = {
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') ?? '');
 const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraScout <noreply@florascout.app>';
-const WAITLIST_NOTIFY_TO = Deno.env.get('WAITLIST_NOTIFY_TO') || 'timergenthaler@gmail.com';
+const WAITLIST_NOTIFY_TO = Deno.env.get('WAITLIST_NOTIFY_TO') || 'tim.mergenthaler@florascout.app';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;

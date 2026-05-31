@@ -10,7 +10,7 @@ ALTER TABLE profiles
 UPDATE profiles
 SET is_admin = true
 WHERE id = (
-  SELECT id FROM auth.users WHERE email = 'timergenthaler@gmail.com'
+  SELECT id FROM auth.users WHERE email = 'tim.mergenthaler@florascout.app'
 );
 
 -- 2) daily_stats und user_economics absichern

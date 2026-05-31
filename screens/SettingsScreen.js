@@ -577,7 +577,7 @@ export default function SettingsScreen({ navigation }) {
           icon="document-text-outline"
           label={t('settings.privacyPolicy')}
           onPress={async () => {
-            const url = 'https://tsllrwaixvhuadrfsskt.supabase.co/functions/v1/privacy-policy';
+            const url = 'https://florascout.app/privacy-policy.html';
             try {
               const supported = await Linking.canOpenURL(url);
               if (supported) {
@@ -601,7 +601,7 @@ export default function SettingsScreen({ navigation }) {
             icon="reader-outline"
             label={t('settings.termsOfService')}
             onPress={async () => {
-              const url = 'https://tsllrwaixvhuadrfsskt.supabase.co/functions/v1/terms';
+              const url = 'https://florascout.app/terms.html';
               try {
                 const supported = await Linking.canOpenURL(url);
                 if (supported) {
