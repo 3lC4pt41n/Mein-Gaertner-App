@@ -12,7 +12,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { supabase } from '../supabase';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { supabase, SUPABASE_URL } from '../supabase';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import i18n, { t } from '../i18n';
@@ -20,6 +21,12 @@ import i18n, { t } from '../i18n';
 const APP_SCHEME = 'digitalergaertner';
 const OAUTH_REDIRECT_PATH = 'auth/callback';
 const PASSWORD_RESET_PATH = 'auth/reset-password';
+const FUNCTIONS_BASE_URL = `${SUPABASE_URL.replace(/\/$/, '')}/functions/v1`;
+const LEGAL_URLS = {
+  privacy: `${FUNCTIONS_BASE_URL}/privacy-policy`,
+  terms: `${FUNCTIONS_BASE_URL}/terms`,
+};
+const RESEND_COOLDOWN_SECONDS = 60;
 
 function isNetworkError(err) {
   const msg = err?.message || '';
@@ -100,6 +107,11 @@ export default function AuthScreen({
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [recoveryMode, setRecoveryMode] = useState(forcePasswordReset);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [appleAuthAvailable, setAppleAuthAvailable] = useState(Platform.OS === 'ios');
   const processedUrlsRef = useRef(new Set());
   const recoveryInitializedRef = useRef(!!forcePasswordReset);
 
@@ -112,6 +124,36 @@ export default function AuthScreen({
       setRecoveryMode(true);
     }
   }, [forcePasswordReset]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios') {
+      setAppleAuthAvailable(false);
+      return undefined;
+    }
+
+    let mounted = true;
+    AppleAuthentication.isAvailableAsync()
+      .then((available) => {
+        if (mounted) setAppleAuthAvailable(available);
+      })
+      .catch(() => {
+        if (mounted) setAppleAuthAvailable(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return undefined;
+
+    const timer = setTimeout(() => {
+      setResendCooldown((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   const consumeAuthUrl = useCallback(
     async (url) => {
@@ -216,14 +258,20 @@ export default function AuthScreen({
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
-        options: { data: { language: i18n.locale } },
+        options: {
+          emailRedirectTo: oauthRedirectTo,
+          data: { language: i18n.locale },
+        },
       });
       if (error) {
         const msg = isNetworkError(error) ? t('common.networkError') : error.message;
         Alert.alert(t('common.error'), msg);
       } else {
+        const targetEmail = email.trim();
+        setConfirmationEmail(targetEmail);
+        setAwaitingConfirmation(true);
         Alert.alert(t('auth.confirmSent'), t('auth.confirmSentMessage'));
         if (Platform.OS === 'web') {
           alert(t('auth.confirmSentAlert'));
@@ -235,6 +283,40 @@ export default function AuthScreen({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResendConfirmation = async () => {
+    const targetEmail = (confirmationEmail || email).trim();
+    if (!targetEmail || resendCooldown > 0) return;
+
+    setResendLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: targetEmail,
+        options: { emailRedirectTo: oauthRedirectTo },
+      });
+
+      if (error) {
+        const msg = isNetworkError(error) ? t('common.networkError') : error.message;
+        Alert.alert(t('common.error'), msg);
+        return;
+      }
+
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      Alert.alert(t('common.success'), t('auth.resendConfirmationSent'));
+    } catch (err) {
+      const msg = isNetworkError(err) ? t('common.networkError') : err?.message;
+      Alert.alert(t('common.error'), msg || t('auth.authFailed'));
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handleChangeEmail = () => {
+    setAwaitingConfirmation(false);
+    setConfirmationEmail('');
+    setResendCooldown(0);
   };
 
   // Login per Email
@@ -253,6 +335,52 @@ export default function AuthScreen({
     } catch (err) {
       const msg = isNetworkError(err) ? t('common.networkError') : err.message;
       Alert.alert(t('common.error'), msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setLoading(true);
+    try {
+      if (Platform.OS === 'ios') {
+        const credential = await AppleAuthentication.signInAsync({
+          requestedScopes: [
+            AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+            AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          ],
+        });
+
+        if (!credential.identityToken) {
+          throw new Error(t('auth.appleLoginFailed'));
+        }
+
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: credential.identityToken,
+        });
+
+        if (error) throw error;
+        return;
+      }
+
+      const isWeb = Platform.OS === 'web';
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: oauthRedirectTo,
+          skipBrowserRedirect: !isWeb,
+        },
+      });
+
+      if (error) throw error;
+      if (!isWeb && data?.url) {
+        await Linking.openURL(data.url);
+      }
+    } catch (err) {
+      if (err?.code === 'ERR_REQUEST_CANCELED' || err?.code === 'ERR_CANCELED') return;
+      const msg = isNetworkError(err) ? t('common.networkError') : err?.message;
+      Alert.alert(t('common.error'), msg || t('auth.appleLoginFailed'));
     } finally {
       setLoading(false);
     }
@@ -284,6 +412,20 @@ export default function AuthScreen({
       Alert.alert(t('common.error'), msg || t('auth.googleLoginFailed'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openLegalUrl = async (type) => {
+    const url = LEGAL_URLS[type];
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert(t('common.error'), t('auth.linkUnavailable'));
+      }
+    } catch {
+      Alert.alert(t('common.error'), t('auth.linkUnavailable'));
     }
   };
 
@@ -405,6 +547,18 @@ export default function AuthScreen({
         {t('auth.login')}
       </DSButton>
       <View style={{ height: spacing.sm }} />
+      {appleAuthAvailable ? (
+        <>
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={radius.sm}
+            style={[styles.appleButton, loading && styles.googleButtonDisabled]}
+            onPress={loading ? undefined : handleAppleLogin}
+          />
+          <View style={{ height: spacing.sm }} />
+        </>
+      ) : null}
       <TouchableOpacity
         onPress={handleGoogleLogin}
         disabled={loading}
@@ -427,66 +581,68 @@ export default function AuthScreen({
     </>
   );
 
+  const renderConfirmationWait = () => {
+    const targetEmail = confirmationEmail || email.trim();
+    const resendDisabled = loading || resendLoading || resendCooldown > 0;
+    const resendLabel =
+      resendCooldown > 0
+        ? t('auth.resendConfirmationCooldown', { seconds: resendCooldown })
+        : t('auth.resendConfirmation');
+
+    return (
+      <View style={styles.confirmationBox}>
+        <Text style={styles.confirmationTitle}>{t('auth.confirmationSentTitle')}</Text>
+        <Text style={styles.confirmationText}>
+          {t('auth.confirmationSentTo', { email: targetEmail })}
+        </Text>
+        <DSButton
+          variant="secondary"
+          onPress={handleResendConfirmation}
+          disabled={resendDisabled}
+          loading={resendLoading}
+          fullWidth
+        >
+          {resendLabel}
+        </DSButton>
+        <TouchableOpacity
+          onPress={handleChangeEmail}
+          disabled={loading || resendLoading}
+          style={styles.changeEmailLink}
+        >
+          <Text style={styles.changeEmailText}>{t('auth.changeEmail')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderLegalFooter = () => (
+    <View style={styles.legalFooter}>
+      <Text style={styles.legalText}>{t('auth.legalPrefix')} </Text>
+      <TouchableOpacity onPress={() => openLegalUrl('terms')}>
+        <Text style={styles.legalLink}>{t('auth.legalTerms')}</Text>
+      </TouchableOpacity>
+      <Text style={styles.legalText}> {t('auth.legalAnd')} </Text>
+      <TouchableOpacity onPress={() => openLegalUrl('privacy')}>
+        <Text style={styles.legalLink}>{t('auth.legalPrivacy')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('auth.appTitle')}</Text>
 
-      {recoveryMode ? renderRecoveryForm() : renderAuthForm()}
+      {recoveryMode
+        ? renderRecoveryForm()
+        : awaitingConfirmation
+          ? renderConfirmationWait()
+          : renderAuthForm()}
 
       {loading || authLoading ? (
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: spacing.lg }} />
       ) : null}
 
-      {/* Legal footer — required for store compliance */}
-      <View style={styles.legalFooter}>
-        <TouchableOpacity
-          onPress={async () => {
-            const url = 'https://tsllrwaixvhuadrfsskt.supabase.co/functions/v1/privacy-policy';
-            try {
-              const supported = await Linking.canOpenURL(url);
-              if (supported) {
-                await Linking.openURL(url);
-              } else {
-                Alert.alert(
-                  t('common.error'),
-                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.'
-                );
-              }
-            } catch {
-              Alert.alert(
-                t('common.error'),
-                t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.'
-              );
-            }
-          }}
-        >
-          <Text style={styles.legalLink}>{t('settings.privacyPolicy')}</Text>
-        </TouchableOpacity>
-        <Text style={styles.legalSeparator}>·</Text>
-        <TouchableOpacity
-          onPress={async () => {
-            const url = 'https://tsllrwaixvhuadrfsskt.supabase.co/functions/v1/terms';
-            try {
-              const supported = await Linking.canOpenURL(url);
-              if (supported) {
-                await Linking.openURL(url);
-              } else {
-                Alert.alert(
-                  t('common.error'),
-                  t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.'
-                );
-              }
-            } catch {
-              Alert.alert(
-                t('common.error'),
-                t('settings.linkUnavailable') || 'Der Link konnte nicht geöffnet werden.'
-              );
-            }
-          }}
-        >
-          <Text style={styles.legalLink}>{t('settings.termsOfService')}</Text>
-        </TouchableOpacity>
-      </View>
+      {recoveryMode ? null : renderLegalFooter()}
     </View>
   );
 }
@@ -554,21 +710,55 @@ const styles = StyleSheet.create({
   googleButtonDisabled: {
     opacity: 0.6,
   },
+  appleButton: {
+    width: '100%',
+    height: 44,
+  },
+  confirmationBox: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
+  },
+  confirmationTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  confirmationText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
+  },
+  changeEmailLink: {
+    alignItems: 'center',
+    marginTop: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  changeEmailText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary,
+  },
   legalFooter: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    flexWrap: 'wrap',
     marginTop: spacing.xl,
     paddingTop: spacing.md,
   },
+  legalText: {
+    fontSize: 13,
+    color: colors.textTertiary,
+    textAlign: 'center',
+  },
   legalLink: {
     fontSize: 13,
-    color: colors.textTertiary,
+    color: colors.primary,
     textDecorationLine: 'underline',
-  },
-  legalSeparator: {
-    fontSize: 13,
-    color: colors.textTertiary,
-    marginHorizontal: spacing.sm,
   },
 });

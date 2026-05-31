@@ -92,7 +92,20 @@
     "resetFailed": "Reimpostazione della password non riuscita.",
     "forgotPasswordPrompt": "Inserisci prima il tuo indirizzo email.",
     "authFailed": "Autenticazione non riuscita.",
-    "googleLoginFailed": "Login con Google non riuscito."
+    "googleLoginFailed": "Login con Google non riuscito.",
+    "appleSignIn": "Accedi con Apple",
+    "appleLoginFailed": "Accesso con Apple non riuscito.",
+    "confirmationSentTitle": "Email di conferma inviata",
+    "confirmationSentTo": "Abbiamo inviato un’email di conferma a {{email}}. Apri il link per attivare il tuo account.",
+    "resendConfirmation": "Invia di nuovo l’email",
+    "resendConfirmationCooldown": "Reinvio tra {{seconds}}s",
+    "resendConfirmationSent": "Abbiamo inviato di nuovo l’email di conferma.",
+    "changeEmail": "Cambia indirizzo email",
+    "legalPrefix": "Accedendo accetti i",
+    "legalTerms": "Termini",
+    "legalAnd": "e la",
+    "legalPrivacy": "Privacy Policy",
+    "linkUnavailable": "Non è stato possibile aprire il link."
   },
   "home": {
     "newHome": "Nuova casa",
@@ -409,7 +422,8 @@
     "completeProfile": "Configura FloraScout",
     "profileIntro": "Scegli lingua e nome utente. Potrai aggiungere tutto il resto più tardi.",
     "retakeAvatar": "Cambia avatar",
-    "usernamePlaceholder": "Il tuo nome utente"
+    "usernamePlaceholder": "Il tuo nome utente",
+    "usernameTaken": "Questo nome è già in uso — scegli un altro nome."
   },
   "beta": {
     "title": "Benvenuto nel Beta Test!",

@@ -92,7 +92,20 @@
     "resetFailed": "Сброс пароля не удался.",
     "forgotPasswordPrompt": "Сначала введите свой email.",
     "authFailed": "Ошибка аутентификации.",
-    "googleLoginFailed": "Ошибка входа через Google."
+    "googleLoginFailed": "Ошибка входа через Google.",
+    "appleSignIn": "Войти через Apple",
+    "appleLoginFailed": "Не удалось войти через Apple.",
+    "confirmationSentTitle": "Письмо подтверждения отправлено",
+    "confirmationSentTo": "Мы отправили письмо подтверждения на {{email}}. Открой ссылку, чтобы активировать аккаунт.",
+    "resendConfirmation": "Отправить письмо снова",
+    "resendConfirmationCooldown": "Повтор через {{seconds}}с",
+    "resendConfirmationSent": "Мы отправили письмо подтверждения повторно.",
+    "changeEmail": "Изменить адрес электронной почты",
+    "legalPrefix": "Входя в аккаунт, ты принимаешь",
+    "legalTerms": "Условия",
+    "legalAnd": "и",
+    "legalPrivacy": "Политику конфиденциальности",
+    "linkUnavailable": "Не удалось открыть ссылку."
   },
   "home": {
     "newHome": "Новый дом",
@@ -409,7 +422,8 @@
     "completeProfile": "Настроить FloraScout",
     "profileIntro": "Выберите язык и имя пользователя. Остальное можно добавить позже.",
     "retakeAvatar": "Изменить аватар",
-    "usernamePlaceholder": "Ваше имя пользователя"
+    "usernamePlaceholder": "Ваше имя пользователя",
+    "usernameTaken": "Это имя уже занято — выбери другое."
   },
   "beta": {
     "title": "Добро пожаловать в бета-тест!",

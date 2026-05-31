@@ -29,6 +29,15 @@ const DRAFT_KEY = 'profile_draft';
 // user metadata. Keep it intentionally small: onboarding only needs two fields.
 let formCache = null;
 
+function isUsernameTakenError(error) {
+  const message = error?.message || '';
+  return (
+    error?.code === '23505' ||
+    message.includes('profiles_username_key') ||
+    message.toLowerCase().includes('duplicate key')
+  );
+}
+
 async function createAvatarSignedUrl(path) {
   const { data, error } = await supabase.storage
     .from('chat-images')
@@ -199,19 +208,33 @@ export default function ProfileCompleteScreen({ user, profile, onDone }) {
       return;
     }
 
+    const trimmedUsername = username.trim();
     setSaving(true);
     try {
+      const { data: existingProfile, error: usernameLookupError } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('username', trimmedUsername)
+        .neq('id', user.id)
+        .maybeSingle();
+
+      if (!usernameLookupError && existingProfile?.id) {
+        Alert.alert(t('profile.saveProfileError'), t('profile.usernameTaken'));
+        return;
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
-          username: username.trim(),
+          username: trimmedUsername,
           language,
           profile_setup_skipped: false,
         })
         .eq('id', user.id);
 
       if (error) {
-        Alert.alert(t('profile.saveProfileError'), error.message);
+        const message = isUsernameTakenError(error) ? t('profile.usernameTaken') : error.message;
+        Alert.alert(t('profile.saveProfileError'), message);
         return;
       }
 

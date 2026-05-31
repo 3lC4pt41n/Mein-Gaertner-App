@@ -92,7 +92,20 @@
     "resetFailed": "Passwort-Reset fehlgeschlagen.",
     "forgotPasswordPrompt": "Bitte gib zuerst deine E-Mail-Adresse ein.",
     "authFailed": "Authentifizierung fehlgeschlagen.",
-    "googleLoginFailed": "Google Login fehlgeschlagen."
+    "googleLoginFailed": "Google Login fehlgeschlagen.",
+    "appleSignIn": "Mit Apple anmelden",
+    "appleLoginFailed": "Apple-Anmeldung fehlgeschlagen.",
+    "confirmationSentTitle": "Bestätigungsmail gesendet",
+    "confirmationSentTo": "Wir haben eine Bestätigungsmail an {{email}} gesendet. Bitte öffne den Link, um dein Konto zu aktivieren.",
+    "resendConfirmation": "Mail erneut senden",
+    "resendConfirmationCooldown": "Erneut senden in {{seconds}}s",
+    "resendConfirmationSent": "Wir haben die Bestätigungsmail erneut gesendet.",
+    "changeEmail": "E-Mail-Adresse ändern",
+    "legalPrefix": "Mit der Anmeldung akzeptierst du",
+    "legalTerms": "AGB",
+    "legalAnd": "und",
+    "legalPrivacy": "Datenschutz",
+    "linkUnavailable": "Der Link konnte nicht geöffnet werden."
   },
   "home": {
     "newHome": "Neues Zuhause",
@@ -409,7 +422,8 @@
     "completeProfile": "Startklar machen",
     "profileIntro": "Wähle nur deine Sprache und deinen Benutzernamen. Alles andere kannst du später ergänzen.",
     "retakeAvatar": "Avatar ändern",
-    "usernamePlaceholder": "Dein Benutzername"
+    "usernamePlaceholder": "Dein Benutzername",
+    "usernameTaken": "Dieser Name ist schon vergeben — bitte einen anderen wählen."
   },
   "beta": {
     "title": "Willkommen beim Beta-Test!",

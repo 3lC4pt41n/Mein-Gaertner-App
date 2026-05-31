@@ -26,11 +26,25 @@ if (IS_EAS_BUILD && !IS_DEV && !GOOGLE_MAPS_API_KEY) {
   );
 }
 
+function hasPlugin(plugins, pluginName) {
+  return plugins.some((plugin) => {
+    if (typeof plugin === 'string') return plugin === pluginName;
+    if (Array.isArray(plugin)) return plugin[0] === pluginName;
+    return false;
+  });
+}
+
 module.exports = ({ config }) => {
+  const plugins = config.plugins || [];
+
   return {
     ...config,
+    plugins: hasPlugin(plugins, 'expo-apple-authentication')
+      ? plugins
+      : [...plugins, 'expo-apple-authentication'],
     ios: {
       ...config.ios,
+      usesAppleSignIn: true,
       config: {
         ...config.ios?.config,
         googleMapsApiKey: GOOGLE_MAPS_API_KEY,

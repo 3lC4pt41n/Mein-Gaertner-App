@@ -92,7 +92,20 @@
     "resetFailed": "Şifre sıfırlama başarısız.",
     "forgotPasswordPrompt": "Lütfen önce e-posta adresinizi girin.",
     "authFailed": "Kimlik doğrulama başarısız.",
-    "googleLoginFailed": "Google girişi başarısız."
+    "googleLoginFailed": "Google girişi başarısız.",
+    "appleSignIn": "Apple ile giriş yap",
+    "appleLoginFailed": "Apple ile giriş başarısız oldu.",
+    "confirmationSentTitle": "Onay e-postası gönderildi",
+    "confirmationSentTo": "{{email}} adresine bir onay e-postası gönderdik. Hesabını etkinleştirmek için bağlantıyı aç.",
+    "resendConfirmation": "E-postayı yeniden gönder",
+    "resendConfirmationCooldown": "{{seconds}} sn sonra yeniden gönder",
+    "resendConfirmationSent": "Onay e-postasını yeniden gönderdik.",
+    "changeEmail": "E-posta adresini değiştir",
+    "legalPrefix": "Giriş yaparak şunları kabul edersin:",
+    "legalTerms": "Şartlar",
+    "legalAnd": "ve",
+    "legalPrivacy": "Gizlilik Politikası",
+    "linkUnavailable": "Bağlantı açılamadı."
   },
   "home": {
     "newHome": "Yeni Ev",
@@ -409,7 +422,8 @@
     "completeProfile": "FloraScout'u kur",
     "profileIntro": "Dilini ve kullanıcı adını seç. Diğer her şeyi daha sonra ekleyebilirsin.",
     "retakeAvatar": "Avatar'ı değiştir",
-    "usernamePlaceholder": "Kullanıcı adınız"
+    "usernamePlaceholder": "Kullanıcı adınız",
+    "usernameTaken": "Bu ad zaten alınmış — lütfen başka bir ad seç."
   },
   "beta": {
     "title": "Beta Test'e Hoş Geldiniz!",
