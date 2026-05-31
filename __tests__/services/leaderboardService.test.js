@@ -47,6 +47,18 @@ describe('leaderboardService', () => {
         { user_id: 'a', score: 0, rank: 2 },
       ]);
     });
+
+    it('does NOT fall back to leaderboard_public when the public RPC is unavailable', async () => {
+      supabase.rpc.mockResolvedValue({
+        data: null,
+        error: { code: 'PGRST202', message: 'function not found' },
+      });
+
+      await expect(getLeaderboard('all', 'discovery', 50)).rejects.toThrow(
+        'Leaderboard RPC is not available'
+      );
+      expect(supabase.from).not.toHaveBeenCalled();
+    });
   });
 
   describe('getMyRank', () => {

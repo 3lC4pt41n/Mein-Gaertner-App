@@ -20,6 +20,18 @@ import { useAuth } from '../contexts/AuthContext';
 
 const RANK_ICONS = ['trophy', 'medal', 'ribbon'];
 const RANK_COLORS = [colors.gold, colors.silver, colors.bronze];
+const SCORE_COLUMNS = {
+  gardener: {
+    week: 'gardener_score_week',
+    month: 'gardener_score_month',
+    all: 'gardener_score_all',
+  },
+  discovery: {
+    week: 'discovery_points_week',
+    month: 'discovery_points_month',
+    all: 'discovery_points_all',
+  },
+};
 
 export default function LeaderboardScreen() {
   const TIME_WINDOWS = [
@@ -102,19 +114,17 @@ export default function LeaderboardScreen() {
 
   const renderItem = ({ item }) => {
     const isMe = item.user_id === userId;
-    const isTop3 = item.rank <= 3;
+    const rank = normalizeRank(item.rank);
+    const score = getRenderedScore(item, timeWindow, scoreType);
+    const isTop3 = rank >= 1 && rank <= 3;
 
     return (
       <View style={[styles.listItem, isMe && styles.listItemMe]}>
         <View style={styles.rankCol}>
           {isTop3 ? (
-            <Ionicons
-              name={RANK_ICONS[item.rank - 1]}
-              size={22}
-              color={RANK_COLORS[item.rank - 1]}
-            />
+            <Ionicons name={RANK_ICONS[rank - 1]} size={22} color={RANK_COLORS[rank - 1]} />
           ) : (
-            <Text style={styles.rankText}>{item.rank}.</Text>
+            <Text style={styles.rankText}>{rank}.</Text>
           )}
         </View>
         <View style={styles.avatarCol}>
@@ -131,7 +141,7 @@ export default function LeaderboardScreen() {
         </View>
         <View style={styles.scoreCol}>
           <Text style={[styles.scoreText, isMe && styles.scoreTextMe]}>
-            {formatScore(item.score)} {t('common.points')}
+            {formatScore(score)} {t('common.points')}
           </Text>
         </View>
       </View>
@@ -328,9 +338,24 @@ function StatItem({ icon, label, value }) {
   );
 }
 
+function getRenderedScore(item, timeWindow, scoreType) {
+  const scoreColumn = SCORE_COLUMNS[scoreType]?.[timeWindow];
+  return normalizeScore(item?.score ?? item?.[scoreColumn]);
+}
+
+function normalizeScore(score) {
+  const numericScore = Number(score);
+  return Number.isFinite(numericScore) ? numericScore : 0;
+}
+
+function normalizeRank(rank) {
+  const numericRank = Number(rank);
+  return Number.isFinite(numericRank) && numericRank > 0 ? Math.trunc(numericRank) : 0;
+}
+
 function formatScore(score) {
-  if (typeof score !== 'number') return '0';
-  return score % 1 === 0 ? String(score) : score.toFixed(1);
+  const numericScore = normalizeScore(score);
+  return numericScore % 1 === 0 ? String(numericScore) : numericScore.toFixed(1);
 }
 
 const styles = StyleSheet.create({

@@ -91,18 +91,11 @@ export async function getLeaderboard(timeWindow = 'week', type = 'gardener', lim
 
   if (!rpcError) return assignDenseRanks(rpcData || [], scoreCol);
 
-  // Fallback for app bundles that reach users before the migration deploys.
-  if (rpcError.code !== '42883' && rpcError.code !== 'PGRST202') throw rpcError;
+  if (rpcError.code === '42883' || rpcError.code === 'PGRST202') {
+    throw new Error('Leaderboard RPC is not available. Deploy the Supabase migrations first.');
+  }
 
-  const { data, error } = await supabase
-    .from('leaderboard_public')
-    .select('*')
-    .order(scoreCol, { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
-
-  return assignDenseRanks(data || [], scoreCol);
+  throw rpcError;
 }
 
 /**
