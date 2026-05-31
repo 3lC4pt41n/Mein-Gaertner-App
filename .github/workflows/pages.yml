@@ -7,6 +7,14 @@ on:
     paths:
       - index.html
       - landing-page.html
+      - privacy-policy.html
+      - privacy-policy/**
+      - terms.html
+      - terms/**
+      - impressum.html
+      - impressum/**
+      - account-deletion.html
+      - account-deletion/**
       - docs/**
       - store-assets/**
       - assets/**
@@ -35,6 +43,14 @@ jobs:
           mkdir -p _site
           cp index.html _site/index.html
           cp landing-page.html _site/landing-page.html
+          cp privacy-policy.html _site/privacy-policy.html
+          cp -R privacy-policy _site/privacy-policy
+          cp terms.html _site/terms.html
+          cp -R terms _site/terms
+          cp impressum.html _site/impressum.html
+          cp -R impressum _site/impressum
+          cp account-deletion.html _site/account-deletion.html
+          cp -R account-deletion _site/account-deletion
           cp -R docs _site/docs
           cp -R store-assets _site/store-assets
           cp -R assets _site/assets
