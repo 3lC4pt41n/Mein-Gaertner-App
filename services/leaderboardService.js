@@ -49,14 +49,29 @@ const SCORE_COLUMNS = {
 function assignDenseRanks(entries, scoreCol) {
   let rank = 0;
   let prevScore = null;
-  return entries.map((entry) => {
-    const score = Number(entry[scoreCol]) || 0;
+  const normalizedEntries = (entries || [])
+    .map((entry) => ({
+      ...entry,
+      score: normalizeScore(entry?.[scoreCol] ?? entry?.score),
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return String(a.display_name || '').localeCompare(String(b.display_name || ''));
+    });
+
+  return normalizedEntries.map((entry) => {
+    const score = entry.score;
     if (score !== prevScore) {
       rank += 1;
       prevScore = score;
     }
     return { ...entry, rank, score };
   });
+}
+
+function normalizeScore(value) {
+  const score = Number(value);
+  return Number.isFinite(score) ? score : 0;
 }
 
 /**

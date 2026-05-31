@@ -1,10 +1,52 @@
 import { supabase } from '../../supabase';
 
-const { getMyRank, getMyNeighbors } = require('../../services/leaderboardService');
+const { getLeaderboard, getMyRank, getMyNeighbors } = require('../../services/leaderboardService');
 
 describe('leaderboardService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('getLeaderboard', () => {
+    it('normalizes string score columns, sorts entries and assigns dense ranks', async () => {
+      supabase.rpc.mockResolvedValue({
+        data: [
+          { user_id: 'olga', display_name: 'olga', discovery_points_all: '17' },
+          { user_id: 'captain', display_name: 'ElCaptain', discovery_points_all: '718' },
+          { user_id: 'genix', display_name: 'Genix', discovery_points_all: 126 },
+        ],
+        error: null,
+      });
+
+      const result = await getLeaderboard('all', 'discovery', 50);
+
+      expect(supabase.rpc).toHaveBeenCalledWith('get_leaderboard_public', {
+        p_score_column: 'discovery_points_all',
+        p_limit: 50,
+      });
+      expect(result.map(({ user_id, score, rank }) => ({ user_id, score, rank }))).toEqual([
+        { user_id: 'captain', score: 718, rank: 1 },
+        { user_id: 'genix', score: 126, rank: 2 },
+        { user_id: 'olga', score: 17, rank: 3 },
+      ]);
+    });
+
+    it('falls back to a generic score field for older RPC payloads', async () => {
+      supabase.rpc.mockResolvedValue({
+        data: [
+          { user_id: 'a', display_name: 'A', score: '0' },
+          { user_id: 'b', display_name: 'B', score: '42' },
+        ],
+        error: null,
+      });
+
+      const result = await getLeaderboard('all', 'discovery', 50);
+
+      expect(result.map(({ user_id, score, rank }) => ({ user_id, score, rank }))).toEqual([
+        { user_id: 'b', score: 42, rank: 1 },
+        { user_id: 'a', score: 0, rank: 2 },
+      ]);
+    });
   });
 
   describe('getMyRank', () => {
