@@ -15,7 +15,6 @@ import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { safeLaunchCamera } from '../services/imagePickerHelper';
-import { supabase } from '../supabase';
 import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
 import { chatWithBen } from '../services/aiService';
@@ -28,19 +27,20 @@ import { useAuth } from '../contexts/AuthContext';
 import CreditBar from '../components/CreditBar';
 
 const GARDENER_NAME = 'Ben';
+const BEN_AVATAR = require('../assets/avatars/ben-chat.png');
+const USER_AVATAR = require('../assets/avatars/tim.png');
+const CHAT_AVATAR_SIZE = spacing.xxxl;
 
 export default function AssistantScreen({ context }) {
-  const { userId: user_id, user } = useAuth();
+  const { userId: user_id } = useAuth();
   const navigation = useNavigation();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState('de');
-  const [gardenerAvatarUrl, setGardenerAvatarUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const flatListRef = useRef();
-  const gardenerAvatarPath = user?.user_metadata?.gardener_avatar_path;
 
   useEffect(() => {
     if (!user_id) return;
@@ -53,26 +53,8 @@ export default function AssistantScreen({ context }) {
           console.warn('[AssistantScreen] fetchCurrentUserLanguage failed:', error?.message);
         }
       }
-
-      if (gardenerAvatarPath) {
-        try {
-          const { data: signedData, error: signedError } = await supabase.storage
-            .from('chat-images')
-            .createSignedUrl(gardenerAvatarPath, 60 * 60 * 24 * 30);
-
-          if (!signedError && signedData?.signedUrl) {
-            setGardenerAvatarUrl(signedData.signedUrl);
-          }
-        } catch (error) {
-          if (__DEV__) {
-            console.warn('[AssistantScreen] avatar URL resolve failed:', error?.message);
-          }
-        }
-      } else {
-        setGardenerAvatarUrl(null);
-      }
     })();
-  }, [user_id, gardenerAvatarPath]);
+  }, [user_id]);
 
   // Initial: letzte 30 Messages laden
   useEffect(() => {
@@ -227,15 +209,8 @@ export default function AssistantScreen({ context }) {
 
   // Avatar wählen
   const getAvatar = (sender) => {
-    if (sender === 'user') return require('../assets/avatars/tim.png');
-    if (gardenerAvatarUrl) return { uri: gardenerAvatarUrl };
-    return require('../assets/avatars/ben.png');
-  };
-
-  const handleGardenerAvatarError = () => {
-    if (gardenerAvatarUrl) {
-      setGardenerAvatarUrl(null);
-    }
+    if (sender === 'user') return USER_AVATAR;
+    return BEN_AVATAR;
   };
 
   // Bubble
@@ -253,30 +228,9 @@ export default function AssistantScreen({ context }) {
       }}
     >
       {item.sender === 'user' ? (
-        <Image
-          source={getAvatar(item.sender)}
-          resizeMode="cover"
-          style={{
-            width: spacing.xxxl,
-            height: spacing.xxxl,
-            borderRadius: radius.lg,
-            marginRight: spacing.sm,
-            backgroundColor: colors.primarySurface,
-          }}
-        />
+        <ChatAvatar source={getAvatar(item.sender)} label={t('assistant.you')} />
       ) : (
-        <Image
-          source={getAvatar(item.sender)}
-          resizeMode="cover"
-          onError={handleGardenerAvatarError}
-          style={{
-            width: spacing.xxxl,
-            height: spacing.xxxl,
-            borderRadius: radius.lg,
-            marginRight: spacing.sm,
-            backgroundColor: colors.primarySurface,
-          }}
-        />
+        <ChatAvatar source={getAvatar(item.sender)} label={GARDENER_NAME} />
       )}
       <View style={{ flex: 1, flexShrink: 1 }}>
         {item.image_url && (
@@ -340,7 +294,6 @@ export default function AssistantScreen({ context }) {
             >
               <Image
                 source={getAvatar(GARDENER_NAME)}
-                onError={handleGardenerAvatarError}
                 resizeMode="cover"
                 style={{ width: 80, height: 80, borderRadius: 40, marginBottom: spacing.lg }}
               />
@@ -448,5 +401,48 @@ export default function AssistantScreen({ context }) {
         </DSButton>
       </View>
     </KeyboardAvoidingView>
+  );
+}
+
+function ChatAvatar({ source, label }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <View
+        accessibilityLabel={label}
+        style={{
+          width: CHAT_AVATAR_SIZE,
+          height: CHAT_AVATAR_SIZE,
+          borderRadius: CHAT_AVATAR_SIZE / 2,
+          marginRight: spacing.sm,
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.primaryMuted,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Ionicons name="leaf" size={18} color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <Image
+      accessibilityLabel={label}
+      source={source}
+      resizeMode="cover"
+      onError={() => setFailed(true)}
+      style={{
+        width: CHAT_AVATAR_SIZE,
+        height: CHAT_AVATAR_SIZE,
+        borderRadius: CHAT_AVATAR_SIZE / 2,
+        marginRight: spacing.sm,
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.primaryMuted,
+      }}
+    />
   );
 }
