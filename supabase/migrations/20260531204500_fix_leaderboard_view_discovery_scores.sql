@@ -19,10 +19,10 @@ RETURNS TABLE (
   gardener_score_week numeric,
   gardener_score_month numeric,
   gardener_score_all numeric,
-  discovery_points_week numeric,
-  discovery_points_month numeric,
-  discovery_points_all numeric,
-  plant_count numeric,
+  discovery_points_week bigint,
+  discovery_points_month bigint,
+  discovery_points_all bigint,
+  plant_count bigint,
   avg_health numeric,
   health_multiplier numeric
 )
@@ -46,17 +46,17 @@ AS $$
       (
         COUNT(id) FILTER (WHERE created_at > now() - interval '7 days')
         + 5 * COUNT(id) FILTER (WHERE is_first AND created_at > now() - interval '7 days')
-      )::numeric AS discovery_points_week,
+      )::bigint AS discovery_points_week,
       (
         COUNT(id) FILTER (WHERE created_at > now() - interval '30 days')
         + 5 * COUNT(id) FILTER (WHERE is_first AND created_at > now() - interval '30 days')
-      )::numeric AS discovery_points_month,
-      (COUNT(id) + 5 * COUNT(id) FILTER (WHERE is_first))::numeric AS discovery_points_all
+      )::bigint AS discovery_points_month,
+      (COUNT(id) + 5 * COUNT(id) FILTER (WHERE is_first))::bigint AS discovery_points_all
     FROM public.discovery_events
     GROUP BY user_id
   ),
   plant_counts AS (
-    SELECT user_id, COUNT(*)::numeric AS plant_count
+    SELECT user_id, COUNT(*)::bigint AS plant_count
     FROM public.plants
     GROUP BY user_id
   ),
@@ -104,10 +104,10 @@ AS $$
       * COALESCE(hm.multiplier, 0.25),
       1
     )::numeric AS gardener_score_all,
-    COALESCE(ds.discovery_points_week, 0)::numeric AS discovery_points_week,
-    COALESCE(ds.discovery_points_month, 0)::numeric AS discovery_points_month,
-    COALESCE(ds.discovery_points_all, 0)::numeric AS discovery_points_all,
-    COALESCE(pc.plant_count, 0)::numeric AS plant_count,
+    COALESCE(ds.discovery_points_week, 0)::bigint AS discovery_points_week,
+    COALESCE(ds.discovery_points_month, 0)::bigint AS discovery_points_month,
+    COALESCE(ds.discovery_points_all, 0)::bigint AS discovery_points_all,
+    COALESCE(pc.plant_count, 0)::bigint AS plant_count,
     ROUND(COALESCE(ah.avg_healthscore, 0), 1)::numeric AS avg_health,
     ROUND(COALESCE(hm.multiplier, 0.25), 2)::numeric AS health_multiplier
   FROM public.profiles p
@@ -188,10 +188,10 @@ BEGIN
       gardener_score_week,
       gardener_score_month,
       gardener_score_all,
-      discovery_points_week,
-      discovery_points_month,
-      discovery_points_all,
-      plant_count,
+      discovery_points_week::numeric AS discovery_points_week,
+      discovery_points_month::numeric AS discovery_points_month,
+      discovery_points_all::numeric AS discovery_points_all,
+      plant_count::numeric AS plant_count,
       avg_health,
       health_multiplier
     FROM public.get_leaderboard_public_rows()
