@@ -130,8 +130,10 @@ See `.env.example` for details.
 - Signed URLs are generated **on-demand** in read flows (`getPlantImageUrl`, `getPlantImageUrls`).
 - Legacy `http(s)` URLs remain backward-compatible and are passed through unchanged.
 
-### Latest Updates (v1.4.2, March 2026)
+### Latest Updates (v1.4.3, June 2026)
 
+- **Native Runtime Guard** — EAS runtime policy now uses `fingerprint` so OTA updates are only delivered to compatible native builds.
+- **Apple Sign-In Capability** — iOS config explicitly declares Apple Sign-In support for App Review and reproducible native builds.
 - **Plant Dex Performance** — `expo-image` with disk caching, blurhash placeholders, and `recyclingKey`. `SectionList` virtualization (`windowSize`, `maxToRenderPerBatch`, `removeClippedSubviews`). `DexCard` wrapped in `React.memo`.
 - **Signed URL Cache** — In-memory cache (50 min TTL, max 500 entries) in `uploadService.js` prevents redundant API calls for plant images.
 - **Species Details Cache** — Server-side `species_details` table caches AI-generated plant details, reducing repeat Edge Function calls.
@@ -231,8 +233,8 @@ from repository secrets.
 Trigger builds by tagging a release:
 
 ```bash
-git tag v1.4.2
-git push origin v1.4.2
+git tag v1.4.3
+git push origin v1.4.3
 # Automatically builds and submits to app stores via GitHub Actions
 ```
 

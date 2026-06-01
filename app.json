@@ -3,9 +3,9 @@
     "name": "FloraScout",
     "slug": "digitaler-gaertner",
     "scheme": "digitalergaertner",
-    "version": "1.4.2",
+    "version": "1.4.3",
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "fingerprint"
     },
     "platforms": [
       "ios",
@@ -24,6 +24,7 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "usesAppleSignIn": true,
       "bundleIdentifier": "com.elcaptain.digitalergaertner",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
@@ -57,6 +58,7 @@
       "expo-font",
       "expo-updates",
       "expo-localization",
+      "expo-apple-authentication",
       [
         "expo-notifications",
         {
