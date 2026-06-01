@@ -829,7 +829,7 @@ export default function PlantDetailScreen({ route }) {
   );
 
   return (
-    <>
+    <View style={styles.screen}>
       <CreditBar style={{ marginHorizontal: spacing.md, marginTop: spacing.sm }} />
       {isVirtualizedTab ? (
         <View style={styles.screen}>
@@ -1013,7 +1013,7 @@ export default function PlantDetailScreen({ route }) {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-    </>
+    </View>
   );
 }
 

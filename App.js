@@ -80,7 +80,7 @@ function AddPlantStack() {
       <Stack.Screen
         name="AddPlantMain"
         component={AddPlantScreen}
-        options={{ title: t('nav.addPlant') }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

@@ -11,6 +11,7 @@ import {
   Modal,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { safeLaunchCamera } from '../services/imagePickerHelper';
 import { Ionicons } from '@expo/vector-icons';
@@ -471,380 +472,403 @@ export default function AddPlantScreen() {
 
   // ── Render ──────────────────────────────────
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Credit balance — unified component */}
-      <CreditBar />
-
-      {/* ── Step indicator ──────────────────── */}
-      <View style={styles.stepRow}>
-        {['photo', 'save', 'done'].map((s, i) => (
-          <View key={s} style={styles.stepItem}>
-            <View
-              style={[
-                styles.stepDot,
-                step === s && styles.stepDotActive,
-                ['save', 'done'].includes(step) && i === 0 && styles.stepDotDone,
-                step === 'done' && i <= 1 && styles.stepDotDone,
-              ]}
-            >
-              {(step === 'done' && i <= 1) || (['save', 'done'].includes(step) && i === 0) ? (
-                <Ionicons name="checkmark" size={14} color={colors.surface} />
-              ) : (
-                <Text style={[styles.stepNum, step === s && styles.stepNumActive]}>{i + 1}</Text>
-              )}
-            </View>
-            <Text style={[styles.stepLabel, step === s && styles.stepLabelActive]}>
-              {t(`plants.step${s.charAt(0).toUpperCase() + s.slice(1)}`)}
-            </Text>
-          </View>
-        ))}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.screenHeader}>
+        <Text style={styles.screenTitle}>{t('nav.addPlant')}</Text>
       </View>
 
-      {/* ── STEP: Photo (camera auto-opens) ─ */}
-      {step === 'photo' && (
-        <DSCard>
-          <View style={{ alignItems: 'center', gap: spacing.md }}>
-            <Ionicons name="camera-outline" size={48} color={colors.textTertiary} />
-            <Text style={styles.photoHint}>{t('plants.cameraOpening')}</Text>
-            <DSButton onPress={takePhoto} fullWidth icon="camera-outline">
-              {t('plants.retakePhoto')}
-            </DSButton>
-          </View>
-        </DSCard>
-      )}
+      {/* Credit balance — unified component */}
+      <CreditBar style={styles.creditBar} />
 
-      {/* ── STEP: Save ─────────────────────── */}
-      {step === 'save' && (
-        <DSCard>
-          {imageUri && (
-            <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
-          )}
-
-          {/* ── Recognize vs Manual choice ──── */}
-          {!scanMode && (
-            <View style={styles.modeChoice}>
-              <DSButton
-                onPress={handleRecognize}
-                fullWidth
-                icon="sparkles-outline"
-                disabled={loading}
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+        {/* ── Step indicator ──────────────────── */}
+        <View style={styles.stepRow}>
+          {['photo', 'save', 'done'].map((s, i) => (
+            <View key={s} style={styles.stepItem}>
+              <View
+                style={[
+                  styles.stepDot,
+                  step === s && styles.stepDotActive,
+                  ['save', 'done'].includes(step) && i === 0 && styles.stepDotDone,
+                  step === 'done' && i <= 1 && styles.stepDotDone,
+                ]}
               >
-                {t('plants.recognizePlant', {
-                  credits: AI_COSTS.scan,
-                })}
-              </DSButton>
-              <DSButton
-                variant="ghost"
-                onPress={handleManualMode}
-                fullWidth
-                icon="create-outline"
-                disabled={loading}
-              >
-                {t('plants.addManually')}
-              </DSButton>
-              {loading && (
-                <ActivityIndicator
-                  size="large"
-                  color={colors.primaryLight}
-                  style={{ marginTop: spacing.sm }}
-                />
-              )}
+                {(step === 'done' && i <= 1) || (['save', 'done'].includes(step) && i === 0) ? (
+                  <Ionicons name="checkmark" size={14} color={colors.surface} />
+                ) : (
+                  <Text style={[styles.stepNum, step === s && styles.stepNumActive]}>{i + 1}</Text>
+                )}
+              </View>
+              <Text style={[styles.stepLabel, step === s && styles.stepLabelActive]}>
+                {t(`plants.step${s.charAt(0).toUpperCase() + s.slice(1)}`)}
+              </Text>
             </View>
-          )}
+          ))}
+        </View>
 
-          {/* ── Mode selected: show form ───── */}
-          {scanMode && (
-            <>
-              {scanMode === 'manual' && (
-                <Text style={styles.manualDisclaimer}>{t('plants.manualDisclaimer')}</Text>
-              )}
-
-              <DSInput
-                label={t('plants.nameLabel')}
-                value={name}
-                onChangeText={handleNameChange}
-                placeholder={
-                  scanMode === 'manual'
-                    ? t('plants.namePlaceholderManual')
-                    : t('plants.namePlaceholder')
-                }
-                icon="leaf-outline"
-              />
-
-              <DSInput
-                label={t('plants.noteLabel')}
-                value={note}
-                onChangeText={setNote}
-                placeholder={t('plants.notePlaceholder')}
-                multiline
-              />
-
-              {/* Zone picker */}
-              <Text style={styles.fieldLabel}>{t('plants.zoneOptional')}</Text>
-              <TouchableOpacity style={styles.zonePicker} onPress={openZonePicker}>
-                <Ionicons
-                  name="home-outline"
-                  size={18}
-                  color={selectedZone ? colors.primaryLight : colors.textDisabled}
-                />
-                <Text
-                  style={[styles.zonePickerText, selectedZone && { color: colors.textPrimary }]}
-                >
-                  {selectedZone ? selectedZone.name : t('plants.selectZoneOptional')}
-                </Text>
-                <Ionicons name="chevron-down" size={18} color={colors.textTertiary} />
-              </TouchableOpacity>
-
-              <DSButton
-                onPress={handleSave}
-                disabled={!name || loading}
-                fullWidth
-                icon="checkmark-circle-outline"
-                style={{ marginTop: spacing.md }}
-              >
-                {t('plants.savePlant')}
-              </DSButton>
-
-              <DSButton
-                variant="ghost"
-                size="sm"
-                onPress={() => {
-                  resetAllState();
-                  // Camera will auto-open via useEffect
-                }}
-                fullWidth
-                style={{ marginTop: spacing.xs }}
-              >
+        {/* ── STEP: Photo (camera auto-opens) ─ */}
+        {step === 'photo' && (
+          <DSCard>
+            <View style={{ alignItems: 'center', gap: spacing.md }}>
+              <Ionicons name="camera-outline" size={48} color={colors.textTertiary} />
+              <Text style={styles.photoHint}>{t('plants.cameraOpening')}</Text>
+              <DSButton onPress={takePhoto} fullWidth icon="camera-outline">
                 {t('plants.retakePhoto')}
               </DSButton>
+            </View>
+          </DSCard>
+        )}
+
+        {/* ── STEP: Save ─────────────────────── */}
+        {step === 'save' && (
+          <DSCard>
+            {imageUri && (
+              <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
+            )}
+
+            {/* ── Recognize vs Manual choice ──── */}
+            {!scanMode && (
+              <View style={styles.modeChoice}>
+                <DSButton
+                  onPress={handleRecognize}
+                  fullWidth
+                  icon="sparkles-outline"
+                  disabled={loading}
+                >
+                  {t('plants.recognizePlant', {
+                    credits: AI_COSTS.scan,
+                  })}
+                </DSButton>
+                <DSButton
+                  variant="ghost"
+                  onPress={handleManualMode}
+                  fullWidth
+                  icon="create-outline"
+                  disabled={loading}
+                >
+                  {t('plants.addManually')}
+                </DSButton>
+                {loading && (
+                  <ActivityIndicator
+                    size="large"
+                    color={colors.primaryLight}
+                    style={{ marginTop: spacing.sm }}
+                  />
+                )}
+              </View>
+            )}
+
+            {/* ── Mode selected: show form ───── */}
+            {scanMode && (
+              <>
+                {scanMode === 'manual' && (
+                  <Text style={styles.manualDisclaimer}>{t('plants.manualDisclaimer')}</Text>
+                )}
+
+                <DSInput
+                  label={t('plants.nameLabel')}
+                  value={name}
+                  onChangeText={handleNameChange}
+                  placeholder={
+                    scanMode === 'manual'
+                      ? t('plants.namePlaceholderManual')
+                      : t('plants.namePlaceholder')
+                  }
+                  icon="leaf-outline"
+                />
+
+                <DSInput
+                  label={t('plants.noteLabel')}
+                  value={note}
+                  onChangeText={setNote}
+                  placeholder={t('plants.notePlaceholder')}
+                  multiline
+                />
+
+                {/* Zone picker */}
+                <Text style={styles.fieldLabel}>{t('plants.zoneOptional')}</Text>
+                <TouchableOpacity style={styles.zonePicker} onPress={openZonePicker}>
+                  <Ionicons
+                    name="home-outline"
+                    size={18}
+                    color={selectedZone ? colors.primaryLight : colors.textDisabled}
+                  />
+                  <Text
+                    style={[styles.zonePickerText, selectedZone && { color: colors.textPrimary }]}
+                  >
+                    {selectedZone ? selectedZone.name : t('plants.selectZoneOptional')}
+                  </Text>
+                  <Ionicons name="chevron-down" size={18} color={colors.textTertiary} />
+                </TouchableOpacity>
+
+                <DSButton
+                  onPress={handleSave}
+                  disabled={!name || loading}
+                  fullWidth
+                  icon="checkmark-circle-outline"
+                  style={{ marginTop: spacing.md }}
+                >
+                  {t('plants.savePlant')}
+                </DSButton>
+
+                <DSButton
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => {
+                    resetAllState();
+                    // Camera will auto-open via useEffect
+                  }}
+                  fullWidth
+                  style={{ marginTop: spacing.xs }}
+                >
+                  {t('plants.retakePhoto')}
+                </DSButton>
+
+                {loading && (
+                  <ActivityIndicator
+                    size="large"
+                    color={colors.primaryLight}
+                    style={{ marginTop: spacing.lg }}
+                  />
+                )}
+              </>
+            )}
+          </DSCard>
+        )}
+
+        {/* ── STEP: Done (optional upgrades) ── */}
+        {step === 'done' && savedPlant && (
+          <>
+            <DSCard>
+              <View style={styles.successRow}>
+                <Ionicons name="checkmark-circle" size={32} color={colors.primaryLight} />
+                <Text style={styles.successText}>{t('plants.savedSuccess')}</Text>
+              </View>
+              {savedPlant.image_url && (
+                <Image
+                  source={{ uri: savedPlant.image_url }}
+                  style={styles.previewSmall}
+                  resizeMode="cover"
+                />
+              )}
+              {savedPlantTitle?.localName ? (
+                <Text style={styles.savedLocalName}>{savedPlantTitle.localName}</Text>
+              ) : null}
+              <Text
+                style={[styles.savedName, !savedPlantTitle?.localName && styles.savedNamePrimary]}
+              >
+                {savedPlantTitle?.botanicalName || savedPlant.name}
+              </Text>
+            </DSCard>
+
+            <DSCard>
+              <Text style={styles.upgradeTitle}>{t('plants.optionalUpgrades')}</Text>
+              <Text style={styles.upgradeSubtitle}>
+                {t('plants.upgradeHint', {
+                  details: AI_COSTS.details,
+                  healthcheck: AI_COSTS.healthcheck,
+                })}
+              </Text>
+
+              <DSButton
+                variant="secondary"
+                icon={savedPlant.details ? 'refresh-outline' : 'document-text-outline'}
+                onPress={handleGenerateDetails}
+                disabled={loading}
+                fullWidth
+                style={{ marginBottom: spacing.sm }}
+              >
+                {savedPlant.details ? t('plants.refreshDetails') : t('plants.generateDetails')}
+              </DSButton>
+
+              <DSButton
+                variant="secondary"
+                icon="pulse-outline"
+                onPress={handleRunHealthcheck}
+                disabled={loading}
+                fullWidth
+                style={{ marginBottom: spacing.md }}
+              >
+                {t('plants.runHealthcheck')}
+              </DSButton>
 
               {loading && (
                 <ActivityIndicator
-                  size="large"
+                  size="small"
                   color={colors.primaryLight}
-                  style={{ marginTop: spacing.lg }}
+                  style={{ marginBottom: spacing.sm }}
                 />
               )}
-            </>
-          )}
-        </DSCard>
-      )}
 
-      {/* ── STEP: Done (optional upgrades) ── */}
-      {step === 'done' && savedPlant && (
-        <>
-          <DSCard>
-            <View style={styles.successRow}>
-              <Ionicons name="checkmark-circle" size={32} color={colors.primaryLight} />
-              <Text style={styles.successText}>{t('plants.savedSuccess')}</Text>
-            </View>
-            {savedPlant.image_url && (
-              <Image
-                source={{ uri: savedPlant.image_url }}
-                style={styles.previewSmall}
-                resizeMode="cover"
-              />
-            )}
-            {savedPlantTitle?.localName ? (
-              <Text style={styles.savedLocalName}>{savedPlantTitle.localName}</Text>
-            ) : null}
-            <Text
-              style={[styles.savedName, !savedPlantTitle?.localName && styles.savedNamePrimary]}
-            >
-              {savedPlantTitle?.botanicalName || savedPlant.name}
-            </Text>
-          </DSCard>
+              <DSButton
+                onPress={goToPlantDetail}
+                fullWidth
+                icon="arrow-forward-outline"
+                iconPosition="right"
+              >
+                {t('plants.viewPlant')}
+              </DSButton>
 
-          <DSCard>
-            <Text style={styles.upgradeTitle}>{t('plants.optionalUpgrades')}</Text>
-            <Text style={styles.upgradeSubtitle}>
-              {t('plants.upgradeHint', {
-                details: AI_COSTS.details,
-                healthcheck: AI_COSTS.healthcheck,
-              })}
-            </Text>
+              <DSButton
+                variant="ghost"
+                onPress={handleScanNext}
+                fullWidth
+                icon="camera-outline"
+                style={{ marginTop: spacing.xs }}
+              >
+                {t('plants.scanNext')}
+              </DSButton>
+            </DSCard>
+          </>
+        )}
 
-            <DSButton
-              variant="secondary"
-              icon={savedPlant.details ? 'refresh-outline' : 'document-text-outline'}
-              onPress={handleGenerateDetails}
-              disabled={loading}
-              fullWidth
-              style={{ marginBottom: spacing.sm }}
-            >
-              {savedPlant.details ? t('plants.refreshDetails') : t('plants.generateDetails')}
-            </DSButton>
-
-            <DSButton
-              variant="secondary"
-              icon="pulse-outline"
-              onPress={handleRunHealthcheck}
-              disabled={loading}
-              fullWidth
-              style={{ marginBottom: spacing.md }}
-            >
-              {t('plants.runHealthcheck')}
-            </DSButton>
-
-            {loading && (
-              <ActivityIndicator
-                size="small"
-                color={colors.primaryLight}
-                style={{ marginBottom: spacing.sm }}
-              />
-            )}
-
-            <DSButton
-              onPress={goToPlantDetail}
-              fullWidth
-              icon="arrow-forward-outline"
-              iconPosition="right"
-            >
-              {t('plants.viewPlant')}
-            </DSButton>
-
-            <DSButton
-              variant="ghost"
-              onPress={handleScanNext}
-              fullWidth
-              icon="camera-outline"
-              style={{ marginTop: spacing.xs }}
-            >
-              {t('plants.scanNext')}
-            </DSButton>
-          </DSCard>
-        </>
-      )}
-
-      {/* ── Zone Picker Modal ──────────────── */}
-      <Modal
-        visible={pickerVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setPickerVisible(false)}
-      >
-        <TouchableOpacity
-          style={styles.overlay}
-          activeOpacity={1}
-          onPressOut={() => setPickerVisible(false)}
+        {/* ── Zone Picker Modal ──────────────── */}
+        <Modal
+          visible={pickerVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setPickerVisible(false)}
         >
-          <TouchableOpacity style={styles.sheet} activeOpacity={1}>
-            <Text style={styles.sheetTitle}>{t('plants.selectZone')}</Text>
-            {zonesLoading ? (
-              <ActivityIndicator size="large" color={colors.primaryLight} />
-            ) : sections.length ? (
-              <SectionList
-                sections={sections}
-                keyExtractor={(item) => item.id}
-                renderSectionHeader={({ section: { title } }) => (
-                  <Text style={styles.sectionHeader}>{title}</Text>
-                )}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.zoneRow}
-                    onPress={() => {
-                      setSelectedZone(item);
-                      setPickerVisible(false);
+          <TouchableOpacity
+            style={styles.overlay}
+            activeOpacity={1}
+            onPressOut={() => setPickerVisible(false)}
+          >
+            <TouchableOpacity style={styles.sheet} activeOpacity={1}>
+              <Text style={styles.sheetTitle}>{t('plants.selectZone')}</Text>
+              {zonesLoading ? (
+                <ActivityIndicator size="large" color={colors.primaryLight} />
+              ) : sections.length ? (
+                <SectionList
+                  sections={sections}
+                  keyExtractor={(item) => item.id}
+                  renderSectionHeader={({ section: { title } }) => (
+                    <Text style={styles.sectionHeader}>{title}</Text>
+                  )}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.zoneRow}
+                      onPress={() => {
+                        setSelectedZone(item);
+                        setPickerVisible(false);
+                      }}
+                    >
+                      <Ionicons
+                        name="home-outline"
+                        size={22}
+                        color={colors.primaryLight}
+                        style={{ marginRight: spacing.sm }}
+                      />
+                      <Text style={styles.zoneName}>
+                        {item.name} <Text style={styles.zoneType}>({item.type})</Text>
+                      </Text>
+                      {selectedZone?.id === item.id && (
+                        <Ionicons
+                          name="checkmark"
+                          size={20}
+                          color={colors.primaryLight}
+                          style={{ marginLeft: 'auto' }}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  )}
+                  ListEmptyComponent={
+                    <View style={{ alignItems: 'center', padding: spacing.lg }}>
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          color: colors.textSecondary,
+                          marginBottom: spacing.md,
+                        }}
+                      >
+                        {t('home.noZones')}
+                      </Text>
+                      <DSButton
+                        variant="secondary"
+                        size="sm"
+                        icon="home-outline"
+                        onPress={() => {
+                          setPickerVisible(false);
+                          navigation.navigate('Zuhause');
+                        }}
+                      >
+                        {t('home.newHome')}
+                      </DSButton>
+                    </View>
+                  }
+                />
+              ) : (
+                <View style={{ alignItems: 'center', padding: spacing.lg }}>
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      color: colors.textSecondary,
+                      marginBottom: spacing.md,
                     }}
                   >
-                    <Ionicons
-                      name="home-outline"
-                      size={22}
-                      color={colors.primaryLight}
-                      style={{ marginRight: spacing.sm }}
-                    />
-                    <Text style={styles.zoneName}>
-                      {item.name} <Text style={styles.zoneType}>({item.type})</Text>
-                    </Text>
-                    {selectedZone?.id === item.id && (
-                      <Ionicons
-                        name="checkmark"
-                        size={20}
-                        color={colors.primaryLight}
-                        style={{ marginLeft: 'auto' }}
-                      />
-                    )}
-                  </TouchableOpacity>
-                )}
-                ListEmptyComponent={
-                  <View style={{ alignItems: 'center', padding: spacing.lg }}>
-                    <Text
-                      style={{
-                        textAlign: 'center',
-                        color: colors.textSecondary,
-                        marginBottom: spacing.md,
-                      }}
-                    >
-                      {t('home.noZones')}
-                    </Text>
-                    <DSButton
-                      variant="secondary"
-                      size="sm"
-                      icon="home-outline"
-                      onPress={() => {
-                        setPickerVisible(false);
-                        navigation.navigate('Zuhause');
-                      }}
-                    >
-                      {t('home.newHome')}
-                    </DSButton>
-                  </View>
-                }
-              />
-            ) : (
-              <View style={{ alignItems: 'center', padding: spacing.lg }}>
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    color: colors.textSecondary,
-                    marginBottom: spacing.md,
-                  }}
-                >
-                  {t('home.noZones')}
-                </Text>
-                <DSButton
-                  variant="secondary"
-                  size="sm"
-                  icon="home-outline"
-                  onPress={() => {
-                    setPickerVisible(false);
-                    navigation.navigate('Zuhause');
-                  }}
-                >
-                  {t('home.newHome')}
-                </DSButton>
-              </View>
-            )}
-            <DSButton
-              variant="ghost"
-              onPress={() => setPickerVisible(false)}
-              style={{ marginTop: spacing.sm }}
-            >
-              {t('common.close')}
-            </DSButton>
+                    {t('home.noZones')}
+                  </Text>
+                  <DSButton
+                    variant="secondary"
+                    size="sm"
+                    icon="home-outline"
+                    onPress={() => {
+                      setPickerVisible(false);
+                      navigation.navigate('Zuhause');
+                    }}
+                  >
+                    {t('home.newHome')}
+                  </DSButton>
+                </View>
+              )}
+              <DSButton
+                variant="ghost"
+                onPress={() => setPickerVisible(false)}
+                style={{ marginTop: spacing.sm }}
+              >
+                {t('common.close')}
+              </DSButton>
+            </TouchableOpacity>
           </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
+        </Modal>
 
-      {/* Discovery Reveal */}
-      <DiscoveryRevealModal
-        visible={showReveal}
-        discovery={discoveryResult}
-        imageUri={imageUri}
-        onContinue={() => {
-          setShowReveal(false);
-        }}
-        onViewDex={() => {
-          setShowReveal(false);
-          navigation.navigate('MeinePflanzenTab', { screen: 'PlantDex' });
-        }}
-      />
-    </ScrollView>
+        {/* Discovery Reveal */}
+        <DiscoveryRevealModal
+          visible={showReveal}
+          discovery={discoveryResult}
+          imageUri={imageUri}
+          onContinue={() => {
+            setShowReveal(false);
+          }}
+          onViewDex={() => {
+            setShowReveal(false);
+            navigation.navigate('MeinePflanzenTab', { screen: 'PlantDex' });
+          }}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+  screenHeader: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
+    backgroundColor: colors.background,
+  },
+  screenTitle: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    letterSpacing: 0.2,
+  },
+  creditBar: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+  },
+  scroll: { flex: 1 },
   content: { padding: spacing.lg, paddingBottom: 40 },
 
   // Steps
