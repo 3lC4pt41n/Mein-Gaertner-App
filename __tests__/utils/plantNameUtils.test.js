@@ -82,6 +82,18 @@ describe('plantNameUtils', () => {
     });
   });
 
+  it('falls back to species canonical names before stored display names', () => {
+    expect(
+      getPlantTitleParts({
+        name: 'Fensterblatt',
+        canonical_name: 'Monstera deliciosa',
+      })
+    ).toEqual({
+      botanicalName: 'Monstera deliciosa',
+      localName: null,
+    });
+  });
+
   it('normalizes accents and whitespace for name comparisons', () => {
     expect(normalizePlantName('  Café   au lait ')).toBe('cafe au lait');
   });

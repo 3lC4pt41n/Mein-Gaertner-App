@@ -171,6 +171,23 @@ async function attachLocalizedDetails(plants, language) {
   }
 }
 
+async function fetchSpeciesCanonicalNames(plants) {
+  const speciesIds = [...new Set((plants || []).map((plant) => plant?.species_id).filter(Boolean))];
+  if (speciesIds.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from('species')
+    .select('id, canonical_name')
+    .in('id', speciesIds);
+
+  if (error) {
+    console.warn('[PlantList] species canonical names load failed:', error?.message);
+    return {};
+  }
+
+  return Object.fromEntries((data || []).map((row) => [row.id, row.canonical_name]));
+}
+
 // Fetch plants, healthscores & signed URLs in parallel (nicht sequentiell!)
 async function getPlantsWithHealthscores(userId, language) {
   const result = await fetchPlants(userId);
@@ -184,7 +201,7 @@ async function getPlantsWithHealthscores(userId, language) {
   const plantIds = plants.map((p) => p.id);
   const rawUrls = plants.map((p) => p.image_url);
 
-  const [{ data: healthchecks }, resolvedUrls, detailsByPlant] = await Promise.all([
+  const [{ data: healthchecks }, resolvedUrls, detailsByPlant, speciesNames] = await Promise.all([
     supabase
       .from('plant_healthchecks')
       .select('plant_id, healthscore')
@@ -195,6 +212,7 @@ async function getPlantsWithHealthscores(userId, language) {
       console.warn('[PlantList] localized details load failed:', error?.message);
       return {};
     }),
+    fetchSpeciesCanonicalNames(plants),
   ]);
 
   // Create a map of plant_id -> latest healthscore
@@ -212,6 +230,7 @@ async function getPlantsWithHealthscores(userId, language) {
     ...plant,
     image_url: resolvedUrls[i] || plant.image_url,
     details: detailsByPlant[plant.id] || null,
+    canonical_name: speciesNames[plant.species_id] || plant.canonical_name || null,
     healthscore: healthscoreMap[plant.id] ?? null,
   }));
 }
@@ -255,7 +274,7 @@ async function getGroupedPlants(userId, language) {
   const rawUrls = (assignedPlants || []).map((p) => p.image_url);
   const plantIds = (assignedPlants || []).map((p) => p.id);
 
-  const [resolvedUrls, healthchecksResult] = await Promise.all([
+  const [resolvedUrls, healthchecksResult, speciesNames] = await Promise.all([
     getPlantImageUrls(rawUrls),
     plantIds.length > 0
       ? supabase
@@ -264,6 +283,7 @@ async function getGroupedPlants(userId, language) {
           .in('plant_id', plantIds)
           .order('created_at', { ascending: false })
       : { data: [] },
+    fetchSpeciesCanonicalNames(assignedPlants || []),
   ]);
 
   const healthscoreMap = {};
@@ -280,6 +300,7 @@ async function getGroupedPlants(userId, language) {
   const enrichedPlants = localizedAssignedPlants.map((plant, i) => ({
     ...plant,
     image_url: resolvedUrls[i] || plant.image_url,
+    canonical_name: speciesNames[plant.species_id] || plant.canonical_name || null,
     healthscore: healthscoreMap[plant.id] ?? null,
   }));
 

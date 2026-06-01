@@ -150,7 +150,12 @@ export function extractBotanicalSpeciesName(details, language = i18n.locale) {
 export function getPlantTitleParts(plant, language = i18n.locale) {
   const details = plant?.details || null;
   const botanicalName =
-    extractBotanicalSpeciesName(details, language) || cleanDetailValue(plant?.name) || '?';
+    extractBotanicalSpeciesName(details, language) ||
+    cleanDetailValue(plant?.canonical_name) ||
+    cleanDetailValue(plant?.species_canonical_name) ||
+    cleanDetailValue(plant?.botanical_name) ||
+    cleanDetailValue(plant?.name) ||
+    '?';
   const localName = extractLocalSpeciesName(details, language);
 
   return {
