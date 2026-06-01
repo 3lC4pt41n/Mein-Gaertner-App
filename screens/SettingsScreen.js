@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { safeLaunchCamera, safeLaunchLibrary } from '../services/imagePickerHelper';
 import Constants from 'expo-constants';
@@ -32,6 +33,13 @@ import { openManageSubscriptions } from '../services/purchaseService';
 import { rescheduleAllTaskReminders } from '../services/notificationService';
 import { fetchTasks } from '../services/taskService';
 import { SHOW_TERMS_LINK } from '../services/featureFlags';
+import {
+  DEFAULT_GARDENER_PERSONA_KEY,
+  GARDENER_PERSONAS,
+  getGardenerPersona,
+  loadGardenerPersonaKey,
+  saveGardenerPersonaKey,
+} from '../services/gardenerPersonaService';
 
 // ---------- Helpers ---------------------------------------------------
 
@@ -109,6 +117,7 @@ export default function SettingsScreen({ navigation }) {
   // --- Preferences state ---
   const [language, setLanguage] = useState('de');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [gardenerPersonaKey, setGardenerPersonaKey] = useState(DEFAULT_GARDENER_PERSONA_KEY);
 
   // --- Privacy state ---
   const [leaderboardOptIn, setLeaderboardOptIn] = useState(false);
@@ -158,6 +167,16 @@ export default function SettingsScreen({ navigation }) {
       setPublicDisplayName(profile.public_display_name ?? '');
     }
   }, [profile]);
+
+  useEffect(() => {
+    let mounted = true;
+    loadGardenerPersonaKey(user?.id).then((key) => {
+      if (mounted) setGardenerPersonaKey(key);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   // --- Avatar URL ---
   useEffect(() => {
@@ -294,6 +313,17 @@ export default function SettingsScreen({ navigation }) {
       await updateProfile({ language: code });
     } catch (error) {
       Alert.alert(t('common.error'), error?.message || t('settings.profileSaveError'));
+    }
+  };
+
+  const handleGardenerPersonaChange = async (personaKey) => {
+    setGardenerPersonaKey(personaKey);
+    try {
+      await saveGardenerPersonaKey(user?.id, personaKey);
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('[SettingsScreen] save gardener persona failed:', error?.message);
+      }
     }
   };
 
@@ -474,6 +504,36 @@ export default function SettingsScreen({ navigation }) {
           scrollable
           style={styles.languageChips}
         />
+
+        <Text style={styles.fieldLabel}>{t('settings.gardenerPersona')}</Text>
+        <Text style={styles.fieldHint}>{t('settings.gardenerPersonaHint')}</Text>
+        <View style={styles.personaOptions}>
+          {GARDENER_PERSONAS.map((persona) => {
+            const resolvedPersona = getGardenerPersona(persona.key);
+            const active = resolvedPersona.key === gardenerPersonaKey;
+            return (
+              <TouchableOpacity
+                key={resolvedPersona.key}
+                onPress={() => handleGardenerPersonaChange(resolvedPersona.key)}
+                accessibilityRole="button"
+                accessibilityLabel={resolvedPersona.name}
+                style={[styles.personaOption, active && styles.personaOptionActive]}
+              >
+                <ExpoImage
+                  source={resolvedPersona.avatar}
+                  contentFit="cover"
+                  style={styles.personaAvatar}
+                />
+                <Text style={[styles.personaName, active && styles.personaNameActive]}>
+                  {resolvedPersona.name}
+                </Text>
+                {active ? (
+                  <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                ) : null}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         <ToggleRow
           label={t('settings.notifications')}
@@ -719,8 +779,49 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
+  fieldHint: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    marginTop: -spacing.xs,
+    marginBottom: spacing.sm,
+  },
   languageChips: {
     marginBottom: spacing.lg,
+  },
+  personaOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  personaOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    padding: spacing.sm,
+    backgroundColor: colors.surface,
+  },
+  personaOptionActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySurface,
+  },
+  personaAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+  },
+  personaName: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  personaNameActive: {
+    color: colors.primary,
   },
 
   // Toggle rows
