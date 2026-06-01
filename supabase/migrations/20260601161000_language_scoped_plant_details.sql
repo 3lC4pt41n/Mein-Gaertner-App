@@ -136,6 +136,11 @@ LEFT JOIN public.profiles prof ON prof.id = p.user_id
 WHERE p.details IS NOT NULL
   AND p.details != 'null'::jsonb
   AND p.details != '{}'::jsonb
+  AND EXISTS (
+    SELECT 1
+    FROM auth.users u
+    WHERE u.id = p.user_id
+  )
 ON CONFLICT (plant_id, language) DO NOTHING;
 
 COMMIT;
