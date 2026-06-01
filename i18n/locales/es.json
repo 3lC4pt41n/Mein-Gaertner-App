@@ -494,6 +494,39 @@
     "locationDenied": "Acceso a ubicación denegado",
     "locationDeniedAction": "Abrir ajustes"
   },
+  "context": {
+    "homeTitle": "Contexto actual",
+    "weatherFallback": "Tiempo",
+    "hotTitle": "Hoy hace calor",
+    "hotBody": "{{temperature}}°C: revisa las plantas sedientas y evita el sol directo del mediodía para especies sensibles.",
+    "frostTitle": "Atención a la helada",
+    "frostBody": "{{temperature}}°C: protege las plantas de balcón y jardín del frío y riega con moderación.",
+    "rainTitle": "Lluvia detectada",
+    "rainBody": "Las plantas de exterior probablemente necesiten menos agua adicional hoy.",
+    "activeTitle": "Contexto activo",
+    "activeBody": "FloraScout usa el tiempo, la estación y la hora del día para mejores consejos de cuidado.",
+    "seasons": {
+      "spring": "Primavera",
+      "summer": "Verano",
+      "autumn": "Otoño",
+      "winter": "Invierno"
+    },
+    "seasonTips": {
+      "spring": "Temporada de crecimiento: trasplantar, abonar y crear nuevas rutinas es especialmente útil ahora.",
+      "summer": "Modo verano: revisa con más frecuencia el agua y el sol directo.",
+      "autumn": "Cuidado de otoño: reduce poco a poco el abono y revisa la luz.",
+      "winter": "Reposo invernal: muchas plantas necesitan menos agua y nada de abono.",
+      "default": "Revisa luz, agua y ubicación según la estación actual."
+    },
+    "timeOfDay": {
+      "morning": "Mañana",
+      "lateMorning": "Media mañana",
+      "noon": "Mediodía",
+      "afternoon": "Tarde",
+      "evening": "Noche",
+      "night": "Madrugada"
+    }
+  },
   "diary": {
     "title": "Diario",
     "addEntry": "Añadir entrada",

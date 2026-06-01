@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -26,8 +26,12 @@ import ErrorState from '../components/ErrorState';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
-import { getSeasonalTip } from '../utils/seasonUtils';
 import { extractPlantSummary, getPlantTitleParts } from '../utils/plantNameUtils';
+import {
+  getLocalizedContextText,
+  getLocalizedSeasonName,
+  getLocalizedSeasonalTip,
+} from '../utils/contextLocalization';
 
 // Native animation auf Android aktivieren
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -70,47 +74,49 @@ function PlantImage({ uri, style, placeholderStyle }) {
   );
 }
 
-function getContextTip(context) {
+function getContextTip(context, language) {
   const weather = context?.weather;
   const season = context?.season;
   const temperature = weather?.temperature ?? weather?.temp;
+  const roundedTemperature =
+    typeof temperature === 'number' ? Math.round(temperature * 10) / 10 : null;
 
   if (typeof temperature === 'number' && temperature > 30) {
     return {
       icon: 'sunny-outline',
-      title: 'Heute heiß',
-      body: `${temperature}°C: Prüfe durstige Pflanzen und vermeide direkte Mittagssonne bei empfindlichen Arten.`,
+      title: getLocalizedContextText('hotTitle', language),
+      body: getLocalizedContextText('hotBody', language, { temperature: roundedTemperature }),
     };
   }
 
   if (typeof temperature === 'number' && temperature < 2) {
     return {
       icon: 'snow-outline',
-      title: 'Frost im Blick',
-      body: `${temperature}°C: Schütze Balkon- und Gartenpflanzen vor Kälte und gieße nur sparsam.`,
+      title: getLocalizedContextText('frostTitle', language),
+      body: getLocalizedContextText('frostBody', language, { temperature: roundedTemperature }),
     };
   }
 
   if (weather?.rain_mm > 0) {
     return {
       icon: 'rainy-outline',
-      title: 'Regen erkannt',
-      body: 'Outdoor-Pflanzen brauchen heute vermutlich weniger zusätzliches Wasser.',
+      title: getLocalizedContextText('rainTitle', language),
+      body: getLocalizedContextText('rainBody', language),
     };
   }
 
   if (season) {
     return {
       icon: 'leaf-outline',
-      title: `${season.icon} ${season.name}`,
-      body: getSeasonalTip(season),
+      title: `${season.icon} ${getLocalizedSeasonName(season, language)}`,
+      body: getLocalizedSeasonalTip(season, language),
     };
   }
 
   return {
     icon: 'time-outline',
-    title: 'Kontext aktiv',
-    body: 'FloraScout berücksichtigt Wetter, Saison und Tageszeit für bessere Pflegetipps.',
+    title: getLocalizedContextText('activeTitle', language),
+    body: getLocalizedContextText('activeBody', language),
   };
 }
 
@@ -330,7 +336,42 @@ export default function PlantListScreen({ context }) {
   const { userId, profile } = useAuth();
   const currentLanguage = useMemo(() => normalizeLanguage(profile?.language), [profile?.language]);
   const [expandedZones, setExpandedZones] = useState({}); // { [zoneId]: true }
-  const contextTip = useMemo(() => getContextTip(context), [context]);
+  const loadSeq = useRef(0);
+  const contextTip = useMemo(
+    () => getContextTip(context, currentLanguage),
+    [context, currentLanguage]
+  );
+
+  const loadAll = useCallback(async () => {
+    const seq = ++loadSeq.current;
+    const language = currentLanguage;
+    setLoading(true);
+    setError(null);
+    try {
+      // Pflanzen laden (mit parallelen Healthscores + URL-Resolution)
+      const plants = await getPlantsWithHealthscores(userId, language);
+      if (seq !== loadSeq.current) return;
+      // Sofort anzeigen — nicht auf Gruppierung warten
+      setAllPlants(plants);
+      setLoading(false);
+
+      // Gruppierung im Hintergrund nachladen (fetches ALL assigned plants from DB)
+      getGroupedPlants(userId, language)
+        .then((groupedPlants) => {
+          if (seq === loadSeq.current) setGrouped(groupedPlants);
+        })
+        .catch((e) => console.warn('[PlantList] grouped load failed:', e?.message));
+    } catch (e) {
+      if (seq === loadSeq.current) {
+        setError(e.message);
+        setLoading(false);
+      }
+    } finally {
+      if (seq === loadSeq.current) {
+        setRefreshing(false);
+      }
+    }
+  }, [currentLanguage, userId]);
 
   // Reload plant list every time screen gains focus (e.g. after adding a plant)
   useFocusEffect(
@@ -338,30 +379,8 @@ export default function PlantListScreen({ context }) {
       if (userId) {
         loadAll();
       }
-    }, [userId, currentLanguage])
+    }, [userId, loadAll])
   );
-
-  const loadAll = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Pflanzen laden (mit parallelen Healthscores + URL-Resolution)
-      const plants = await getPlantsWithHealthscores(userId, currentLanguage);
-      // Sofort anzeigen — nicht auf Gruppierung warten
-      setAllPlants(plants);
-      setLoading(false);
-
-      // Gruppierung im Hintergrund nachladen (fetches ALL assigned plants from DB)
-      getGroupedPlants(userId, currentLanguage)
-        .then(setGrouped)
-        .catch((e) => console.warn('[PlantList] grouped load failed:', e?.message));
-    } catch (e) {
-      setError(e.message);
-      setLoading(false);
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   // Einzelnes Plant-Item — stable reference for FlatList performance
   const renderPlantItem = useCallback(

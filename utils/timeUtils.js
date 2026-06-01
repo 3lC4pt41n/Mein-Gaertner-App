@@ -10,12 +10,13 @@ export function getTimeOfDay(date = new Date()) {
 
   const base = { hour, minute, formattedTime };
 
-  if (hour >= 5 && hour < 10) return { name: 'Morgen', icon: '🌅', ...base };
-  if (hour >= 10 && hour < 12) return { name: 'Vormittag', icon: '🌤️', ...base };
-  if (hour >= 12 && hour < 14) return { name: 'Mittag', icon: '☀️', ...base };
-  if (hour >= 14 && hour < 18) return { name: 'Nachmittag', icon: '🌇', ...base };
-  if (hour >= 18 && hour < 22) return { name: 'Abend', icon: '🌆', ...base };
-  return { name: 'Nacht', icon: '🌙', ...base };
+  if (hour >= 5 && hour < 10) return { key: 'morning', name: 'Morgen', icon: '🌅', ...base };
+  if (hour >= 10 && hour < 12)
+    return { key: 'lateMorning', name: 'Vormittag', icon: '🌤️', ...base };
+  if (hour >= 12 && hour < 14) return { key: 'noon', name: 'Mittag', icon: '☀️', ...base };
+  if (hour >= 14 && hour < 18) return { key: 'afternoon', name: 'Nachmittag', icon: '🌇', ...base };
+  if (hour >= 18 && hour < 22) return { key: 'evening', name: 'Abend', icon: '🌆', ...base };
+  return { key: 'night', name: 'Nacht', icon: '🌙', ...base };
 }
 
 export function getLocalDateTime(date = new Date()) {

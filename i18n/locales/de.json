@@ -515,6 +515,39 @@
     "locationDenied": "Standortzugriff nicht erlaubt",
     "locationDeniedAction": "Einstellungen öffnen"
   },
+  "context": {
+    "homeTitle": "Aktueller Kontext",
+    "weatherFallback": "Wetter",
+    "hotTitle": "Heute heiß",
+    "hotBody": "{{temperature}}°C: Prüfe durstige Pflanzen und vermeide direkte Mittagssonne bei empfindlichen Arten.",
+    "frostTitle": "Frost im Blick",
+    "frostBody": "{{temperature}}°C: Schütze Balkon- und Gartenpflanzen vor Kälte und gieße nur sparsam.",
+    "rainTitle": "Regen erkannt",
+    "rainBody": "Outdoor-Pflanzen brauchen heute vermutlich weniger zusätzliches Wasser.",
+    "activeTitle": "Kontext aktiv",
+    "activeBody": "FloraScout berücksichtigt Wetter, Saison und Tageszeit für bessere Pflegetipps.",
+    "seasons": {
+      "spring": "Frühling",
+      "summer": "Sommer",
+      "autumn": "Herbst",
+      "winter": "Winter"
+    },
+    "seasonTips": {
+      "spring": "Wachstumszeit: Jetzt sind Umtopfen, Düngen und neue Routinen besonders sinnvoll.",
+      "summer": "Sommermodus: Prüfe Wasserbedarf und direkte Sonne etwas häufiger.",
+      "autumn": "Herbstpflege: Reduziere Dünger langsam und kontrolliere Lichtverhältnisse.",
+      "winter": "Winterruhe: Viele Pflanzen brauchen weniger Wasser und keinen Dünger.",
+      "default": "Prüfe Licht, Wasserbedarf und Standort passend zur aktuellen Jahreszeit."
+    },
+    "timeOfDay": {
+      "morning": "Morgen",
+      "lateMorning": "Vormittag",
+      "noon": "Mittag",
+      "afternoon": "Nachmittag",
+      "evening": "Abend",
+      "night": "Nacht"
+    }
+  },
   "diary": {
     "title": "Tagebuch",
     "addEntry": "Eintrag hinzufügen",

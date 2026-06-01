@@ -494,6 +494,39 @@
     "locationDenied": "Accès à la localisation refusé",
     "locationDeniedAction": "Ouvrir les réglages"
   },
+  "context": {
+    "homeTitle": "Contexte actuel",
+    "weatherFallback": "Météo",
+    "hotTitle": "Chaud aujourd'hui",
+    "hotBody": "{{temperature}}°C : vérifiez les plantes assoiffées et évitez le soleil direct de midi pour les espèces sensibles.",
+    "frostTitle": "Attention au gel",
+    "frostBody": "{{temperature}}°C : protégez les plantes de balcon et de jardin du froid et arrosez avec parcimonie.",
+    "rainTitle": "Pluie détectée",
+    "rainBody": "Les plantes d'extérieur ont probablement besoin de moins d'eau supplémentaire aujourd'hui.",
+    "activeTitle": "Contexte actif",
+    "activeBody": "FloraScout utilise la météo, la saison et l'heure pour de meilleurs conseils d'entretien.",
+    "seasons": {
+      "spring": "Printemps",
+      "summer": "Été",
+      "autumn": "Automne",
+      "winter": "Hiver"
+    },
+    "seasonTips": {
+      "spring": "Saison de croissance : rempotage, engrais et nouvelles routines sont particulièrement utiles maintenant.",
+      "summer": "Mode été : vérifiez un peu plus souvent les besoins en eau et le soleil direct.",
+      "autumn": "Soins d'automne : réduisez progressivement l'engrais et vérifiez la luminosité.",
+      "winter": "Repos hivernal : beaucoup de plantes ont besoin de moins d'eau et pas d'engrais.",
+      "default": "Vérifiez la lumière, les besoins en eau et l'emplacement selon la saison."
+    },
+    "timeOfDay": {
+      "morning": "Matin",
+      "lateMorning": "Fin de matinée",
+      "noon": "Midi",
+      "afternoon": "Après-midi",
+      "evening": "Soir",
+      "night": "Nuit"
+    }
+  },
   "diary": {
     "title": "Journal",
     "addEntry": "Ajouter une entrée",

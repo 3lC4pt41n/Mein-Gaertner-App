@@ -515,6 +515,39 @@
     "locationDenied": "Konum erişimi reddedildi",
     "locationDeniedAction": "Ayarları aç"
   },
+  "context": {
+    "homeTitle": "Güncel bağlam",
+    "weatherFallback": "Hava durumu",
+    "hotTitle": "Bugün sıcak",
+    "hotBody": "{{temperature}}°C: susayan bitkileri kontrol edin ve hassas türleri öğle güneşinden koruyun.",
+    "frostTitle": "Donu takip et",
+    "frostBody": "{{temperature}}°C: balkon ve bahçe bitkilerini soğuktan koruyun ve az sulayın.",
+    "rainTitle": "Yağmur algılandı",
+    "rainBody": "Dış mekan bitkileri bugün muhtemelen daha az ek suya ihtiyaç duyar.",
+    "activeTitle": "Bağlam aktif",
+    "activeBody": "FloraScout daha iyi bakım önerileri için hava durumunu, mevsimi ve günün saatini kullanır.",
+    "seasons": {
+      "spring": "İlkbahar",
+      "summer": "Yaz",
+      "autumn": "Sonbahar",
+      "winter": "Kış"
+    },
+    "seasonTips": {
+      "spring": "Büyüme dönemi: saksı değiştirme, gübreleme ve yeni rutinler şimdi özellikle faydalıdır.",
+      "summer": "Yaz modu: su ihtiyacını ve doğrudan güneşi biraz daha sık kontrol edin.",
+      "autumn": "Sonbahar bakımı: gübreyi yavaşça azaltın ve ışık koşullarını kontrol edin.",
+      "winter": "Kış dinlenmesi: birçok bitki daha az suya ihtiyaç duyar ve gübre istemez.",
+      "default": "Işık, su ihtiyacı ve konumu mevcut mevsime göre kontrol edin."
+    },
+    "timeOfDay": {
+      "morning": "Sabah",
+      "lateMorning": "Öğleden önce",
+      "noon": "Öğle",
+      "afternoon": "Öğleden sonra",
+      "evening": "Akşam",
+      "night": "Gece"
+    }
+  },
   "diary": {
     "title": "Günlük",
     "addEntry": "Girdi Ekle",

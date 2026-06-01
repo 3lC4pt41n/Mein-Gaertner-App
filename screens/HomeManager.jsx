@@ -19,18 +19,27 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { getDexProgress } from '../services/dexService';
+import { normalizeLanguage } from '../services/languageService';
+import {
+  getLocalizedContextText,
+  getLocalizedSeasonName,
+  getLocalizedTimeOfDayName,
+} from '../utils/contextLocalization';
 import DSButton from '../theme/DSButton';
 import DSCard from '../theme/DSCard';
 import DSInput from '../theme/DSInput';
 import DSChipGroup from '../theme/DSChips';
 
-function ContextSummary({ context }) {
+function ContextSummary({ context, language }) {
   const season = context?.season;
   const time = context?.time;
   const weather = context?.weather;
   const city = context?.location?.city || weather?.city;
   const temperature = weather?.temperature ?? weather?.temp;
-  const weatherText = weather?.weatherText || weather?.description || 'Wetter';
+  const weatherText =
+    weather?.weatherText ||
+    weather?.description ||
+    getLocalizedContextText('weatherFallback', language);
 
   if (!season && !time && !weather) return null;
 
@@ -38,20 +47,20 @@ function ContextSummary({ context }) {
     <View style={styles.contextCard}>
       <View style={styles.contextHeader}>
         <Ionicons name="compass-outline" size={18} color={colors.primary} />
-        <Text style={styles.contextTitle}>Aktueller Kontext</Text>
+        <Text style={styles.contextTitle}>{getLocalizedContextText('homeTitle', language)}</Text>
       </View>
       <View style={styles.contextPills}>
         {season && (
           <View style={styles.contextPill}>
             <Text style={styles.contextPillText}>
-              {season.icon} {season.name}
+              {season.icon} {getLocalizedSeasonName(season, language)}
             </Text>
           </View>
         )}
         {time && (
           <View style={styles.contextPill}>
             <Text style={styles.contextPillText}>
-              {time.icon} {time.name}
+              {time.icon} {getLocalizedTimeOfDayName(time, language)}
             </Text>
           </View>
         )}
@@ -94,7 +103,8 @@ export default function HomeManager({ context }) {
   const [zonesLoading, setZonesLoading] = useState(false);
   const [savingZone, setSavingZone] = useState(false);
 
-  const { userId } = useAuth();
+  const { userId, profile } = useAuth();
+  const currentLanguage = normalizeLanguage(profile?.language);
   const navigation = useNavigation();
 
   useFocusEffect(
@@ -385,7 +395,7 @@ export default function HomeManager({ context }) {
         keyExtractor={(l) => l.id}
         ListHeaderComponent={() => (
           <>
-            <ContextSummary context={context} />
+            <ContextSummary context={context} language={currentLanguage} />
 
             {/* Plant Dex Progress Card */}
             <TouchableOpacity

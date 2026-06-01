@@ -2,6 +2,66 @@ import { supabase } from '../supabase';
 import { fetchCachedSpeciesDetails } from './dexService';
 import { normalizeLanguage } from './languageService';
 
+const DETAIL_LANGUAGE_HINTS = {
+  de: ['Deutscher Name', 'Botanischer Name', 'Wissenschaftlicher Name', 'Gießen'],
+  en: ['Common Name', 'Botanical Name', 'Scientific Name', 'Watering'],
+  fr: ['Nom commun', 'Nom botanique', 'Nom scientifique', 'Arrosage'],
+  it: ['Nome comune', 'Nome botanico', 'Nome scientifico', 'Annaffiatura'],
+  es: ['Nombre común', 'Nombre comun', 'Nombre botánico', 'Nombre científico', 'Riego'],
+  ru: ['Народное название', 'Ботаническое название', 'Научное название', 'Полив'],
+  tr: ['Yaygın Ad', 'Yaygın ad', 'Botanik Ad', 'Botanik Adı', 'Bilimsel ad', 'Sulama'],
+};
+
+function detailKeys(details) {
+  if (!details || typeof details !== 'object') return [];
+  return Object.keys(details.overview || {});
+}
+
+export function inferPlantDetailsLanguage(details) {
+  const keys = detailKeys(details);
+  if (keys.length === 0) return null;
+
+  for (const [language, hints] of Object.entries(DETAIL_LANGUAGE_HINTS)) {
+    if (hints.some((hint) => keys.includes(hint))) return language;
+  }
+
+  return null;
+}
+
+function isLegacyDetailsForLanguage(details, language) {
+  return inferPlantDetailsLanguage(details) === normalizeLanguage(language);
+}
+
+async function fetchMatchingLegacyPlantDetails({ plantId, speciesId, language, userId }) {
+  const normalizedLanguage = normalizeLanguage(language);
+  const { data: plantRow, error } = await supabase
+    .from('plants')
+    .select('details, species_id, user_id')
+    .eq('id', plantId)
+    .maybeSingle();
+
+  if (error) throw error;
+  const legacyDetails = plantRow?.details;
+  if (!isLegacyDetailsForLanguage(legacyDetails, normalizedLanguage)) return null;
+
+  if (userId && plantRow?.user_id === userId) {
+    savePlantDetailsForLanguage({
+      plantId,
+      userId,
+      speciesId: speciesId || plantRow?.species_id,
+      language: normalizedLanguage,
+      details: legacyDetails,
+      source: 'backfill',
+    }).catch((saveError) => {
+      if (__DEV__) {
+        console.warn('[plantDetails] legacy snapshot save failed:', saveError?.message);
+      }
+    });
+  }
+
+  return legacyDetails;
+}
+
 export async function fetchPlantDetailsForLanguage({ plantId, speciesId, language, userId }) {
   const normalizedLanguage = normalizeLanguage(language);
 
@@ -26,12 +86,32 @@ export async function fetchPlantDetailsForLanguage({ plantId, speciesId, languag
   }
 
   if (!speciesId) {
-    return { details: null, language: normalizedLanguage, source: null };
+    const legacyDetails = await fetchMatchingLegacyPlantDetails({
+      plantId,
+      speciesId,
+      language: normalizedLanguage,
+      userId,
+    });
+    return {
+      details: legacyDetails,
+      language: normalizedLanguage,
+      source: legacyDetails ? 'legacy_plant' : null,
+    };
   }
 
   const speciesDetails = await fetchCachedSpeciesDetails(speciesId, normalizedLanguage);
   if (!speciesDetails) {
-    return { details: null, language: normalizedLanguage, source: null };
+    const legacyDetails = await fetchMatchingLegacyPlantDetails({
+      plantId,
+      speciesId,
+      language: normalizedLanguage,
+      userId,
+    });
+    return {
+      details: legacyDetails,
+      language: normalizedLanguage,
+      source: legacyDetails ? 'legacy_plant' : null,
+    };
   }
 
   if (userId) {
@@ -100,6 +180,15 @@ export async function fetchPlantDetailsMapForLanguage(plants, language) {
       if (!detailsByPlant[plant.id] && plant.species_id && detailsBySpecies[plant.species_id]) {
         detailsByPlant[plant.id] = detailsBySpecies[plant.species_id];
       }
+    }
+  }
+
+  for (const plant of plants || []) {
+    if (
+      !detailsByPlant[plant.id] &&
+      isLegacyDetailsForLanguage(plant.details, normalizedLanguage)
+    ) {
+      detailsByPlant[plant.id] = plant.details;
     }
   }
 

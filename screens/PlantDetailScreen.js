@@ -1,5 +1,5 @@
 // screens/PlantDetailScreen.js
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -112,25 +112,30 @@ export default function PlantDetailScreen({ route }) {
   const [showDiaryDialog, setShowDiaryDialog] = useState(false);
   const [diaryKey, setDiaryKey] = useState(0); // to refresh diary after new entry
   const [plantDetails, setPlantDetails] = useState(null);
+  const [plantDetailsLanguage, setPlantDetailsLanguage] = useState(null);
   const [generatingDetails, setGeneratingDetails] = useState(false);
-  const details = plantDetails || {};
+  const activePlantDetails = plantDetailsLanguage === currentLanguage ? plantDetails : null;
+  const details = activePlantDetails || {};
   const [healthcheck, setHealthcheck] = useState(null);
   const [loading, setLoading] = useState(true);
   const [runningHealthcheck, setRunningHealthcheck] = useState(false);
   const [galleryKey, setGalleryKey] = useState(0);
+  const detailsRequestSeq = useRef(0);
 
   // Resolved image URL (handles both legacy URLs and storage paths)
   const [resolvedImageUrl, setResolvedImageUrl] = useState(
     plant.image_url?.startsWith('http') ? plant.image_url : null
   );
   const titleParts = useMemo(
-    () => getPlantTitleParts({ ...plant, details: plantDetails }, currentLanguage),
-    [plant, plantDetails, currentLanguage]
+    () => getPlantTitleParts({ ...plant, details: activePlantDetails }, currentLanguage),
+    [plant, activePlantDetails, currentLanguage]
   );
 
   // Reset state when navigating to a different plant or language (prevents stale details)
   useEffect(() => {
+    detailsRequestSeq.current += 1;
     setPlantDetails(null);
+    setPlantDetailsLanguage(null);
     setHealthcheck(null);
     setLoading(true);
     setTab('overview');
@@ -156,14 +161,15 @@ export default function PlantDetailScreen({ route }) {
 
   useEffect(() => {
     let cancelled = false;
+    const requestSeq = ++detailsRequestSeq.current;
 
     (async () => {
       setLoading(true);
       try {
         const hc = await fetchLatestHealthcheck(plant.id);
-        if (!cancelled) setHealthcheck(hc);
+        if (!cancelled && requestSeq === detailsRequestSeq.current) setHealthcheck(hc);
       } catch {
-        if (!cancelled) setHealthcheck(null);
+        if (!cancelled && requestSeq === detailsRequestSeq.current) setHealthcheck(null);
       }
 
       try {
@@ -174,16 +180,18 @@ export default function PlantDetailScreen({ route }) {
           userId,
         });
 
-        if (!cancelled) {
+        if (!cancelled && requestSeq === detailsRequestSeq.current) {
           setPlantDetails(localizedDetails.details);
+          setPlantDetailsLanguage(localizedDetails.details ? localizedDetails.language : null);
         }
       } catch {
-        if (!cancelled) {
+        if (!cancelled && requestSeq === detailsRequestSeq.current) {
           setPlantDetails(null);
+          setPlantDetailsLanguage(null);
         }
       }
 
-      if (!cancelled) setLoading(false);
+      if (!cancelled && requestSeq === detailsRequestSeq.current) setLoading(false);
     })();
     // Hole ggf. Zone/Location falls zugewiesen:
     if (plant.zone_id) {
@@ -239,6 +247,7 @@ export default function PlantDetailScreen({ route }) {
             source: result.source === 'dex_cache' ? 'species_cache' : 'ai',
           });
           setPlantDetails(result.details);
+          setPlantDetailsLanguage(currentLanguage);
           Alert.alert(t('common.success'), t('plants.detailsGenerated'));
         }
       } catch (e) {

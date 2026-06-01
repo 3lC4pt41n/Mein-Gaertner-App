@@ -515,6 +515,39 @@
     "locationDenied": "Location access denied",
     "locationDeniedAction": "Open settings"
   },
+  "context": {
+    "homeTitle": "Current context",
+    "weatherFallback": "Weather",
+    "hotTitle": "Hot today",
+    "hotBody": "{{temperature}}°C: Check thirsty plants and keep sensitive species out of direct midday sun.",
+    "frostTitle": "Watch for frost",
+    "frostBody": "{{temperature}}°C: Protect balcony and garden plants from cold and water sparingly.",
+    "rainTitle": "Rain detected",
+    "rainBody": "Outdoor plants probably need less additional water today.",
+    "activeTitle": "Context active",
+    "activeBody": "FloraScout uses weather, season and time of day for better care tips.",
+    "seasons": {
+      "spring": "Spring",
+      "summer": "Summer",
+      "autumn": "Autumn",
+      "winter": "Winter"
+    },
+    "seasonTips": {
+      "spring": "Growth season: repotting, feeding and new routines are especially useful now.",
+      "summer": "Summer mode: check water needs and direct sun a little more often.",
+      "autumn": "Autumn care: slowly reduce fertilizer and check light conditions.",
+      "winter": "Winter rest: many plants need less water and no fertilizer.",
+      "default": "Check light, water needs and location for the current season."
+    },
+    "timeOfDay": {
+      "morning": "Morning",
+      "lateMorning": "Late morning",
+      "noon": "Noon",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "night": "Night"
+    }
+  },
   "diary": {
     "title": "Diary",
     "addEntry": "Add Entry",
