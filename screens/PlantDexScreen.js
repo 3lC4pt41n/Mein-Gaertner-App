@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,10 +17,12 @@ import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 
 const FILTERS = [
-  { label: 'all', value: 'all' },
   { label: 'discovered', value: 'discovered' },
+  { label: 'all', value: 'all' },
   { label: 'first', value: 'first' },
 ];
+
+const DEFAULT_DEX_FILTER = 'discovered';
 
 // Category display order & icon mapping
 const CATEGORY_ORDER = [
@@ -91,7 +93,7 @@ const PlantDexScreen = () => {
   const navigation = useNavigation();
   const [species, setSpecies] = useState([]);
   const [progress, setProgress] = useState({ total: 0, discovered: 0, firstDiscoveries: 0 });
-  const [filter, setFilter] = useState('discovered');
+  const [filter, setFilter] = useState(DEFAULT_DEX_FILTER);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -110,6 +112,14 @@ const PlantDexScreen = () => {
       setError(err.message);
     }
   }, [user, filter]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      setFilter(DEFAULT_DEX_FILTER);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   // Always reload on focus — no dependency on loadDexData to avoid stale closures
   useFocusEffect(
