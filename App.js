@@ -42,6 +42,7 @@ import {
 } from './services/notificationService';
 import { getCurrentLocation, getWeather } from './services/weatherService';
 import { buildContext } from './utils/contextUtils';
+import { subscribeToAppUpdateChecks } from './services/appUpdateService';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -242,6 +243,8 @@ function AppContent() {
   } = useAuth();
   const navigationRef = useRef(null);
   const [context, setContext] = useState(() => buildContext({ location: null, weather: null }));
+
+  useEffect(() => subscribeToAppUpdateChecks(), []);
 
   useEffect(() => {
     if (!user?.id) {
