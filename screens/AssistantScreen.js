@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   TextInput,
@@ -32,12 +32,13 @@ import DSButton from '../theme/DSButton';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import CreditBar from '../components/CreditBar';
+import { supabase } from '../supabase';
 
 const USER_AVATAR = require('../assets/avatars/tim.png');
 const CHAT_AVATAR_SIZE = spacing.xxxl;
 
 export default function AssistantScreen({ context }) {
-  const { userId: user_id } = useAuth();
+  const { user, userId: user_id } = useAuth();
   const navigation = useNavigation();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -45,9 +46,14 @@ export default function AssistantScreen({ context }) {
   const [language, setLanguage] = useState('de');
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [userAvatarUrl, setUserAvatarUrl] = useState(null);
   const [gardenerPersonaKey, setGardenerPersonaKey] = useState(DEFAULT_GARDENER_PERSONA_KEY);
   const flatListRef = useRef();
   const gardenerPersona = getGardenerPersona(gardenerPersonaKey);
+  const userAvatarSource = useMemo(
+    () => (userAvatarUrl ? { uri: userAvatarUrl } : USER_AVATAR),
+    [userAvatarUrl]
+  );
 
   useEffect(() => {
     if (!user_id) return;
@@ -72,6 +78,33 @@ export default function AssistantScreen({ context }) {
       mounted = false;
     };
   }, [user_id]);
+
+  useEffect(() => {
+    const avatarPath = user?.user_metadata?.gardener_avatar_path;
+    if (!avatarPath) {
+      setUserAvatarUrl(null);
+      return undefined;
+    }
+
+    let mounted = true;
+    supabase.storage
+      .from('chat-images')
+      .createSignedUrl(avatarPath, 60 * 60 * 24 * 30)
+      .then(({ data, error }) => {
+        if (!mounted) return;
+        setUserAvatarUrl(error ? null : data?.signedUrl || null);
+      })
+      .catch((error) => {
+        if (__DEV__) {
+          console.warn('[AssistantScreen] user avatar signed URL failed:', error?.message);
+        }
+        if (mounted) setUserAvatarUrl(null);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.user_metadata?.gardener_avatar_path]);
 
   // Initial: letzte 30 Messages laden
   useEffect(() => {
@@ -248,7 +281,7 @@ export default function AssistantScreen({ context }) {
 
   // Avatar waehlen
   const getAvatar = (sender) => {
-    if (sender === 'user') return USER_AVATAR;
+    if (sender === 'user') return userAvatarSource;
     return getAssistantPersona(sender).avatar;
   };
 
