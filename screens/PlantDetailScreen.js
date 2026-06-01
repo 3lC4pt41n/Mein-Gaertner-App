@@ -34,6 +34,7 @@ import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
 import { fetchCachedSpeciesDetails } from '../services/dexService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
 import { friendlyError } from '../utils/errorMessages';
+import { getPlantTitleParts } from '../utils/plantNameUtils';
 import CreditBar from '../components/CreditBar';
 
 // Helper zum Gruppieren Locations > Zonen
@@ -117,6 +118,10 @@ export default function PlantDetailScreen({ route }) {
   // Resolved image URL (handles both legacy URLs and storage paths)
   const [resolvedImageUrl, setResolvedImageUrl] = useState(
     plant.image_url?.startsWith('http') ? plant.image_url : null
+  );
+  const titleParts = useMemo(
+    () => getPlantTitleParts({ ...plant, details: plantDetails }),
+    [plant, plantDetails]
   );
 
   // Reset state when navigating to a different plant (prevents stale details)
@@ -716,7 +721,19 @@ export default function PlantDetailScreen({ route }) {
             placeholderContentFit="cover"
           />
         )}
-        <Text style={styles.title}>{plant.name}</Text>
+        <View style={styles.titleBlock}>
+          {titleParts.localName ? (
+            <Text style={styles.localTitle} numberOfLines={2}>
+              {titleParts.localName}
+            </Text>
+          ) : null}
+          <Text
+            style={[styles.title, titleParts.localName && styles.botanicalTitle]}
+            numberOfLines={2}
+          >
+            {titleParts.botanicalName}
+          </Text>
+        </View>
         <Text style={styles.subtitle}>{plant.note}</Text>
         {healthcheck && typeof healthcheck.healthscore === 'number' && (
           <ScoreCircle score={healthcheck.healthscore} label={t('plants.healthLabel')} />
@@ -1047,6 +1064,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.textPrimary,
     letterSpacing: 0.2,
+  },
+  titleBlock: {
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  localTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    textAlign: 'center',
+    color: colors.primary,
+    letterSpacing: 0.2,
+  },
+  botanicalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    marginTop: 2,
   },
   subtitle: {
     color: colors.textTertiary,

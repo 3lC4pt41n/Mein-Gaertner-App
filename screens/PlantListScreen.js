@@ -25,6 +25,7 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { getSeasonalTip } from '../utils/seasonUtils';
+import { getPlantTitleParts } from '../utils/plantNameUtils';
 
 // Native animation auf Android aktivieren
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -109,6 +110,38 @@ function getContextTip(context) {
     title: 'Kontext aktiv',
     body: 'FloraScout berücksichtigt Wetter, Saison und Tageszeit für bessere Pflegetipps.',
   };
+}
+
+function PlantTitle({ plant, compact = false }) {
+  const { botanicalName, localName } = getPlantTitleParts(plant);
+
+  if (!localName) {
+    return (
+      <Text
+        style={compact ? styles.zonePlantName : styles.plantName}
+        numberOfLines={compact ? 1 : 2}
+      >
+        {botanicalName}
+      </Text>
+    );
+  }
+
+  return (
+    <View>
+      <Text
+        style={compact ? styles.zonePlantLocalName : styles.plantLocalName}
+        numberOfLines={compact ? 1 : 2}
+      >
+        {localName}
+      </Text>
+      <Text
+        style={compact ? styles.zonePlantBotanicalName : styles.plantBotanicalName}
+        numberOfLines={1}
+      >
+        {botanicalName}
+      </Text>
+    </View>
+  );
 }
 
 // Fetch plants, healthscores & signed URLs in parallel (nicht sequentiell!)
@@ -285,7 +318,7 @@ export default function PlantListScreen({ context }) {
             placeholderStyle={styles.plantImagePlaceholder}
           />
           <View style={styles.plantTextContainer}>
-            <Text style={styles.plantName}>{item.name || '?'}</Text>
+            <PlantTitle plant={item} />
             <Text style={styles.plantNote}>{item.note}</Text>
             {item.healthscore !== null && (
               <Text style={styles.plantHealthscore}>
@@ -405,8 +438,8 @@ export default function PlantListScreen({ context }) {
                                 style={styles.zonePlantImage}
                                 placeholderStyle={styles.zonePlantImagePlaceholder}
                               />
-                              <View>
-                                <Text style={styles.zonePlantName}>{plant.name}</Text>
+                              <View style={styles.zonePlantTextContainer}>
+                                <PlantTitle plant={plant} compact />
                                 <Text style={styles.zonePlantNote}>{plant.note}</Text>
                                 {plant.healthscore !== null && (
                                   <Text style={styles.zonePlantHealthscore}>
@@ -574,6 +607,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
+  plantLocalName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  plantBotanicalName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    marginTop: 1,
+  },
   plantNote: {
     fontSize: 14,
     color: colors.textSecondary,
@@ -672,10 +717,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  zonePlantTextContainer: {
+    flex: 1,
+  },
   zonePlantName: {
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
+  },
+  zonePlantLocalName: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  zonePlantBotanicalName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    marginTop: 1,
   },
   zonePlantNote: {
     fontSize: 12,

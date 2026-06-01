@@ -2,70 +2,15 @@ import { supabase } from '../supabase';
 import i18n from '../i18n';
 import { getPlantImageUrl, getPlantImageUrls } from './uploadService';
 import { normalizeLanguage } from './languageService';
+import { extractLocalSpeciesName, normalizePlantName } from '../utils/plantNameUtils';
 
-const LOCAL_NAME_KEYS = {
-  de: 'Deutscher Name',
-  en: 'Common Name',
-  fr: 'Nom commun',
-  it: 'Nome comune',
-  es: 'Nombre común',
-  ru: 'Народное название',
-  tr: 'Yaygın Ad',
-};
-
-const EMPTY_DETAIL_VALUES = new Set([
-  '-',
-  '—',
-  'n/a',
-  'na',
-  'unknown',
-  'unbekannt',
-  'keine angabe',
-  'nicht bekannt',
-]);
+export { extractLocalSpeciesName } from '../utils/plantNameUtils';
 
 function isRenderableImageUrl(value) {
   return (
     typeof value === 'string' &&
     (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:image/'))
   );
-}
-
-function normalizeName(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ');
-}
-
-function cleanDetailValue(value) {
-  if (typeof value !== 'string') return null;
-  const cleaned = value.trim();
-  if (!cleaned || EMPTY_DETAIL_VALUES.has(cleaned.toLowerCase())) return null;
-  return cleaned;
-}
-
-export function extractLocalSpeciesName(details, language = i18n.locale) {
-  if (!details || typeof details !== 'object') return null;
-
-  const overview = details.overview;
-  if (!overview || typeof overview !== 'object') return null;
-
-  const normalizedLanguage = normalizeLanguage(language);
-  const preferredKey = LOCAL_NAME_KEYS[normalizedLanguage];
-  const candidateKeys = [
-    preferredKey,
-    ...Object.values(LOCAL_NAME_KEYS).filter((key) => key !== preferredKey),
-  ].filter(Boolean);
-
-  for (const key of candidateKeys) {
-    const value = cleanDetailValue(overview[key]);
-    if (value) return value;
-  }
-
-  return null;
 }
 
 async function fetchLocalNamesForSpecies(speciesIds, language = i18n.locale) {
@@ -180,7 +125,7 @@ export async function fetchDex(userId, filter = 'all') {
     return {
       ...species,
       local_name:
-        localName && normalizeName(localName) !== normalizeName(species.canonical_name)
+        localName && normalizePlantName(localName) !== normalizePlantName(species.canonical_name)
           ? localName
           : null,
     };
@@ -322,7 +267,9 @@ export async function fetchSpeciesDetail(speciesId) {
   const localNamesBySpecies = await fetchLocalNamesForSpecies([speciesId]);
   const localName = localNamesBySpecies[speciesId] || null;
   data.local_name =
-    localName && normalizeName(localName) !== normalizeName(data.canonical_name) ? localName : null;
+    localName && normalizePlantName(localName) !== normalizePlantName(data.canonical_name)
+      ? localName
+      : null;
   if (data?.image_url) {
     data.image_url = (await getPlantImageUrl(data.image_url)) || data.image_url;
   }

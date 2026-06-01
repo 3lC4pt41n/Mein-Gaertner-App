@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -34,6 +34,7 @@ import DSCard from '../theme/DSCard';
 import DiscoveryRevealModal from '../components/DiscoveryRevealModal';
 import { AI_COSTS } from '../services/pricingConfig';
 import { friendlyError } from '../utils/errorMessages';
+import { getPlantTitleParts } from '../utils/plantNameUtils';
 import CreditBar from '../components/CreditBar';
 
 // Fetch zones grouped by location for the picker
@@ -118,6 +119,10 @@ export default function AddPlantScreen() {
   // ── Discovery reveal ──────────────────────
   const [discoveryResult, setDiscoveryResult] = useState(null);
   const [showReveal, setShowReveal] = useState(false);
+  const savedPlantTitle = useMemo(
+    () => (savedPlant ? getPlantTitleParts(savedPlant, language) : null),
+    [savedPlant, language]
+  );
 
   useEffect(() => {
     (async () => {
@@ -640,7 +645,14 @@ export default function AddPlantScreen() {
                 resizeMode="cover"
               />
             )}
-            <Text style={styles.savedName}>{savedPlant.name}</Text>
+            {savedPlantTitle?.localName ? (
+              <Text style={styles.savedLocalName}>{savedPlantTitle.localName}</Text>
+            ) : null}
+            <Text
+              style={[styles.savedName, !savedPlantTitle?.localName && styles.savedNamePrimary]}
+            >
+              {savedPlantTitle?.botanicalName || savedPlant.name}
+            </Text>
           </DSCard>
 
           <DSCard>
@@ -914,7 +926,23 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   successText: { fontSize: 18, fontWeight: 'bold', color: colors.textPrimary },
-  savedName: { fontSize: 16, fontWeight: '600', color: colors.textSecondary, textAlign: 'center' },
+  savedLocalName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.primary,
+    textAlign: 'center',
+  },
+  savedName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  savedNamePrimary: {
+    color: colors.textPrimary,
+    fontStyle: 'normal',
+  },
 
   // Upgrades
   upgradeTitle: {
