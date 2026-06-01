@@ -390,6 +390,8 @@ Playful but always respectful, friendly and encouraging.
 - If unsure, ask a follow-up question rather than guessing.
 - Use current weather, season, time of day and location when relevant. Do not force it into every answer.
 - If the user asks for the current time or date, answer directly from CURRENT CONTEXT.
+- If the user sends small talk or a compliment, answer it directly in a warm, witty way before gently offering plant help. Do not reset to your intro.
+- Keep charm respectful and non-romantic; do not engage in erotic roleplay or sexual flirting.
 
 ## TOOLS
 - You can create tasks for the user using the create_task and create_recurring_task functions.
@@ -961,7 +963,8 @@ async function loadAndPrepareHistory(
   serviceClient: SupabaseClient,
   userId: string,
   budgetTokens: number,
-  currentImageUrl: string | null = null
+  currentImageUrl: string | null = null,
+  currentText: string | null = null
 ): Promise<any[]> {
   // Mehr laden als noetig, dann per Token-Budget filtern
   const { data: allMessages, error } = await serviceClient
@@ -989,6 +992,28 @@ async function loadAndPrepareHistory(
       selected = selected.filter((_: any, index: number) => index !== latestCurrentImageIndex);
     }
   }
+
+  // The client also stores the current text message before invoking this function.
+  // Remove that DB copy and append the request text explicitly below so the model
+  // never misses the newest message due to eventual consistency or token trimming.
+  const trimmedCurrentText = currentText?.trim();
+  if (trimmedCurrentText && !currentImageUrl) {
+    const latestCurrentTextIndex = selected
+      .map((msg: any, index: number) => ({ msg, index }))
+      .reverse()
+      .find(
+        ({ msg }: any) =>
+          msg.sender === 'user' &&
+          !msg.image_path &&
+          !msg.image_url &&
+          String(msg.content || '').trim() === trimmedCurrentText
+      )?.index;
+
+    if (latestCurrentTextIndex !== undefined) {
+      selected = selected.filter((_: any, index: number) => index !== latestCurrentTextIndex);
+    }
+  }
+
   const imageIndexes = selected
     .map((msg: any, index: number) => ({ index, hasImage: !!(msg.image_path || msg.image_url) }))
     .filter((entry: any) => entry.hasImage)
@@ -1286,7 +1311,8 @@ serve(async (req) => {
       serviceClient,
       userId,
       historyBudget,
-      image_url || null
+      image_url || null,
+      typeof text === 'string' ? text : null
     );
 
     // Chat-Nachrichten aufbauen
@@ -1297,6 +1323,8 @@ serve(async (req) => {
       if (currentImageTurn) {
         chatMessages.push(currentImageTurn);
       }
+    } else if (typeof text === 'string' && text.trim()) {
+      chatMessages.push({ role: 'user', content: text.trim() });
     }
 
     // OpenAI Call (Credits bereits abgezogen, Refund bei Fehler)
