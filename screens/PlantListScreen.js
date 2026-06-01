@@ -19,13 +19,15 @@ import { supabase } from '../supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchPlants } from '../services/plantService';
 import { getPlantImageUrls, getPlantImageUrl } from '../services/uploadService';
+import { fetchPlantDetailsMapForLanguage } from '../services/plantDetailsService';
+import { normalizeLanguage } from '../services/languageService';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { getSeasonalTip } from '../utils/seasonUtils';
-import { getPlantTitleParts } from '../utils/plantNameUtils';
+import { extractPlantSummary, getPlantTitleParts } from '../utils/plantNameUtils';
 
 // Native animation auf Android aktivieren
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -112,8 +114,8 @@ function getContextTip(context) {
   };
 }
 
-function PlantTitle({ plant, compact = false }) {
-  const { botanicalName, localName } = getPlantTitleParts(plant);
+function PlantTitle({ plant, language, compact = false }) {
+  const { botanicalName, localName } = getPlantTitleParts(plant, language);
 
   if (!localName) {
     return (
@@ -144,8 +146,33 @@ function PlantTitle({ plant, compact = false }) {
   );
 }
 
+function PlantSummary({ plant, language, compact = false }) {
+  const summary = extractPlantSummary(plant.details, language);
+  if (!summary) return null;
+  return (
+    <Text style={compact ? styles.zonePlantNote : styles.plantNote} numberOfLines={compact ? 1 : 2}>
+      {summary}
+    </Text>
+  );
+}
+
+async function attachLocalizedDetails(plants, language) {
+  if (!plants?.length) return plants;
+
+  try {
+    const detailsByPlant = await fetchPlantDetailsMapForLanguage(plants, language);
+    return plants.map((plant) => ({
+      ...plant,
+      details: detailsByPlant[plant.id] || null,
+    }));
+  } catch (error) {
+    console.warn('[PlantList] localized details load failed:', error?.message);
+    return plants.map((plant) => ({ ...plant, details: null }));
+  }
+}
+
 // Fetch plants, healthscores & signed URLs in parallel (nicht sequentiell!)
-async function getPlantsWithHealthscores(userId) {
+async function getPlantsWithHealthscores(userId, language) {
   const result = await fetchPlants(userId);
   const plants = result?.data ?? result ?? [];
 
@@ -157,13 +184,17 @@ async function getPlantsWithHealthscores(userId) {
   const plantIds = plants.map((p) => p.id);
   const rawUrls = plants.map((p) => p.image_url);
 
-  const [{ data: healthchecks }, resolvedUrls] = await Promise.all([
+  const [{ data: healthchecks }, resolvedUrls, detailsByPlant] = await Promise.all([
     supabase
       .from('plant_healthchecks')
       .select('plant_id, healthscore')
       .in('plant_id', plantIds)
       .order('created_at', { ascending: false }),
     getPlantImageUrls(rawUrls),
+    fetchPlantDetailsMapForLanguage(plants, language).catch((error) => {
+      console.warn('[PlantList] localized details load failed:', error?.message);
+      return {};
+    }),
   ]);
 
   // Create a map of plant_id -> latest healthscore
@@ -180,13 +211,14 @@ async function getPlantsWithHealthscores(userId) {
   return plants.map((plant, i) => ({
     ...plant,
     image_url: resolvedUrls[i] || plant.image_url,
+    details: detailsByPlant[plant.id] || null,
     healthscore: healthscoreMap[plant.id] ?? null,
   }));
 }
 
 // Pflanzen gruppiert nach location > zones > plants
 // Fetches ALL assigned plants directly from DB (not limited by pagination)
-async function getGroupedPlants(userId) {
+async function getGroupedPlants(userId, language) {
   // Locations laden, dann Zones (Zones braucht Location-IDs)
   const { data: locations } = await supabase
     .from('locations')
@@ -243,7 +275,9 @@ async function getGroupedPlants(userId) {
     }
   }
 
-  const enrichedPlants = (assignedPlants || []).map((plant, i) => ({
+  const localizedAssignedPlants = await attachLocalizedDetails(assignedPlants || [], language);
+
+  const enrichedPlants = localizedAssignedPlants.map((plant, i) => ({
     ...plant,
     image_url: resolvedUrls[i] || plant.image_url,
     healthscore: healthscoreMap[plant.id] ?? null,
@@ -272,7 +306,8 @@ export default function PlantListScreen({ context }) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const navigation = useNavigation();
-  const { userId } = useAuth();
+  const { userId, profile } = useAuth();
+  const currentLanguage = useMemo(() => normalizeLanguage(profile?.language), [profile?.language]);
   const [expandedZones, setExpandedZones] = useState({}); // { [zoneId]: true }
   const contextTip = useMemo(() => getContextTip(context), [context]);
 
@@ -282,7 +317,7 @@ export default function PlantListScreen({ context }) {
       if (userId) {
         loadAll();
       }
-    }, [userId])
+    }, [userId, currentLanguage])
   );
 
   const loadAll = async () => {
@@ -290,13 +325,13 @@ export default function PlantListScreen({ context }) {
     setError(null);
     try {
       // Pflanzen laden (mit parallelen Healthscores + URL-Resolution)
-      const plants = await getPlantsWithHealthscores(userId);
+      const plants = await getPlantsWithHealthscores(userId, currentLanguage);
       // Sofort anzeigen — nicht auf Gruppierung warten
       setAllPlants(plants);
       setLoading(false);
 
       // Gruppierung im Hintergrund nachladen (fetches ALL assigned plants from DB)
-      getGroupedPlants(userId)
+      getGroupedPlants(userId, currentLanguage)
         .then(setGrouped)
         .catch((e) => console.warn('[PlantList] grouped load failed:', e?.message));
     } catch (e) {
@@ -318,8 +353,8 @@ export default function PlantListScreen({ context }) {
             placeholderStyle={styles.plantImagePlaceholder}
           />
           <View style={styles.plantTextContainer}>
-            <PlantTitle plant={item} />
-            <Text style={styles.plantNote}>{item.note}</Text>
+            <PlantTitle plant={item} language={currentLanguage} />
+            <PlantSummary plant={item} language={currentLanguage} />
             {item.healthscore !== null && (
               <Text style={styles.plantHealthscore}>
                 {t('plants.healthscoreValue', { score: item.healthscore })}
@@ -329,7 +364,7 @@ export default function PlantListScreen({ context }) {
         </View>
       </TouchableOpacity>
     ),
-    [navigation]
+    [navigation, currentLanguage]
   );
 
   // Stable keyExtractor — avoid recreating on every render
@@ -439,8 +474,8 @@ export default function PlantListScreen({ context }) {
                                 placeholderStyle={styles.zonePlantImagePlaceholder}
                               />
                               <View style={styles.zonePlantTextContainer}>
-                                <PlantTitle plant={plant} compact />
-                                <Text style={styles.zonePlantNote}>{plant.note}</Text>
+                                <PlantTitle plant={plant} language={currentLanguage} compact />
+                                <PlantSummary plant={plant} language={currentLanguage} compact />
                                 {plant.healthscore !== null && (
                                   <Text style={styles.zonePlantHealthscore}>
                                     {t('plants.healthscoreValue', { score: plant.healthscore })}
@@ -461,7 +496,7 @@ export default function PlantListScreen({ context }) {
           ))}
         </ScrollView>
       ),
-    [loading, grouped, expandedZones, navigation]
+    [loading, grouped, expandedZones, navigation, currentLanguage]
   );
 
   // Memoize scene map so TabView doesn't recreate scenes

@@ -18,7 +18,17 @@ const BOTANICAL_NAME_KEYS = {
   it: ['Nome botanico', 'Nome scientifico'],
   es: ['Nombre botánico', 'Nombre científico'],
   ru: ['Ботаническое название', 'Научное название'],
-  tr: ['Botanik Ad', 'Bilimsel ad'],
+  tr: ['Botanik Adı', 'Botanik Ad', 'Bilimsel ad'],
+};
+
+const SUMMARY_KEYS = {
+  de: ['Highlight', 'Besondere Hinweise', 'Gießen'],
+  en: ['Highlight', 'Special Notes', 'Watering'],
+  fr: ['Point fort', 'Remarques particulières', 'Arrosage'],
+  it: ['Highlight', 'Note speciali', 'Annaffiatura'],
+  es: ['Aspecto destacado', 'Notas especiales', 'Riego'],
+  ru: ['Особенность', 'Особые замечания', 'Полив'],
+  tr: ['Öne Çıkan Özellik', 'Özel Notlar', 'Sulama'],
 };
 
 const LOCAL_FIELD_KEYS = [
@@ -150,4 +160,16 @@ export function getPlantTitleParts(plant, language = i18n.locale) {
         ? localName
         : null,
   };
+}
+
+export function extractPlantSummary(details, language = i18n.locale) {
+  if (!details || typeof details !== 'object') return null;
+  const overview = details.overview || {};
+  const care = details.care || {};
+  const candidates = [
+    findValueByKeys(overview, localizedKeyList(SUMMARY_KEYS, language)),
+    findValueByKeys(care, localizedKeyList(SUMMARY_KEYS, language)),
+  ];
+
+  return candidates.find(Boolean) || null;
 }

@@ -52,6 +52,60 @@ export async function fetchPlantDetailsForLanguage({ plantId, speciesId, languag
   return { details: speciesDetails, language: normalizedLanguage, source: 'species_cache' };
 }
 
+export async function fetchPlantDetailsMapForLanguage(plants, language) {
+  const normalizedLanguage = normalizeLanguage(language);
+  const plantIds = (plants || []).map((plant) => plant?.id).filter(Boolean);
+  const speciesIds = [...new Set((plants || []).map((plant) => plant?.species_id).filter(Boolean))];
+
+  if (plantIds.length === 0) return {};
+
+  const { data: plantRows, error: plantError } = await supabase
+    .from('plant_details')
+    .select('plant_id, details')
+    .in('plant_id', plantIds)
+    .eq('language', normalizedLanguage);
+
+  if (plantError) throw plantError;
+
+  const detailsByPlant = Object.fromEntries(
+    (plantRows || []).map((row) => [row.plant_id, row.details])
+  );
+
+  const missingSpeciesIds = [
+    ...new Set(
+      (plants || [])
+        .filter((plant) => plant?.species_id && !detailsByPlant[plant.id])
+        .map((plant) => plant.species_id)
+    ),
+  ];
+
+  if (missingSpeciesIds.length === 0 && speciesIds.length === 0) {
+    return detailsByPlant;
+  }
+
+  if (missingSpeciesIds.length > 0) {
+    const { data: speciesRows, error: speciesError } = await supabase
+      .from('species_details')
+      .select('species_id, details')
+      .in('species_id', missingSpeciesIds)
+      .eq('language', normalizedLanguage);
+
+    if (speciesError) throw speciesError;
+
+    const detailsBySpecies = Object.fromEntries(
+      (speciesRows || []).map((row) => [row.species_id, row.details])
+    );
+
+    for (const plant of plants || []) {
+      if (!detailsByPlant[plant.id] && plant.species_id && detailsBySpecies[plant.species_id]) {
+        detailsByPlant[plant.id] = detailsBySpecies[plant.species_id];
+      }
+    }
+  }
+
+  return detailsByPlant;
+}
+
 export async function savePlantDetailsForLanguage({
   plantId,
   userId,

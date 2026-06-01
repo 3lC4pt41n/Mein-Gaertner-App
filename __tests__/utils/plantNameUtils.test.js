@@ -2,6 +2,7 @@ const {
   extractBotanicalSpeciesName,
   extractLocalSpeciesName,
   getPlantTitleParts,
+  extractPlantSummary,
   normalizePlantName,
 } = require('../../utils/plantNameUtils');
 
@@ -83,5 +84,18 @@ describe('plantNameUtils', () => {
 
   it('normalizes accents and whitespace for name comparisons', () => {
     expect(normalizePlantName('  Café   au lait ')).toBe('cafe au lait');
+  });
+
+  it('extracts localized list summaries from details', () => {
+    const details = {
+      overview: {
+        Highlight: 'Sehr robust und pflegeleicht.',
+      },
+      care: {
+        Gießen: 'Mäßig gießen.',
+      },
+    };
+
+    expect(extractPlantSummary(details, 'de')).toBe('Sehr robust und pflegeleicht.');
   });
 });
