@@ -132,7 +132,7 @@ See `.env.example` for details.
 
 ### Latest Updates (v1.4.3, June 2026)
 
-- **Native Runtime Guard** — EAS runtime policy now uses `fingerprint` so OTA updates are only delivered to compatible native builds.
+- **Native Runtime Guard** — The app version was bumped so OTA updates for `1.4.3` are isolated from older native binaries.
 - **Apple Sign-In Capability** — iOS config explicitly declares Apple Sign-In support for App Review and reproducible native builds.
 - **Plant Dex Performance** — `expo-image` with disk caching, blurhash placeholders, and `recyclingKey`. `SectionList` virtualization (`windowSize`, `maxToRenderPerBatch`, `removeClippedSubviews`). `DexCard` wrapped in `React.memo`.
 - **Signed URL Cache** — In-memory cache (50 min TTL, max 500 entries) in `uploadService.js` prevents redundant API calls for plant images.

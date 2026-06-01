@@ -5,7 +5,7 @@
     "scheme": "digitalergaertner",
     "version": "1.4.3",
     "runtimeVersion": {
-      "policy": "fingerprint"
+      "policy": "appVersion"
     },
     "platforms": [
       "ios",
@@ -58,7 +58,6 @@
       "expo-font",
       "expo-updates",
       "expo-localization",
-      "expo-apple-authentication",
       [
         "expo-notifications",
         {
