@@ -539,6 +539,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
+    marginBottom: spacing.md,
     padding: spacing.md,
     ...shadows.sm,
   },

@@ -161,10 +161,10 @@ export default function PlantDetailScreen({ route }) {
       }
 
       // Fallback: Wenn keine Details auf der Pflanze, aber species_id vorhanden →
-      // 1) gecachte Art-Details aus dem zentralen Dex-Cache laden
-      // 2) wenn kein Cache, automatisch generieren (kostenlos bei Cache-Hit)
+      // gecachte Art-Details aus dem zentralen Dex-Cache laden.
+      // Cache-Misses werden bewusst NICHT automatisch generiert, weil das
+      // Credits kostet. Der User muss Details explizit per Button anfordern.
       if (!plantDetails && plant.species_id) {
-        let found = false;
         try {
           const lang = await fetchCurrentUserLanguage();
           const cached = await fetchCachedSpeciesDetails(plant.species_id, lang);
@@ -176,14 +176,9 @@ export default function PlantDetailScreen({ route }) {
               .update({ details: cached })
               .eq('id', plant.id)
               .then(() => {});
-            found = true;
           }
         } catch {
           // Cache-Lookup fehlgeschlagen
-        }
-        // Automatisch generieren wenn weder Details noch Cache vorhanden
-        if (!found) {
-          handleGenerateDetails(false);
         }
       }
 

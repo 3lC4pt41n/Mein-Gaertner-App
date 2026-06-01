@@ -372,21 +372,6 @@ export default function AddPlantScreen() {
       });
       setStep('done');
 
-      // Auto-generate details in the background (only for AI mode, uses cache → 0 Credits)
-      if (plant?.id && scanMode === 'ai') {
-        generatePlantDetails(name, note, language, discovery?.speciesId || null)
-          .then((detailsData) => {
-            if (detailsData?.details) {
-              supabase.from('plants').update({ details: detailsData.details }).eq('id', plant.id);
-              setSavedPlant((p) => ({ ...p, details: detailsData.details }));
-            }
-          })
-          .catch((e) => {
-            // Nicht kritisch – User kann Details manuell nachladen
-            console.warn('[AddPlant] Auto-generate details failed:', e?.message);
-          });
-      }
-
       // Show discovery reveal for new discoveries
       if (discovery?.isNewForUser) {
         setDiscoveryResult(discovery);
@@ -472,11 +457,7 @@ export default function AddPlantScreen() {
 
   // ── Render ──────────────────────────────────
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.screenHeader}>
-        <Text style={styles.screenTitle}>{t('nav.addPlant')}</Text>
-      </View>
-
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       {/* Credit balance — unified component */}
       <CreditBar style={styles.creditBar} />
 
@@ -852,18 +833,6 @@ export default function AddPlantScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  screenHeader: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xs,
-    backgroundColor: colors.background,
-  },
-  screenTitle: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    letterSpacing: 0.2,
-  },
   creditBar: {
     marginHorizontal: spacing.md,
     marginTop: spacing.sm,
