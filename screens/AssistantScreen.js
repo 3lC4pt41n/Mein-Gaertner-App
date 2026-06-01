@@ -6,7 +6,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -19,6 +18,14 @@ import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
 import { chatWithBen } from '../services/aiService';
 import { fetchCurrentUserLanguage } from '../services/languageService';
+import {
+  DEFAULT_GARDENER_PERSONA_KEY,
+  GARDENER_PERSONAS,
+  getGardenerPersona,
+  getGardenerPersonaForSender,
+  loadGardenerPersonaKey,
+  saveGardenerPersonaKey,
+} from '../services/gardenerPersonaService';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
@@ -26,8 +33,6 @@ import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import CreditBar from '../components/CreditBar';
 
-const GARDENER_NAME = 'Ben';
-const BEN_AVATAR = require('../assets/avatars/ben-chat.png');
 const USER_AVATAR = require('../assets/avatars/tim.png');
 const CHAT_AVATAR_SIZE = spacing.xxxl;
 
@@ -40,7 +45,9 @@ export default function AssistantScreen({ context }) {
   const [language, setLanguage] = useState('de');
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [gardenerPersonaKey, setGardenerPersonaKey] = useState(DEFAULT_GARDENER_PERSONA_KEY);
   const flatListRef = useRef();
+  const gardenerPersona = getGardenerPersona(gardenerPersonaKey);
 
   useEffect(() => {
     if (!user_id) return;
@@ -54,6 +61,16 @@ export default function AssistantScreen({ context }) {
         }
       }
     })();
+  }, [user_id]);
+
+  useEffect(() => {
+    let mounted = true;
+    loadGardenerPersonaKey(user_id).then((key) => {
+      if (mounted) setGardenerPersonaKey(key);
+    });
+    return () => {
+      mounted = false;
+    };
   }, [user_id]);
 
   // Initial: letzte 30 Messages laden
@@ -161,7 +178,7 @@ export default function AssistantScreen({ context }) {
         };
         await saveMessage(msg);
         setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
-        await getBenAnswer('', displayUrl);
+        await getGardenerAnswer('', displayUrl);
       } catch (e) {
         if (!handleCreditError(e)) {
           Alert.alert(t('common.error'), e.message);
@@ -173,12 +190,15 @@ export default function AssistantScreen({ context }) {
   };
 
   // GPT-Antwort über Edge Function (History wird server-seitig geladen)
-  const getBenAnswer = async (text = '', image_url = null) => {
+  const getGardenerAnswer = async (text = '', image_url = null) => {
     try {
-      const data = await chatWithBen(text, image_url, language, context);
+      const data = await chatWithBen(text, image_url, language, context, {
+        key: gardenerPersona.key,
+        name: gardenerPersona.name,
+      });
       const content = data?.content || t('assistant.noAnswer');
 
-      const msg = { user_id, sender: GARDENER_NAME, content };
+      const msg = { user_id, sender: gardenerPersona.name, content };
       await saveMessage(msg);
       setMessages((m) => [...m, { ...msg, created_at: new Date().toISOString() }]);
     } catch (e) {
@@ -197,7 +217,7 @@ export default function AssistantScreen({ context }) {
       await saveMessage(userMessage);
       setMessages((m) => [...m, { ...userMessage, created_at: new Date().toISOString() }]);
       setInput('');
-      await getBenAnswer(input, null);
+      await getGardenerAnswer(input, null);
     } catch (error) {
       if (!handleCreditError(error)) {
         Alert.alert(t('common.error'), error?.message || t('common.networkError'));
@@ -207,48 +227,66 @@ export default function AssistantScreen({ context }) {
     }
   };
 
-  // Avatar wählen
+  const handlePersonaSelect = async (personaKey) => {
+    if (personaKey === gardenerPersona.key) return;
+    setGardenerPersonaKey(personaKey);
+    try {
+      await saveGardenerPersonaKey(user_id, personaKey);
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('[AssistantScreen] save gardener persona failed:', error?.message);
+      }
+    }
+  };
+
+  const getAssistantPersona = (sender) => getGardenerPersonaForSender(sender, gardenerPersona.key);
+
+  const getSenderLabel = (sender) => {
+    if (sender === 'user') return t('assistant.you');
+    return getAssistantPersona(sender).name;
+  };
+
+  // Avatar waehlen
   const getAvatar = (sender) => {
     if (sender === 'user') return USER_AVATAR;
-    return BEN_AVATAR;
+    return getAssistantPersona(sender).avatar;
   };
 
   // Bubble
-  const renderItem = ({ item }) => (
-    <View
-      style={{
-        alignSelf: item.sender === 'user' ? 'flex-end' : 'flex-start',
-        backgroundColor: item.sender === 'user' ? colors.chatUserBubble : colors.chatBotBubble,
-        margin: spacing.xs,
-        padding: spacing.md,
-        borderRadius: radius.lg,
-        maxWidth: '80%',
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-      }}
-    >
-      {item.sender === 'user' ? (
-        <ChatAvatar source={getAvatar(item.sender)} label={t('assistant.you')} />
-      ) : (
-        <ChatAvatar source={getAvatar(item.sender)} label={GARDENER_NAME} />
-      )}
-      <View style={{ flex: 1, flexShrink: 1 }}>
-        {item.image_url && (
-          <ExpoImage
-            source={{ uri: item.image_url }}
-            style={{ width: 150, height: 150, borderRadius: 10, marginBottom: spacing.xs }}
-            contentFit="cover"
-            cachePolicy="disk"
-            transition={200}
-          />
-        )}
-        <Text style={{ flexWrap: 'wrap' }}>{item.content}</Text>
-        <Text style={{ fontSize: 10, color: colors.textTertiary }}>
-          {item.sender === 'user' ? t('assistant.you') : GARDENER_NAME}
-        </Text>
+  const renderItem = ({ item }) => {
+    const isUser = item.sender === 'user';
+    const senderLabel = getSenderLabel(item.sender);
+
+    return (
+      <View
+        style={{
+          alignSelf: isUser ? 'flex-end' : 'flex-start',
+          backgroundColor: isUser ? colors.chatUserBubble : colors.chatBotBubble,
+          margin: spacing.xs,
+          padding: spacing.md,
+          borderRadius: radius.lg,
+          maxWidth: '80%',
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+        }}
+      >
+        <ChatAvatar source={getAvatar(item.sender)} label={senderLabel} />
+        <View style={{ flex: 1, flexShrink: 1 }}>
+          {item.image_url && (
+            <ExpoImage
+              source={{ uri: item.image_url }}
+              style={{ width: 150, height: 150, borderRadius: 10, marginBottom: spacing.xs }}
+              contentFit="cover"
+              cachePolicy="disk"
+              transition={200}
+            />
+          )}
+          <Text style={{ flexWrap: 'wrap' }}>{item.content}</Text>
+          <Text style={{ fontSize: 10, color: colors.textTertiary }}>{senderLabel}</Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <KeyboardAvoidingView
@@ -257,6 +295,8 @@ export default function AssistantScreen({ context }) {
     >
       {/* Credit-Leiste — unified component */}
       <CreditBar style={{ marginHorizontal: spacing.md, marginTop: spacing.sm }} />
+
+      <PersonaSelector selectedKey={gardenerPersona.key} onSelect={handlePersonaSelect} />
 
       <FlatList
         data={messages}
@@ -292,9 +332,9 @@ export default function AssistantScreen({ context }) {
                 paddingHorizontal: spacing.xl,
               }}
             >
-              <Image
-                source={getAvatar(GARDENER_NAME)}
-                resizeMode="cover"
+              <ExpoImage
+                source={gardenerPersona.avatar}
+                contentFit="cover"
                 style={{ width: 80, height: 80, borderRadius: 40, marginBottom: spacing.lg }}
               />
               <Text
@@ -305,7 +345,7 @@ export default function AssistantScreen({ context }) {
                   marginBottom: spacing.sm,
                 }}
               >
-                {t('assistant.welcomeTitle')}
+                {t(gardenerPersona.welcomeTitleKey)}
               </Text>
               <Text
                 style={{
@@ -381,7 +421,7 @@ export default function AssistantScreen({ context }) {
         <TextInput
           value={input}
           onChangeText={setInput}
-          placeholder={t('assistant.placeholder')}
+          placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
           style={{
             flex: 1,
             borderWidth: 1,
@@ -404,8 +444,79 @@ export default function AssistantScreen({ context }) {
   );
 }
 
+function PersonaSelector({ selectedKey, onSelect }) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+        paddingHorizontal: spacing.md,
+        paddingTop: spacing.sm,
+        paddingBottom: spacing.xs,
+      }}
+    >
+      <Text
+        style={{
+          color: colors.textSecondary,
+          fontSize: 12,
+          fontWeight: '600',
+          marginRight: spacing.xs,
+        }}
+      >
+        {t('assistant.personaSelector')}
+      </Text>
+      {GARDENER_PERSONAS.map((persona) => {
+        const active = persona.key === selectedKey;
+        return (
+          <TouchableOpacity
+            key={persona.key}
+            onPress={() => onSelect(persona.key)}
+            accessibilityRole="button"
+            accessibilityLabel={persona.name}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing.xs,
+              paddingVertical: spacing.xs,
+              paddingHorizontal: spacing.sm,
+              borderRadius: radius.pill,
+              backgroundColor: active ? colors.primarySurface : colors.surface,
+              borderWidth: 1,
+              borderColor: active ? colors.primary : colors.border,
+            }}
+          >
+            <ExpoImage
+              source={persona.avatar}
+              contentFit="cover"
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 12,
+                backgroundColor: colors.surface,
+              }}
+            />
+            <Text
+              style={{
+                color: active ? colors.primary : colors.textSecondary,
+                fontSize: 13,
+                fontWeight: '700',
+              }}
+            >
+              {persona.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
 function ChatAvatar({ source, label }) {
   const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setFailed(false);
+  }, [source]);
 
   if (failed) {
     return (
@@ -418,21 +529,23 @@ function ChatAvatar({ source, label }) {
           marginRight: spacing.sm,
           backgroundColor: colors.surface,
           borderWidth: 1,
-          borderColor: colors.primaryMuted,
+          borderColor: colors.border,
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <Ionicons name="leaf" size={18} color={colors.primary} />
+        <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '700' }}>
+          {(label || '?').slice(0, 1)}
+        </Text>
       </View>
     );
   }
 
   return (
-    <Image
+    <ExpoImage
       accessibilityLabel={label}
       source={source}
-      resizeMode="cover"
+      contentFit="cover"
       onError={() => setFailed(true)}
       style={{
         width: CHAT_AVATAR_SIZE,

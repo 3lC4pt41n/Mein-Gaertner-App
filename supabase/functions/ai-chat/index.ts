@@ -1,6 +1,6 @@
-// Edge Function: Chat mit Ben (Pflanzen-Coach)
+// Edge Function: Chat mit der gewaehlten Garten-Persona
 // Hybrid: PlantNet API für Bildidentifikation + GPT-5.5 für Konversation
-// POST Body: { text?: string, image_url?: string, language?: string }
+// POST Body: { text?: string, image_url?: string, language?: string, gardener_persona?: 'ben'|'rose' }
 // History wird server-seitig aus der DB geladen (nicht mehr vom Client gesendet)
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { SupabaseClient } from 'npm:@supabase/supabase-js@2.50.2';
@@ -27,6 +27,17 @@ import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
 const MAX_VISION_IMAGES_IN_HISTORY = 2;
+
+type GardenerPersona = {
+  key: 'ben' | 'rose';
+  name: 'Ben' | 'Rose';
+};
+
+function resolveGardenerPersona(value: unknown): GardenerPersona {
+  return typeof value === 'string' && value.toLowerCase() === 'rose'
+    ? { key: 'rose', name: 'Rose' }
+    : { key: 'ben', name: 'Ben' };
+}
 
 // ─── Garden Context: Pflanzen, Healthchecks, Tasks laden ────────────
 
@@ -75,7 +86,15 @@ function summarizePlantDetails(details: unknown): string | null {
     'Форма роста',
     'Büyüme tipi',
   ]);
-  const light = findDetailsValue(care, ['Licht', 'Light', 'Lumière', 'Luce', 'Luz', 'Свет', 'Işık']);
+  const light = findDetailsValue(care, [
+    'Licht',
+    'Light',
+    'Lumière',
+    'Luce',
+    'Luz',
+    'Свет',
+    'Işık',
+  ]);
   const watering = findDetailsValue(care, [
     'Gießen',
     'Watering',
@@ -154,10 +173,7 @@ function formatTaskForContext(task: any): string {
   return `${task.type} (fällig ${formatTaskDueDate(task.due_at)}${overdue ? ', OVERDUE' : ''})`;
 }
 
-async function loadUserZones(
-  serviceClient: SupabaseClient,
-  userId: string
-): Promise<UserZone[]> {
+async function loadUserZones(serviceClient: SupabaseClient, userId: string): Promise<UserZone[]> {
   const { data: locations } = await serviceClient
     .from('locations')
     .select('id, name, label, locality')
@@ -302,9 +318,7 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
       if (healthTip) context += ` | Tip: ${healthTip}`;
     }
     if (plantTasks.length > 0) {
-      const taskStr = plantTasks
-        .map((t: any) => formatTaskForContext(t))
-        .join(', ');
+      const taskStr = plantTasks.map((t: any) => formatTaskForContext(t)).join(', ');
       context += ` | Tasks: ${taskStr}`;
     }
     context += '\n';
@@ -324,16 +338,23 @@ function buildSystemPrompt(
   gardenContext: string,
   memorySummary: string | null,
   plantNetContext: string | null = null,
-  externalContext: string | null = null
+  externalContext: string | null = null,
+  gardenerPersona: GardenerPersona = { key: 'ben', name: 'Ben' }
 ): string {
+  const personaLine =
+    gardenerPersona.key === 'rose'
+      ? 'You are "Rose", a smart, warm, witty and charming female plant coach. Expert in plants and gardening.'
+      : 'You are "Ben", a smart, witty and charming male plant coach. Expert in plants and gardening.';
+
   let prompt = `## ROLE
-You are "Ben", a smart, witty and charming plant coach. Expert in plants and gardening.
+${personaLine}
 Playful but always respectful, friendly and encouraging.
 
 ## STYLE
 - Chat style (like WhatsApp), concise (max 5 sentences).
 - Respond strictly in ${languagePromptName}. Use exactly one language only.
 - If the user sends an image, react specifically to what is visible.
+- Stay in character as ${gardenerPersona.name}; never call yourself by another gardener name.
 
 ## ${gardenContext}
 
@@ -1001,7 +1022,10 @@ async function loadAndPrepareHistory(
   return prepared;
 }
 
-async function buildCurrentImageTurn(text: string | undefined, imageUrl: string): Promise<any | null> {
+async function buildCurrentImageTurn(
+  text: string | undefined,
+  imageUrl: string
+): Promise<any | null> {
   try {
     const imageForVision = await resolveImageForVision(imageUrl);
     const turnText =
@@ -1156,7 +1180,15 @@ serve(async (req) => {
     const userId = await getUserIdFromAuth(serviceClient, authHeader);
 
     // Body parsen (history wird NICHT mehr vom Client gesendet)
-    const { text, image_url, language: requestedLanguage, context, contextText } = await req.json();
+    const {
+      text,
+      image_url,
+      language: requestedLanguage,
+      context,
+      contextText,
+      gardener_persona,
+    } = await req.json();
+    const gardenerPersona = resolveGardenerPersona(gardener_persona);
 
     // Input-Validierung
     const validationErr = validationErrorResponse(
@@ -1218,7 +1250,8 @@ serve(async (req) => {
       gardenContext,
       memorySummary,
       plantNetContext,
-      externalContext
+      externalContext,
+      gardenerPersona
     );
 
     // Token-Budget fuer History berechnen
@@ -1285,7 +1318,9 @@ serve(async (req) => {
       result = await retryEmptyChatAnswer(result, chatMessages, languagePromptName);
 
       if (!hasAssistantContent(result)) {
-        throw new Error('Ben hat gerade leer geantwortet. Bitte versuche es erneut.');
+        throw new Error(
+          `${gardenerPersona.name} hat gerade leer geantwortet. Bitte versuche es erneut.`
+        );
       }
     } catch (e) {
       await refundCredits(serviceClient, userId, cost);

@@ -257,14 +257,18 @@ export async function performHealthcheck(imageUrl, plantName, language) {
   );
 }
 
-// Chat-Nachricht an Ben senden
+// Chat-Nachricht an die gewaehlte Garten-Persona senden
 // History wird server-seitig geladen, nicht mehr vom Client gesendet
-export async function chatWithBen(text, imageUrl, language, context) {
+export async function chatWithBen(text, imageUrl, language, context, gardenerPersona) {
   const body = {
     text: text || undefined,
     image_url: imageUrl || undefined,
     language,
   };
+
+  if (gardenerPersona?.key) {
+    body.gardener_persona = gardenerPersona.key;
+  }
 
   if (context) {
     body.context = context;
