@@ -26,6 +26,7 @@ import { logDiscovery, getDiscoveryLocation } from '../services/discoveryService
 import { supabase } from '../supabase';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
+import { savePlantDetailsForLanguage } from '../services/plantDetailsService';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, spacing, radius } from '../theme/tokens';
@@ -390,12 +391,18 @@ export default function AddPlantScreen() {
     setLoading(true);
     try {
       const detailsData = await generatePlantDetails(name, note, language, savedPlant.species_id);
+      if (!detailsData?.details) {
+        throw new Error(t('plants.detailsWarning'));
+      }
 
-      // Update plant with details
-      await supabase
-        .from('plants')
-        .update({ details: detailsData.details })
-        .eq('id', savedPlant.id);
+      await savePlantDetailsForLanguage({
+        plantId: savedPlant.id,
+        userId,
+        speciesId: savedPlant.species_id,
+        language,
+        details: detailsData.details,
+        source: detailsData.source === 'dex_cache' ? 'species_cache' : 'ai',
+      });
 
       Alert.alert(t('common.success'), t('plants.detailsGenerated'));
       setSavedPlant((p) => ({ ...p, details: detailsData.details }));

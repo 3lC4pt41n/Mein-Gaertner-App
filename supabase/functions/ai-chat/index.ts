@@ -247,11 +247,15 @@ function matchZoneByName(
   };
 }
 
-async function loadGardenContext(serviceClient: SupabaseClient, userId: string): Promise<string> {
+async function loadGardenContext(
+  serviceClient: SupabaseClient,
+  userId: string,
+  language: string
+): Promise<string> {
   // Pflanzen laden
   const { data: plants } = await serviceClient
     .from('plants')
-    .select('id, name, note, zone_id, details, created_at')
+    .select('id, name, note, zone_id, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
@@ -261,6 +265,24 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
 
   // Letzter Healthcheck pro Pflanze
   const plantIds = plants.map((p: any) => p.id);
+
+  let detailsByPlant: Record<string, any> = {};
+  try {
+    const { data: detailRows, error: detailsError } = await serviceClient
+      .from('plant_details')
+      .select('plant_id, details')
+      .in('plant_id', plantIds)
+      .eq('language', language);
+
+    if (!detailsError) {
+      detailsByPlant = Object.fromEntries(
+        (detailRows || []).map((row: any) => [row.plant_id, row.details])
+      );
+    }
+  } catch (_e) {
+    detailsByPlant = {};
+  }
+
   const { data: healthchecks } = await serviceClient
     .from('plant_healthchecks')
     .select('plant_id, healthscore, summary, recommendation, created_at')
@@ -304,7 +326,7 @@ async function loadGardenContext(serviceClient: SupabaseClient, userId: string):
     const plantTasks = tasksByPlant[plant.id] || [];
     const zone = plant.zone_id ? zoneMap[plant.zone_id] : null;
     const note = truncateText(plant.note, 120);
-    const details = summarizePlantDetails(plant.details);
+    const details = summarizePlantDetails(detailsByPlant[plant.id]);
     if (!zone) unassignedPlants.push(plant.name);
 
     context += `- ${plant.name}`;
@@ -1231,15 +1253,15 @@ serve(async (req) => {
       ? identifyPlantFromUrl(image_url, langCode)
       : Promise.resolve(null);
 
-    const [userLang, gardenContext, memoryData, plantsData, plantNetResult] = await Promise.all([
-      getUserLanguage(serviceClient, userId, language),
-      loadGardenContext(serviceClient, userId),
+    const finalLanguage = await getUserLanguage(serviceClient, userId, language);
+
+    const [gardenContext, memoryData, plantsData, plantNetResult] = await Promise.all([
+      loadGardenContext(serviceClient, userId, finalLanguage),
       serviceClient.from('chat_memory').select('summary').eq('user_id', userId).maybeSingle(),
       serviceClient.from('plants').select('id, name').eq('user_id', userId),
       plantNetPromise,
     ]);
 
-    const finalLanguage = userLang;
     const languagePromptName = getLanguagePromptName(finalLanguage);
     const memorySummary = memoryData?.data?.summary || null;
     const userPlants = plantsData?.data || [];

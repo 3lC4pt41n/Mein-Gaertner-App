@@ -31,8 +31,11 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import { generatePlantDetails, performHealthcheck } from '../services/aiService';
 import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
-import { fetchCachedSpeciesDetails } from '../services/dexService';
-import { fetchCurrentUserLanguage } from '../services/languageService';
+import { normalizeLanguage } from '../services/languageService';
+import {
+  fetchPlantDetailsForLanguage,
+  savePlantDetailsForLanguage,
+} from '../services/plantDetailsService';
 import { friendlyError } from '../utils/errorMessages';
 import { getPlantTitleParts } from '../utils/plantNameUtils';
 import CreditBar from '../components/CreditBar';
@@ -102,12 +105,13 @@ function ScoreCircle({ score = 0, label = 'Health' }) {
 export default function PlantDetailScreen({ route }) {
   const { plant } = route.params;
   const navigation = useNavigation();
-  const { userId } = useAuth();
+  const { userId, profile } = useAuth();
+  const currentLanguage = useMemo(() => normalizeLanguage(profile?.language), [profile?.language]);
 
   const [tab, setTab] = useState('overview');
   const [showDiaryDialog, setShowDiaryDialog] = useState(false);
   const [diaryKey, setDiaryKey] = useState(0); // to refresh diary after new entry
-  const [plantDetails, setPlantDetails] = useState(plant.details || null);
+  const [plantDetails, setPlantDetails] = useState(null);
   const [generatingDetails, setGeneratingDetails] = useState(false);
   const details = plantDetails || {};
   const [healthcheck, setHealthcheck] = useState(null);
@@ -120,18 +124,18 @@ export default function PlantDetailScreen({ route }) {
     plant.image_url?.startsWith('http') ? plant.image_url : null
   );
   const titleParts = useMemo(
-    () => getPlantTitleParts({ ...plant, details: plantDetails }),
-    [plant, plantDetails]
+    () => getPlantTitleParts({ ...plant, details: plantDetails }, currentLanguage),
+    [plant, plantDetails, currentLanguage]
   );
 
-  // Reset state when navigating to a different plant (prevents stale details)
+  // Reset state when navigating to a different plant or language (prevents stale details)
   useEffect(() => {
-    setPlantDetails(plant.details || null);
+    setPlantDetails(null);
     setHealthcheck(null);
     setLoading(true);
     setTab('overview');
     setResolvedImageUrl(plant.image_url?.startsWith('http') ? plant.image_url : null);
-  }, [plant.id]);
+  }, [plant.id, currentLanguage]);
 
   useEffect(() => {
     if (plant.image_url && !plant.image_url.startsWith('http')) {
@@ -151,44 +155,44 @@ export default function PlantDetailScreen({ route }) {
   const [assignedZone, setAssignedZone] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
       setLoading(true);
       try {
         const hc = await fetchLatestHealthcheck(plant.id);
-        setHealthcheck(hc);
+        if (!cancelled) setHealthcheck(hc);
       } catch {
-        setHealthcheck(null);
+        if (!cancelled) setHealthcheck(null);
       }
 
-      // Fallback: Wenn keine Details auf der Pflanze, aber species_id vorhanden →
-      // gecachte Art-Details aus dem zentralen Dex-Cache laden.
-      // Cache-Misses werden bewusst NICHT automatisch generiert, weil das
-      // Credits kostet. Der User muss Details explizit per Button anfordern.
-      if (!plantDetails && plant.species_id) {
-        try {
-          const lang = await fetchCurrentUserLanguage();
-          const cached = await fetchCachedSpeciesDetails(plant.species_id, lang);
-          if (cached) {
-            setPlantDetails(cached);
-            // Auch in plants-Tabelle speichern, damit nächster Aufruf sofort da ist
-            supabase
-              .from('plants')
-              .update({ details: cached })
-              .eq('id', plant.id)
-              .then(() => {});
-          }
-        } catch {
-          // Cache-Lookup fehlgeschlagen
+      try {
+        const localizedDetails = await fetchPlantDetailsForLanguage({
+          plantId: plant.id,
+          speciesId: plant.species_id,
+          language: currentLanguage,
+          userId,
+        });
+
+        if (!cancelled) {
+          setPlantDetails(localizedDetails.details);
+        }
+      } catch {
+        if (!cancelled) {
+          setPlantDetails(null);
         }
       }
 
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     })();
     // Hole ggf. Zone/Location falls zugewiesen:
     if (plant.zone_id) {
       fetchAssignedZone();
     }
-  }, [plant.id, plant.zone_id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [plant.id, plant.species_id, plant.zone_id, currentLanguage, userId]);
 
   const tabNames = [
     { key: 'overview', label: t('plants.tabOverview') },
@@ -215,16 +219,25 @@ export default function PlantDetailScreen({ route }) {
     async (forceRefresh = false) => {
       setGeneratingDetails(true);
       try {
-        const lang = await fetchCurrentUserLanguage();
         const result = await generatePlantDetails(
           plant.name,
           plant.note,
-          lang,
+          currentLanguage,
           plant.species_id,
           forceRefresh
         );
+        if (!result?.details) {
+          throw new Error(t('plants.detailsWarning'));
+        }
         if (result?.details) {
-          await supabase.from('plants').update({ details: result.details }).eq('id', plant.id);
+          await savePlantDetailsForLanguage({
+            plantId: plant.id,
+            userId,
+            speciesId: plant.species_id,
+            language: currentLanguage,
+            details: result.details,
+            source: result.source === 'dex_cache' ? 'species_cache' : 'ai',
+          });
           setPlantDetails(result.details);
           Alert.alert(t('common.success'), t('plants.detailsGenerated'));
         }
@@ -234,7 +247,7 @@ export default function PlantDetailScreen({ route }) {
         setGeneratingDetails(false);
       }
     },
-    [plant.id, plant.name, plant.note, plant.species_id]
+    [plant.id, plant.name, plant.note, plant.species_id, currentLanguage, userId]
   );
 
   // Healthcheck mit Foto-Auswahl: letztes Galerie-Foto oder neues Foto
@@ -260,7 +273,7 @@ export default function PlantDetailScreen({ route }) {
       }
       setRunningHealthcheck(true);
       try {
-        const result = await performHealthcheck(imageUrl, plant.name);
+        const result = await performHealthcheck(imageUrl, plant.name, currentLanguage);
         if (result) {
           // Save healthcheck to database (not just React state)
           const hc = result.healthcheck || result;
@@ -337,7 +350,7 @@ export default function PlantDetailScreen({ route }) {
       // Kein Foto vorhanden — direkt neues aufnehmen
       takeNewPhoto();
     }
-  }, [plant.id, plant.image_url, plant.name, resolvedImageUrl, userId]);
+  }, [plant.id, plant.image_url, plant.name, resolvedImageUrl, userId, currentLanguage]);
 
   // Galerie: Foto direkt hinzufügen (ohne Tagebuch-Dialog)
   const handleAddGalleryPhoto = async () => {

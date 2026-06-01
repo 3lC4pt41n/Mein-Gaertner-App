@@ -3,7 +3,7 @@
 
 const SUPABASE_STORAGE_PATTERN = /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\//;
 
-const ALLOWED_LANGUAGES = ['de', 'en', 'fr', 'it', 'es', 'ru'];
+const ALLOWED_LANGUAGES = ['de', 'en', 'fr', 'it', 'es', 'ru', 'tr'];
 
 export interface ValidationError {
   field: string;
