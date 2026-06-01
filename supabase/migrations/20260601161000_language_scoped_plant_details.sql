@@ -129,8 +129,8 @@ SELECT
   p.species_id,
   p.details,
   'backfill',
-  coalesce(p.updated_at, p.created_at, now()),
-  coalesce(p.updated_at, p.created_at, now())
+  coalesce(p.created_at, now()),
+  coalesce(p.created_at, now())
 FROM public.plants p
 LEFT JOIN public.profiles prof ON prof.id = p.user_id
 WHERE p.details IS NOT NULL
