@@ -23,6 +23,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { t } from '../i18n';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSCard from '../theme/DSCard';
+import {
+  clusterHeatmapCells,
+  getHeatmapClusterStep,
+  sumHeatmapDiscoveries,
+  sumHeatmapSpecies,
+} from '../utils/heatmapClustering';
 
 // ── Maps API Key validation ──────────────────────────────────────
 // Native config sections (ios.config, android.config) are NOT available
@@ -104,11 +110,12 @@ function heatColor(count) {
   return HEAT_COLORS[0];
 }
 
-function heatRadius(count) {
-  if (count >= 25) return 2400;
-  if (count >= 10) return 1800;
-  if (count >= 3) return 1200;
-  return 800;
+function heatRadius(count, clusterStep = 0.01) {
+  const clusterRadius = clusterStep > 0.01 ? Math.min(clusterStep * 111000 * 0.18, 90000) : 0;
+  if (count >= 25) return Math.max(2400, clusterRadius);
+  if (count >= 10) return Math.max(1800, clusterRadius);
+  if (count >= 3) return Math.max(1200, clusterRadius);
+  return Math.max(800, clusterRadius);
 }
 
 // ── Default region (central Europe) ────────────────────────────────
@@ -128,6 +135,7 @@ export default function HeatmapScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [initialRegion, setInitialRegion] = useState(DEFAULT_REGION);
+  const [clusterStep, setClusterStep] = useState(getHeatmapClusterStep(DEFAULT_REGION));
 
   // ── Load data ──────────────────────────────────────────────────
   const loadData = useCallback(async () => {
@@ -145,12 +153,14 @@ export default function HeatmapScreen() {
 
       // Centre on user location if available
       if (location && !location.denied && location.latitude) {
-        setInitialRegion({
+        const nextRegion = {
           latitude: location.latitude,
           longitude: location.longitude,
           latitudeDelta: 8,
           longitudeDelta: 8,
-        });
+        };
+        setInitialRegion(nextRegion);
+        setClusterStep(getHeatmapClusterStep(nextRegion));
       }
     } catch (err) {
       setError(err.message || t('common.error'));
@@ -163,13 +173,20 @@ export default function HeatmapScreen() {
     loadData();
   }, [loadData]);
 
+  const handleRegionChangeComplete = useCallback((region) => {
+    const nextStep = getHeatmapClusterStep(region);
+    setClusterStep((currentStep) => (currentStep === nextStep ? currentStep : nextStep));
+  }, []);
+
+  const clusteredGrid = useMemo(() => clusterHeatmapCells(grid, clusterStep), [grid, clusterStep]);
+
   // ── Summary stats ──────────────────────────────────────────────
   const summary = useMemo(() => {
-    const totalCells = grid.length;
-    const totalDiscoveries = grid.reduce((sum, c) => sum + c.discovery_count, 0);
-    const totalSpecies = grid.reduce((sum, c) => sum + c.species_count, 0);
+    const totalCells = clusteredGrid.length;
+    const totalDiscoveries = sumHeatmapDiscoveries(grid);
+    const totalSpecies = sumHeatmapSpecies(grid);
     return { totalCells, totalDiscoveries, totalSpecies };
-  }, [grid]);
+  }, [clusteredGrid.length, grid]);
 
   // ── Render ─────────────────────────────────────────────────────
   if (loading) {
@@ -222,25 +239,27 @@ export default function HeatmapScreen() {
             showsUserLocation
             showsMyLocationButton={Platform.OS === 'android'}
             mapType="standard"
+            onRegionChangeComplete={handleRegionChangeComplete}
           >
-            {grid.map((cell) => (
+            {clusteredGrid.map((cell) => (
               <Circle
-                key={`${cell.grid_lat}-${cell.grid_lon}`}
+                key={cell.key}
                 center={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
-                radius={heatRadius(cell.discovery_count)}
+                radius={heatRadius(cell.discovery_count, clusterStep)}
                 fillColor={heatColor(cell.discovery_count)}
                 strokeColor="transparent"
               />
             ))}
 
-            {/* Markers for high-activity cells */}
-            {grid
-              .filter((c) => c.discovery_count >= 5)
+            {/* Stable count markers for aggregated clusters */}
+            {clusteredGrid
+              .filter((c) => c.source_cells > 1 || c.discovery_count >= 2)
               .map((cell) => (
                 <Marker
-                  key={`m-${cell.grid_lat}-${cell.grid_lon}`}
+                  key={`m-${cell.key}`}
                   coordinate={{ latitude: cell.grid_lat, longitude: cell.grid_lon }}
                   anchor={{ x: 0.5, y: 0.5 }}
+                  tracksViewChanges={false}
                 >
                   <View style={styles.markerBubble}>
                     <Text style={styles.markerText}>{cell.discovery_count}</Text>

@@ -26,6 +26,11 @@ import { DSChipGroup } from '../theme';
 import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 import { friendlyError } from '../utils/errorMessages';
+import {
+  clusterHeatmapCells,
+  getHeatmapClusterStep,
+  sumHeatmapDiscoveries,
+} from '../utils/heatmapClustering';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HERO_HEIGHT = Math.min(SCREEN_WIDTH * 0.75, 340);
@@ -63,11 +68,12 @@ function heatColor(count) {
   return 'rgba(76, 175, 80, 0.35)';
 }
 
-function heatRadius(count) {
-  if (count >= 15) return 2200;
-  if (count >= 8) return 1600;
-  if (count >= 3) return 1100;
-  return 750;
+function heatRadius(count, clusterStep = 0.01) {
+  const clusterRadius = clusterStep > 0.01 ? Math.min(clusterStep * 111000 * 0.14, 70000) : 0;
+  if (count >= 15) return Math.max(2200, clusterRadius);
+  if (count >= 8) return Math.max(1600, clusterRadius);
+  if (count >= 3) return Math.max(1100, clusterRadius);
+  return Math.max(750, clusterRadius);
 }
 
 export default function DexDetailScreen({ route, navigation }) {
@@ -203,15 +209,20 @@ export default function DexDetailScreen({ route, navigation }) {
   }, [speciesHeatmap]);
 
   const heatmapSummary = useMemo(() => {
-    const totalDiscoveries = speciesHeatmap.reduce(
-      (sum, cell) => sum + (Number(cell.discovery_count) || 0),
-      0
-    );
+    const totalDiscoveries = sumHeatmapDiscoveries(speciesHeatmap);
     return {
       totalDiscoveries,
-      totalRegions: speciesHeatmap.length,
+      totalRegions: clusterHeatmapCells(speciesHeatmap, getHeatmapClusterStep(heatmapRegion))
+        .length,
     };
-  }, [speciesHeatmap]);
+  }, [heatmapRegion, speciesHeatmap]);
+
+  const heatmapClusterStep = useMemo(() => getHeatmapClusterStep(heatmapRegion), [heatmapRegion]);
+
+  const clusteredSpeciesHeatmap = useMemo(
+    () => clusterHeatmapCells(speciesHeatmap, heatmapClusterStep),
+    [heatmapClusterStep, speciesHeatmap]
+  );
 
   const myFindsRegion = useMemo(() => {
     if (!myFinds.length) return DEFAULT_SPECIES_REGION;
@@ -385,14 +396,14 @@ export default function DexDetailScreen({ route, navigation }) {
                   pitchEnabled={false}
                   toolbarEnabled={false}
                 >
-                  {speciesHeatmap.map((cell) => (
+                  {clusteredSpeciesHeatmap.map((cell) => (
                     <Circle
-                      key={`${cell.grid_lat}-${cell.grid_lon}`}
+                      key={cell.key}
                       center={{
                         latitude: Number(cell.grid_lat),
                         longitude: Number(cell.grid_lon),
                       }}
-                      radius={heatRadius(Number(cell.discovery_count) || 0)}
+                      radius={heatRadius(Number(cell.discovery_count) || 0, heatmapClusterStep)}
                       fillColor={heatColor(Number(cell.discovery_count) || 0)}
                       strokeColor="transparent"
                     />
