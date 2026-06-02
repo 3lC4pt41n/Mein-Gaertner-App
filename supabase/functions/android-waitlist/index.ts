@@ -55,6 +55,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 type GoogleServiceAccount = {
   client_email?: string;
   private_key?: string;
+  private_key_id?: string;
 };
 
 const COPY: Record<
@@ -457,8 +458,11 @@ function privateKeyToArrayBuffer(privateKey: string): ArrayBuffer {
 async function signJwt(
   payload: Record<string, string | number>,
   privateKey: string,
+  privateKeyId?: string,
 ): Promise<string> {
-  const header = { alg: "RS256", typ: "JWT" };
+  const header = privateKeyId
+    ? { alg: "RS256", typ: "JWT", kid: privateKeyId }
+    : { alg: "RS256", typ: "JWT" };
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
   const encodedPayload = base64UrlEncode(JSON.stringify(payload));
   const unsignedToken = `${encodedHeader}.${encodedPayload}`;
@@ -493,6 +497,7 @@ async function getGoogleAccessToken(
       exp: now + 3600,
     },
     serviceAccount.private_key as string,
+    serviceAccount.private_key_id,
   );
   const response = await fetch(GOOGLE_TOKEN_URL, {
     method: "POST",
