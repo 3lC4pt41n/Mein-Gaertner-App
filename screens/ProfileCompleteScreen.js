@@ -23,6 +23,7 @@ import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
 import DSChipGroup from '../theme/DSChips';
 import { t } from '../i18n';
+import { directionalIconName } from '../utils/directionalIcon';
 
 const DRAFT_KEY = 'profile_draft';
 
@@ -64,7 +65,11 @@ function AvatarOption({ icon, title, subtitle, onPress, disabled }) {
         <Text style={styles.avatarOptionTitle}>{title}</Text>
         <Text style={styles.avatarOptionSubtitle}>{subtitle}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+      <Ionicons
+        name={directionalIconName('chevron-forward')}
+        size={18}
+        color={colors.textTertiary}
+      />
     </TouchableOpacity>
   );
 }
@@ -197,7 +202,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone }) {
     setLanguageState(code);
     setSwitchingLanguage(true);
     try {
-      const appliedLanguage = await setAppLanguage(code);
+      const { locale: appliedLanguage } = await setAppLanguage(code);
       setLanguageState(appliedLanguage);
     } finally {
       setSwitchingLanguage(false);

@@ -689,7 +689,11 @@
     "version": "Versione",
     "privacyPolicy": "Informativa sulla privacy",
     "termsOfService": "Termini di servizio",
-    "feedback": "Invia feedback"
+    "feedback": "Invia feedback",
+    "rtlRestartTitle": "Ricaricare l'app?",
+    "rtlRestartMessage": "La lingua selezionata utilizza una direzione di scrittura diversa. FloraScout deve essere ricaricato affinché il layout e la navigazione siano rispecchiati correttamente.",
+    "rtlRestartNow": "Ricarica ora",
+    "rtlRestartLater": "Più tardi"
   },
   "onboarding": {
     "page1Title": "Fotografa una pianta, identificala subito",

@@ -689,7 +689,11 @@
     "version": "Versión",
     "privacyPolicy": "Política de privacidad",
     "termsOfService": "Términos de servicio",
-    "feedback": "Enviar comentarios"
+    "feedback": "Enviar comentarios",
+    "rtlRestartTitle": "¿Recargar la aplicación?",
+    "rtlRestartMessage": "El idioma seleccionado utiliza una dirección de escritura diferente. FloraScout necesita recargarse para que el diseño y la navegación se reflejen correctamente.",
+    "rtlRestartNow": "Recargar ahora",
+    "rtlRestartLater": "Más tarde"
   },
   "onboarding": {
     "page1Title": "Fotografía una planta, identifícala al instante",

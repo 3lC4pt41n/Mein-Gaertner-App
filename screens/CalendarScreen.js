@@ -17,6 +17,7 @@ import DSButton from '../theme/DSButton';
 import { colors, spacing, radius } from '../theme/tokens';
 import i18n, { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
+import { directionalIconName } from '../utils/directionalIcon';
 
 // ── Helpers ──────────────────────────────────────────
 
@@ -162,7 +163,7 @@ export default function CalendarScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('calendar.previousMonth')}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.primary} />
+          <Ionicons name={directionalIconName('chevron-back')} size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={styles.monthTitle} accessibilityRole="header">
           {getMonthName(year, month)} {year}
@@ -173,7 +174,11 @@ export default function CalendarScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('calendar.nextMonth')}
         >
-          <Ionicons name="chevron-forward" size={24} color={colors.primary} />
+          <Ionicons
+            name={directionalIconName('chevron-forward')}
+            size={24}
+            color={colors.primary}
+          />
         </TouchableOpacity>
       </View>
 

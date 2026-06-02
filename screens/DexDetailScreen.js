@@ -26,6 +26,7 @@ import { DSChipGroup } from '../theme';
 import { colors, spacing, radius } from '../theme/tokens';
 import { t } from '../i18n';
 import { friendlyError } from '../utils/errorMessages';
+import { directionalIconName } from '../utils/directionalIcon';
 import {
   clusterHeatmapCells,
   getHeatmapClusterStep,
@@ -580,7 +581,7 @@ export default function DexDetailScreen({ route, navigation }) {
               disabled={selectedIndex === 0}
             >
               <Ionicons
-                name="chevron-back"
+                name={directionalIconName('chevron-back')}
                 size={28}
                 color={selectedIndex === 0 ? colors.textSecondary : colors.surface}
               />
@@ -596,7 +597,7 @@ export default function DexDetailScreen({ route, navigation }) {
               disabled={selectedIndex === gallery.length - 1}
             >
               <Ionicons
-                name="chevron-forward"
+                name={directionalIconName('chevron-forward')}
                 size={28}
                 color={selectedIndex === gallery.length - 1 ? colors.textSecondary : colors.surface}
               />

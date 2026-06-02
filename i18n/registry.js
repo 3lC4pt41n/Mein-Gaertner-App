@@ -122,6 +122,30 @@ export const LANGUAGES = [
     rtl: false,
     aliases: ['indonesian', 'indonesisch', 'bahasa indonesia'],
   },
+  {
+    code: 'ar',
+    label: 'العربية',
+    rtl: true,
+    aliases: ['arabic', 'arabisch', 'العربية'],
+  },
+  {
+    code: 'he',
+    label: 'עברית',
+    rtl: true,
+    aliases: ['iw', 'hebrew', 'hebräisch', 'hebraeisch', 'עברית'],
+  },
+  {
+    code: 'fa',
+    label: 'فارسی',
+    rtl: true,
+    aliases: ['persian', 'persisch', 'farsi', 'فارسی'],
+  },
+  {
+    code: 'ur',
+    label: 'اردو',
+    rtl: true,
+    aliases: ['urdu', 'اردو'],
+  },
 ];
 
 export const SUPPORTED_LANGUAGE_CODES = LANGUAGES.map((language) => language.code);

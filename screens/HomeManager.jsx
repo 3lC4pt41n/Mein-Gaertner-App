@@ -20,6 +20,7 @@ import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { getDexProgress } from '../services/dexService';
 import { normalizeLanguage } from '../services/languageService';
+import { directionalIconName } from '../utils/directionalIcon';
 import {
   getLocalizedContextText,
   getLocalizedSeasonName,
@@ -416,7 +417,11 @@ export default function HomeManager({ context }) {
                     })}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+                <Ionicons
+                  name={directionalIconName('chevron-forward')}
+                  size={20}
+                  color={colors.textTertiary}
+                />
               </View>
             </TouchableOpacity>
 
@@ -520,7 +525,11 @@ export default function HomeManager({ context }) {
                       <Text style={styles.zoneText}>{p.name}</Text>
                     </View>
                     <View style={styles.assignHint}>
-                      <Ionicons name="arrow-forward-outline" size={16} color={colors.primary} />
+                      <Ionicons
+                        name={directionalIconName('arrow-forward-outline')}
+                        size={16}
+                        color={colors.primary}
+                      />
                     </View>
                   </View>
                 </TouchableOpacity>

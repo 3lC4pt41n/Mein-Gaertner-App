@@ -710,6 +710,10 @@
     "version": "versão",
     "privacyPolicy": "Política de Privacidade",
     "termsOfService": "Termos de Utilização",
-    "feedback": "Dê feedback"
+    "feedback": "Dê feedback",
+    "rtlRestartTitle": "Recarregar aplicação?",
+    "rtlRestartMessage": "O idioma selecionado utiliza uma direção de escrita diferente. O FloraScout precisa de ser recarregado para que o layout e a navegação sejam espelhados corretamente.",
+    "rtlRestartNow": "Recarregue agora",
+    "rtlRestartLater": "Mais tarde"
   }
 }

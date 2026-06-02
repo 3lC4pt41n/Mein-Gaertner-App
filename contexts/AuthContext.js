@@ -83,7 +83,7 @@ export function AuthProvider({ children }) {
         .then(async ({ data }) => {
           // Set i18n locale from profile language
           if (data?.language) {
-            await applyLanguage(data.language);
+            await applyLanguage(data.language, { reloadOnRTLChange: true });
           }
           setProfile(data);
           setLoading(false);
@@ -109,7 +109,7 @@ export function AuthProvider({ children }) {
     }
     if (data) {
       if (data.language) {
-        await applyLanguage(data.language);
+        await applyLanguage(data.language, { reloadOnRTLChange: true });
       }
       setProfile(data);
     }

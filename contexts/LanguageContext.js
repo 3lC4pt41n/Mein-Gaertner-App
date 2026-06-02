@@ -1,11 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import i18n from '../i18n';
 import {
-  applyLanguage,
+  applyLanguageDetailed,
   getCurrentLanguage,
   normalizeLanguage,
   subscribeLanguageChanges,
 } from '../services/languageService';
+import { getDirectionStatus, reloadAppForDirectionChange } from '../services/rtlService';
 
 const LanguageContext = createContext(null);
 
@@ -13,19 +14,20 @@ export function LanguageProvider({ children }) {
   const [localeState, setLocaleState] = useState(() => ({
     locale: normalizeLanguage(i18n.locale),
     version: 0,
+    direction: getDirectionStatus(i18n.locale),
   }));
   const [loading, setLoading] = useState(false);
 
   useEffect(
     () =>
-      subscribeLanguageChanges((locale, version) => {
-        setLocaleState({ locale, version });
+      subscribeLanguageChanges((locale, version, direction) => {
+        setLocaleState({ locale, version, direction: direction || getDirectionStatus(locale) });
       }),
     []
   );
 
   useEffect(() => {
-    applyLanguage(getCurrentLanguage()).catch((error) => {
+    applyLanguageDetailed(getCurrentLanguage(), { reloadOnRTLChange: true }).catch((error) => {
       if (__DEV__) {
         console.warn('[LanguageContext] Initiale Sprache konnte nicht geladen werden.', error);
       }
@@ -35,7 +37,7 @@ export function LanguageProvider({ children }) {
   const setLanguage = useCallback(async (languageCode) => {
     setLoading(true);
     try {
-      return await applyLanguage(languageCode);
+      return await applyLanguageDetailed(languageCode);
     } finally {
       setLoading(false);
     }
@@ -45,10 +47,20 @@ export function LanguageProvider({ children }) {
     () => ({
       locale: localeState.locale,
       version: localeState.version,
+      rtl: localeState.direction.rtl,
+      rtlRestartRequired: localeState.direction.restartRequired,
       loading,
       setLanguage,
+      reloadForDirectionChange: reloadAppForDirectionChange,
     }),
-    [loading, localeState.locale, localeState.version, setLanguage]
+    [
+      loading,
+      localeState.direction.restartRequired,
+      localeState.direction.rtl,
+      localeState.locale,
+      localeState.version,
+      setLanguage,
+    ]
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

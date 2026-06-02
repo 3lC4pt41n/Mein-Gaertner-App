@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
+import { directionalIconName } from '../utils/directionalIcon';
 
 const MENU_ITEMS = [
   { key: 'tasks', icon: 'clipboard-outline', screen: 'TasksMain' },
@@ -52,7 +53,11 @@ export default function MoreScreen({ navigation }) {
             <Ionicons name={item.icon} size={22} color={colors.primary} />
           </View>
           <Text style={styles.menuLabel}>{getLabel(item.key)}</Text>
-          <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+          <Ionicons
+            name={directionalIconName('chevron-forward')}
+            size={18}
+            color={colors.textTertiary}
+          />
         </TouchableOpacity>
       ))}
     </ScrollView>

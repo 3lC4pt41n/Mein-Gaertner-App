@@ -710,6 +710,10 @@
     "version": "versie",
     "privacyPolicy": "Privacybeleid",
     "termsOfService": "Gebruiksvoorwaarden",
-    "feedback": "Geef feedback"
+    "feedback": "Geef feedback",
+    "rtlRestartTitle": "App opnieuw laden?",
+    "rtlRestartMessage": "De geselecteerde taal gebruikt een andere schrijfrichting. FloraScout moet opnieuw laden zodat de lay-out en navigatie correct worden gespiegeld.",
+    "rtlRestartNow": "Herlaad nu",
+    "rtlRestartLater": "Later"
   }
 }

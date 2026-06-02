@@ -710,6 +710,10 @@
     "version": "버전",
     "privacyPolicy": "개인 정보 보호 정책",
     "termsOfService": "이용약관",
-    "feedback": "피드백 보내기"
+    "feedback": "피드백 보내기",
+    "rtlRestartTitle": "앱을 새로고침하시겠습니까?",
+    "rtlRestartMessage": "선택한 언어는 다른 쓰기 방향을 사용합니다. FloraScout는 레이아웃과 탐색이 올바르게 미러링되도록 다시 로드해야 합니다.",
+    "rtlRestartNow": "지금 새로고침",
+    "rtlRestartLater": "나중에"
   }
 }

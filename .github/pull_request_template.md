@@ -35,7 +35,7 @@ Please describe the tests you ran to verify your changes.
 - [ ] My changes generate no new warnings
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests passed locally with my changes
-- [ ] All strings are added to i18n files (all 6 languages)
+- [ ] All strings are added to i18n files (`npm run i18n:sync`)
 - [ ] No sensitive data is included (API keys, tokens, etc.)
 - [ ] ESLint passes (`npm run lint`)
 - [ ] Prettier passes (`npm run format`)

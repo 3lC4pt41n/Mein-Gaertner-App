@@ -27,6 +27,7 @@ import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { extractPlantSummary, getPlantTitleParts } from '../utils/plantNameUtils';
+import { directionalIconName } from '../utils/directionalIcon';
 import {
   getLocalizedContextText,
   getLocalizedSeasonName,
@@ -575,7 +576,7 @@ export default function PlantListScreen({ context }) {
           <Ionicons name="grid-outline" size={20} color={colors.primary} />
           <Text style={plantDexStyles.ctaText}>{t('dex.title')}</Text>
         </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+        <Ionicons name={directionalIconName('chevron-forward')} size={18} color={colors.primary} />
       </TouchableOpacity>
 
       <TabView

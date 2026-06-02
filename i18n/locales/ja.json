@@ -710,6 +710,10 @@
     "version": "バージョン",
     "privacyPolicy": "プライバシーポリシー",
     "termsOfService": "利用規約",
-    "feedback": "フィードバックを送信する"
+    "feedback": "フィードバックを送信する",
+    "rtlRestartTitle": "アプリをリロードしますか?",
+    "rtlRestartMessage": "選択した言語では、異なる記述方向が使用されます。レイアウトとナビゲーションが正しくミラーリングされるように、FloraScout をリロードする必要があります。",
+    "rtlRestartNow": "今すぐリロード",
+    "rtlRestartLater": "後で"
   }
 }

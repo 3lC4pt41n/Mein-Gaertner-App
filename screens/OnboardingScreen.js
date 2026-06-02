@@ -4,6 +4,7 @@ import PagerView from 'react-native-pager-view';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
+import { directionalIconName } from '../utils/directionalIcon';
 
 const TOTAL_PAGES = 3;
 
@@ -135,7 +136,7 @@ export default function OnboardingScreen({ onDone }) {
             {currentPage === TOTAL_PAGES - 1 ? t('onboarding.ctaStart') : t('onboarding.ctaNext')}
           </Text>
           <Ionicons
-            name={currentPage === TOTAL_PAGES - 1 ? 'leaf' : 'arrow-forward'}
+            name={currentPage === TOTAL_PAGES - 1 ? 'leaf' : directionalIconName('arrow-forward')}
             size={20}
             color={colors.surface}
             style={{ marginLeft: spacing.sm }}

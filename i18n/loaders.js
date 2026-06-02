@@ -81,4 +81,20 @@ export const loaders = {
     () => import('./locales/id.json'),
     () => require('./locales/id.json')
   ),
+  ar: lazyJson(
+    () => import('./locales/ar.json'),
+    () => require('./locales/ar.json')
+  ),
+  he: lazyJson(
+    () => import('./locales/he.json'),
+    () => require('./locales/he.json')
+  ),
+  fa: lazyJson(
+    () => import('./locales/fa.json'),
+    () => require('./locales/fa.json')
+  ),
+  ur: lazyJson(
+    () => import('./locales/ur.json'),
+    () => require('./locales/ur.json')
+  ),
 };

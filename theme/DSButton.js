@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, ActivityIndicator, View, StyleSheet } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
 import { colors, spacing, radius } from './tokens';
+import { directionalIconName } from '../utils/directionalIcon';
 
 const VARIANT_STYLES = {
   primary: {
@@ -93,13 +94,23 @@ export default function DSButton({
       ) : (
         <View style={styles.content}>
           {icon && iconPosition === 'left' && (
-            <Ionicons name={icon} size={s.iconSize} color={txtColor} style={styles.iconLeft} />
+            <Ionicons
+              name={directionalIconName(icon)}
+              size={s.iconSize}
+              color={txtColor}
+              style={styles.iconLeft}
+            />
           )}
           <Text style={[styles.label, { fontSize: s.fontSize, color: txtColor }, textStyle]}>
             {children}
           </Text>
           {icon && iconPosition === 'right' && (
-            <Ionicons name={icon} size={s.iconSize} color={txtColor} style={styles.iconRight} />
+            <Ionicons
+              name={directionalIconName(icon)}
+              size={s.iconSize}
+              color={txtColor}
+              style={styles.iconRight}
+            />
           )}
         </View>
       )}

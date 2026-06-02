@@ -710,6 +710,10 @@
     "version": "versi",
     "privacyPolicy": "Kebijakan Privasi",
     "termsOfService": "Ketentuan Penggunaan",
-    "feedback": "Berikan umpan balik"
+    "feedback": "Berikan umpan balik",
+    "rtlRestartTitle": "Muat ulang aplikasi?",
+    "rtlRestartMessage": "Bahasa yang dipilih menggunakan arah penulisan yang berbeda. FloraScout perlu memuat ulang agar tata letak dan navigasi dicerminkan dengan benar.",
+    "rtlRestartNow": "Muat ulang sekarang",
+    "rtlRestartLater": "Nanti"
   }
 }

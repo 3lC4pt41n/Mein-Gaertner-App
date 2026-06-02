@@ -20,6 +20,7 @@ jobs:
         run: |
           npx eslint . --max-warnings 0
           npm run lint:tokens
+          npm run i18n:sync
 
   test:
     runs-on: ubuntu-latest

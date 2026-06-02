@@ -16,6 +16,7 @@ import { fetchGallery } from '../services/diaryService';
 import { getPlantImageUrl } from '../services/uploadService';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
+import { directionalIconName } from '../utils/directionalIcon';
 
 const COLUMNS = 3;
 const screenWidth = Dimensions.get('window').width;
@@ -234,7 +235,7 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto, ListH
               disabled={selectedIndex === 0}
             >
               <Ionicons
-                name="chevron-back"
+                name={directionalIconName('chevron-back')}
                 size={28}
                 color={selectedIndex === 0 ? colors.textSecondary : colors.surface}
               />
@@ -249,7 +250,7 @@ export default function PlantGallery({ plantId, plantImageUrl, onAddPhoto, ListH
               disabled={selectedIndex === gallery.length - 1}
             >
               <Ionicons
-                name="chevron-forward"
+                name={directionalIconName('chevron-forward')}
                 size={28}
                 color={selectedIndex === gallery.length - 1 ? colors.textSecondary : colors.surface}
               />

@@ -23,6 +23,10 @@ describe('normalizeLanguage', () => {
     expect(normalizeLanguage('pt-BR')).toBe('pt-BR');
     expect(normalizeLanguage('pt-PT')).toBe('pt-PT');
     expect(normalizeLanguage('zh-Hans')).toBe('zh-Hans');
+    expect(normalizeLanguage('ar')).toBe('ar');
+    expect(normalizeLanguage('he')).toBe('he');
+    expect(normalizeLanguage('fa')).toBe('fa');
+    expect(normalizeLanguage('ur')).toBe('ur');
   });
 
   it('normalizes case-insensitive codes', () => {
@@ -84,6 +88,11 @@ describe('normalizeLanguage', () => {
     expect(normalizeLanguage('Korean')).toBe('ko');
     expect(normalizeLanguage('Chinese')).toBe('zh-Hans');
     expect(normalizeLanguage('Indonesian')).toBe('id');
+    expect(normalizeLanguage('Arabic')).toBe('ar');
+    expect(normalizeLanguage('Hebrew')).toBe('he');
+    expect(normalizeLanguage('iw')).toBe('he');
+    expect(normalizeLanguage('Persian')).toBe('fa');
+    expect(normalizeLanguage('Urdu')).toBe('ur');
   });
 
   it('returns "de" for unknown languages', () => {
@@ -110,6 +119,8 @@ describe('getLanguageLabel', () => {
     expect(getLanguageLabel('ru')).toBe('Русский');
     expect(getLanguageLabel('pt-BR')).toBe('Português (BR)');
     expect(getLanguageLabel('zh-Hans')).toBe('简体中文');
+    expect(getLanguageLabel('ar')).toBe('العربية');
+    expect(getLanguageLabel('he')).toBe('עברית');
   });
 
   it('returns "Deutsch" for unknown input', () => {
@@ -125,8 +136,8 @@ describe('getLanguageLabel', () => {
 });
 
 describe('LANGUAGE_OPTIONS', () => {
-  it('contains all supported LTR languages', () => {
-    expect(LANGUAGE_OPTIONS).toHaveLength(19);
+  it('contains all supported languages', () => {
+    expect(LANGUAGE_OPTIONS).toHaveLength(23);
   });
 
   it('each option has code and label', () => {

@@ -710,6 +710,10 @@
     "version": "版本",
     "privacyPolicy": "隐私政策",
     "termsOfService": "使用条款",
-    "feedback": "提供反馈"
+    "feedback": "提供反馈",
+    "rtlRestartTitle": "重新加载应用程序？",
+    "rtlRestartMessage": "所选语言使用不同的书写方向。 FloraScout 需要重新加载，以便正确镜像布局和导航。",
+    "rtlRestartNow": "立即重新加载",
+    "rtlRestartLater": "后来"
   }
 }

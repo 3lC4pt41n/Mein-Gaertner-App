@@ -710,6 +710,10 @@
     "version": "version",
     "privacyPolicy": "Privatlivspolitik",
     "termsOfService": "Vilkår for brug",
-    "feedback": "Giv feedback"
+    "feedback": "Giv feedback",
+    "rtlRestartTitle": "Genindlæse app?",
+    "rtlRestartMessage": "Det valgte sprog bruger en anden skriveretning. FloraScout skal genindlæses, så layout og navigation spejles korrekt.",
+    "rtlRestartNow": "Genindlæs nu",
+    "rtlRestartLater": "Senere"
   }
 }

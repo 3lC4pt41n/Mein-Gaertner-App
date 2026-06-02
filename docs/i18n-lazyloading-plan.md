@@ -1,12 +1,18 @@
 # Lazy-Loading i18n + Multi-Language Onboarding — Plan
 
-**Repo:** FloraScout (`digitaler-gaertner`) · **Stand:** 2026-06-02 · **Status:** Umgesetzt bis Phase 3; RTL offen
+**Repo:** FloraScout (`digitaler-gaertner`) · **Stand:** 2026-06-02 · **Status:** Umgesetzt
 
 ## Umsetzungsstand
 
-Dieser Commit setzt die empfohlene erste Lieferung um: Phase 0 bis 3 sowie den Sync-Check aus Phase 5. Damit werden Übersetzungen lazy geladen, die Sprachliste kommt aus einer Registry, der Sprachwechsel ist async mit explizitem Re-Render, und die zwölf neuen LTR-Sprachen sind als vollständige Locale-Dateien enthalten.
+Dieser Stand setzt den Plan vollständig um: Übersetzungen werden lazy geladen, die Sprachliste kommt aus einer Registry, der Sprachwechsel ist async mit explizitem Re-Render, die zwölf neuen LTR-Sprachen und die vier RTL-Sprachen sind als vollständige Locale-Dateien enthalten.
 
-Phase 4 (`ar`, `he`, `fa`, `ur`) bleibt bewusst offen, weil RTL laut Plan `I18nManager`, Layout-Audit, App-Reload-UX und voraussichtlich einen Store-Release braucht.
+RTL (`ar`, `he`, `fa`, `ur`) läuft über `I18nManager.allowRTL`, `swapLeftAndRightInRTL`, `forceRTL` und einen Reload-Hinweis beim Sprachwechsel. Richtungspfeile/Chevrons werden über `utils/directionalIcon.js` gespiegelt.
+
+Wiederholbare Checks:
+
+- `npm run i18n:sync` prüft Key-Coverage und Platzhalter über alle 23 Sprachen.
+- `npm run i18n:measure` dokumentiert die Parse-Differenz zwischen lazy Startup (`de`) und eager All-Locales.
+- `npm run i18n:font-audit` listet kritische Script-Samples für Device-Smoke-Tests und prüft die Locale-Dateien.
 
 ## Ziel
 

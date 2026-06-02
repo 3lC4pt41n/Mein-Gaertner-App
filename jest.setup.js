@@ -62,6 +62,11 @@ jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'de' }],
 }));
 
+// Mock expo-updates
+jest.mock('expo-updates', () => ({
+  reloadAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
 // Mock @react-native-community/netinfo
 jest.mock('@react-native-community/netinfo', () => ({
   addEventListener: jest.fn().mockReturnValue(jest.fn()),

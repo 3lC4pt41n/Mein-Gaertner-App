@@ -710,6 +710,10 @@
     "version": "Sürüm",
     "privacyPolicy": "Gizlilik Politikası",
     "termsOfService": "Hizmet Şartları",
-    "feedback": "Geribildirim gönder"
+    "feedback": "Geribildirim gönder",
+    "rtlRestartTitle": "Uygulama yeniden yüklensin mi?",
+    "rtlRestartMessage": "Seçilen dil farklı bir yazma yönü kullanıyor. Düzenin ve navigasyonun doğru şekilde yansıtılması için FloraScout'un yeniden yüklenmesi gerekiyor.",
+    "rtlRestartNow": "Şimdi yeniden yükle",
+    "rtlRestartLater": "Daha sonra"
   }
 }

@@ -41,6 +41,7 @@ import {
   loadGardenerPersonaKey,
   saveGardenerPersonaKey,
 } from '../services/gardenerPersonaService';
+import { directionalIconName } from '../utils/directionalIcon';
 
 // ---------- Helpers ---------------------------------------------------
 
@@ -96,7 +97,11 @@ function LinkRow({ icon, label, onPress }) {
         />
         <Text style={styles.linkLabel}>{label}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+      <Ionicons
+        name={directionalIconName('chevron-forward')}
+        size={18}
+        color={colors.textTertiary}
+      />
     </TouchableOpacity>
   );
 }
@@ -107,7 +112,7 @@ function LinkRow({ icon, label, onPress }) {
 
 export default function SettingsScreen({ navigation }) {
   const { user, profile, signOut, deleteAccount, updateProfile, refreshProfile } = useAuth();
-  const { setLanguage: setAppLanguage } = useLanguage();
+  const { setLanguage: setAppLanguage, reloadForDirectionChange } = useLanguage();
 
   // --- Profile state ---
   const [username, setUsername] = useState('');
@@ -312,9 +317,15 @@ export default function SettingsScreen({ navigation }) {
     const previousLanguage = language;
     setLanguageState(code);
     try {
-      const appliedLanguage = await setAppLanguage(code);
+      const { locale: appliedLanguage, direction } = await setAppLanguage(code);
       setLanguageState(appliedLanguage);
       await updateProfile({ language: appliedLanguage });
+      if (direction.restartRequired) {
+        Alert.alert(t('settings.rtlRestartTitle'), t('settings.rtlRestartMessage'), [
+          { text: t('settings.rtlRestartLater'), style: 'cancel' },
+          { text: t('settings.rtlRestartNow'), onPress: reloadForDirectionChange },
+        ]);
+      }
     } catch (error) {
       setLanguageState(previousLanguage);
       await setAppLanguage(previousLanguage);

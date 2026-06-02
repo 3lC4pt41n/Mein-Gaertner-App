@@ -710,6 +710,10 @@
     "version": "wersja",
     "privacyPolicy": "Polityka prywatności",
     "termsOfService": "Warunki użytkowania",
-    "feedback": "Przekaż opinię"
+    "feedback": "Przekaż opinię",
+    "rtlRestartTitle": "Załadować aplikację ponownie?",
+    "rtlRestartMessage": "W wybranym języku używany jest inny kierunek pisania. FloraScout musi zostać ponownie załadowana, aby układ i nawigacja zostały poprawnie odzwierciedlone.",
+    "rtlRestartNow": "Załaduj ponownie teraz",
+    "rtlRestartLater": "Później"
   }
 }
