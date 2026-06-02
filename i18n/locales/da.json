@@ -357,7 +357,15 @@
       "subscription": "Abonnementskreditter"
     },
     "historyPartial": "Historik delvist indlæst. Nogle poster mangler.",
-    "historyUnavailable": "Kredithistorik kunne ikke indlæses."
+    "historyUnavailable": "Kredithistorik kunne ikke indlæses.",
+    "checkoutRedirecting": "Åbner checkout...",
+    "webCheckoutPending": "Betalingen er gennemført. Dine credits bliver bogført...",
+    "webCheckoutSuccess": "Betalingen er gennemført. Din saldo er opdateret.",
+    "webCheckoutCancelled": "Checkout blev annulleret. Der blev ikke købt credits.",
+    "webCheckoutFailed": "Saldoen kunne ikke opdateres efter betalingen. Prøv igen.",
+    "webPurchaseSteeringTitle": "Webpris tilgængelig",
+    "webPurchaseSteeringText": "Credits kan også købes billigere på nettet.",
+    "webPurchaseSteeringLink": "Åbn webshop"
   },
   "leaderboard": {
     "title": "Ranking",

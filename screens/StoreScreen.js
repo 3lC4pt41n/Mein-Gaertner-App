@@ -8,6 +8,7 @@ import {
   Alert,
   StyleSheet,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchBalance, fetchSubscription, fetchCreditHistory } from '../services/creditService';
@@ -24,6 +25,10 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import i18n, { t } from '../i18n';
 import { AI_COSTS } from '../services/pricingConfig';
+import {
+  openWebPurchasePage,
+  shouldShowWebPurchaseSteering,
+} from '../services/webPurchaseSteering';
 
 // ─── Per-credit pricing helper ─────────────────────────────────
 function parsePrice(priceStr) {
@@ -47,8 +52,9 @@ function savingsPercent(priceStr, credits) {
   return Math.round((1 - rate / BASE_RATE) * 100);
 }
 
-export default function StoreScreen({ isAdmin }) {
+export default function StoreScreen({ isAdmin, route }) {
   const navigation = useNavigation();
+  const isWeb = Platform.OS === 'web';
   const [balance, setBalance] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [creditHistory, setCreditHistory] = useState([]);
@@ -59,6 +65,8 @@ export default function StoreScreen({ isAdmin }) {
   const [tab, setTab] = useState('packages'); // 'packages' | 'usage'
   const [liveOneTime, setLiveOneTime] = useState(ONE_TIME_PACKAGES);
   const [liveSubs, setLiveSubs] = useState(SUBSCRIPTION_PACKAGES);
+  const [checkoutNotice, setCheckoutNotice] = useState(null);
+  const showWebPurchaseSteering = shouldShowWebPurchaseSteering();
 
   const loadData = useCallback(async () => {
     try {
@@ -109,10 +117,64 @@ export default function StoreScreen({ isAdmin }) {
     loadData();
   };
 
+  const pollBalanceUpdate = useCallback(
+    async (previousBalance, timeoutMs = 10000) => {
+      const pollStart = Date.now();
+      while (Date.now() - pollStart < timeoutMs) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const newBalance = await fetchBalance();
+        if (newBalance > previousBalance) {
+          await loadData();
+          return true;
+        }
+      }
+
+      await loadData();
+      return false;
+    },
+    [loadData]
+  );
+
+  useEffect(() => {
+    if (!isWeb || loading) return;
+
+    const checkoutStatus = route?.params?.stripeCheckoutStatus;
+    if (!checkoutStatus) return;
+
+    if (checkoutStatus === 'success') {
+      setCheckoutNotice(t('store.webCheckoutPending'));
+      pollBalanceUpdate(balance ?? 0, 12000)
+        .then(() => setCheckoutNotice(t('store.webCheckoutSuccess')))
+        .catch((error) => {
+          console.warn('Stripe Checkout Polling fehlgeschlagen:', error?.message || error);
+          setCheckoutNotice(t('store.webCheckoutFailed'));
+          loadData();
+        });
+    } else if (checkoutStatus === 'cancel') {
+      setCheckoutNotice(t('store.webCheckoutCancelled'));
+    }
+
+    navigation.setParams?.({ stripeCheckoutStatus: undefined, sessionId: undefined });
+  }, [
+    balance,
+    isWeb,
+    loadData,
+    loading,
+    navigation,
+    pollBalanceUpdate,
+    route?.params?.stripeCheckoutStatus,
+  ]);
+
   // ─── Kauf-Handler ───────────────────────────────────────────
   const handlePurchase = async (pkg) => {
     setPurchasing(pkg.id);
     try {
+      if (isWeb) {
+        setCheckoutNotice(t('store.checkoutRedirecting'));
+        await purchasePackage(pkg);
+        return;
+      }
+
       // Use pre-loaded RC package from live prices, or fetch fresh
       let rcPackage = pkg._rcPackage;
       if (!rcPackage) {
@@ -143,25 +205,12 @@ export default function StoreScreen({ isAdmin }) {
         );
         // Poll for balance update (webhook may take a moment)
         const prevBal = balance ?? 0;
-        const pollStart = Date.now();
-        const poll = async () => {
-          while (Date.now() - pollStart < 10000) {
-            await new Promise((r) => setTimeout(r, 1000));
-            const newBal = await fetchBalance();
-            if (newBal > prevBal) {
-              // Balance updated — reload all store data
-              await loadData();
-              return;
-            }
-          }
-          // Timeout fallback — reload anyway
-          await loadData();
-        };
-        poll().catch(console.warn);
+        pollBalanceUpdate(prevBal).catch(console.warn);
       } else if (result.cancelled) {
         // User hat abgebrochen – nichts tun
       }
     } catch (e) {
+      setCheckoutNotice(null);
       Alert.alert(t('store.purchaseFailed'), e.message);
     } finally {
       setPurchasing(null);
@@ -198,8 +247,10 @@ export default function StoreScreen({ isAdmin }) {
     if (item.type === 'purchase') {
       const map = {
         beta_welcome: t('store.historyLabels.betaWelcome'),
+        one_time: t('store.historyLabels.purchase'),
         purchase: t('store.historyLabels.purchase'),
         subscription: t('store.historyLabels.subscription'),
+        subscription_renewal: t('store.historyLabels.subscription'),
       };
       return map[item.label] || t('store.historyLabels.purchase');
     }
@@ -250,6 +301,13 @@ export default function StoreScreen({ isAdmin }) {
         )}
       </View>
 
+      {checkoutNotice ? (
+        <View style={styles.checkoutNotice}>
+          <Ionicons name="time-outline" size={18} color={colors.primary} />
+          <Text style={styles.checkoutNoticeText}>{checkoutNotice}</Text>
+        </View>
+      ) : null}
+
       {/* ─── Aktives Abo Info ───────────────────────────────── */}
       {subscription?.status === 'active' && subscription?.plan !== 'none' && (
         <View style={styles.activeSubCard}>
@@ -262,9 +320,11 @@ export default function StoreScreen({ isAdmin }) {
               </Text>
             </Text>
           </View>
-          <TouchableOpacity onPress={openManageSubscriptions}>
-            <Text style={styles.manageLink}>{t('store.manage')}</Text>
-          </TouchableOpacity>
+          {!isWeb ? (
+            <TouchableOpacity onPress={openManageSubscriptions}>
+              <Text style={styles.manageLink}>{t('store.manage')}</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
       )}
 
@@ -300,9 +360,26 @@ export default function StoreScreen({ isAdmin }) {
 
       {tab === 'packages' ? (
         <>
+          {showWebPurchaseSteering ? (
+            <View style={styles.webSteeringBox}>
+              <View style={styles.webSteeringHeader}>
+                <Ionicons name="globe-outline" size={18} color={colors.primary} />
+                <Text style={styles.webSteeringTitle}>{t('store.webPurchaseSteeringTitle')}</Text>
+              </View>
+              <Text style={styles.webSteeringText}>{t('store.webPurchaseSteeringText')}</Text>
+              <TouchableOpacity onPress={openWebPurchasePage} accessibilityRole="button">
+                <Text style={styles.webSteeringLink}>{t('store.webPurchaseSteeringLink')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+
           {/* ─── Abo-Pakete ──────────────────────────────────── */}
-          <Text style={styles.sectionTitle}>{t('store.subscriptionTitle')}</Text>
-          <Text style={styles.sectionSubtitle}>{t('store.subscriptionSubtitle')}</Text>
+          {liveSubs.length > 0 ? (
+            <>
+              <Text style={styles.sectionTitle}>{t('store.subscriptionTitle')}</Text>
+              <Text style={styles.sectionSubtitle}>{t('store.subscriptionSubtitle')}</Text>
+            </>
+          ) : null}
           {liveSubs.map((pkg) => {
             const pcc = perCreditCent(pkg.price, pkg.credits);
             const savings = savingsPercent(pkg.price, pkg.credits);
@@ -444,13 +521,15 @@ export default function StoreScreen({ isAdmin }) {
           </View>
 
           {/* ─── Restore & Info ───────────────────────────────── */}
-          <TouchableOpacity
-            style={styles.restoreBtn}
-            onPress={handleRestore}
-            accessibilityRole="button"
-          >
-            <Text style={styles.restoreText}>{t('store.restorePurchases')}</Text>
-          </TouchableOpacity>
+          {!isWeb ? (
+            <TouchableOpacity
+              style={styles.restoreBtn}
+              onPress={handleRestore}
+              accessibilityRole="button"
+            >
+              <Text style={styles.restoreText}>{t('store.restorePurchases')}</Text>
+            </TouchableOpacity>
+          ) : null}
 
           <View style={styles.infoBox}>
             <Ionicons name="information-circle-outline" size={18} color={colors.textTertiary} />
@@ -567,6 +646,18 @@ const styles = StyleSheet.create({
   },
   subBadgeText: { color: colors.primary, fontWeight: 'bold', fontSize: 12 },
 
+  checkoutNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySurface,
+  },
+  checkoutNoticeText: { flex: 1, color: colors.textPrimary, fontSize: 13 },
+
   // Active Sub
   activeSubCard: {
     flexDirection: 'row',
@@ -617,6 +708,31 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
+  },
+
+  webSteeringBox: {
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderLight,
+  },
+  webSteeringHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  webSteeringTitle: { color: colors.textPrimary, fontSize: 14, fontWeight: '700' },
+  webSteeringText: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
+  webSteeringLink: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: spacing.sm,
   },
 
   // Packages

@@ -357,7 +357,15 @@
       "subscription": "Crédits d'abonnement"
     },
     "historyPartial": "Historique partiellement chargé. Certaines entrées manquent.",
-    "historyUnavailable": "L'historique des crédits n'a pas pu être chargé."
+    "historyUnavailable": "L'historique des crédits n'a pas pu être chargé.",
+    "checkoutRedirecting": "Ouverture du paiement...",
+    "webCheckoutPending": "Paiement terminé. Vos crédits sont en cours d’ajout...",
+    "webCheckoutSuccess": "Paiement terminé. Votre solde a été mis à jour.",
+    "webCheckoutCancelled": "Paiement annulé. Aucun crédit n’a été acheté.",
+    "webCheckoutFailed": "Impossible de mettre à jour le solde après le paiement. Réessayez.",
+    "webPurchaseSteeringTitle": "Prix web disponible",
+    "webPurchaseSteeringText": "Les crédits sont aussi disponibles moins cher sur le web.",
+    "webPurchaseSteeringLink": "Ouvrir la boutique web"
   },
   "leaderboard": {
     "title": "Classement",

@@ -357,7 +357,15 @@
       "subscription": "সদস্যতা ক্রেডিট"
     },
     "historyPartial": "ইতিহাস আংশিকভাবে লোড হয়েছে৷ কিছু এন্ট্রি অনুপস্থিত.",
-    "historyUnavailable": "ক্রেডিট ইতিহাস লোড করা যাবে না."
+    "historyUnavailable": "ক্রেডিট ইতিহাস লোড করা যাবে না.",
+    "checkoutRedirecting": "চেকআউট খোলা হচ্ছে...",
+    "webCheckoutPending": "পেমেন্ট সম্পন্ন হয়েছে। আপনার ক্রেডিট এখন যোগ হচ্ছে...",
+    "webCheckoutSuccess": "পেমেন্ট সম্পন্ন হয়েছে। আপনার ক্রেডিট আপডেট হয়েছে।",
+    "webCheckoutCancelled": "চেকআউট বাতিল হয়েছে। কোনো ক্রেডিট কেনা হয়নি।",
+    "webCheckoutFailed": "পেমেন্টের পর ক্রেডিট আপডেট করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "webPurchaseSteeringTitle": "ওয়েব মূল্য উপলভ্য",
+    "webPurchaseSteeringText": "ক্রেডিট ওয়েবেও কম দামে পাওয়া যায়।",
+    "webPurchaseSteeringLink": "ওয়েব শপ খুলুন"
   },
   "leaderboard": {
     "title": "র‍্যাঙ্কিং",

@@ -357,7 +357,15 @@
       "subscription": "اعتمادات الاشتراك"
     },
     "historyPartial": "تم تحميل التاريخ جزئيًا. بعض الإدخالات مفقودة.",
-    "historyUnavailable": "لا يمكن تحميل سجل الائتمان."
+    "historyUnavailable": "لا يمكن تحميل سجل الائتمان.",
+    "checkoutRedirecting": "يتم فتح الدفع...",
+    "webCheckoutPending": "تمت الدفعة. يتم الآن ترحيل رصيدك...",
+    "webCheckoutSuccess": "تمت الدفعة. تم تحديث رصيدك.",
+    "webCheckoutCancelled": "تم إلغاء الدفع. لم يتم شراء أي رصيد.",
+    "webCheckoutFailed": "تعذر تحديث الرصيد بعد الدفع. يرجى المحاولة مرة أخرى.",
+    "webPurchaseSteeringTitle": "سعر الويب متاح",
+    "webPurchaseSteeringText": "يمكن شراء الرصيد أيضاً عبر الويب بسعر أقل.",
+    "webPurchaseSteeringLink": "فتح متجر الويب"
   },
   "leaderboard": {
     "title": "الترتيب",

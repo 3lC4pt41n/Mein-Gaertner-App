@@ -357,7 +357,15 @@
       "subscription": "Créditos de assinatura"
     },
     "historyPartial": "Histórico parcialmente carregado. Algumas entradas estão faltando.",
-    "historyUnavailable": "Não foi possível carregar o histórico de crédito."
+    "historyUnavailable": "Não foi possível carregar o histórico de crédito.",
+    "checkoutRedirecting": "Abrindo checkout...",
+    "webCheckoutPending": "Pagamento concluído. Seus créditos estão sendo lançados...",
+    "webCheckoutSuccess": "Pagamento concluído. Seu saldo foi atualizado.",
+    "webCheckoutCancelled": "Checkout cancelado. Nenhum crédito foi comprado.",
+    "webCheckoutFailed": "Não foi possível atualizar o saldo após o pagamento. Tente novamente.",
+    "webPurchaseSteeringTitle": "Preço web disponível",
+    "webPurchaseSteeringText": "Créditos também estão disponíveis mais baratos na web.",
+    "webPurchaseSteeringLink": "Abrir loja web"
   },
   "leaderboard": {
     "title": "Classificação",

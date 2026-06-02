@@ -3,25 +3,11 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { getAnyCreditPackage, SUB_PLANS } from '../_shared/creditPackages.ts';
 
-// Credit-Pakete (müssen mit RevenueCat Product IDs übereinstimmen)
-const PACKAGES: Record<string, { credits: number; type: string }> = {
-  // Einmalkauf
-  credits_starter: { credits: 150, type: 'one_time' },
-  credits_standard: { credits: 450, type: 'one_time' },
-  credits_pro: { credits: 1000, type: 'one_time' },
-  // Abo (monatliche Credits)
-  sub_hobby: { credits: 200, type: 'subscription_renewal' },
-  sub_gaertner: { credits: 600, type: 'subscription_renewal' },
-  sub_profi: { credits: 1200, type: 'subscription_renewal' },
-};
-
-// Abo-Plan Mapping
-const SUB_PLANS: Record<string, string> = {
-  sub_hobby: 'hobby',
-  sub_gaertner: 'gaertner',
-  sub_profi: 'profi',
-};
+function toRevenueCatPurchaseType(packageType: string): string {
+  return packageType === 'subscription' ? 'subscription_renewal' : packageType;
+}
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req, 'POST, OPTIONS');
@@ -68,7 +54,7 @@ serve(async (req) => {
       eventType === 'RENEWAL' ||
       eventType === 'NON_RENEWING_PURCHASE'
     ) {
-      const pkg = PACKAGES[productId];
+      const pkg = getAnyCreditPackage(productId);
       if (!pkg) {
         console.warn(`Unbekanntes Produkt: ${productId}`);
         return new Response(JSON.stringify({ ok: true, skipped: true }), {
@@ -82,8 +68,8 @@ serve(async (req) => {
         p_provider_transaction_id: event.transaction_id || event.id,
         p_package: productId,
         p_credits: pkg.credits,
-        p_amount_eur: event.price || 0,
-        p_type: pkg.type,
+        p_amount_eur: event.price ?? pkg.amountEur,
+        p_type: toRevenueCatPurchaseType(pkg.type),
       });
 
       if (error) {

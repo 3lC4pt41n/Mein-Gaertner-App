@@ -357,7 +357,15 @@
       "subscription": "Abo-Credits"
     },
     "historyPartial": "Verlauf teilweise geladen. Einige Einträge fehlen.",
-    "historyUnavailable": "Credit-Verlauf konnte nicht geladen werden."
+    "historyUnavailable": "Credit-Verlauf konnte nicht geladen werden.",
+    "checkoutRedirecting": "Checkout wird geöffnet...",
+    "webCheckoutPending": "Zahlung abgeschlossen. Dein Guthaben wird verbucht...",
+    "webCheckoutSuccess": "Zahlung abgeschlossen. Dein Guthaben wurde aktualisiert.",
+    "webCheckoutCancelled": "Checkout abgebrochen. Es wurden keine Credits gekauft.",
+    "webCheckoutFailed": "Guthaben konnte nach der Zahlung nicht aktualisiert werden. Bitte versuche es erneut.",
+    "webPurchaseSteeringTitle": "Web-Preis verfügbar",
+    "webPurchaseSteeringText": "Credits sind auch im Web günstiger erhältlich.",
+    "webPurchaseSteeringLink": "Web-Shop öffnen"
   },
   "leaderboard": {
     "title": "Rangliste",

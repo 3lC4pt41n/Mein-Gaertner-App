@@ -357,7 +357,15 @@
       "subscription": "Кредити на підписку"
     },
     "historyPartial": "Історія завантажена частково. Деякі записи відсутні.",
-    "historyUnavailable": "Не вдалося завантажити кредитну історію."
+    "historyUnavailable": "Не вдалося завантажити кредитну історію.",
+    "checkoutRedirecting": "Відкриваємо оплату...",
+    "webCheckoutPending": "Платіж завершено. Ваші кредити зараховуються...",
+    "webCheckoutSuccess": "Платіж завершено. Баланс оновлено.",
+    "webCheckoutCancelled": "Оплату скасовано. Кредити не придбано.",
+    "webCheckoutFailed": "Не вдалося оновити баланс після платежу. Спробуйте ще раз.",
+    "webPurchaseSteeringTitle": "Доступна веб-ціна",
+    "webPurchaseSteeringText": "Кредити також доступні дешевше у вебверсії.",
+    "webPurchaseSteeringLink": "Відкрити вебмагазин"
   },
   "leaderboard": {
     "title": "Рейтинг",

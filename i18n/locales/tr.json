@@ -357,7 +357,15 @@
       "subscription": "Abonelik Kredileri"
     },
     "historyPartial": "Geçmiş kısmen yüklendi. Bazı girişler eksik.",
-    "historyUnavailable": "Kredi geçmişi yüklenemedi."
+    "historyUnavailable": "Kredi geçmişi yüklenemedi.",
+    "checkoutRedirecting": "Ödeme açılıyor...",
+    "webCheckoutPending": "Ödeme tamamlandı. Kredileriniz işleniyor...",
+    "webCheckoutSuccess": "Ödeme tamamlandı. Bakiyeniz güncellendi.",
+    "webCheckoutCancelled": "Ödeme iptal edildi. Kredi satın alınmadı.",
+    "webCheckoutFailed": "Ödeme sonrası bakiye güncellenemedi. Lütfen tekrar deneyin.",
+    "webPurchaseSteeringTitle": "Web fiyatı mevcut",
+    "webPurchaseSteeringText": "Krediler webde daha uygun fiyatla da alınabilir.",
+    "webPurchaseSteeringLink": "Web mağazasını aç"
   },
   "leaderboard": {
     "title": "Sıralama",

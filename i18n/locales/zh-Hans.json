@@ -357,7 +357,15 @@
       "subscription": "订阅积分"
     },
     "historyPartial": "历史记录部分加载。一些条目丢失。",
-    "historyUnavailable": "无法加载信用记录。"
+    "historyUnavailable": "无法加载信用记录。",
+    "checkoutRedirecting": "正在打开结账...",
+    "webCheckoutPending": "付款已完成。正在入账你的积分...",
+    "webCheckoutSuccess": "付款已完成。你的余额已更新。",
+    "webCheckoutCancelled": "结账已取消。未购买积分。",
+    "webCheckoutFailed": "付款后无法更新余额。请重试。",
+    "webPurchaseSteeringTitle": "可用网页价格",
+    "webPurchaseSteeringText": "积分也可以在网页端以更低价格购买。",
+    "webPurchaseSteeringLink": "打开网页商店"
   },
   "leaderboard": {
     "title": "排名",

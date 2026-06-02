@@ -21,3 +21,8 @@
 // Served by Supabase Edge Function: /functions/v1/terms
 // Status: LIVE — enabled for store submission.
 export const SHOW_TERMS_LINK = true;
+
+// ── Web Purchase Steering ───────────────────────────────────────────────────
+// Status: OFF by default. Only enable after legal/review clearance for the
+// target regions; StoreScreen still applies an additional conservative region gate.
+export const WEB_PURCHASE_STEERING = false;

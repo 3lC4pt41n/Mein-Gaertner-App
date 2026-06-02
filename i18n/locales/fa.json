@@ -357,7 +357,15 @@
       "subscription": "اعتبارات اشتراک"
     },
     "historyPartial": "سابقه تا حدی بارگیری شد. برخی از ورودی ها وجود ندارد.",
-    "historyUnavailable": "سابقه اعتباری بارگیری نشد."
+    "historyUnavailable": "سابقه اعتباری بارگیری نشد.",
+    "checkoutRedirecting": "در حال باز کردن پرداخت...",
+    "webCheckoutPending": "پرداخت انجام شد. اعتبار شما در حال ثبت است...",
+    "webCheckoutSuccess": "پرداخت انجام شد. موجودی شما به‌روزرسانی شد.",
+    "webCheckoutCancelled": "پرداخت لغو شد. اعتباری خریداری نشد.",
+    "webCheckoutFailed": "پس از پرداخت، به‌روزرسانی موجودی ممکن نشد. دوباره تلاش کنید.",
+    "webPurchaseSteeringTitle": "قیمت وب در دسترس است",
+    "webPurchaseSteeringText": "اعتبارها در وب نیز با قیمت کمتر در دسترس هستند.",
+    "webPurchaseSteeringLink": "باز کردن فروشگاه وب"
   },
   "leaderboard": {
     "title": "رتبه بندی",

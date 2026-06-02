@@ -3,7 +3,7 @@
 import './sentry.config'; // ← Sentry MUSS als erstes geladen werden
 import { Sentry } from './sentry.config';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -243,7 +243,9 @@ function AppContent() {
     dismissWelcome,
   } = useAuth();
   const navigationRef = useRef(null);
+  const stripeReturnHandledRef = useRef(false);
   const [context, setContext] = useState(() => buildContext({ location: null, weather: null }));
+  const profileIncomplete = !!user && (!profile?.username || !profile?.language);
 
   useEffect(() => {
     if (!user?.id) {
@@ -283,6 +285,35 @@ function AppContent() {
     };
   }, [user?.id]);
 
+  useEffect(() => {
+    if (
+      Platform.OS !== 'web' ||
+      !user?.id ||
+      profileIncomplete ||
+      showWelcome ||
+      stripeReturnHandledRef.current ||
+      typeof window === 'undefined'
+    ) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const stripeStatus = params.get('stripe_checkout');
+    if (!stripeStatus) return;
+
+    stripeReturnHandledRef.current = true;
+    navigationRef.current?.navigate('Mehr', {
+      screen: 'ShopMain',
+      params: {
+        stripeCheckoutStatus: stripeStatus,
+        sessionId: params.get('session_id') || undefined,
+      },
+    });
+
+    const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+    window.history.replaceState({}, '', cleanUrl);
+  }, [profileIncomplete, showWelcome, user?.id]);
+
   // --- Push Notification Registration (after login, respects preference) ---
   useEffect(() => {
     if (!user?.id || !profile?.notifications_enabled) return;
@@ -321,8 +352,6 @@ function AppContent() {
   if (!user) {
     return <AuthScreen onPasswordRecoveryDetected={handlePasswordRecoveryDetected} />;
   }
-
-  const profileIncomplete = !profile?.username || !profile?.language;
 
   if (profileIncomplete) {
     return <ProfileCompleteScreen user={user} profile={profile} onDone={refreshProfile} />;

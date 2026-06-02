@@ -357,7 +357,15 @@
       "subscription": "זיכוי מנוי"
     },
     "historyPartial": "ההיסטוריה נטענה חלקית. חלק מהערכים חסרים.",
-    "historyUnavailable": "לא ניתן היה לטעון היסטוריית אשראי."
+    "historyUnavailable": "לא ניתן היה לטעון היסטוריית אשראי.",
+    "checkoutRedirecting": "פותח תשלום...",
+    "webCheckoutPending": "התשלום הושלם. הקרדיטים שלך נרשמים...",
+    "webCheckoutSuccess": "התשלום הושלם. היתרה שלך עודכנה.",
+    "webCheckoutCancelled": "התשלום בוטל. לא נרכשו קרדיטים.",
+    "webCheckoutFailed": "לא ניתן היה לעדכן את היתרה לאחר התשלום. נסה שוב.",
+    "webPurchaseSteeringTitle": "מחיר אינטרנט זמין",
+    "webPurchaseSteeringText": "קרדיטים זמינים גם באינטרנט במחיר נמוך יותר.",
+    "webPurchaseSteeringLink": "פתיחת חנות האינטרנט"
   },
   "leaderboard": {
     "title": "דירוג",

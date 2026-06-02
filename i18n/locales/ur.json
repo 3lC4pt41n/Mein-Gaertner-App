@@ -357,7 +357,15 @@
       "subscription": "سبسکرپشن کریڈٹس"
     },
     "historyPartial": "سرگزشت جزوی طور پر لوڈ ہو گئی۔ کچھ اندراجات غائب ہیں۔",
-    "historyUnavailable": "کریڈٹ ہسٹری لوڈ نہیں ہو سکی۔"
+    "historyUnavailable": "کریڈٹ ہسٹری لوڈ نہیں ہو سکی۔",
+    "checkoutRedirecting": "چیک آؤٹ کھل رہا ہے...",
+    "webCheckoutPending": "ادائیگی مکمل ہو گئی۔ آپ کے کریڈٹس شامل کیے جا رہے ہیں...",
+    "webCheckoutSuccess": "ادائیگی مکمل ہو گئی۔ آپ کا بیلنس اپ ڈیٹ ہو گیا ہے۔",
+    "webCheckoutCancelled": "چیک آؤٹ منسوخ ہو گیا۔ کوئی کریڈٹ نہیں خریدے گئے۔",
+    "webCheckoutFailed": "ادائیگی کے بعد بیلنس اپ ڈیٹ نہیں ہو سکا۔ دوبارہ کوشش کریں۔",
+    "webPurchaseSteeringTitle": "ویب قیمت دستیاب ہے",
+    "webPurchaseSteeringText": "کریڈٹس ویب پر بھی کم قیمت میں دستیاب ہیں۔",
+    "webPurchaseSteeringLink": "ویب شاپ کھولیں"
   },
   "leaderboard": {
     "title": "درجہ بندی",

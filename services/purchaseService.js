@@ -1,65 +1,13 @@
 import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
+import { ONE_TIME_PACKAGES, SUBSCRIPTION_PACKAGES } from './purchasePackages';
 
 // ─── RevenueCat API Keys ────────────────────────────────────────
 // Echte Store Keys (aus RevenueCat Dashboard, konfiguriert 27.02.2026)
 const REVENUECAT_IOS_KEY = 'appl_iYDKIehHAjYNRfXLvMSuQwsjxXd';
 const REVENUECAT_ANDROID_KEY = 'goog_dhZDpcPamDGUtdzIgdwwLCjRuEq';
 
-// ─── Paket-Definitionen (für UI) ────────────────────────────────
-export const ONE_TIME_PACKAGES = [
-  {
-    id: 'credits_starter',
-    name: 'Starter',
-    credits: 150,
-    price: '4,99 €',
-    description: '~15 Pflanzen-Scans',
-    popular: false,
-  },
-  {
-    id: 'credits_standard',
-    name: 'Standard',
-    credits: 450,
-    price: '12,99 €',
-    description: '~45 Pflanzen-Scans',
-    popular: true,
-  },
-  {
-    id: 'credits_pro',
-    name: 'Pro',
-    credits: 1000,
-    price: '24,99 €',
-    description: '~100 Pflanzen-Scans',
-    popular: false,
-  },
-];
-
-export const SUBSCRIPTION_PACKAGES = [
-  {
-    id: 'sub_hobby',
-    name: 'Hobby',
-    credits: 200,
-    price: '2,99 €/Monat',
-    description: '~20 Scans/Monat',
-    popular: false,
-  },
-  {
-    id: 'sub_gaertner',
-    name: 'Gärtner',
-    credits: 600,
-    price: '7,99 €/Monat',
-    description: '~60 Scans/Monat',
-    popular: true,
-  },
-  {
-    id: 'sub_profi',
-    name: 'Profi',
-    credits: 1200,
-    price: '12,99 €/Monat',
-    description: '~120 Scans/Monat',
-    popular: false,
-  },
-];
+export { ONE_TIME_PACKAGES, SUBSCRIPTION_PACKAGES };
 
 // ─── RevenueCat initialisieren ──────────────────────────────────
 // Architecture:

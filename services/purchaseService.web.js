@@ -1,59 +1,8 @@
-// Web v1: mobile in-app purchases are intentionally unavailable.
-// The UI can still show package definitions, but purchase actions stay disabled.
+import { Linking } from 'react-native';
+import { supabase } from '../supabase';
+import { ONE_TIME_PACKAGES, SUBSCRIPTION_PACKAGES } from './purchasePackages';
 
-export const ONE_TIME_PACKAGES = [
-  {
-    id: 'credits_starter',
-    name: 'Starter',
-    credits: 150,
-    price: '4,99 €',
-    description: '~15 Pflanzen-Scans',
-    popular: false,
-  },
-  {
-    id: 'credits_standard',
-    name: 'Standard',
-    credits: 450,
-    price: '12,99 €',
-    description: '~45 Pflanzen-Scans',
-    popular: true,
-  },
-  {
-    id: 'credits_pro',
-    name: 'Pro',
-    credits: 1000,
-    price: '24,99 €',
-    description: '~100 Pflanzen-Scans',
-    popular: false,
-  },
-];
-
-export const SUBSCRIPTION_PACKAGES = [
-  {
-    id: 'sub_hobby',
-    name: 'Hobby',
-    credits: 200,
-    price: '2,99 €/Monat',
-    description: '~20 Scans/Monat',
-    popular: false,
-  },
-  {
-    id: 'sub_gaertner',
-    name: 'Gärtner',
-    credits: 600,
-    price: '7,99 €/Monat',
-    description: '~60 Scans/Monat',
-    popular: true,
-  },
-  {
-    id: 'sub_profi',
-    name: 'Profi',
-    credits: 1200,
-    price: '12,99 €/Monat',
-    description: '~120 Scans/Monat',
-    popular: false,
-  },
-];
+export { ONE_TIME_PACKAGES, SUBSCRIPTION_PACKAGES };
 
 const unavailable = () => new Error('Purchases are not available on web yet.');
 
@@ -68,13 +17,33 @@ export async function getOfferings() {
 export async function getPackagesWithLivePrices() {
   return {
     oneTime: ONE_TIME_PACKAGES,
-    subscriptions: SUBSCRIPTION_PACKAGES,
+    subscriptions: [],
     hasLivePrices: false,
   };
 }
 
-export async function purchasePackage() {
-  throw unavailable();
+export async function purchasePackage(pkg) {
+  if (!pkg?.id) throw unavailable();
+
+  const { data, error } = await supabase.functions.invoke('stripe-create-checkout', {
+    body: { package: pkg.id },
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Stripe-Checkout konnte nicht gestartet werden.');
+  }
+
+  if (!data?.url) {
+    throw new Error('Stripe-Checkout-URL fehlt.');
+  }
+
+  if (typeof window !== 'undefined' && window.location?.assign) {
+    window.location.assign(data.url);
+  } else {
+    await Linking.openURL(data.url);
+  }
+
+  return { success: false, redirected: true };
 }
 
 export async function purchaseProduct() {

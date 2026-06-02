@@ -357,7 +357,15 @@
       "subscription": "Kredit berlangganan"
     },
     "historyPartial": "Riwayat dimuat sebagian. Beberapa entri hilang.",
-    "historyUnavailable": "Riwayat kredit tidak dapat dimuat."
+    "historyUnavailable": "Riwayat kredit tidak dapat dimuat.",
+    "checkoutRedirecting": "Membuka checkout...",
+    "webCheckoutPending": "Pembayaran selesai. Kredit Anda sedang diproses...",
+    "webCheckoutSuccess": "Pembayaran selesai. Saldo Anda telah diperbarui.",
+    "webCheckoutCancelled": "Checkout dibatalkan. Tidak ada kredit yang dibeli.",
+    "webCheckoutFailed": "Saldo tidak dapat diperbarui setelah pembayaran. Coba lagi.",
+    "webPurchaseSteeringTitle": "Harga web tersedia",
+    "webPurchaseSteeringText": "Kredit juga tersedia lebih murah di web.",
+    "webPurchaseSteeringLink": "Buka toko web"
   },
   "leaderboard": {
     "title": "Peringkat",

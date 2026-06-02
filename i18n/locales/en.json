@@ -357,7 +357,15 @@
       "subscription": "Subscription Credits"
     },
     "historyPartial": "History partially loaded. Some entries are missing.",
-    "historyUnavailable": "Credit history could not be loaded."
+    "historyUnavailable": "Credit history could not be loaded.",
+    "checkoutRedirecting": "Opening checkout...",
+    "webCheckoutPending": "Payment completed. Your credits are being posted...",
+    "webCheckoutSuccess": "Payment completed. Your balance has been updated.",
+    "webCheckoutCancelled": "Checkout cancelled. No credits were purchased.",
+    "webCheckoutFailed": "Could not update your balance after payment. Please try again.",
+    "webPurchaseSteeringTitle": "Web price available",
+    "webPurchaseSteeringText": "Credits are also available for less on the web.",
+    "webPurchaseSteeringLink": "Open web shop"
   },
   "leaderboard": {
     "title": "Ranking",

@@ -357,7 +357,15 @@
       "subscription": "サブスクリプションクレジット"
     },
     "historyPartial": "履歴が部分的にロードされました。一部のエントリがありません。",
-    "historyUnavailable": "クレジット履歴を読み込むことができませんでした。"
+    "historyUnavailable": "クレジット履歴を読み込むことができませんでした。",
+    "checkoutRedirecting": "チェックアウトを開いています...",
+    "webCheckoutPending": "支払いが完了しました。クレジットを反映しています...",
+    "webCheckoutSuccess": "支払いが完了しました。残高が更新されました。",
+    "webCheckoutCancelled": "チェックアウトがキャンセルされました。クレジットは購入されていません。",
+    "webCheckoutFailed": "支払い後に残高を更新できませんでした。もう一度お試しください。",
+    "webPurchaseSteeringTitle": "Web価格があります",
+    "webPurchaseSteeringText": "クレジットはWebでもより安く購入できます。",
+    "webPurchaseSteeringLink": "Webショップを開く"
   },
   "leaderboard": {
     "title": "ランキング",

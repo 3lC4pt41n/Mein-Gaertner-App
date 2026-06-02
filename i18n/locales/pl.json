@@ -357,7 +357,15 @@
       "subscription": "Kredyty subskrypcyjne"
     },
     "historyPartial": "Historia częściowo załadowana. Brakuje niektórych wpisów.",
-    "historyUnavailable": "Nie można wczytać historii kredytowej."
+    "historyUnavailable": "Nie można wczytać historii kredytowej.",
+    "checkoutRedirecting": "Otwieranie płatności...",
+    "webCheckoutPending": "Płatność zakończona. Twoje kredyty są księgowane...",
+    "webCheckoutSuccess": "Płatność zakończona. Saldo zostało zaktualizowane.",
+    "webCheckoutCancelled": "Płatność anulowana. Nie kupiono kredytów.",
+    "webCheckoutFailed": "Nie udało się zaktualizować salda po płatności. Spróbuj ponownie.",
+    "webPurchaseSteeringTitle": "Cena web dostępna",
+    "webPurchaseSteeringText": "Kredyty są też dostępne taniej w internecie.",
+    "webPurchaseSteeringLink": "Otwórz sklep web"
   },
   "leaderboard": {
     "title": "Ranking",

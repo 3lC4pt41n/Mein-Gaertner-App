@@ -357,7 +357,15 @@
       "subscription": "Кредиты подписки"
     },
     "historyPartial": "История загружена частично. Некоторые записи отсутствуют.",
-    "historyUnavailable": "Не удалось загрузить историю кредитов."
+    "historyUnavailable": "Не удалось загрузить историю кредитов.",
+    "checkoutRedirecting": "Открываем оплату...",
+    "webCheckoutPending": "Платёж завершён. Кредиты зачисляются...",
+    "webCheckoutSuccess": "Платёж завершён. Баланс обновлён.",
+    "webCheckoutCancelled": "Оплата отменена. Кредиты не были куплены.",
+    "webCheckoutFailed": "Не удалось обновить баланс после оплаты. Попробуйте снова.",
+    "webPurchaseSteeringTitle": "Доступна веб-цена",
+    "webPurchaseSteeringText": "Кредиты также дешевле доступны в веб-версии.",
+    "webPurchaseSteeringLink": "Открыть веб-магазин"
   },
   "leaderboard": {
     "title": "Рейтинг",

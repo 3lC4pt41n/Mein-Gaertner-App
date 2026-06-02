@@ -357,7 +357,15 @@
       "subscription": "सदस्यता क्रेडिट"
     },
     "historyPartial": "इतिहास आंशिक रूप से भरा हुआ है. कुछ प्रविष्टियाँ गायब हैं.",
-    "historyUnavailable": "क्रेडिट इतिहास लोड नहीं किया जा सका."
+    "historyUnavailable": "क्रेडिट इतिहास लोड नहीं किया जा सका.",
+    "checkoutRedirecting": "चेकआउट खुल रहा है...",
+    "webCheckoutPending": "भुगतान पूरा हुआ। आपके क्रेडिट जोड़े जा रहे हैं...",
+    "webCheckoutSuccess": "भुगतान पूरा हुआ। आपका बैलेंस अपडेट हो गया है।",
+    "webCheckoutCancelled": "चेकआउट रद्द हुआ। कोई क्रेडिट नहीं खरीदे गए।",
+    "webCheckoutFailed": "भुगतान के बाद बैलेंस अपडेट नहीं हो सका। कृपया फिर प्रयास करें।",
+    "webPurchaseSteeringTitle": "वेब मूल्य उपलब्ध",
+    "webPurchaseSteeringText": "क्रेडिट वेब पर भी कम कीमत में उपलब्ध हैं।",
+    "webPurchaseSteeringLink": "वेब शॉप खोलें"
   },
   "leaderboard": {
     "title": "रैंकिंग",

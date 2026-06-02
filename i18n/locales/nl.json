@@ -357,7 +357,15 @@
       "subscription": "Abonnementskredieten"
     },
     "historyPartial": "Geschiedenis gedeeltelijk geladen. Sommige vermeldingen ontbreken.",
-    "historyUnavailable": "Kredietgeschiedenis kon niet worden geladen."
+    "historyUnavailable": "Kredietgeschiedenis kon niet worden geladen.",
+    "checkoutRedirecting": "Checkout wordt geopend...",
+    "webCheckoutPending": "Betaling voltooid. Je credits worden verwerkt...",
+    "webCheckoutSuccess": "Betaling voltooid. Je saldo is bijgewerkt.",
+    "webCheckoutCancelled": "Checkout geannuleerd. Er zijn geen credits gekocht.",
+    "webCheckoutFailed": "Saldo kon na de betaling niet worden bijgewerkt. Probeer opnieuw.",
+    "webPurchaseSteeringTitle": "Webprijs beschikbaar",
+    "webPurchaseSteeringText": "Credits zijn ook goedkoper beschikbaar op het web.",
+    "webPurchaseSteeringLink": "Webshop openen"
   },
   "leaderboard": {
     "title": "Ranglijst",

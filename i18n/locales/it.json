@@ -357,7 +357,15 @@
       "subscription": "Crediti abbonamento"
     },
     "historyPartial": "Cronologia caricata parzialmente. Mancano alcune voci.",
-    "historyUnavailable": "Impossibile caricare la cronologia crediti."
+    "historyUnavailable": "Impossibile caricare la cronologia crediti.",
+    "checkoutRedirecting": "Apertura del checkout...",
+    "webCheckoutPending": "Pagamento completato. I tuoi crediti vengono accreditati...",
+    "webCheckoutSuccess": "Pagamento completato. Il tuo saldo è stato aggiornato.",
+    "webCheckoutCancelled": "Checkout annullato. Nessun credito acquistato.",
+    "webCheckoutFailed": "Impossibile aggiornare il saldo dopo il pagamento. Riprova.",
+    "webPurchaseSteeringTitle": "Prezzo web disponibile",
+    "webPurchaseSteeringText": "I crediti sono disponibili anche sul web a un prezzo inferiore.",
+    "webPurchaseSteeringLink": "Apri lo shop web"
   },
   "leaderboard": {
     "title": "Classifica",
