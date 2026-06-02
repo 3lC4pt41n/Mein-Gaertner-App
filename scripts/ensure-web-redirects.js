@@ -15,4 +15,3 @@ if (!fs.existsSync(distDir)) {
 }
 
 fs.copyFileSync(source, target);
-console.log('Copied public/_redirects to dist/_redirects');
