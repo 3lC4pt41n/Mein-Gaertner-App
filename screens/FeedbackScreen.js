@@ -1,15 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { safeLaunchLibrary } from '../services/imagePickerHelper';
@@ -21,6 +11,7 @@ import Constants from 'expo-constants';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSChipGroup from '../theme/DSChips';
+import KeyboardAwareScreen from '../theme/KeyboardAwareScreen';
 import { uploadFeedbackImage } from '../services/uploadService';
 
 const CATEGORIES = [
@@ -118,73 +109,64 @@ export default function FeedbackScreen({ navigation }) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text style={styles.heading}>{t('feedback.title')}</Text>
-        <Text style={styles.subtitle}>{t('feedback.subtitle')}</Text>
+    <KeyboardAwareScreen style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.heading}>{t('feedback.title')}</Text>
+      <Text style={styles.subtitle}>{t('feedback.subtitle')}</Text>
 
-        {/* Category Picker */}
-        <Text style={styles.label}>{t('feedback.categoryLabel')}</Text>
-        <DSChipGroup
-          items={categoryItems}
-          selected={category}
-          onSelect={setCategory}
-          variant="segmented"
-          scrollable={false}
-          style={{ marginBottom: spacing.xl }}
-        />
+      {/* Category Picker */}
+      <Text style={styles.label}>{t('feedback.categoryLabel')}</Text>
+      <DSChipGroup
+        items={categoryItems}
+        selected={category}
+        onSelect={setCategory}
+        variant="segmented"
+        scrollable={false}
+        style={{ marginBottom: spacing.xl }}
+      />
 
-        {/* Message */}
-        <DSInput
-          label={t('feedback.messageLabel')}
-          placeholder={t('feedback.placeholder')}
-          value={message}
-          onChangeText={setMessage}
-          multiline
-          inputStyle={{ minHeight: 140 }}
-          maxLength={2000}
-        />
-        <Text style={styles.charCount}>{message.length} / 2000</Text>
+      {/* Message */}
+      <DSInput
+        label={t('feedback.messageLabel')}
+        placeholder={t('feedback.placeholder')}
+        value={message}
+        onChangeText={setMessage}
+        multiline
+        inputStyle={{ minHeight: 140, textAlignVertical: 'top' }}
+        maxLength={2000}
+      />
+      <Text style={styles.charCount}>{message.length} / 2000</Text>
 
-        {/* Screenshot */}
-        {screenshotUri ? (
-          <View style={styles.screenshotContainer}>
-            <Image source={{ uri: screenshotUri }} style={styles.screenshotPreview} />
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => setScreenshotUri(null)}
-              accessibilityLabel={t('feedback.removeScreenshot')}
-            >
-              <Ionicons name="close-circle" size={26} color={colors.danger} />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity style={styles.attachButton} onPress={handlePickImage}>
-            <Ionicons name="image-outline" size={20} color={colors.primary} />
-            <Text style={styles.attachText}>{t('feedback.attachScreenshot')}</Text>
+      {/* Screenshot */}
+      {screenshotUri ? (
+        <View style={styles.screenshotContainer}>
+          <Image source={{ uri: screenshotUri }} style={styles.screenshotPreview} />
+          <TouchableOpacity
+            style={styles.removeButton}
+            onPress={() => setScreenshotUri(null)}
+            accessibilityLabel={t('feedback.removeScreenshot')}
+          >
+            <Ionicons name="close-circle" size={26} color={colors.danger} />
           </TouchableOpacity>
-        )}
+        </View>
+      ) : (
+        <TouchableOpacity style={styles.attachButton} onPress={handlePickImage}>
+          <Ionicons name="image-outline" size={20} color={colors.primary} />
+          <Text style={styles.attachText}>{t('feedback.attachScreenshot')}</Text>
+        </TouchableOpacity>
+      )}
 
-        {/* Submit */}
-        <DSButton
-          variant="primary"
-          fullWidth
-          icon="send"
-          loading={sending}
-          onPress={handleSubmit}
-          accessibilityLabel={t('feedback.submit')}
-        >
-          {t('feedback.submit')}
-        </DSButton>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      {/* Submit */}
+      <DSButton
+        variant="primary"
+        fullWidth
+        icon="send"
+        loading={sending}
+        onPress={handleSubmit}
+        accessibilityLabel={t('feedback.submit')}
+      >
+        {t('feedback.submit')}
+      </DSButton>
+    </KeyboardAwareScreen>
   );
 }
 

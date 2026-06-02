@@ -4,3 +4,4 @@ export { default as DSCard } from './DSCard';
 export { default as DSInput } from './DSInput';
 export { default as DSChipGroup } from './DSChips';
 export { default as DSBadge } from './DSBadge';
+export { default as KeyboardAwareScreen, KeyboardAwareModalContent } from './KeyboardAwareScreen';

@@ -1,0 +1,141 @@
+# FloraScout — App Store / Landing screenshot capture flow
+# -----------------------------------------------------------------------------
+# Logs in as a per-language demo account and captures the 10 canonical shots.
+# Run via scripts/capture-screenshots.js (it injects all env vars + loops langs).
+#
+# Required env (passed with `maestro test -e KEY=VALUE`):
+#   EMAIL, PASSWORD          – demo account credentials
+#   PLANT_NAME               – the account's plant name (to open its detail page)
+#   SHOT_DIR                 – absolute dir for the PNG output of this run
+#   LBL_EMAIL, LBL_PASSWORD, LBL_LOGIN   – LOGIN-screen labels in the SIMULATOR's
+#                                          language (pre-login, device locale)
+#   TAB_HOME, TAB_PLANTS, TAB_ASSISTANT, TAB_MORE   – bottom-tab labels (account lang)
+#   MENU_TASKS, MENU_SHOP, MENU_LEADERBOARD         – "More" menu items (account lang)
+#   TAB_HEALTH, TAB_CARE                            – plant-detail tab chips (account lang)
+#   LBL_DEX                                         – Plant-Dex label (account lang)
+#
+# Maestro interpolates ${VAR}. Inputs have no testIDs, so the login fields are
+# tapped relative to their label text. Tabs/chips/menu items are matched by text.
+# -----------------------------------------------------------------------------
+appId: com.elcaptain.digitalergaertner
+---
+- launchApp:
+    clearState: true        # deterministic: logs out, resets persona to default (Ben)
+
+# ---------- LOGIN ----------
+- extendedWaitUntil:
+    visible:
+      text: "${LBL_LOGIN}"
+    timeout: 25000
+- tapOn:
+    below:
+      text: "${LBL_EMAIL}"
+- inputText: "${EMAIL}"
+- hideKeyboard
+- tapOn:
+    below:
+      text: "${LBL_PASSWORD}"
+- inputText: "${PASSWORD}"
+- hideKeyboard
+- tapOn:
+    text: "${LBL_LOGIN}"
+
+# Wait until we're inside the app (Home tab visible). Profile language now applied.
+- extendedWaitUntil:
+    visible:
+      text: "${TAB_HOME}"
+    timeout: 30000
+
+# ---------- 1) home-zones ----------
+- tapOn:
+    text: "${TAB_HOME}"
+- extendedWaitUntil:
+    visible:
+      text: "${TAB_PLANTS}"   # tab bar present = screen rendered
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/home-zones"
+
+# ---------- 2) plants-by-room ----------
+# Home screen shows plants grouped by zone further down. Scroll to reveal it.
+# TODO(verify): adjust if "by room" lives elsewhere in your build.
+- scroll
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: "${SHOT_DIR}/plants-by-room"
+
+# ---------- 3) plants-overview ----------
+- tapOn:
+    text: "${TAB_PLANTS}"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/plants-overview"
+
+# ---------- 4) plant-dex ----------
+# Reached from the Plants tab (header/segment "Plant-Dex"). Best-effort.
+# TODO(verify): confirm how the Dex is opened in your navigation.
+- tapOn:
+    text: "${LBL_DEX}"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/plant-dex"
+
+# ---------- 5) details-health ----------
+- tapOn:
+    text: "${TAB_PLANTS}"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    text: "${PLANT_NAME}"          # open the seeded plant's detail page
+- extendedWaitUntil:
+    visible:
+      text: "${TAB_HEALTH}"
+    timeout: 15000
+- tapOn:
+    text: "${TAB_HEALTH}"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/details-health"
+
+# ---------- 6) details-properties (Care tab) ----------
+- tapOn:
+    text: "${TAB_CARE}"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/details-properties"
+
+# ---------- 7) tasks ----------
+- tapOn:
+    text: "${TAB_MORE}"
+- tapOn:
+    text: "${MENU_TASKS}"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/tasks"
+
+# ---------- 8) assistant-chat ----------
+- tapOn:
+    text: "${TAB_ASSISTANT}"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/assistant-chat"
+
+# ---------- 9) shop-credits ----------
+- tapOn:
+    text: "${TAB_MORE}"
+- tapOn:
+    text: "${MENU_SHOP}"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/shop-credits"
+
+# ---------- 10) leaderboard ----------
+- tapOn:
+    text: "${TAB_MORE}"
+- tapOn:
+    text: "${MENU_LEADERBOARD}"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/leaderboard"

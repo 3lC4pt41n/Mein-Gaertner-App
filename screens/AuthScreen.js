@@ -16,6 +16,7 @@ import * as AppleAuthentication from '../services/appleAuth';
 import { supabase } from '../supabase';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
+import KeyboardAwareScreen from '../theme/KeyboardAwareScreen';
 import i18n, { t } from '../i18n';
 
 const APP_SCHEME = 'digitalergaertner';
@@ -628,7 +629,7 @@ export default function AuthScreen({
   );
 
   return (
-    <View style={styles.container}>
+    <KeyboardAwareScreen style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{t('auth.appTitle')}</Text>
 
       {recoveryMode
@@ -642,16 +643,19 @@ export default function AuthScreen({
       ) : null}
 
       {recoveryMode ? null : renderLegalFooter()}
-    </View>
+    </KeyboardAwareScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: spacing.lg,
-    backgroundColor: colors.background,
   },
   title: {
     fontSize: 26,

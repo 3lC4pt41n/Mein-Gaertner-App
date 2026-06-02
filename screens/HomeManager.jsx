@@ -9,8 +9,6 @@ import {
   TouchableOpacity,
   SectionList,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -30,6 +28,7 @@ import DSButton from '../theme/DSButton';
 import DSCard from '../theme/DSCard';
 import DSInput from '../theme/DSInput';
 import DSChipGroup from '../theme/DSChips';
+import { KeyboardAwareModalContent } from '../theme/KeyboardAwareScreen';
 
 function ContextSummary({ context, language }) {
   const season = context?.season;
@@ -539,71 +538,80 @@ export default function HomeManager({ context }) {
         }
       />
       {/* ── Location/Zone Modal ──────────────────────── */}
-      <Modal visible={dialogVisible} animationType="slide" transparent onRequestClose={closeModal}>
-        <KeyboardAvoidingView
-          style={styles.overlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+      <Modal
+        visible={dialogVisible}
+        animationType="slide"
+        transparent
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={closeModal}
+      >
+        <View style={styles.overlay}>
           <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>
-              {editing?.type === 'location'
-                ? editing.locationId
-                  ? t('home.editHome')
-                  : t('home.newHome')
-                : editing?.zone
-                  ? t('home.editZone')
-                  : t('home.newZone')}
-            </Text>
+            <KeyboardAwareModalContent
+              style={styles.modalScroll}
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.modalTitle}>
+                {editing?.type === 'location'
+                  ? editing.locationId
+                    ? t('home.editHome')
+                    : t('home.newHome')
+                  : editing?.zone
+                    ? t('home.editZone')
+                    : t('home.newZone')}
+              </Text>
 
-            <DSInput
-              label={t('common.name')}
-              placeholder={t('common.name')}
-              value={form.name}
-              onChangeText={(val) => setForm({ ...form, name: val })}
-              icon="text-outline"
-            />
-
-            {editing?.type === 'location' && (
               <DSInput
-                label={t('home.addressPlaceholder')}
-                placeholder={t('home.addressPlaceholder')}
-                value={form.address}
-                onChangeText={(val) => setForm({ ...form, address: val })}
-                icon="location-outline"
+                label={t('common.name')}
+                placeholder={t('common.name')}
+                value={form.name}
+                onChangeText={(val) => setForm({ ...form, name: val })}
+                icon="text-outline"
               />
-            )}
 
-            {editing?.type === 'zone' && (
-              <View style={{ marginBottom: spacing.lg }}>
-                <Text style={styles.chipLabel}>{t('common.type')}</Text>
-                <DSChipGroup
-                  items={ZONE_TYPES}
-                  selected={form.type}
-                  onSelect={(key) => setForm({ ...form, type: key })}
-                  variant="segmented"
-                  scrollable={false}
+              {editing?.type === 'location' && (
+                <DSInput
+                  label={t('home.addressPlaceholder')}
+                  placeholder={t('home.addressPlaceholder')}
+                  value={form.address}
+                  onChangeText={(val) => setForm({ ...form, address: val })}
+                  icon="location-outline"
                 />
-              </View>
-            )}
+              )}
 
-            <View style={styles.modalActions}>
-              <DSButton
-                variant="secondary"
-                onPress={closeModal}
-                style={{ flex: 1, marginRight: spacing.sm }}
-              >
-                {t('common.cancel')}
-              </DSButton>
-              <DSButton
-                variant="primary"
-                onPress={editing?.type === 'location' ? saveLocation : saveZone}
-                style={{ flex: 1 }}
-              >
-                {t('common.save')}
-              </DSButton>
-            </View>
+              {editing?.type === 'zone' && (
+                <View style={{ marginBottom: spacing.lg }}>
+                  <Text style={styles.chipLabel}>{t('common.type')}</Text>
+                  <DSChipGroup
+                    items={ZONE_TYPES}
+                    selected={form.type}
+                    onSelect={(key) => setForm({ ...form, type: key })}
+                    variant="segmented"
+                    scrollable={false}
+                  />
+                </View>
+              )}
+
+              <View style={styles.modalActions}>
+                <DSButton
+                  variant="secondary"
+                  onPress={closeModal}
+                  style={{ flex: 1, marginRight: spacing.sm }}
+                >
+                  {t('common.cancel')}
+                </DSButton>
+                <DSButton
+                  variant="primary"
+                  onPress={editing?.type === 'location' ? saveLocation : saveZone}
+                  style={{ flex: 1 }}
+                >
+                  {t('common.save')}
+                </DSButton>
+              </View>
+            </KeyboardAwareModalContent>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* ── Zone Picker Modal for Unassigned Plants ──── */}
@@ -880,7 +888,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: spacing.xl,
     borderRadius: radius.lg,
+    maxHeight: '85%',
     ...shadows.lg,
+  },
+  modalScroll: {
+    flexShrink: 1,
   },
   modalTitle: {
     fontSize: 20,

@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,6 +21,7 @@ import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
 import DSChipGroup from '../theme/DSChips';
+import KeyboardAwareScreen from '../theme/KeyboardAwareScreen';
 import { t } from '../i18n';
 import { directionalIconName } from '../utils/directionalIcon';
 
@@ -274,7 +274,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone }) {
   const busy = saving || generatingAvatar || switchingLanguage;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <KeyboardAwareScreen style={styles.container} contentContainerStyle={styles.content}>
       <DSCard variant="elevated" padding="lg">
         <Text style={styles.heading}>{t('profile.completeProfile')}</Text>
         <Text style={styles.intro}>{t('profile.profileIntro')}</Text>
@@ -359,7 +359,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone }) {
       </DSButton>
 
       <View style={styles.bottomSpacer} />
-    </ScrollView>
+    </KeyboardAwareScreen>
   );
 }
 

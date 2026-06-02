@@ -1,0 +1,10 @@
+{
+  "_readme": "Maps each language to its demo account email for the screenshot capture pipeline (scripts/capture-screenshots.js). Fill in the emails you created per language. Password is passed via --password (same for all) or per-entry 'password'. Only *@florascout.app accounts are allowed.",
+  "de": { "email": "de-DE@florascout.app" },
+  "en": { "email": "en-US@florascout.app" },
+  "fr": { "email": "fr-FR@florascout.app" },
+  "it": { "email": "it-IT@florascout.app" },
+  "es": { "email": "es-ES@florascout.app" },
+  "ru": { "email": "ru-RU@florascout.app" },
+  "tr": { "email": "tr-TR@florascout.app" }
+}

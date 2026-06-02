@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Switch,
   Alert,
   Linking,
@@ -28,6 +27,7 @@ import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
 import DSChipGroup from '../theme/DSChips';
+import KeyboardAwareScreen from '../theme/KeyboardAwareScreen';
 import { LANGUAGE_OPTIONS, normalizeLanguage } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
 import { openManageSubscriptions } from '../services/purchaseService';
@@ -431,7 +431,7 @@ export default function SettingsScreen({ navigation }) {
   // =====================================================================
 
   return (
-    <ScrollView
+    <KeyboardAwareScreen
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
       refreshControl={
@@ -706,7 +706,7 @@ export default function SettingsScreen({ navigation }) {
       </DSCard>
 
       <View style={styles.footer} />
-    </ScrollView>
+    </KeyboardAwareScreen>
   );
 }
 

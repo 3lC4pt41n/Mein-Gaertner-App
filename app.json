@@ -7,11 +7,7 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "platforms": ["ios", "android", "web"],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -25,9 +21,7 @@
       "output": "single",
       "favicon": "./assets/favicon.png"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "usesAppleSignIn": true,
@@ -44,10 +38,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.elcaptain.digitalergaertner",
-      "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
-      ],
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "config": {
         "googleMaps": {
           "apiKey": "GOOGLE_MAPS_API_KEY"
@@ -64,6 +55,14 @@
       "expo-font",
       "expo-updates",
       "expo-localization",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "softwareKeyboardLayoutMode": "resize"
+          }
+        }
+      ],
       [
         "expo-notifications",
         {

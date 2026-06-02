@@ -14,6 +14,7 @@ import { safeLaunchLibrary } from '../services/imagePickerHelper';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import DSInput from '../theme/DSInput';
+import { KeyboardAwareModalContent } from '../theme/KeyboardAwareScreen';
 import { t } from '../i18n';
 
 export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId: _plantId }) {
@@ -83,7 +84,14 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId:
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleCancel}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={handleCancel}
+    >
       <View style={styles.overlay}>
         <View style={styles.dialogContainer}>
           {/* Header */}
@@ -108,7 +116,11 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId:
           </View>
 
           {/* Content */}
-          <View style={styles.content}>
+          <KeyboardAwareModalContent
+            style={styles.content}
+            contentContainerStyle={styles.contentInner}
+            showsVerticalScrollIndicator={false}
+          >
             {/* Title Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('dialog.title')}</Text>
@@ -132,6 +144,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId:
                 multiline
                 editable={!saving}
                 maxLength={500}
+                inputStyle={styles.noteTextInput}
               />
               <Text style={styles.charCount}>{note.length} / 500</Text>
             </View>
@@ -171,7 +184,7 @@ export default function AddDiaryEntryDialog({ visible, onClose, onSave, plantId:
                 {selectedImage ? t('dialog.changePhoto') : t('dialog.addPhoto')}
               </Text>
             </TouchableOpacity>
-          </View>
+          </KeyboardAwareModalContent>
         </View>
       </View>
     </Modal>
@@ -189,6 +202,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     maxHeight: '90%',
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
@@ -220,6 +234,9 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   content: {
+    flexShrink: 1,
+  },
+  contentInner: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
   },
@@ -253,6 +270,10 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
     marginBottom: spacing.xs,
+  },
+  noteTextInput: {
+    minHeight: 110,
+    textAlignVertical: 'top',
   },
   charCount: {
     fontSize: 12,

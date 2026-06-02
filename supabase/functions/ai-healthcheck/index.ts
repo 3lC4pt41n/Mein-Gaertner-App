@@ -25,7 +25,7 @@ import { resolveImageForVision } from '../_shared/vision-image.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
-const HEALTHCHECK_CRITERIA: Record<string, string[]> = {
+const HEALTHCHECK_CRITERIA: Record<SupportedLanguage, string[]> = {
   de: [
     'Blattfarbe & -struktur',
     'Schädlingsbefall',
@@ -80,9 +80,162 @@ const HEALTHCHECK_CRITERIA: Record<string, string[]> = {
     'Субстрат и поверхность',
     'Общие признаки ухода',
   ],
+  tr: [
+    'Yaprak rengi ve dokusu',
+    'Zararlı belirtisi',
+    'Yaprak bütünlüğü',
+    'Büyüme formu ve sağlamlık',
+    'Saksı boyutu ve bitki boyutu',
+    'Substrat ve yüzey',
+    'Genel bakım belirtileri',
+  ],
+  nl: [
+    'Bladkleur en -structuur',
+    'Aantasting door plagen',
+    'Bladintegriteit',
+    'Groeivorm en stevigheid',
+    'Potgrootte ten opzichte van plantgrootte',
+    'Substraat en oppervlak',
+    'Algemene verzorgingssignalen',
+  ],
+  da: [
+    'Bladfarve og -struktur',
+    'Skadedyrsangreb',
+    'Bladintegritet',
+    'Vækstform og stabilitet',
+    'Pottestørrelse i forhold til plantestørrelse',
+    'Substrat og overflade',
+    'Samlede plejetegn',
+  ],
+  pl: [
+    'Kolor i struktura liści',
+    'Występowanie szkodników',
+    'Integralność liści',
+    'Pokrój i stabilność wzrostu',
+    'Wielkość doniczki względem rośliny',
+    'Podłoże i powierzchnia',
+    'Ogólne oznaki pielęgnacji',
+  ],
+  uk: [
+    'Колір і структура листя',
+    'Ураження шкідниками',
+    'Цілісність листя',
+    'Форма росту й стійкість',
+    'Розмір горщика відносно рослини',
+    'Субстрат і поверхня',
+    'Загальні ознаки догляду',
+  ],
+  'pt-BR': [
+    'Cor e textura das folhas',
+    'Infestação de pragas',
+    'Integridade das folhas',
+    'Forma de crescimento e estabilidade',
+    'Tamanho do vaso em relação ao tamanho da planta',
+    'Substrato e superfície',
+    'Sinais gerais de cuidado',
+  ],
+  'pt-PT': [
+    'Cor e textura das folhas',
+    'Infestação de pragas',
+    'Integridade das folhas',
+    'Forma de crescimento e estabilidade',
+    'Tamanho do vaso em relação ao tamanho da planta',
+    'Substrato e superfície',
+    'Sinais gerais de cuidado',
+  ],
+  hi: [
+    'पत्तियों का रंग और बनावट',
+    'कीट प्रकोप',
+    'पत्तियों की अखंडता',
+    'विकास रूप और स्थिरता',
+    'गमले के आकार और पौधे के आकार का अनुपात',
+    'माध्यम और सतह',
+    'कुल देखभाल संकेत',
+  ],
+  bn: [
+    'পাতার রং ও গঠন',
+    'পোকামাকড়ের আক্রমণ',
+    'পাতার অখণ্ডতা',
+    'বৃদ্ধির ধরন ও স্থিতি',
+    'টবের আকার বনাম গাছের আকার',
+    'সাবস্ট্রেট ও পৃষ্ঠ',
+    'সামগ্রিক যত্নের লক্ষণ',
+  ],
+  ja: [
+    '葉の色と質感',
+    '害虫の発生',
+    '葉の健全性',
+    '草姿と安定性',
+    '鉢の大きさと株の大きさのバランス',
+    '用土と表面',
+    '総合的な管理サイン',
+  ],
+  ko: [
+    '잎 색과 질감',
+    '해충 발생',
+    '잎의 온전함',
+    '생장 형태와 지지 안정성',
+    '화분 크기와 식물 크기의 균형',
+    '배지와 표면',
+    '전반적인 관리 징후',
+  ],
+  'zh-Hans': [
+    '叶片颜色与质地',
+    '虫害情况',
+    '叶片完整性',
+    '生长形态与稳固性',
+    '盆器大小与植株大小的匹配',
+    '基质与表面状态',
+    '整体养护迹象',
+  ],
+  id: [
+    'Warna dan tekstur daun',
+    'Serangan hama',
+    'Keutuhan daun',
+    'Bentuk pertumbuhan dan kestabilan',
+    'Ukuran pot dibanding ukuran tanaman',
+    'Media tanam dan permukaan',
+    'Tanda perawatan secara keseluruhan',
+  ],
+  ar: [
+    'لون الأوراق وملمسها',
+    'الإصابة بالآفات',
+    'سلامة الأوراق',
+    'شكل النمو والثبات',
+    'حجم الأصيص مقارنة بحجم النبات',
+    'وسط الزراعة والسطح',
+    'مؤشرات العناية العامة',
+  ],
+  he: [
+    'צבע העלים ומרקמם',
+    'נגיעות מזיקים',
+    'שלמות העלים',
+    'צורת הצימוח והיציבות',
+    'גודל העציץ ביחס לגודל הצמח',
+    'מצע הגידול והמשטח',
+    'סימני טיפול כלליים',
+  ],
+  fa: [
+    'رنگ و بافت برگ',
+    'آلودگی به آفات',
+    'یکپارچگی برگ‌ها',
+    'فرم رشد و پایداری',
+    'اندازه گلدان نسبت به اندازه گیاه',
+    'بستر کشت و سطح',
+    'نشانه‌های کلی مراقبت',
+  ],
+  ur: [
+    'پتوں کا رنگ اور ساخت',
+    'کیڑوں کا حملہ',
+    'پتوں کی سالمیت',
+    'نشوونما کی شکل اور مضبوطی',
+    'گملے کے سائز اور پودے کے سائز کا تناسب',
+    'سبسٹریٹ اور سطح',
+    'مجموعی دیکھ بھال کی علامات',
+  ],
 };
 
-function buildHealthcheckPrompt(language: string, languagePromptName: string) {
+function buildHealthcheckPrompt(language: SupportedLanguage, languagePromptName: string) {
   const c = HEALTHCHECK_CRITERIA[language] || HEALTHCHECK_CRITERIA['de'];
   return `Analyze the provided plant photo and run a plant health check. Return ONLY this JSON:
 
@@ -158,10 +311,13 @@ serve(async (req) => {
       // being able to fetch short-lived storage URLs directly.
       imageForVision = await resolveImageForVision(image_url);
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message || 'Bild konnte nicht geladen werden' }), {
-        status: 422,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ error: e.message || 'Bild konnte nicht geladen werden' }),
+        {
+          status: 422,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // Credits atomar abziehen (check + deduct in einem DB-Statement)
@@ -192,7 +348,10 @@ serve(async (req) => {
 
     // OpenAI Call — prompt enforces JSON; parser below guards invalid output.
     const messages: any[] = [
-      { role: 'system', content: 'You are a plant health analyst. Always respond with valid JSON only.' },
+      {
+        role: 'system',
+        content: 'You are a plant health analyst. Always respond with valid JSON only.',
+      },
       { role: 'user', content: healthcheckPrompt },
       {
         role: 'user',

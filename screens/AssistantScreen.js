@@ -4,12 +4,11 @@ import {
   TextInput,
   Text,
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -322,10 +321,7 @@ export default function AssistantScreen({ context }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View style={{ flex: 1 }}>
       {/* Credit-Leiste — unified component */}
       <CreditBar style={{ marginHorizontal: spacing.md, marginTop: spacing.sm }} />
 
@@ -438,42 +434,55 @@ export default function AssistantScreen({ context }) {
           style={{ margin: spacing.md }}
         />
       )}
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.sm }}>
-        <TouchableOpacity
-          onPress={takeAndSendPhoto}
-          accessibilityRole="button"
-          accessibilityLabel={t('assistant.takePhoto')}
-        >
-          <Ionicons
-            name="camera"
-            size={28}
-            color={colors.primary}
-            style={{ marginRight: spacing.md }}
-          />
-        </TouchableOpacity>
-        <TextInput
-          value={input}
-          onChangeText={setInput}
-          placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
+      <KeyboardStickyView>
+        <View
           style={{
-            flex: 1,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: radius.pill,
+            flexDirection: 'row',
+            alignItems: 'center',
             padding: spacing.sm,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.background,
+            borderTopWidth: 1,
+            borderTopColor: colors.borderLight,
           }}
-        />
-        <DSButton
-          onPress={sendMessage}
-          disabled={loading || !input.trim()}
-          size="sm"
-          style={{ marginLeft: spacing.sm }}
         >
-          {t('common.send')}
-        </DSButton>
-      </View>
-    </KeyboardAvoidingView>
+          <TouchableOpacity
+            onPress={takeAndSendPhoto}
+            accessibilityRole="button"
+            accessibilityLabel={t('assistant.takePhoto')}
+          >
+            <Ionicons
+              name="camera"
+              size={28}
+              color={colors.primary}
+              style={{ marginRight: spacing.md }}
+            />
+          </TouchableOpacity>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
+            style={{
+              flex: 1,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: radius.pill,
+              padding: spacing.sm,
+              backgroundColor: colors.surface,
+            }}
+            onSubmitEditing={sendMessage}
+            returnKeyType="send"
+          />
+          <DSButton
+            onPress={sendMessage}
+            disabled={loading || !input.trim()}
+            size="sm"
+            style={{ marginLeft: spacing.sm }}
+          >
+            {t('common.send')}
+          </DSButton>
+        </View>
+      </KeyboardStickyView>
+    </View>
   );
 }
 

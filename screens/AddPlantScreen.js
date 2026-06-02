@@ -5,7 +5,6 @@ import {
   Image,
   ActivityIndicator,
   Alert,
-  ScrollView,
   TouchableOpacity,
   SectionList,
   Modal,
@@ -43,6 +42,7 @@ import { AI_COSTS } from '../services/pricingConfig';
 import { friendlyError } from '../utils/errorMessages';
 import { getPlantTitleParts } from '../utils/plantNameUtils';
 import CreditBar from '../components/CreditBar';
+import KeyboardAwareScreen from '../theme/KeyboardAwareScreen';
 
 // Fetch zones grouped by location for the picker
 async function fetchZonesGrouped(userId) {
@@ -504,7 +504,7 @@ export default function AddPlantScreen() {
       {/* Credit balance — unified component */}
       <CreditBar style={styles.creditBar} />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <KeyboardAwareScreen style={styles.scroll} contentContainerStyle={styles.content}>
         {/* ── Step indicator ──────────────────── */}
         <View style={styles.stepRow}>
           {['photo', 'save', 'done'].map((s, i) => (
@@ -879,7 +879,7 @@ export default function AddPlantScreen() {
             navigation.navigate('MeinePflanzenTab', { screen: 'PlantDex' });
           }}
         />
-      </ScrollView>
+      </KeyboardAwareScreen>
     </SafeAreaView>
   );
 }

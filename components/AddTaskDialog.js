@@ -14,6 +14,7 @@ import { supabase } from '../supabase';
 import { colors, spacing, radius, shadows } from '../theme';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
+import { KeyboardAwareModalContent } from '../theme/KeyboardAwareScreen';
 import { t } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
@@ -142,7 +143,14 @@ export default function AddTaskDialog({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       <View
         style={{
           flex: 1,
@@ -162,7 +170,7 @@ export default function AddTaskDialog({
             ...shadows.lg,
           }}
         >
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <KeyboardAwareModalContent showsVerticalScrollIndicator={false}>
             <Text
               style={{
                 fontWeight: 'bold',
@@ -566,6 +574,7 @@ export default function AddTaskDialog({
               onChangeText={setNote}
               placeholder={t('tasks.notePlaceholder')}
               style={{ marginBottom: spacing.lg, minHeight: 40 }}
+              inputStyle={{ minHeight: 80, textAlignVertical: 'top' }}
               multiline
             />
 
@@ -578,7 +587,7 @@ export default function AddTaskDialog({
                 {recurring ? t('tasks.createSeries') : t('common.save')}
               </DSButton>
             </View>
-          </ScrollView>
+          </KeyboardAwareModalContent>
         </View>
       </View>
     </Modal>

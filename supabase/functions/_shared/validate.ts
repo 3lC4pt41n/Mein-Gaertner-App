@@ -1,9 +1,8 @@
 // Input-Validierung fuer Edge Functions
 // Schuetzt vor Missbrauch und ueberdimensionierten Requests
+import { isSupportedLanguage, normalizeLanguage, type SupportedLanguage } from './language.ts';
 
 const SUPABASE_STORAGE_PATTERN = /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\//;
-
-const ALLOWED_LANGUAGES = ['de', 'en', 'fr', 'it', 'es', 'ru', 'tr'];
 
 export interface ValidationError {
   field: string;
@@ -70,9 +69,9 @@ export function validateBase64(
 }
 
 // Validiert Sprache: muss in erlaubter Liste sein
-export function validateLanguage(lang: string | undefined): string {
-  if (!lang || !ALLOWED_LANGUAGES.includes(lang)) return 'de';
-  return lang;
+export function validateLanguage(lang: string | undefined): SupportedLanguage {
+  if (!isSupportedLanguage(lang)) return 'de';
+  return normalizeLanguage(lang);
 }
 
 // Sammelt alle Validierungsfehler und gibt 400 Response zurueck
