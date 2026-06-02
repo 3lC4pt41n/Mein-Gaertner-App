@@ -319,6 +319,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 10px;
         min-height: 52px;
         padding: 0 22px;
         border-radius: 999px;
@@ -334,6 +335,30 @@
 
       .btn:hover {
         transform: translateY(-2px);
+      }
+
+      .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 20px;
+        height: 20px;
+      }
+
+      .btn-icon svg {
+        width: 100%;
+        height: 100%;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+
+      .btn-icon-fill svg {
+        stroke: none;
+        fill: currentColor;
       }
 
       .btn-primary {
@@ -1366,12 +1391,49 @@
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  >Fuer iPhone</a
                 >
-                <a class="btn btn-secondary" data-android-waitlist href="#android-waitlist"
-                  >Android Warteliste</a
+                  <span class="btn-icon btn-icon-fill" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        d="M17.1 13.1c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8s-1.9-.8-3.1-.8c-1.6 0-3.1.9-3.9 2.3-1.7 2.9-.4 7.2 1.2 9.5.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.3 1.2-2.5 1.2-2.6-.1 0-2.9-1.1-2.9-4zM14.8 6.4c.7-.8 1.1-1.9 1-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2-.5 2.7-1.3z"
+                      />
+                    </svg>
+                  </span>
+                  <span class="btn-label">Fuer iPhone</span>
+                </a>
+                <a class="btn btn-secondary" data-android-waitlist href="#android-waitlist">
+                  <span class="btn-icon btn-icon-fill" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M7 4.5v15l12-7.5-12-7.5z" />
+                    </svg>
+                  </span>
+                  <span class="btn-label">Android Warteliste</span>
+                </a>
+                <a
+                  class="btn btn-secondary"
+                  data-platform="web"
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                <a class="btn btn-ghost" href="#screens">Screens ansehen</a>
+                  <span class="btn-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="3" y="4" width="18" height="13" rx="2" />
+                      <path d="M8 21h8" />
+                      <path d="M12 17v4" />
+                    </svg>
+                  </span>
+                  <span class="btn-label">Web-App oeffnen</span>
+                </a>
+                <a class="btn btn-ghost" href="#screens">
+                  <span class="btn-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="3" y="5" width="7" height="14" rx="1.5" />
+                      <rect x="14" y="5" width="7" height="14" rx="1.5" />
+                    </svg>
+                  </span>
+                  <span class="btn-label">Screens ansehen</span>
+                </a>
               </div>
 
               <p class="hero-note">
@@ -1879,19 +1941,40 @@
                     href="#"
                     target="_blank"
                     rel="noopener noreferrer"
-                    >iPhone Seite</a
                   >
-                  <a class="btn btn-secondary" data-android-waitlist href="#android-waitlist"
-                    >Android Warteliste</a
-                  >
+                    <span class="btn-icon btn-icon-fill" aria-hidden="true">
+                      <svg viewBox="0 0 24 24">
+                        <path
+                          d="M17.1 13.1c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8s-1.9-.8-3.1-.8c-1.6 0-3.1.9-3.9 2.3-1.7 2.9-.4 7.2 1.2 9.5.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.3 1.2-2.5 1.2-2.6-.1 0-2.9-1.1-2.9-4zM14.8 6.4c.7-.8 1.1-1.9 1-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2-.5 2.7-1.3z"
+                        />
+                      </svg>
+                    </span>
+                    <span class="btn-label">iPhone Seite</span>
+                  </a>
+                  <a class="btn btn-secondary" data-android-waitlist href="#android-waitlist">
+                    <span class="btn-icon btn-icon-fill" aria-hidden="true">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M7 4.5v15l12-7.5-12-7.5z" />
+                      </svg>
+                    </span>
+                    <span class="btn-label">Android Warteliste</span>
+                  </a>
                   <a
                     class="btn btn-secondary"
                     data-platform="web"
                     href="#"
                     target="_blank"
                     rel="noopener noreferrer"
-                    >Web-App oeffnen</a
                   >
+                    <span class="btn-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="13" rx="2" />
+                        <path d="M8 21h8" />
+                        <path d="M12 17v4" />
+                      </svg>
+                    </span>
+                    <span class="btn-label">Web-App oeffnen</span>
+                  </a>
                 </div>
 
                 <p class="download-meta">
@@ -7393,6 +7476,17 @@
 
       const getDictionary = (lang) => TRANSLATIONS[lang] || TRANSLATIONS.de;
 
+      const setButtonLabel = (button, label) => {
+        const labelElement = button.querySelector('.btn-label');
+
+        if (labelElement) {
+          labelElement.textContent = label;
+          return;
+        }
+
+        button.textContent = label;
+      };
+
       const detectLanguage = () => {
         const url = new URL(window.location.href);
         const urlLanguage = getSupportedLanguageCode(url.searchParams.get('lang'));
@@ -7454,8 +7548,14 @@
         heroEyebrow.textContent = dictionary.hero.eyebrow;
         heroTitle.textContent = dictionary.hero.title;
         heroLead.innerHTML = dictionary.hero.lead;
+        const heroButtonLabels = [
+          dictionary.hero.buttons[0],
+          dictionary.hero.buttons[1],
+          dictionary.download.buttons[2],
+          dictionary.hero.buttons[2],
+        ];
         heroButtons.forEach((button, index) => {
-          button.textContent = dictionary.hero.buttons[index];
+          setButtonLabel(button, heroButtonLabels[index]);
         });
         heroNote.textContent = dictionary.hero.note;
         heroTags.forEach((tag, index) => {
@@ -7518,7 +7618,7 @@
         downloadBox.querySelector('h2').textContent = dictionary.download.title;
         downloadLead.textContent = dictionary.download.body;
         downloadBox.querySelectorAll('.download-actions a').forEach((button, index) => {
-          button.textContent = dictionary.download.buttons[index];
+          setButtonLabel(button, dictionary.download.buttons[index]);
         });
         downloadMeta.textContent = dictionary.download.meta;
         waitlistHeading.textContent = dictionary.download.waitlist.title;
