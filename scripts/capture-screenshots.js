@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
+/* global __dirname */
 /*
  * capture-screenshots.js
  * ----------------------
@@ -49,18 +51,28 @@ const OUT_ROOT = path.join(ROOT, '.maestro', '.out');
 const DEMO_EMAIL_RE = /@florascout\.app$/i;
 
 const SHOTS = [
-  'home-zones', 'plants-by-room', 'plants-overview', 'plant-dex',
-  'details-health', 'details-properties', 'tasks', 'assistant-chat',
-  'shop-credits', 'leaderboard',
+  'home-zones',
+  'plants-by-room',
+  'plants-overview',
+  'plant-dex',
+  'details-health',
+  'details-properties',
+  'tasks',
+  'assistant-chat',
+  'shop-credits',
+  'leaderboard',
 ];
 
 function loadEnv(file) {
   try {
     for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
       const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-      if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+      if (m && process.env[m[1]] === undefined)
+        process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
     }
-  } catch (_) { /* rely on shell env */ }
+  } catch (_) {
+    /* rely on shell env */
+  }
 }
 loadEnv(path.join(ROOT, '.env.local'));
 
@@ -69,8 +81,12 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a.startsWith('--')) {
-      const k = a.slice(2); const n = argv[i + 1];
-      if (n && !n.startsWith('--')) { out[k] = n; i++; } else out[k] = true;
+      const k = a.slice(2);
+      const n = argv[i + 1];
+      if (n && !n.startsWith('--')) {
+        out[k] = n;
+        i++;
+      } else out[k] = true;
     } else out._.push(a);
   }
   return out;
@@ -86,48 +102,71 @@ function readLocale(lang) {
 
 // label with fallbacks across keys; throws if none resolve
 function label(loc, keys, lang) {
-  for (const k of keys) { const v = get(loc, k); if (typeof v === 'string' && v) return v; }
+  for (const k of keys) {
+    const v = get(loc, k);
+    if (typeof v === 'string' && v) return v;
+  }
   throw new Error(`No label for [${keys.join(', ')}] in ${lang}.json`);
 }
 
 async function fetchPlantName(email) {
   const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key) throw new Error('Need EXPO_PUBLIC_SUPABASE_URL + SUPABASE_SECRET_KEY (or pass --plant).');
+  if (!url || !key)
+    throw new Error('Need EXPO_PUBLIC_SUPABASE_URL + SUPABASE_SECRET_KEY (or pass --plant).');
   const { createClient } = require('@supabase/supabase-js');
   const sb = createClient(url, key, { auth: { persistSession: false } });
-  const { data: prof, error: e1 } = await sb.from('profiles').select('id').eq('email', email).maybeSingle();
+  const { data: prof, error: e1 } = await sb
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
   if (e1) throw e1;
   if (!prof) throw new Error(`No profile for ${email}`);
-  const { data: plant, error: e2 } = await sb.from('plants').select('name')
-    .eq('user_id', prof.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+  const { data: plant, error: e2 } = await sb
+    .from('plants')
+    .select('name')
+    .eq('user_id', prof.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
   if (e2) throw e2;
   if (!plant) throw new Error(`No plant for ${email} — recognise one in-app first.`);
   return plant.name;
 }
 
 function ensureTool(bin, hint) {
-  try { execSync(`command -v ${bin}`, { stdio: 'ignore' }); return true; }
-  catch (_) { if (hint) console.warn(hint); return false; }
+  try {
+    execSync(`command -v ${bin}`, { stdio: 'ignore' });
+    return true;
+  } catch (_) {
+    if (hint) console.warn(hint);
+    return false;
+  }
 }
 
 function pngToJpg(src, dst) {
   if (ensureTool('sips')) {
-    execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '90', src, '--out', dst], { stdio: 'ignore' });
+    execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '90', src, '--out', dst], {
+      stdio: 'ignore',
+    });
   } else if (ensureTool('magick')) {
     execFileSync('magick', [src, '-quality', '90', dst], { stdio: 'ignore' });
   } else if (ensureTool('convert')) {
     execFileSync('convert', [src, '-quality', '90', dst], { stdio: 'ignore' });
   } else {
-    throw new Error('No image converter found (need macOS `sips` or ImageMagick `magick`/`convert`).');
+    throw new Error(
+      'No image converter found (need macOS `sips` or ImageMagick `magick`/`convert`).'
+    );
   }
 }
 
 async function captureLang(lang, email, password, opts) {
-  if (!DEMO_EMAIL_RE.test(email)) throw new Error(`"${email}" is not a *@florascout.app demo account.`);
+  if (!DEMO_EMAIL_RE.test(email))
+    throw new Error(`"${email}" is not a *@florascout.app demo account.`);
   const loc = readLocale(lang);
   const loginLoc = readLocale(opts.loginLang);
-  const plantName = opts.plant || await fetchPlantName(email);
+  const plantName = opts.plant || (await fetchPlantName(email));
 
   const shotDir = path.join(OUT_ROOT, lang);
   fs.mkdirSync(shotDir, { recursive: true });
@@ -160,7 +199,12 @@ async function captureLang(lang, email, password, opts) {
   args.push(FLOW);
 
   console.log(`\n[${lang}] ${email} | plant "${plantName}" | login-lang ${opts.loginLang}`);
-  if (opts.dryRun) { console.log(`  maestro ${args.map((a) => (a.includes(' ') ? JSON.stringify(a) : a)).join(' ')}`); return; }
+  if (opts.dryRun) {
+    console.log(
+      `  maestro ${args.map((a) => (a.includes(' ') ? JSON.stringify(a) : a)).join(' ')}`
+    );
+    return;
+  }
 
   execFileSync('maestro', args, { stdio: 'inherit' });
 
@@ -170,7 +214,10 @@ async function captureLang(lang, email, password, opts) {
   let ok = 0;
   for (const name of SHOTS) {
     const png = path.join(shotDir, `${name}.png`);
-    if (!fs.existsSync(png)) { console.warn(`  ⚠️  missing ${name}.png (navigation step may need a selector tweak)`); continue; }
+    if (!fs.existsSync(png)) {
+      console.warn(`  ⚠️  missing ${name}.png (navigation step may need a selector tweak)`);
+      continue;
+    }
     pngToJpg(png, path.join(destDir, `${name}.jpg`));
     ok++;
   }
@@ -180,25 +227,50 @@ async function captureLang(lang, email, password, opts) {
 
 async function main() {
   const a = parseArgs(process.argv.slice(2));
-  if (!fs.existsSync(FLOW)) { console.error('Missing .maestro/screenshots.yaml'); process.exit(1); }
+  if (!fs.existsSync(FLOW)) {
+    console.error('Missing .maestro/screenshots.yaml');
+    process.exit(1);
+  }
   const accounts = JSON.parse(fs.readFileSync(ACCOUNTS, 'utf8'));
-  const allLangs = Object.keys(accounts).filter((k) => !k.startsWith('_') && accounts[k] && accounts[k].email);
-  const langs = a.langs ? String(a.langs).split(',').map((s) => s.trim()).filter(Boolean) : allLangs;
+  const allLangs = Object.keys(accounts).filter(
+    (k) => !k.startsWith('_') && accounts[k] && accounts[k].email
+  );
+  const langs = a.langs
+    ? String(a.langs)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : allLangs;
   const password = a.password || process.env.SCREENSHOT_PASSWORD;
   const opts = {
-    device: a.device, loginLang: a['login-lang'] || 'de',
-    plant: a.plant, keepPng: !!a['keep-png'], dryRun: !!a['dry-run'],
+    device: a.device,
+    loginLang: a['login-lang'] || 'de',
+    plant: a.plant,
+    keepPng: !!a['keep-png'],
+    dryRun: !!a['dry-run'],
   };
 
-  if (!password && !opts.dryRun) { console.error('Missing --password (or SCREENSHOT_PASSWORD env).'); process.exit(1); }
-  if (opts.plant && langs.length > 1) { console.error('--plant only valid for a single --langs entry.'); process.exit(1); }
-  if (!opts.dryRun) ensureTool('maestro', null) || (console.error('`maestro` not found on PATH. Install: https://maestro.mobile.dev'), process.exit(1));
+  if (!password && !opts.dryRun) {
+    console.error('Missing --password (or SCREENSHOT_PASSWORD env).');
+    process.exit(1);
+  }
+  if (opts.plant && langs.length > 1) {
+    console.error('--plant only valid for a single --langs entry.');
+    process.exit(1);
+  }
+  if (!opts.dryRun)
+    ensureTool('maestro', null) ||
+      (console.error('`maestro` not found on PATH. Install: https://maestro.mobile.dev'),
+      process.exit(1));
 
   console.log(`Capturing ${langs.length} language(s): ${langs.join(', ')}`);
   const failed = [];
   for (const lang of langs) {
     const acc = accounts[lang];
-    if (!acc || !acc.email) { console.warn(`Skipping "${lang}" — no email in screenshot-accounts.json`); continue; }
+    if (!acc || !acc.email) {
+      console.warn(`Skipping "${lang}" — no email in screenshot-accounts.json`);
+      continue;
+    }
     try {
       await captureLang(lang, acc.email, acc.password || password, opts);
     } catch (e) {
@@ -206,8 +278,13 @@ async function main() {
       failed.push(lang);
     }
   }
-  console.log(`\nDone. ${langs.length - failed.length}/${langs.length} ok${failed.length ? `, failed: ${failed.join(', ')}` : ''}.`);
+  console.log(
+    `\nDone. ${langs.length - failed.length}/${langs.length} ok${failed.length ? `, failed: ${failed.join(', ')}` : ''}.`
+  );
   if (failed.length) process.exit(1);
 }
 
-main().catch((e) => { console.error('FAILED:', e.message || e); process.exit(1); });
+main().catch((e) => {
+  console.error('FAILED:', e.message || e);
+  process.exit(1);
+});
