@@ -2,9 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { supabase } from '../supabase';
 import { Sentry } from '../sentry.config';
 import { initPurchases, logoutPurchases } from '../services/purchaseService';
-import { normalizeLanguage } from '../services/languageService';
+import { applyLanguage } from '../services/languageService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import i18n from '../i18n';
 
 const AuthContext = createContext(null);
 
@@ -81,12 +80,12 @@ export function AuthProvider({ children }) {
         .select('*')
         .eq('id', user.id)
         .single()
-        .then(({ data }) => {
-          setProfile(data);
+        .then(async ({ data }) => {
           // Set i18n locale from profile language
           if (data?.language) {
-            i18n.locale = normalizeLanguage(data.language);
+            await applyLanguage(data.language);
           }
+          setProfile(data);
           setLoading(false);
         })
         .catch((error) => {
@@ -109,10 +108,10 @@ export function AuthProvider({ children }) {
       return;
     }
     if (data) {
-      setProfile(data);
       if (data.language) {
-        i18n.locale = normalizeLanguage(data.language);
+        await applyLanguage(data.language);
       }
+      setProfile(data);
     }
   }, [user?.id]);
 

@@ -2,7 +2,9 @@ import {
   normalizeLanguage,
   getLanguageLabel,
   LANGUAGE_OPTIONS,
+  applyLanguage,
 } from '../../services/languageService';
+import i18n from '../../i18n';
 
 describe('normalizeLanguage', () => {
   it('returns "de" for null/undefined/empty input', () => {
@@ -17,6 +19,10 @@ describe('normalizeLanguage', () => {
     expect(normalizeLanguage('fr')).toBe('fr');
     expect(normalizeLanguage('it')).toBe('it');
     expect(normalizeLanguage('es')).toBe('es');
+    expect(normalizeLanguage('nl')).toBe('nl');
+    expect(normalizeLanguage('pt-BR')).toBe('pt-BR');
+    expect(normalizeLanguage('pt-PT')).toBe('pt-PT');
+    expect(normalizeLanguage('zh-Hans')).toBe('zh-Hans');
   });
 
   it('normalizes case-insensitive codes', () => {
@@ -65,9 +71,22 @@ describe('normalizeLanguage', () => {
     expect(normalizeLanguage('Russisch')).toBe('ru');
   });
 
+  it('normalizes new LTR language names and region aliases', () => {
+    expect(normalizeLanguage('Dutch')).toBe('nl');
+    expect(normalizeLanguage('Dänisch')).toBe('da');
+    expect(normalizeLanguage('Polish')).toBe('pl');
+    expect(normalizeLanguage('Ukrainisch')).toBe('uk');
+    expect(normalizeLanguage('Portuguese')).toBe('pt-BR');
+    expect(normalizeLanguage('Portuguese Portugal')).toBe('pt-PT');
+    expect(normalizeLanguage('Hindi')).toBe('hi');
+    expect(normalizeLanguage('Bengali')).toBe('bn');
+    expect(normalizeLanguage('Japanese')).toBe('ja');
+    expect(normalizeLanguage('Korean')).toBe('ko');
+    expect(normalizeLanguage('Chinese')).toBe('zh-Hans');
+    expect(normalizeLanguage('Indonesian')).toBe('id');
+  });
+
   it('returns "de" for unknown languages', () => {
-    expect(normalizeLanguage('portuguese')).toBe('de');
-    expect(normalizeLanguage('japanese')).toBe('de');
     expect(normalizeLanguage('xyz')).toBe('de');
   });
 
@@ -89,6 +108,8 @@ describe('getLanguageLabel', () => {
     expect(getLanguageLabel('it')).toBe('Italiano');
     expect(getLanguageLabel('es')).toBe('Español');
     expect(getLanguageLabel('ru')).toBe('Русский');
+    expect(getLanguageLabel('pt-BR')).toBe('Português (BR)');
+    expect(getLanguageLabel('zh-Hans')).toBe('简体中文');
   });
 
   it('returns "Deutsch" for unknown input', () => {
@@ -104,8 +125,8 @@ describe('getLanguageLabel', () => {
 });
 
 describe('LANGUAGE_OPTIONS', () => {
-  it('contains 7 supported languages', () => {
-    expect(LANGUAGE_OPTIONS).toHaveLength(7);
+  it('contains all supported LTR languages', () => {
+    expect(LANGUAGE_OPTIONS).toHaveLength(19);
   });
 
   it('each option has code and label', () => {
@@ -115,5 +136,16 @@ describe('LANGUAGE_OPTIONS', () => {
       expect(typeof opt.code).toBe('string');
       expect(typeof opt.label).toBe('string');
     });
+  });
+});
+
+describe('applyLanguage', () => {
+  it('loads a language before switching the active locale', async () => {
+    delete i18n.translations.nl;
+
+    await expect(applyLanguage('nl')).resolves.toBe('nl');
+
+    expect(i18n.locale).toBe('nl');
+    expect(i18n.translations.nl?.common?.save).toBeTruthy();
   });
 });

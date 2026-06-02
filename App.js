@@ -29,6 +29,7 @@ import MoreScreen from './screens/MoreScreen';
 import HeatmapScreen from './screens/HeatmapScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLoadingScreen from './components/AppLoadingScreen';
 import OfflineBanner from './components/OfflineBanner';
@@ -228,6 +229,7 @@ function updateTimeOnlyContext(previousContext) {
 
 // ---------- App Content (uses AuthContext) ---------
 function AppContent() {
+  const { version: languageVersion } = useLanguage();
   const {
     user,
     profile,
@@ -332,7 +334,7 @@ function AppContent() {
 
   // ---------- Navigation Container (5 Tabs) ------------------
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} key={`nav-${languageVersion}`}>
       <OfflineBanner />
       <Tab.Navigator
         initialRouteName="MeinePflanzenTab"
@@ -388,11 +390,13 @@ function AppContent() {
 // ---------- Root App Component ----------------------------
 function App() {
   return (
-    <AuthProvider>
-      <ErrorBoundary>
-        <AppContent />
-      </ErrorBoundary>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <ErrorBoundary>
+          <AppContent />
+        </ErrorBoundary>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 

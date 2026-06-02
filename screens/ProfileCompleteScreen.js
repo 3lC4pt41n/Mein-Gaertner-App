@@ -12,6 +12,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext';
 import { safeLaunchCamera, safeLaunchLibrary } from '../services/imagePickerHelper';
 import { supabase } from '../supabase';
 import { LANGUAGE_OPTIONS, normalizeLanguage } from '../services/languageService';
@@ -69,11 +70,13 @@ function AvatarOption({ icon, title, subtitle, onPress, disabled }) {
 }
 
 export default function ProfileCompleteScreen({ user, profile, onDone }) {
+  const { setLanguage: setAppLanguage } = useLanguage();
   const [username, setUsername] = useState(() => formCache?.username ?? profile?.username ?? '');
-  const [language, setLanguage] = useState(
+  const [language, setLanguageState] = useState(
     () => formCache?.language ?? normalizeLanguage(profile?.language)
   );
   const [saving, setSaving] = useState(false);
+  const [switchingLanguage, setSwitchingLanguage] = useState(false);
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
   const [avatarPath, setAvatarPath] = useState(user?.user_metadata?.gardener_avatar_path || '');
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null);
@@ -93,7 +96,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone }) {
       try {
         const draft = JSON.parse(raw);
         if (draft.username) setUsername(draft.username);
-        if (draft.language) setLanguage(normalizeLanguage(draft.language));
+        if (draft.language) setLanguageState(normalizeLanguage(draft.language));
       } catch (_e) {
         // Ignore stale or malformed local drafts.
       }
@@ -190,6 +193,17 @@ export default function ProfileCompleteScreen({ user, profile, onDone }) {
     await processAvatarGeneration(null, true);
   };
 
+  const handleLanguageSelect = async (code) => {
+    setLanguageState(code);
+    setSwitchingLanguage(true);
+    try {
+      const appliedLanguage = await setAppLanguage(code);
+      setLanguageState(appliedLanguage);
+    } finally {
+      setSwitchingLanguage(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!user?.id) {
       Alert.alert(t('common.error'), t('profile.noUserId'));
@@ -252,7 +266,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone }) {
     label: opt.label,
   }));
 
-  const busy = saving || generatingAvatar;
+  const busy = saving || generatingAvatar || switchingLanguage;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -274,7 +288,7 @@ export default function ProfileCompleteScreen({ user, profile, onDone }) {
         <DSChipGroup
           items={langChips}
           selected={language}
-          onSelect={setLanguage}
+          onSelect={handleLanguageSelect}
           variant="pills"
           scrollable
           style={styles.languageChips}

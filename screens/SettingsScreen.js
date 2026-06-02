@@ -21,13 +21,14 @@ import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { t } from '../i18n';
 import { colors, spacing } from '../theme/tokens';
 import DSButton from '../theme/DSButton';
 import DSInput from '../theme/DSInput';
 import DSCard from '../theme/DSCard';
 import DSChipGroup from '../theme/DSChips';
-import { LANGUAGE_OPTIONS, normalizeLanguage, applyLanguage } from '../services/languageService';
+import { LANGUAGE_OPTIONS, normalizeLanguage } from '../services/languageService';
 import { generateGardenerAvatar } from '../services/aiService';
 import { openManageSubscriptions } from '../services/purchaseService';
 import { rescheduleAllTaskReminders } from '../services/notificationService';
@@ -106,6 +107,7 @@ function LinkRow({ icon, label, onPress }) {
 
 export default function SettingsScreen({ navigation }) {
   const { user, profile, signOut, deleteAccount, updateProfile, refreshProfile } = useAuth();
+  const { setLanguage: setAppLanguage } = useLanguage();
 
   // --- Profile state ---
   const [username, setUsername] = useState('');
@@ -115,7 +117,7 @@ export default function SettingsScreen({ navigation }) {
   const [generatingAvatar, setGeneratingAvatar] = useState(false);
 
   // --- Preferences state ---
-  const [language, setLanguage] = useState('de');
+  const [language, setLanguageState] = useState('de');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [gardenerPersonaKey, setGardenerPersonaKey] = useState(DEFAULT_GARDENER_PERSONA_KEY);
 
@@ -160,7 +162,7 @@ export default function SettingsScreen({ navigation }) {
       setUsername(profile.username ?? '');
       setFirstName(profile.first_name ?? '');
       setLastName(profile.last_name ?? '');
-      setLanguage(normalizeLanguage(profile.language));
+      setLanguageState(normalizeLanguage(profile.language));
       setNotificationsEnabled(profile.notifications_enabled ?? true);
       setLeaderboardOptIn(profile.leaderboard_opt_in ?? false);
       setHeatmapOptIn(profile.heatmap_opt_in ?? false);
@@ -307,11 +309,15 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleLanguageChange = async (code) => {
-    setLanguage(code);
-    applyLanguage(code);
+    const previousLanguage = language;
+    setLanguageState(code);
     try {
-      await updateProfile({ language: code });
+      const appliedLanguage = await setAppLanguage(code);
+      setLanguageState(appliedLanguage);
+      await updateProfile({ language: appliedLanguage });
     } catch (error) {
+      setLanguageState(previousLanguage);
+      await setAppLanguage(previousLanguage);
       Alert.alert(t('common.error'), error?.message || t('settings.profileSaveError'));
     }
   };

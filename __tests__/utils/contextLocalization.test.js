@@ -4,8 +4,15 @@ const {
   getLocalizedSeasonalTip,
   getLocalizedTimeOfDayName,
 } = require('../../utils/contextLocalization');
+const { ensureLanguageLoaded } = require('../../services/translationLoader');
 
 describe('contextLocalization', () => {
+  beforeAll(async () => {
+    for (const language of ['en', 'tr', 'fr', 'es']) {
+      await ensureLanguageLoaded(language);
+    }
+  });
+
   it('localizes season labels by stable season key', () => {
     expect(getLocalizedSeasonName({ key: 'summer', name: 'Sommer', icon: '☀️' }, 'en')).toBe(
       'Summer'

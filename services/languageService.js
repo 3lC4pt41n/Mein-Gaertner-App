@@ -1,67 +1,60 @@
 import { supabase } from '../supabase';
 import i18n from '../i18n';
+import {
+  DEFAULT_LANGUAGE_CODE,
+  LANGUAGE_OPTIONS,
+  SUPPORTED_LANGUAGE_CODES,
+  getLanguageMeta,
+  normalizeLanguageCode,
+} from '../i18n/registry';
+import { ensureLanguageLoaded } from './translationLoader';
 
-export const LANGUAGE_OPTIONS = [
-  { code: 'de', label: 'Deutsch' },
-  { code: 'en', label: 'English' },
-  { code: 'fr', label: 'Français' },
-  { code: 'it', label: 'Italiano' },
-  { code: 'es', label: 'Español' },
-  { code: 'ru', label: 'Русский' },
-  { code: 'tr', label: 'Türkçe' },
-];
+export { LANGUAGE_OPTIONS };
+export const SUPPORTED = SUPPORTED_LANGUAGE_CODES;
 
-const LANGUAGE_ALIAS_TO_CODE = {
-  de: 'de',
-  deutsch: 'de',
-  german: 'de',
-  en: 'en',
-  english: 'en',
-  englisch: 'en',
-  fr: 'fr',
-  francais: 'fr',
-  français: 'fr',
-  french: 'fr',
-  franzoesisch: 'fr',
-  französisch: 'fr',
-  it: 'it',
-  italian: 'it',
-  italiano: 'it',
-  italienisch: 'it',
-  es: 'es',
-  espanol: 'es',
-  español: 'es',
-  spanish: 'es',
-  spanisch: 'es',
-  ru: 'ru',
-  russian: 'ru',
-  русский: 'ru',
-  russisch: 'ru',
-  tr: 'tr',
-  turkish: 'tr',
-  türkçe: 'tr',
-  türkisch: 'tr',
-};
+let changeVersion = 0;
+let latestApplyToken = 0;
+const listeners = new Set();
+
+function emitLanguageChange(locale) {
+  changeVersion += 1;
+  listeners.forEach((listener) => listener(locale, changeVersion));
+}
+
+export function subscribeLanguageChanges(listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
 
 export function normalizeLanguage(input) {
-  if (!input) return 'de';
-  const raw = String(input).trim().toLowerCase();
-  return LANGUAGE_ALIAS_TO_CODE[raw] || 'de';
+  return normalizeLanguageCode(input);
 }
 
 export function getLanguageLabel(input) {
-  const code = normalizeLanguage(input);
-  return LANGUAGE_OPTIONS.find((opt) => opt.code === code)?.label || 'Deutsch';
+  return getLanguageMeta(input).label;
+}
+
+export function getCurrentLanguage() {
+  return normalizeLanguage(i18n.locale);
 }
 
 /**
  * Sets the i18n locale from a language input (code, label, or alias).
  * Returns the normalized language code.
  */
-export function applyLanguage(langInput) {
+export async function applyLanguage(langInput) {
+  const token = ++latestApplyToken;
   const code = normalizeLanguage(langInput);
-  i18n.locale = code;
-  return code;
+  const loaded = await ensureLanguageLoaded(code);
+  const nextLocale = loaded ? code : DEFAULT_LANGUAGE_CODE;
+
+  if (token !== latestApplyToken) {
+    return normalizeLanguage(i18n.locale);
+  }
+
+  i18n.locale = nextLocale;
+  emitLanguageChange(nextLocale);
+  return nextLocale;
 }
 
 export async function fetchCurrentUserLanguage() {
