@@ -1,6 +1,6 @@
 // Edge Function: Stripe Webhook fuer Web-Credit-Kaeufe
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { getCreditPackage } from '../_shared/creditPackages.ts';
+import { getAnyCreditPackage, SUB_PLANS } from '../_shared/creditPackages.ts';
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 
@@ -81,14 +81,41 @@ function extractPurchasePayload(event: any): {
   providerTransactionId: string;
   userId: string;
   packageId: string;
+  currentPeriodStart?: string | null;
+  currentPeriodEnd?: string | null;
 } | null {
-  if (event?.type === 'checkout.session.completed') {
+  if (
+    event?.type === 'checkout.session.completed' ||
+    event?.type === 'checkout.session.async_payment_succeeded'
+  ) {
     const session = event.data?.object;
+    if (session?.mode === 'subscription') return null;
+
     const metadata = session?.metadata || {};
     return {
       providerTransactionId: `stripe_${metadata.purchase_id || session.id}`,
       userId: metadata.user_id || session.client_reference_id,
       packageId: metadata.package,
+    };
+  }
+
+  if (event?.type === 'invoice.payment_succeeded' || event?.type === 'invoice.paid') {
+    const invoice = event.data?.object;
+    const line = invoice?.lines?.data?.[0] || {};
+    const metadata =
+      invoice?.subscription_details?.metadata ||
+      invoice?.parent?.subscription_details?.metadata ||
+      line?.metadata ||
+      {};
+
+    return {
+      providerTransactionId: `stripe_${invoice?.id}`,
+      userId: metadata.user_id,
+      packageId: metadata.package,
+      currentPeriodStart: line?.period?.start
+        ? new Date(line.period.start * 1000).toISOString()
+        : null,
+      currentPeriodEnd: line?.period?.end ? new Date(line.period.end * 1000).toISOString() : null,
     };
   }
 
@@ -104,6 +131,69 @@ function extractPurchasePayload(event: any): {
   }
 
   return null;
+}
+
+function extractSubscriptionStatusPayload(event: any): {
+  userId: string;
+  packageId: string;
+  status: string;
+  currentPeriodStart?: string | null;
+  currentPeriodEnd?: string | null;
+} | null {
+  if (event?.type !== 'customer.subscription.updated' && event?.type !== 'customer.subscription.deleted') {
+    return null;
+  }
+
+  const subscription = event.data?.object;
+  const metadata = subscription?.metadata || {};
+  const packageId = metadata.package;
+  const plan = packageId ? SUB_PLANS[packageId as keyof typeof SUB_PLANS] : null;
+  if (!metadata.user_id || !plan) return null;
+
+  return {
+    userId: metadata.user_id,
+    packageId,
+    status: event.type === 'customer.subscription.deleted' ? 'cancelled' : subscription?.status,
+    currentPeriodStart: subscription?.current_period_start
+      ? new Date(subscription.current_period_start * 1000).toISOString()
+      : null,
+    currentPeriodEnd: subscription?.current_period_end
+      ? new Date(subscription.current_period_end * 1000).toISOString()
+      : null,
+  };
+}
+
+function toStripePurchaseType(packageType: string): string {
+  return packageType === 'subscription' ? 'subscription_renewal' : packageType;
+}
+
+async function upsertStripeSubscription(
+  serviceClient: ReturnType<typeof getServiceClient>,
+  payload: {
+    userId: string;
+    packageId: string;
+    status: string;
+    currentPeriodStart?: string | null;
+    currentPeriodEnd?: string | null;
+  }
+) {
+  const plan = SUB_PLANS[payload.packageId as keyof typeof SUB_PLANS];
+  if (!plan) return;
+
+  const { error } = await serviceClient
+    .from('subscriptions')
+    .upsert(
+      {
+        user_id: payload.userId,
+        plan,
+        status: payload.status,
+        current_period_start: payload.currentPeriodStart || null,
+        current_period_end: payload.currentPeriodEnd || null,
+      },
+      { onConflict: 'user_id' }
+    );
+
+  if (error) throw error;
 }
 
 serve(async (req) => {
@@ -127,12 +217,19 @@ serve(async (req) => {
     await verifyStripeSignature(rawBody, req.headers.get('Stripe-Signature'), webhookSecret);
 
     const event = JSON.parse(rawBody);
+    const serviceClient = getServiceClient();
+    const subscriptionStatus = extractSubscriptionStatusPayload(event);
+    if (subscriptionStatus) {
+      await upsertStripeSubscription(serviceClient, subscriptionStatus);
+      return jsonResponse({ ok: true, subscriptionUpdated: true }, 200, corsHeaders);
+    }
+
     const purchase = extractPurchasePayload(event);
     if (!purchase) {
       return jsonResponse({ ok: true, skipped: true }, 200, corsHeaders);
     }
 
-    const pkg = getCreditPackage(purchase.packageId);
+    const pkg = getAnyCreditPackage(purchase.packageId);
     if (!pkg || !purchase.userId) {
       console.warn('Stripe Webhook ohne gueltiges Paket/User:', {
         type: event.type,
@@ -142,17 +239,26 @@ serve(async (req) => {
       return jsonResponse({ ok: true, skipped: true }, 200, corsHeaders);
     }
 
-    const serviceClient = getServiceClient();
     const { data: result, error } = await serviceClient.rpc('credit_purchase', {
       p_user_id: purchase.userId,
       p_provider_transaction_id: purchase.providerTransactionId,
       p_package: purchase.packageId,
       p_credits: pkg.credits,
       p_amount_eur: pkg.amountEur,
-      p_type: pkg.type,
+      p_type: toStripePurchaseType(pkg.type),
     });
 
     if (error) throw error;
+
+    if (SUB_PLANS[purchase.packageId as keyof typeof SUB_PLANS]) {
+      await upsertStripeSubscription(serviceClient, {
+        userId: purchase.userId,
+        packageId: purchase.packageId,
+        status: 'active',
+        currentPeriodStart: purchase.currentPeriodStart,
+        currentPeriodEnd: purchase.currentPeriodEnd,
+      });
+    }
 
     if (!result) {
       console.log(`Stripe Webhook doppelt empfangen: ${purchase.providerTransactionId}`);

@@ -17,7 +17,7 @@ export async function getOfferings() {
 export async function getPackagesWithLivePrices() {
   return {
     oneTime: ONE_TIME_PACKAGES,
-    subscriptions: [],
+    subscriptions: SUBSCRIPTION_PACKAGES,
     hasLivePrices: false,
   };
 }
