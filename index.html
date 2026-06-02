@@ -7476,6 +7476,267 @@
 
       const getDictionary = (lang) => TRANSLATIONS[lang] || TRANSLATIONS.de;
 
+      const ANDROID_INVITE_COPY = {
+        de: {
+          button: 'Android Beta',
+          title: 'Android-Beta per Einladung',
+          body: 'Trag deine Google-E-Mail ein. Wir fuegen sie zur Google-Testergruppe hinzu und schicken dir den Android-Link direkt per E-Mail.',
+          submit: 'Einladung anfordern',
+          loading: 'Einladung wird vorbereitet...',
+          legal:
+            'Deine E-Mail wird nur fuer die Android-Beta, die Google-Testergruppe und Testeinladungen genutzt.',
+          success:
+            'Danke. Wir fuegen deine E-Mail zur Google-Testergruppe hinzu und schicken dir den Android-Link per E-Mail.',
+        },
+        en: {
+          button: 'Android beta',
+          title: 'Android beta by invitation',
+          body: 'Enter your Google email. We will add it to the Google tester group and send you the Android link by email.',
+          submit: 'Request invitation',
+          loading: 'Preparing invitation...',
+          legal:
+            'Your email is only used for the Android beta, the Google tester group and tester invitations.',
+          success:
+            'Thanks. We will add your email to the Google tester group and send you the Android link by email.',
+        },
+        fr: {
+          button: 'Beta Android',
+          title: 'Beta Android sur invitation',
+          body: 'Saisissez votre e-mail Google. Nous l’ajouterons au groupe de test Google et vous enverrons le lien Android par e-mail.',
+          submit: 'Demander une invitation',
+          loading: 'Invitation en preparation...',
+          legal:
+            'Votre e-mail est utilise uniquement pour la beta Android, le groupe de test Google et les invitations.',
+          success:
+            'Merci. Nous ajoutons votre e-mail au groupe de test Google et vous envoyons le lien Android par e-mail.',
+        },
+        it: {
+          button: 'Beta Android',
+          title: 'Beta Android su invito',
+          body: 'Inserisci la tua e-mail Google. La aggiungeremo al gruppo tester Google e ti invieremo il link Android via e-mail.',
+          submit: 'Richiedi invito',
+          loading: 'Preparazione invito...',
+          legal:
+            'La tua e-mail viene usata solo per la beta Android, il gruppo tester Google e gli inviti.',
+          success:
+            'Grazie. Aggiungiamo la tua e-mail al gruppo tester Google e ti inviamo il link Android via e-mail.',
+        },
+        es: {
+          button: 'Beta Android',
+          title: 'Beta Android por invitacion',
+          body: 'Introduce tu correo de Google. Lo añadiremos al grupo de testers de Google y te enviaremos el enlace de Android por correo.',
+          submit: 'Solicitar invitacion',
+          loading: 'Preparando invitacion...',
+          legal:
+            'Tu correo solo se usa para la beta de Android, el grupo de testers de Google y las invitaciones.',
+          success:
+            'Gracias. Añadiremos tu correo al grupo de testers de Google y te enviaremos el enlace de Android por correo.',
+        },
+        ru: {
+          button: 'Android-бета',
+          title: 'Android-бета по приглашению',
+          body: 'Введите e-mail Google. Мы добавим его в Google-группу тестировщиков и отправим ссылку Android по почте.',
+          submit: 'Запросить приглашение',
+          loading: 'Готовим приглашение...',
+          legal:
+            'Ваш e-mail используется только для Android-беты, Google-группы тестировщиков и приглашений.',
+          success:
+            'Спасибо. Мы добавим ваш e-mail в Google-группу тестировщиков и отправим ссылку Android по почте.',
+        },
+        tr: {
+          button: 'Android beta',
+          title: 'Davetli Android betasi',
+          body: 'Google e-postani gir. Seni Google tester grubuna ekleyip Android baglantisini e-posta ile gonderecegiz.',
+          submit: 'Davet iste',
+          loading: 'Davet hazirlaniyor...',
+          legal:
+            'E-postan yalnizca Android betasi, Google tester grubu ve test davetleri icin kullanilir.',
+          success:
+            'Tesekkurler. E-postani Google tester grubuna ekleyip Android baglantisini e-posta ile gonderecegiz.',
+        },
+        nl: {
+          button: 'Android beta',
+          title: 'Android-beta op uitnodiging',
+          body: 'Vul je Google-e-mail in. We voegen die toe aan de Google-testgroep en sturen de Android-link per e-mail.',
+          submit: 'Uitnodiging aanvragen',
+          loading: 'Uitnodiging voorbereiden...',
+          legal:
+            'Je e-mail wordt alleen gebruikt voor de Android-beta, de Google-testgroep en testuitnodigingen.',
+          success:
+            'Bedankt. We voegen je e-mail toe aan de Google-testgroep en sturen de Android-link per e-mail.',
+        },
+        da: {
+          button: 'Android beta',
+          title: 'Android-beta via invitation',
+          body: 'Indtast din Google-e-mail. Vi tilfoejer den til Googles testgruppe og sender Android-linket via e-mail.',
+          submit: 'Anmod om invitation',
+          loading: 'Forbereder invitation...',
+          legal:
+            'Din e-mail bruges kun til Android-betaen, Googles testgruppe og testinvitationer.',
+          success:
+            'Tak. Vi tilfoejer din e-mail til Googles testgruppe og sender Android-linket via e-mail.',
+        },
+        pl: {
+          button: 'Beta Android',
+          title: 'Beta Android na zaproszenie',
+          body: 'Wpisz swoj e-mail Google. Dodamy go do grupy testerow Google i wyslemy link Android e-mailem.',
+          submit: 'Popros o zaproszenie',
+          loading: 'Przygotowujemy zaproszenie...',
+          legal:
+            'Twoj e-mail jest uzywany tylko do bety Android, grupy testerow Google i zaproszen.',
+          success:
+            'Dziekujemy. Dodamy Twoj e-mail do grupy testerow Google i wyslemy link Android e-mailem.',
+        },
+        uk: {
+          button: 'Android-бета',
+          title: 'Android-бета за запрошенням',
+          body: 'Введіть свою Google-адресу. Ми додамо її до Google-групи тестувальників і надішлемо Android-посилання електронною поштою.',
+          submit: 'Запросити доступ',
+          loading: 'Готуємо запрошення...',
+          legal:
+            'Ваш e-mail використовується лише для Android-бети, Google-групи тестувальників і запрошень.',
+          success:
+            'Дякуємо. Ми додамо вашу адресу до Google-групи тестувальників і надішлемо Android-посилання електронною поштою.',
+        },
+        'pt-BR': {
+          button: 'Beta Android',
+          title: 'Beta Android por convite',
+          body: 'Informe seu e-mail Google. Vamos adiciona-lo ao grupo de testadores do Google e enviar o link Android por e-mail.',
+          submit: 'Solicitar convite',
+          loading: 'Preparando convite...',
+          legal:
+            'Seu e-mail sera usado apenas para o beta Android, o grupo de testadores do Google e convites.',
+          success:
+            'Obrigado. Vamos adicionar seu e-mail ao grupo de testadores do Google e enviar o link Android por e-mail.',
+        },
+        'pt-PT': {
+          button: 'Beta Android',
+          title: 'Beta Android por convite',
+          body: 'Indica o teu e-mail Google. Vamos adiciona-lo ao grupo de testadores da Google e enviar o link Android por e-mail.',
+          submit: 'Pedir convite',
+          loading: 'A preparar convite...',
+          legal:
+            'O teu e-mail sera usado apenas para o beta Android, o grupo de testadores da Google e convites.',
+          success:
+            'Obrigado. Vamos adicionar o teu e-mail ao grupo de testadores da Google e enviar o link Android por e-mail.',
+        },
+        hi: {
+          button: 'Android beta',
+          title: 'निमंत्रण के साथ Android beta',
+          body: 'अपना Google ईमेल डालें। हम इसे Google tester group में जोड़ेंगे और Android link ईमेल से भेजेंगे।',
+          submit: 'निमंत्रण मांगें',
+          loading: 'निमंत्रण तैयार हो रहा है...',
+          legal:
+            'आपका ईमेल केवल Android beta, Google tester group और tester invitations के लिए इस्तेमाल होगा।',
+          success:
+            'धन्यवाद। हम आपका ईमेल Google tester group में जोड़ेंगे और Android link ईमेल से भेजेंगे।',
+        },
+        bn: {
+          button: 'Android beta',
+          title: 'আমন্ত্রণসহ Android beta',
+          body: 'আপনার Google ইমেল দিন। আমরা এটি Google tester group-এ যোগ করব এবং Android link ইমেলে পাঠাব।',
+          submit: 'আমন্ত্রণ চাইুন',
+          loading: 'আমন্ত্রণ প্রস্তুত হচ্ছে...',
+          legal:
+            'আপনার ইমেল শুধু Android beta, Google tester group এবং tester invitations-এর জন্য ব্যবহৃত হবে।',
+          success:
+            'ধন্যবাদ। আমরা আপনার ইমেল Google tester group-এ যোগ করব এবং Android link ইমেলে পাঠাব।',
+        },
+        ja: {
+          button: 'Androidベータ',
+          title: '招待制Androidベータ',
+          body: 'Googleメールを入力してください。Googleテスターグループに追加し、Androidリンクをメールで送ります。',
+          submit: '招待をリクエスト',
+          loading: '招待を準備中...',
+          legal:
+            'メールアドレスはAndroidベータ、Googleテスターグループ、テスター招待のみに使用します。',
+          success:
+            'ありがとうございます。Googleテスターグループに追加し、Androidリンクをメールで送ります。',
+        },
+        ko: {
+          button: 'Android 베타',
+          title: '초대 기반 Android 베타',
+          body: 'Google 이메일을 입력하세요. Google 테스터 그룹에 추가하고 Android 링크를 이메일로 보내드립니다.',
+          submit: '초대 요청',
+          loading: '초대 준비 중...',
+          legal:
+            '이메일은 Android 베타, Google 테스터 그룹, 테스터 초대에만 사용됩니다.',
+          success:
+            '감사합니다. Google 테스터 그룹에 이메일을 추가하고 Android 링크를 이메일로 보내드립니다.',
+        },
+        'zh-Hans': {
+          button: 'Android beta',
+          title: '邀请制 Android beta',
+          body: '输入你的 Google 邮箱。我们会将其加入 Google 测试者群组，并通过邮件发送 Android 链接。',
+          submit: '申请邀请',
+          loading: '正在准备邀请...',
+          legal:
+            '你的邮箱只会用于 Android beta、Google 测试者群组和测试邀请。',
+          success:
+            '谢谢。我们会将你的邮箱加入 Google 测试者群组，并通过邮件发送 Android 链接。',
+        },
+        id: {
+          button: 'Beta Android',
+          title: 'Beta Android melalui undangan',
+          body: 'Masukkan email Google Anda. Kami akan menambahkannya ke grup tester Google dan mengirim link Android lewat email.',
+          submit: 'Minta undangan',
+          loading: 'Menyiapkan undangan...',
+          legal:
+            'Email Anda hanya digunakan untuk beta Android, grup tester Google, dan undangan tester.',
+          success:
+            'Terima kasih. Kami akan menambahkan email Anda ke grup tester Google dan mengirim link Android lewat email.',
+        },
+        ar: {
+          button: 'نسخة Android التجريبية',
+          title: 'نسخة Android التجريبية عبر دعوة',
+          body: 'أدخل بريد Google الخاص بك. سنضيفه إلى مجموعة مختبري Google ونرسل رابط Android عبر البريد الإلكتروني.',
+          submit: 'طلب دعوة',
+          loading: 'جارٍ تجهيز الدعوة...',
+          legal:
+            'يُستخدم بريدك فقط لنسخة Android التجريبية ومجموعة مختبري Google ودعوات الاختبار.',
+          success:
+            'شكرًا. سنضيف بريدك إلى مجموعة مختبري Google ونرسل رابط Android عبر البريد الإلكتروني.',
+        },
+        he: {
+          button: 'בטא Android',
+          title: 'בטא Android בהזמנה',
+          body: 'הזן את כתובת Google שלך. נוסיף אותה לקבוצת הבודקים של Google ונשלח את קישור Android במייל.',
+          submit: 'בקשת הזמנה',
+          loading: 'מכינים הזמנה...',
+          legal:
+            'האימייל שלך ישמש רק לבטא Android, לקבוצת הבודקים של Google ולהזמנות בדיקה.',
+          success:
+            'תודה. נוסיף את האימייל שלך לקבוצת הבודקים של Google ונשלח את קישור Android במייל.',
+        },
+        fa: {
+          button: 'بتای Android',
+          title: 'بتای Android با دعوت',
+          body: 'ایمیل Google خود را وارد کنید. آن را به گروه آزمایش‌کنندگان Google اضافه می‌کنیم و لینک Android را ایمیل می‌کنیم.',
+          submit: 'درخواست دعوت',
+          loading: 'در حال آماده‌سازی دعوت...',
+          legal:
+            'ایمیل شما فقط برای بتای Android، گروه آزمایش‌کنندگان Google و دعوت‌های تست استفاده می‌شود.',
+          success:
+            'متشکریم. ایمیل شما را به گروه آزمایش‌کنندگان Google اضافه می‌کنیم و لینک Android را ایمیل می‌کنیم.',
+        },
+        ur: {
+          button: 'Android beta',
+          title: 'دعوت کے ذریعے Android beta',
+          body: 'اپنا Google ای میل درج کریں۔ ہم اسے Google tester group میں شامل کریں گے اور Android link ای میل سے بھیجیں گے۔',
+          submit: 'دعوت کی درخواست',
+          loading: 'دعوت تیار ہو رہی ہے...',
+          legal:
+            'آپ کا ای میل صرف Android beta، Google tester group اور tester invitations کے لیے استعمال ہوگا۔',
+          success:
+            'شکریہ۔ ہم آپ کا ای میل Google tester group میں شامل کریں گے اور Android link ای میل سے بھیجیں گے۔',
+        },
+      };
+
+      const getAndroidInviteCopy = (lang, fallback) => ({
+        ...fallback,
+        ...(ANDROID_INVITE_COPY[lang] || ANDROID_INVITE_COPY.en),
+      });
+
       const setButtonLabel = (button, label) => {
         const labelElement = button.querySelector('.btn-label');
 
@@ -7527,6 +7788,10 @@
       const applyTranslations = (lang) => {
         const activeLanguage = getSupportedLanguageCode(lang) || 'de';
         const dictionary = getDictionary(activeLanguage);
+        const waitlistDictionary = getAndroidInviteCopy(
+          activeLanguage,
+          dictionary.download.waitlist
+        );
         const storeLinks = getStoreLinks();
 
         document.documentElement.lang = activeLanguage;
@@ -7550,7 +7815,7 @@
         heroLead.innerHTML = dictionary.hero.lead;
         const heroButtonLabels = [
           dictionary.hero.buttons[0],
-          dictionary.hero.buttons[1],
+          waitlistDictionary.button,
           dictionary.download.buttons[2],
           dictionary.hero.buttons[2],
         ];
@@ -7617,19 +7882,24 @@
         downloadBox.querySelector('.eyebrow').textContent = dictionary.download.eyebrow;
         downloadBox.querySelector('h2').textContent = dictionary.download.title;
         downloadLead.textContent = dictionary.download.body;
+        const downloadButtonLabels = [
+          dictionary.download.buttons[0],
+          waitlistDictionary.button,
+          dictionary.download.buttons[2],
+        ];
         downloadBox.querySelectorAll('.download-actions a').forEach((button, index) => {
-          setButtonLabel(button, dictionary.download.buttons[index]);
+          setButtonLabel(button, downloadButtonLabels[index]);
         });
         downloadMeta.textContent = dictionary.download.meta;
-        waitlistHeading.textContent = dictionary.download.waitlist.title;
-        waitlistBody.textContent = dictionary.download.waitlist.body;
-        waitlistEmail.placeholder = dictionary.download.waitlist.placeholder;
-        waitlistEmail.setAttribute('aria-label', dictionary.download.waitlist.emailLabel);
-        waitlistEmailLabel.textContent = dictionary.download.waitlist.emailLabel;
+        waitlistHeading.textContent = waitlistDictionary.title;
+        waitlistBody.textContent = waitlistDictionary.body;
+        waitlistEmail.placeholder = waitlistDictionary.placeholder;
+        waitlistEmail.setAttribute('aria-label', waitlistDictionary.emailLabel);
+        waitlistEmailLabel.textContent = waitlistDictionary.emailLabel;
         if (waitlistSubmit.getAttribute('aria-busy') !== 'true') {
-          waitlistSubmit.textContent = dictionary.download.waitlist.submit;
+          waitlistSubmit.textContent = waitlistDictionary.submit;
         }
-        waitlistNote.textContent = dictionary.download.waitlist.legal;
+        waitlistNote.textContent = waitlistDictionary.legal;
         waitlistButtons.forEach((button) => {
           button.href = '#android-waitlist';
           button.removeAttribute('target');
@@ -7637,9 +7907,9 @@
         });
 
         const statusTranslationKey = waitlistStatus.dataset.translationKey;
-        if (statusTranslationKey && dictionary.download.waitlist[statusTranslationKey]) {
+        if (statusTranslationKey && waitlistDictionary[statusTranslationKey]) {
           setWaitlistStatus(
-            dictionary.download.waitlist[statusTranslationKey],
+            waitlistDictionary[statusTranslationKey],
             waitlistStatus.dataset.kind || '',
             statusTranslationKey
           );
@@ -7673,7 +7943,7 @@
 
         const lang = getSupportedLanguageCode(languageSelect.value) || 'de';
         const dictionary = getDictionary(lang);
-        const waitlistDictionary = dictionary.download.waitlist;
+        const waitlistDictionary = getAndroidInviteCopy(lang, dictionary.download.waitlist);
         const email = waitlistEmail.value.trim();
 
         if (!waitlistEmail.checkValidity()) {
