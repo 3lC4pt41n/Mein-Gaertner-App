@@ -14,7 +14,7 @@ import {
   Platform,
   TouchableOpacity,
 } from 'react-native';
-import MapView, { Circle, Marker } from 'react-native-maps';
+import MapView, { Circle, Marker } from '../components/MapView';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { fetchHeatmapGrid, fetchDiscoveryStats } from '../services/discoveryService';
@@ -38,7 +38,8 @@ import {
 // Default to true (nullish coalesce) so that OTA-updated JS code on
 // older builds (whose manifest doesn't include the flag yet) still
 // shows the map — the native config does have the key from EAS secrets.
-const MAPS_KEY_AVAILABLE = Constants.expoConfig?.extra?.googleMapsEnabled ?? true;
+const MAPS_KEY_AVAILABLE =
+  Platform.OS !== 'web' && (Constants.expoConfig?.extra?.googleMapsEnabled ?? true);
 
 // ── Error Boundary for MapView crashes ──────────────────────────────
 class MapErrorBoundary extends Component {
@@ -145,7 +146,7 @@ export default function HeatmapScreen() {
       const [gridData, userStats, location] = await Promise.all([
         fetchHeatmapGrid(),
         userId ? fetchDiscoveryStats(userId) : null,
-        requestLocationPermission(),
+        Platform.OS === 'web' ? null : requestLocationPermission(),
       ]);
 
       setGrid(gridData ?? []);

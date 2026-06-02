@@ -12,7 +12,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import * as AppleAuthentication from 'expo-apple-authentication';
+import * as AppleAuthentication from '../services/appleAuth';
 import { supabase } from '../supabase';
 import { colors, spacing, radius } from '../theme/tokens';
 import DSButton from '../theme/DSButton';

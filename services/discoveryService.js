@@ -1,10 +1,93 @@
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { supabase } from '../supabase';
 
 const LOCATION_CACHE_KEY = '@user_location'; // shared with weatherService
 const LEGACY_LOCATION_CACHE_KEY = '@weather_location';
 const LOCATION_TTL = 30 * 60 * 1000;
+
+const normalizeSpeciesName = (name) =>
+  String(name || '')
+    .trim()
+    .toLowerCase();
+
+const resolveSpeciesRecord = async (speciesName, plantType = null, firstDiscovererId = null) => {
+  const canonical = normalizeSpeciesName(speciesName);
+  if (!canonical) return null;
+
+  const displayName = formatDisplayName(speciesName);
+
+  const { data: existing, error: existingError } = await supabase
+    .from('species')
+    .select('id, first_discovered_by, total_discoverers, plant_type')
+    .eq('canonical_name', canonical)
+    .maybeSingle();
+
+  if (existingError) throw existingError;
+
+  if (existing) {
+    if (plantType && (!existing.plant_type || existing.plant_type === 'other')) {
+      await supabase.from('species').update({ plant_type: plantType }).eq('id', existing.id);
+    }
+
+    return {
+      speciesId: existing.id,
+      displayName,
+      isFirst:
+        !!firstDiscovererId &&
+        !existing.first_discovered_by &&
+        (existing.total_discoverers || 0) === 0,
+      totalDiscoverers: existing.total_discoverers || 0,
+    };
+  }
+
+  const insertPayload = {
+    canonical_name: canonical,
+    ...(plantType ? { plant_type: plantType } : {}),
+    ...(firstDiscovererId
+      ? {
+          first_discovered_by: firstDiscovererId,
+          first_discovered_at: new Date().toISOString(),
+        }
+      : {}),
+  };
+
+  const { data: newSpecies, error: insertError } = await supabase
+    .from('species')
+    .insert(insertPayload)
+    .select('id, total_discoverers')
+    .single();
+
+  if (insertError) {
+    if (insertError.code === '23505') {
+      const { data: retry, error: retryError } = await supabase
+        .from('species')
+        .select('id, first_discovered_by, total_discoverers')
+        .eq('canonical_name', canonical)
+        .single();
+
+      if (retryError) throw retryError;
+
+      return {
+        speciesId: retry.id,
+        displayName,
+        isFirst:
+          !!firstDiscovererId && !retry.first_discovered_by && (retry.total_discoverers || 0) === 0,
+        totalDiscoverers: retry.total_discoverers || 0,
+      };
+    }
+
+    throw insertError;
+  }
+
+  return {
+    speciesId: newSpecies.id,
+    displayName,
+    isFirst: !!firstDiscovererId,
+    totalDiscoverers: newSpecies.total_discoverers || 0,
+  };
+};
 
 const getFreshCachedLocation = async () => {
   const cacheKeys = [LOCATION_CACHE_KEY, LEGACY_LOCATION_CACHE_KEY];
@@ -47,6 +130,8 @@ const ensureForegroundLocationPermission = async () => {
  * Requests foreground permission at discovery time if no fresh cache exists.
  */
 export async function getDiscoveryLocation() {
+  if (Platform.OS === 'web') return null;
+
   try {
     const cachedLocation = await getFreshCachedLocation();
     if (cachedLocation) return cachedLocation;
@@ -73,6 +158,22 @@ export async function getDiscoveryLocation() {
 }
 
 /**
+ * Resolve or create a species record without creating a discovery event.
+ * Used for web AI uploads, where plants can be linked to Dex species but do
+ * not count towards discoveries, credits, leaderboard, heatmap, or reveal UI.
+ */
+export async function resolveSpeciesWithoutDiscovery(speciesName, plantType = null) {
+  const resolved = await resolveSpeciesRecord(speciesName, plantType, null);
+  if (!resolved) return null;
+
+  return {
+    speciesId: resolved.speciesId,
+    displayName: resolved.displayName,
+    totalDiscoverers: resolved.totalDiscoverers,
+  };
+}
+
+/**
  * Discovery-Event bei Pflanzenerkennung loggen.
  * Upsert in species-Tabelle + Insert in discovery_events.
  * Returns discovery metadata for the reveal UI.
@@ -93,57 +194,12 @@ export async function logDiscovery(
 ) {
   if (!userId || !speciesName) return null;
 
-  const canonical = speciesName.trim().toLowerCase();
-  const displayName = formatDisplayName(speciesName);
-
   // 1. Species upsert (canonical_name ist UNIQUE)
-  const { data: existing } = await supabase
-    .from('species')
-    .select('id, first_discovered_by, total_discoverers, plant_type')
-    .eq('canonical_name', canonical)
-    .maybeSingle();
+  const resolved = await resolveSpeciesRecord(speciesName, plantType, userId);
+  if (!resolved) return null;
 
-  let speciesId;
-  let isFirst = false;
-  let totalDiscoverers = existing?.total_discoverers || 0;
-
-  if (existing) {
-    speciesId = existing.id;
-    // Backfill plant_type if species was created before AI classification
-    if (plantType && (!existing.plant_type || existing.plant_type === 'other')) {
-      await supabase.from('species').update({ plant_type: plantType }).eq('id', speciesId);
-    }
-  } else {
-    // Neue Species – dieser User ist Erstentdecker
-    const { data: newSpecies, error: insertError } = await supabase
-      .from('species')
-      .insert({
-        canonical_name: canonical,
-        first_discovered_by: userId,
-        first_discovered_at: new Date().toISOString(),
-        ...(plantType ? { plant_type: plantType } : {}),
-      })
-      .select('id')
-      .single();
-
-    if (insertError) {
-      // Race-Condition: Anderer User hat gleichzeitig eingefügt
-      if (insertError.code === '23505') {
-        const { data: retry } = await supabase
-          .from('species')
-          .select('id, first_discovered_by, total_discoverers')
-          .eq('canonical_name', canonical)
-          .single();
-        speciesId = retry.id;
-        totalDiscoverers = retry.total_discoverers || 0;
-      } else {
-        throw insertError;
-      }
-    } else {
-      speciesId = newSpecies.id;
-      isFirst = true;
-    }
-  }
+  const { speciesId, displayName } = resolved;
+  let { isFirst, totalDiscoverers } = resolved;
 
   // 2. Discovery-Event loggen (max 1 pro Species/User durch UNIQUE INDEX)
   const { error: eventError } = await supabase.from('discovery_events').insert({
@@ -151,6 +207,7 @@ export async function logDiscovery(
     species_id: speciesId,
     plant_id: plantId,
     is_first: isFirst,
+    source: 'mobile',
     ...(location?.latitude != null && location?.longitude != null
       ? { latitude: location.latitude, longitude: location.longitude }
       : {}),

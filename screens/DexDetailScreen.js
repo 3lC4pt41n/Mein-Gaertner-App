@@ -10,9 +10,10 @@ import {
   Alert,
   TouchableOpacity,
   Modal,
+  Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import MapView, { Circle, Marker } from 'react-native-maps';
+import MapView, { Circle, Marker } from '../components/MapView';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useAuth } from '../contexts/AuthContext';
@@ -51,7 +52,8 @@ const DEFAULT_SPECIES_REGION = {
 // Use the boolean flag exposed through extra by app.config.js instead.
 // Default to true (nullish coalesce) so that OTA-updated JS code on older
 // builds (whose manifest doesn't include the flag yet) still renders the map.
-const MAPS_KEY_AVAILABLE = Constants.expoConfig?.extra?.googleMapsEnabled ?? true;
+const MAPS_KEY_AVAILABLE =
+  Platform.OS !== 'web' && (Constants.expoConfig?.extra?.googleMapsEnabled ?? true);
 
 function normalizeName(value) {
   return String(value || '')

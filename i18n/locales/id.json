@@ -216,7 +216,9 @@
     "addTask": "Tambahkan tugas",
     "dueTasks": "Tertunda",
     "noTasks": "Semuanya selesai - tidak ada tugas yang belum terselesaikan",
-    "taskHistory": "Terakhir selesai"
+    "taskHistory": "Terakhir selesai",
+    "uploadPhoto": "Unggah foto",
+    "webUploadHint": "Unggah foto tanaman. Unggahan web dikenali dan disimpan, tetapi tidak dihitung sebagai penemuan."
   },
   "tasks": {
     "title": "Tugas & janji temu",

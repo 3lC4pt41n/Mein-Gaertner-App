@@ -216,7 +216,9 @@
     "addTask": "Adicionar tarefa",
     "dueTasks": "Pendente",
     "noTasks": "Tudo feito - sem tarefas pendentes",
-    "taskHistory": "Última conclusão"
+    "taskHistory": "Última conclusão",
+    "uploadPhoto": "Enviar foto",
+    "webUploadHint": "Envie uma foto da planta. Envios pela web são reconhecidos e salvos, mas não contam como descobertas."
   },
   "tasks": {
     "title": "Tarefas e compromissos",

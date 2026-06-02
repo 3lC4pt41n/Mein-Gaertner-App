@@ -216,7 +216,9 @@
     "addTask": "Dodaj zadanie",
     "dueTasks": "Oczekujące",
     "noTasks": "Wszystko zrobione - żadnych zaległych zadań",
-    "taskHistory": "Ostatnio zrobione"
+    "taskHistory": "Ostatnio zrobione",
+    "uploadPhoto": "Prześlij zdjęcie",
+    "webUploadHint": "Prześlij zdjęcie rośliny. Przesłane z internetu zdjęcia są rozpoznawane i zapisywane, ale nie liczą się jako odkrycia."
   },
   "tasks": {
     "title": "Zadania i spotkania",

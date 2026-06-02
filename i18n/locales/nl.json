@@ -216,7 +216,9 @@
     "addTask": "Taak toevoegen",
     "dueTasks": "In behandeling",
     "noTasks": "Alles gedaan - geen openstaande taken",
-    "taskHistory": "Laatst gedaan"
+    "taskHistory": "Laatst gedaan",
+    "uploadPhoto": "Foto uploaden",
+    "webUploadHint": "Upload een plantenfoto. Webuploads worden herkend en opgeslagen, maar tellen niet als ontdekking."
   },
   "tasks": {
     "title": "Taken & afspraken",

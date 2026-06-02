@@ -216,7 +216,9 @@
     "addTask": "Tilføj opgave",
     "dueTasks": "Afventer",
     "noTasks": "Alt udført - ingen udestående opgaver",
-    "taskHistory": "Sidst udført"
+    "taskHistory": "Sidst udført",
+    "uploadPhoto": "Upload billede",
+    "webUploadHint": "Upload et plantefoto. Webuploads genkendes og gemmes, men tæller ikke som en opdagelse."
   },
   "tasks": {
     "title": "Opgaver & aftaler",

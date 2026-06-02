@@ -216,7 +216,9 @@
     "addTask": "Görev Ekle",
     "dueTasks": "Yaklaşan",
     "noTasks": "Tamamlandı — açık görev yok",
-    "taskHistory": "Son tamamlanan"
+    "taskHistory": "Son tamamlanan",
+    "uploadPhoto": "Fotoğraf yükle",
+    "webUploadHint": "Bir bitki fotoğrafı yükleyin. Web yüklemeleri tanınır ve kaydedilir, ancak keşif olarak sayılmaz."
   },
   "tasks": {
     "title": "Görevler ve Takvim",

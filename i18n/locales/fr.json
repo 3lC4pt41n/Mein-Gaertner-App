@@ -216,7 +216,9 @@
     "deletePlantTitle": "Supprimer la plante ?",
     "deletePlantMessage": "Toutes les données (journal, photos, tâches, bilans de santé) seront définitivement supprimées.",
     "zoneOptional": "Zone (facultatif)",
-    "selectZoneOptional": "Assigner une zone..."
+    "selectZoneOptional": "Assigner une zone...",
+    "uploadPhoto": "Importer une photo",
+    "webUploadHint": "Importez une photo de plante. Les imports web sont reconnus et enregistrés, mais ne comptent pas comme découvertes."
   },
   "tasks": {
     "title": "Tâches & planification",

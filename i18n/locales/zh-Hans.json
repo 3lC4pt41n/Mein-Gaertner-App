@@ -216,7 +216,9 @@
     "addTask": "添加任务",
     "dueTasks": "待定",
     "noTasks": "一切已完成 - 没有未完成的任务",
-    "taskHistory": "最后完成"
+    "taskHistory": "最后完成",
+    "uploadPhoto": "上传照片",
+    "webUploadHint": "上传一张植物照片。网页上传会被识别并保存，但不会计为发现。"
   },
   "tasks": {
     "title": "任务和约会",

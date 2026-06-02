@@ -10,10 +10,11 @@ import {
   SectionList,
   Modal,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { safeLaunchCamera } from '../services/imagePickerHelper';
+import { safeLaunchCamera, safeLaunchLibrary } from '../services/imagePickerHelper';
 import { Ionicons } from '@expo/vector-icons';
 import { savePlantToSupabase, saveHealthcheck } from '../services/plantService';
 import { uploadPlantImage, getPlantImageUrl } from '../services/uploadService';
@@ -22,7 +23,11 @@ import {
   generatePlantDetails,
   performHealthcheck,
 } from '../services/aiService';
-import { logDiscovery, getDiscoveryLocation } from '../services/discoveryService';
+import {
+  logDiscovery,
+  getDiscoveryLocation,
+  resolveSpeciesWithoutDiscovery,
+} from '../services/discoveryService';
 import { supabase } from '../supabase';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fetchCurrentUserLanguage } from '../services/languageService';
@@ -92,6 +97,7 @@ async function linkPlantToSpecies(plantId, speciesId) {
 export default function AddPlantScreen() {
   const navigation = useNavigation();
   const { userId } = useAuth();
+  const isWeb = Platform.OS === 'web';
 
   // ── Core state ──────────────────────────────
   const [name, setName] = useState('');
@@ -194,21 +200,10 @@ export default function AddPlantScreen() {
     setNameEditedByUser(true);
   }, []);
 
-  // ── Step 1: Photo only (no AI) ──────────────
-  const takePhoto = useCallback(async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      alert(t('common.cameraRequired'));
-      return;
-    }
-    const result = await safeLaunchCamera({
-      allowsEditing: true,
-      quality: 0.6,
-    });
-
+  const useSelectedImage = useCallback((result) => {
     if (result.canceled) return;
 
-    const uri = result.assets[0].uri;
+    const uri = result.assets?.[0]?.uri;
     if (!uri) {
       Alert.alert(t('common.error'), t('dialog.imagePickerError'));
       return;
@@ -219,17 +214,47 @@ export default function AddPlantScreen() {
     setStep('save');
   }, []);
 
+  const pickPhotoFromLibrary = useCallback(async () => {
+    const result = await safeLaunchLibrary({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.6,
+    });
+
+    useSelectedImage(result);
+  }, [useSelectedImage]);
+
+  // ── Step 1: Photo only (no AI) ──────────────
+  const takePhoto = useCallback(async () => {
+    if (isWeb) {
+      await pickPhotoFromLibrary();
+      return;
+    }
+
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      alert(t('common.cameraRequired'));
+      return;
+    }
+    const result = await safeLaunchCamera({
+      allowsEditing: true,
+      quality: 0.6,
+    });
+
+    useSelectedImage(result);
+  }, [isWeb, pickPhotoFromLibrary, useSelectedImage]);
+
   // Auto-open camera when entering photo step
   const cameraLaunched = useRef(false);
   useEffect(() => {
-    if (step === 'photo' && !cameraLaunched.current) {
+    if (!isWeb && step === 'photo' && !cameraLaunched.current) {
       cameraLaunched.current = true;
       takePhoto();
     }
     if (step !== 'photo') {
       cameraLaunched.current = false;
     }
-  }, [step, takePhoto]);
+  }, [isWeb, step, takePhoto]);
 
   // ── Step 2: AI recognition (costs credits) ─
   const handleRecognize = async () => {
@@ -322,23 +347,34 @@ export default function AddPlantScreen() {
 
       // Discovery event — only for AI-recognized plants (manual = no discovery)
       let discovery = null;
+      let speciesId = null;
       if (scanMode === 'ai') {
         try {
-          const location = await getDiscoveryLocation();
           const discoverySpeciesName = nameEditedByUser
             ? name?.trim()
             : recognizedSpeciesName?.trim() || name?.trim();
-          discovery = await logDiscovery(
-            userId,
-            discoverySpeciesName,
-            plant?.id,
-            location,
-            plantType
-          );
+
+          if (isWeb) {
+            const resolvedSpecies = await resolveSpeciesWithoutDiscovery(
+              discoverySpeciesName,
+              plantType
+            );
+            speciesId = resolvedSpecies?.speciesId || null;
+          } else {
+            const location = await getDiscoveryLocation();
+            discovery = await logDiscovery(
+              userId,
+              discoverySpeciesName,
+              plant?.id,
+              location,
+              plantType
+            );
+            speciesId = discovery?.speciesId || null;
+          }
 
           // Link plant → species (für Dex-Cache Lookup bei Details-Generierung)
-          if (discovery?.speciesId && plant?.id) {
-            linkPlantToSpecies(plant.id, discovery.speciesId).catch((error) => {
+          if (speciesId && plant?.id) {
+            linkPlantToSpecies(plant.id, speciesId).catch((error) => {
               console.warn('[AddPlant] species link update failed:', error?.message);
             });
           }
@@ -369,12 +405,12 @@ export default function AddPlantScreen() {
         ...plant,
         image_url: displayUrl,
         image_path: uploadedPath,
-        species_id: discovery?.speciesId || null,
+        species_id: speciesId || null,
       });
       setStep('done');
 
       // Show discovery reveal for new discoveries
-      if (discovery?.isNewForUser) {
+      if (!isWeb && discovery?.isNewForUser) {
         setDiscoveryResult(discovery);
         setShowReveal(true);
       }
@@ -498,10 +534,20 @@ export default function AddPlantScreen() {
         {step === 'photo' && (
           <DSCard>
             <View style={{ alignItems: 'center', gap: spacing.md }}>
-              <Ionicons name="camera-outline" size={48} color={colors.textTertiary} />
-              <Text style={styles.photoHint}>{t('plants.cameraOpening')}</Text>
-              <DSButton onPress={takePhoto} fullWidth icon="camera-outline">
-                {t('plants.retakePhoto')}
+              <Ionicons
+                name={isWeb ? 'cloud-upload-outline' : 'camera-outline'}
+                size={48}
+                color={colors.textTertiary}
+              />
+              <Text style={styles.photoHint}>
+                {isWeb ? t('plants.webUploadHint') : t('plants.cameraOpening')}
+              </Text>
+              <DSButton
+                onPress={isWeb ? pickPhotoFromLibrary : takePhoto}
+                fullWidth
+                icon={isWeb ? 'cloud-upload-outline' : 'camera-outline'}
+              >
+                {isWeb ? t('plants.uploadPhoto') : t('plants.retakePhoto')}
               </DSButton>
             </View>
           </DSCard>

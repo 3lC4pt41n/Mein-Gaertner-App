@@ -216,7 +216,9 @@
     "deletePlantTitle": "¿Eliminar planta?",
     "deletePlantMessage": "Todos los datos (diario, fotos, tareas, controles de salud) se eliminarán permanentemente.",
     "zoneOptional": "Zona (opcional)",
-    "selectZoneOptional": "Asignar zona..."
+    "selectZoneOptional": "Asignar zona...",
+    "uploadPhoto": "Subir foto",
+    "webUploadHint": "Sube una foto de la planta. Las cargas web se reconocen y guardan, pero no cuentan como descubrimientos."
   },
   "tasks": {
     "title": "Tareas y citas",

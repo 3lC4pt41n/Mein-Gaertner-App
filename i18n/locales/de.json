@@ -216,7 +216,9 @@
     "addTask": "Aufgabe hinzufügen",
     "dueTasks": "Anstehend",
     "noTasks": "Alles erledigt — keine offenen Aufgaben",
-    "taskHistory": "Zuletzt erledigt"
+    "taskHistory": "Zuletzt erledigt",
+    "uploadPhoto": "Foto hochladen",
+    "webUploadHint": "Lade ein Pflanzenfoto hoch. Web-Uploads werden erkannt und gespeichert, zählen aber nicht als Entdeckung."
   },
   "tasks": {
     "title": "Aufgaben & Termine",

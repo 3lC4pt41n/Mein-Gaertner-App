@@ -216,7 +216,9 @@
     "addTask": "タスクの追加",
     "dueTasks": "保留中",
     "noTasks": "すべて完了 - 未処理のタスクはありません",
-    "taskHistory": "最後に完了したこと"
+    "taskHistory": "最後に完了したこと",
+    "uploadPhoto": "写真をアップロード",
+    "webUploadHint": "植物の写真をアップロードしてください。Webアップロードは認識され保存されますが、発見にはカウントされません。"
   },
   "tasks": {
     "title": "タスクと予定",

@@ -216,7 +216,9 @@
     "addTask": "Add Task",
     "dueTasks": "Upcoming",
     "noTasks": "All done — no open tasks",
-    "taskHistory": "Recently completed"
+    "taskHistory": "Recently completed",
+    "uploadPhoto": "Upload photo",
+    "webUploadHint": "Upload a plant photo. Web uploads are recognized and saved, but do not count as discoveries."
   },
   "tasks": {
     "title": "Tasks & Schedules",
