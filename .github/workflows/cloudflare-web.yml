@@ -71,7 +71,7 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.EXPO_PUBLIC_SUPABASE_URL != '' && env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY != '' && env.EXPO_PUBLIC_WEB_APP_URL != ''
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
