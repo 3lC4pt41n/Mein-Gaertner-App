@@ -4,6 +4,7 @@ import './sentry.config'; // ← Sentry MUSS als erstes geladen werden
 import { Sentry } from './sentry.config';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -33,7 +34,7 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLoadingScreen from './components/AppLoadingScreen';
 import OfflineBanner from './components/OfflineBanner';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { t } from './i18n';
 import { colors } from './theme';
 import { supabase } from './supabase';
@@ -227,6 +228,34 @@ function updateTimeOnlyContext(previousContext) {
   });
 }
 
+function useVectorIconFonts() {
+  const [iconFontsReady, setIconFontsReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    Font.loadAsync({
+      ...Ionicons.font,
+      ...MaterialIcons.font,
+      ...FontAwesome.font,
+    })
+      .catch((error) => {
+        if (__DEV__) {
+          console.warn('[App] Icon fonts konnten nicht geladen werden:', error?.message);
+        }
+      })
+      .finally(() => {
+        if (mounted) setIconFontsReady(true);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  return iconFontsReady;
+}
+
 // ---------- App Content (uses AuthContext) ---------
 function AppContent() {
   const { version: languageVersion } = useLanguage();
@@ -418,6 +447,10 @@ function AppContent() {
 
 // ---------- Root App Component ----------------------------
 function App() {
+  const iconFontsReady = useVectorIconFonts();
+
+  if (!iconFontsReady) return <AppLoadingScreen />;
+
   return (
     <LanguageProvider>
       <AuthProvider>

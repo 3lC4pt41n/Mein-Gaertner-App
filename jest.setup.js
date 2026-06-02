@@ -26,6 +26,7 @@ jest.mock('./sentry.config', () => ({
 jest.mock('@expo/vector-icons', () => {
   const React = require('react');
   const MockIcon = (props) => React.createElement('Text', props, props.name);
+  MockIcon.font = {};
   return {
     Ionicons: MockIcon,
     MaterialIcons: MockIcon,
@@ -33,6 +34,10 @@ jest.mock('@expo/vector-icons', () => {
     Feather: MockIcon,
   };
 });
+
+jest.mock('expo-font', () => ({
+  loadAsync: jest.fn().mockResolvedValue(undefined),
+}));
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () =>
