@@ -35,6 +35,7 @@ Bandwidth limited. Response when time allows. No support SLA.
 - [docs/planning/](docs/planning/) — implementation plans and quality follow-ups
 - [docs/prompts/](docs/prompts/) — prompt-engineering analysis
 - [docs/hosting/github-pages.md](docs/hosting/github-pages.md) — landing-page hosting and domain setup
+- [docs/hosting/cloudflare-pages.md](docs/hosting/cloudflare-pages.md) — Expo web-app deployment on Cloudflare Pages
 - [docs/STORE_SUBMISSION_CHECKLIST.md](docs/STORE_SUBMISSION_CHECKLIST.md) — store submission checklist
 - [docs/INCIDENT_RUNBOOK.md](docs/INCIDENT_RUNBOOK.md) — incident handling guide
 

@@ -5,7 +5,7 @@ import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 import { getServiceClient } from '../_shared/supabase-client.ts';
 import { getUserIdFromAuth } from '../_shared/credits.ts';
 
-const DEFAULT_WEB_APP_URL = 'https://florascout.app';
+const DEFAULT_WEB_APP_URL = 'https://app.florascout.app';
 const DEFAULT_STRIPE_API_VERSION = '2026-03-04.preview';
 
 const STRIPE_PRICE_ENV_BY_PACKAGE: Record<string, string> = {

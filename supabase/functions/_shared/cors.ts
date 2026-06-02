@@ -5,6 +5,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'https://3lc4pt41n.github.io',
   'https://florascout.app',
   'https://www.florascout.app',
+  'https://app.florascout.app',
+  'https://florascout-web.pages.dev',
 ];
 
 const DEFAULT_ALLOWED_HEADERS = 'authorization, x-client-info, apikey, content-type';

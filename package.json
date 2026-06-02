@@ -8,6 +8,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "export:web": "expo export --platform web",
+    "postexport:web": "node scripts/ensure-web-redirects.js",
     "test": "jest",
     "lint": "eslint .",
     "lint:tokens": "node scripts/check-design-tokens.js",
