@@ -241,7 +241,7 @@
     "selectPlantRequired": "براہ کرم ایک پودے کا انتخاب کریں!",
     "noPlants": "کوئی پودا موجود نہیں۔",
     "addFirstPlant": "پہلا پودا شامل کریں۔",
-    "plantLabel": "پلانٹ:",
+    "plantLabel": "پودا:",
     "typeLabel": "قسم:",
     "dateTimeLabel": "تاریخ اور وقت:",
     "datePlaceholder": "YYYY-MM-DD HH:MM",
@@ -257,9 +257,9 @@
     "timeLabel": "وقت (HH:MM):",
     "dateTimeRequired": "براہ کرم تاریخ اور وقت کی وضاحت کریں!",
     "taskTypes": {
-      "watering": "ڈالنا",
+      "watering": "پانی دینا",
       "fertilizing": "کھاد ڈالنا",
-      "repotting": "ریپوٹنگ",
+      "repotting": "گملا بدلنا",
       "healthcheck": "صحت کی جانچ",
       "other": "دیگر"
     },

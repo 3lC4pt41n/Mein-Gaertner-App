@@ -257,9 +257,9 @@
     "timeLabel": "زمان (HH:MM):",
     "dateTimeRequired": "لطفا تاریخ و ساعت را مشخص کنید!",
     "taskTypes": {
-      "watering": "ریختن",
-      "fertilizing": "کود دهی کنید",
-      "repotting": "گلدان مجدد",
+      "watering": "آبیاری",
+      "fertilizing": "کوددهی",
+      "repotting": "تعویض گلدان",
       "healthcheck": "بررسی سلامت",
       "other": "دیگر"
     },

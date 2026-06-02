@@ -241,7 +241,7 @@
     "selectPlantRequired": "请选择一种植物！",
     "noPlants": "没有植物存在",
     "addFirstPlant": "添加第一株植物",
-    "plantLabel": "工厂：",
+    "plantLabel": "植物：",
     "typeLabel": "类型：",
     "dateTimeLabel": "日期和时间：",
     "datePlaceholder": "年-月-日 时:分",
@@ -257,7 +257,7 @@
     "timeLabel": "时间（小时：分钟）：",
     "dateTimeRequired": "请指定日期和时间！",
     "taskTypes": {
-      "watering": "浇注",
+      "watering": "浇水",
       "fertilizing": "施肥",
       "repotting": "换盆",
       "healthcheck": "健康检查",

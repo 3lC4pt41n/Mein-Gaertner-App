@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "lint:tokens": "node scripts/check-design-tokens.js",
     "i18n:sync": "node scripts/i18n-sync.js --strict",
+    "i18n:fix-spacing": "node scripts/fix-i18n-spacing.js",
     "i18n:measure": "node scripts/i18n-measure-startup.js",
     "i18n:font-audit": "node scripts/i18n-font-audit.js",
     "lint:fix": "eslint . --fix",

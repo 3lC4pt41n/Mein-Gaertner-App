@@ -257,7 +257,7 @@
     "timeLabel": "시간(HH:MM):",
     "dateTimeRequired": "날짜와 시간을 지정해주세요!",
     "taskTypes": {
-      "watering": "붓는 것",
+      "watering": "물 주기",
       "fertilizing": "비료를 주다",
       "repotting": "분갈이",
       "healthcheck": "건강검진",

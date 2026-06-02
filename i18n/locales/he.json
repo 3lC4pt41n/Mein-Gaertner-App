@@ -257,9 +257,9 @@
     "timeLabel": "זמן (HH:MM):",
     "dateTimeRequired": "נא לציין תאריך ושעה!",
     "taskTypes": {
-      "watering": "מזיגה",
-      "fertilizing": "להפרות",
-      "repotting": "ריפוד מחדש",
+      "watering": "השקיה",
+      "fertilizing": "דישון",
+      "repotting": "החלפת עציץ",
       "healthcheck": "בדיקת בריאות",
       "other": "אחר"
     },

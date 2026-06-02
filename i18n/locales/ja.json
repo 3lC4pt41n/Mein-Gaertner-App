@@ -241,7 +241,7 @@
     "selectPlantRequired": "植物を選んでください！",
     "noPlants": "植物が存在しない",
     "addFirstPlant": "最初の植物を追加する",
-    "plantLabel": "工場:",
+    "plantLabel": "植物:",
     "typeLabel": "タイプ:",
     "dateTimeLabel": "日付と時刻:",
     "datePlaceholder": "YYYY-MM-DD HH:MM",
@@ -257,7 +257,7 @@
     "timeLabel": "時間 (HH:MM):",
     "dateTimeRequired": "日付と時間を指定してください！",
     "taskTypes": {
-      "watering": "注ぐ",
+      "watering": "水やり",
       "fertilizing": "肥料を与える",
       "repotting": "植え替え",
       "healthcheck": "健康診断",

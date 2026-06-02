@@ -257,9 +257,9 @@
     "timeLabel": "الوقت (س س: د د):",
     "dateTimeRequired": "يرجى تحديد التاريخ والوقت!",
     "taskTypes": {
-      "watering": "صب",
+      "watering": "الري",
       "fertilizing": "تسميد",
-      "repotting": "إعادة السمعة",
+      "repotting": "تغيير الأصيص",
       "healthcheck": "فحص الصحة",
       "other": "أخرى"
     },
