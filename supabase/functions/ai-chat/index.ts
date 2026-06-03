@@ -262,15 +262,28 @@ async function loadGardenContext(
   userId: string,
   language: string
 ): Promise<string> {
-  // Pflanzen laden
-  const { data: plants } = await serviceClient
+  const userZones = await loadUserZones(serviceClient, userId);
+  const homeZoneIds = userZones.map((zone) => zone.id);
+
+  let plantQuery = serviceClient
     .from('plants')
     .select('id, name, note, zone_id, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
+  if (homeZoneIds.length > 0) {
+    plantQuery = plantQuery.in('zone_id', homeZoneIds);
+  }
+
+  // Pflanzen laden. Wenn Zuhause-Zonen existieren, ist diese Scope bewusst
+  // auf zugewiesene Zuhause-Pflanzen begrenzt; alte Scan-/Discovery-Pflanzen
+  // ohne Zone duerfen keine Pflegeplaene verunreinigen.
+  const { data: plants } = await plantQuery;
+
   if (!plants || plants.length === 0) {
-    return 'The user has no plants registered yet. Encourage them to add their first plant.';
+    return homeZoneIds.length > 0
+      ? 'The user has no plants assigned to home zones yet. Ask which home plant they want to add or assign.'
+      : 'The user has no plants registered yet. Encourage them to add their first plant.';
   }
 
   // Letzter Healthcheck pro Pflanze
@@ -311,6 +324,7 @@ async function loadGardenContext(
     .from('tasks')
     .select('id, plant_id, type, due_at, state, note, template_id')
     .eq('user_id', userId)
+    .in('plant_id', plantIds)
     .in('state', ['DUE', 'OPEN'])
     .or(activeTaskRetentionFilter())
     .order('due_at', { ascending: true })
@@ -322,15 +336,20 @@ async function loadGardenContext(
     tasksByPlant[t.plant_id].push(t);
   }
 
-  // Zonen + Zuhause
-  const userZones = await loadUserZones(serviceClient, userId);
   const zoneMap: Record<string, string> = {};
   for (const zone of userZones) {
     zoneMap[zone.id] = formatZoneDisplayName(zone);
   }
 
   // Kompaktes Text-Format
-  let context = `USER'S GARDEN (${plants.length} plants):\n`;
+  let context =
+    homeZoneIds.length > 0
+      ? `USER'S HOME PLANTS (${plants.length} plants assigned to home zones):\n`
+      : `USER'S GARDEN (${plants.length} plants):\n`;
+  if (homeZoneIds.length > 0) {
+    context +=
+      'Scope: Use only these home-zone plants for concrete care plans and task summaries. Ignore unassigned discovery plants unless the user explicitly asks for the full collection.\n';
+  }
   const unassignedPlants: string[] = [];
   for (const plant of plants) {
     const hc = latestHC[plant.id];
@@ -362,6 +381,25 @@ async function loadGardenContext(
   }
 
   return context;
+}
+
+async function loadAssistantPlants(serviceClient: SupabaseClient, userId: string): Promise<any[]> {
+  const userZones = await loadUserZones(serviceClient, userId);
+  const homeZoneIds = userZones.map((zone) => zone.id);
+
+  let plantQuery = serviceClient
+    .from('plants')
+    .select('id, name, zone_id')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (homeZoneIds.length > 0) {
+    plantQuery = plantQuery.in('zone_id', homeZoneIds);
+  }
+
+  const { data, error } = await plantQuery;
+  if (error) return [];
+  return data || [];
 }
 
 // ─── System Prompt mit Garden Context ────────────
@@ -403,6 +441,12 @@ Playful but always respectful, friendly and encouraging.
 - If the user asks for the current time or date, answer directly from CURRENT CONTEXT.
 - If the user sends small talk or a compliment, answer it directly in a warm, witty way before gently offering plant help. Do not reset to your intro.
 - Keep charm respectful and non-romantic; do not engage in erotic roleplay or sexual flirting.
+
+## DATA GROUNDING
+- The current garden context is authoritative for concrete plant names, care plans, task summaries and tool calls.
+- Do not include plants or tasks that are absent from the current garden context, even if they appear in previous chat history or memory.
+- If older conversation context conflicts with the current garden context, treat the older context as stale.
+- Do not invent plant names or generic plant categories in a concrete plan. Use generic examples only when the user asks generally.
 
 ## TOOLS
 - You can create tasks for the user using the create_task and create_recurring_task functions.
@@ -754,10 +798,22 @@ async function handleToolCall(
   }
 
   // Find plant by name (case-insensitive partial match)
-  const plant = plants.find(
+  let plant = plants.find(
     (p: any) =>
       typeof p?.name === 'string' && p.name.toLowerCase().includes(plantName.toLowerCase())
   );
+
+  if (!plant && fnName === 'assign_plant_to_zone') {
+    const { data: allPlants } = await serviceClient
+      .from('plants')
+      .select('id, name')
+      .eq('user_id', userId);
+
+    plant = (allPlants || []).find(
+      (p: any) =>
+        typeof p?.name === 'string' && p.name.toLowerCase().includes(plantName.toLowerCase())
+    );
+  }
 
   if (!plant) {
     return JSON.stringify({
@@ -1295,13 +1351,13 @@ serve(async (req) => {
     const [gardenContext, memoryData, plantsData, plantNetResult] = await Promise.all([
       loadGardenContext(serviceClient, userId, finalLanguage),
       serviceClient.from('chat_memory').select('summary').eq('user_id', userId).maybeSingle(),
-      serviceClient.from('plants').select('id, name').eq('user_id', userId),
+      loadAssistantPlants(serviceClient, userId),
       plantNetPromise,
     ]);
 
     const languagePromptName = getLanguagePromptName(finalLanguage);
     const memorySummary = memoryData?.data?.summary || null;
-    const userPlants = plantsData?.data || [];
+    const userPlants = plantsData || [];
     const plantNetContext = formatPlantNetContext(plantNetResult);
     const externalContext = buildExternalContext(contextText, context);
     const systemPrompt = buildSystemPrompt(

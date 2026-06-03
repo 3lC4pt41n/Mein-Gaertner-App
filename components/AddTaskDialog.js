@@ -103,8 +103,9 @@ export default function AddTaskDialog({
       if (!userId) return;
       const { data, error } = await supabase
         .from('plants')
-        .select('id, name')
+        .select('id, name, zone_id')
         .eq('user_id', userId)
+        .not('zone_id', 'is', null)
         .order('name');
       if (!error && data) setPlants(data);
     } finally {

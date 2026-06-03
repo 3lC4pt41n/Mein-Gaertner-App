@@ -118,8 +118,9 @@ export async function fetchTasks(user_id, { page = 0 } = {}) {
       const retainedTaskFilter = ['due_at.is.null', `due_at.gte.${cutoffIso}`].join(',');
       const { data, error, count } = await supabase
         .from('tasks')
-        .select('*, plant:plant_id(id, name, image_url)', { count: 'exact' })
+        .select('*, plant:plant_id!inner(id, name, image_url, zone_id)', { count: 'exact' })
         .eq('user_id', user_id)
+        .not('plant.zone_id', 'is', null)
         .or(retainedTaskFilter)
         .order('due_at', { ascending: true })
         .range(from, to);
@@ -355,6 +356,18 @@ export async function skipTask(task, user_id, reason = '') {
 
 // computeNextDueAt ist jetzt in scoringHelpers.js definiert und wird oben re-exportiert
 
+async function deactivateTemplateRecord(templateId, userId) {
+  const { error } = await supabase
+    .from('task_templates')
+    .update({ active: false })
+    .eq('id', templateId)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.warn('Template deactivate error:', error.message);
+  }
+}
+
 /**
  * Erzeugt idempotent die nächste Aufgabe für ein Template.
  * dedupe_key = template_id + ISO-Datum → ON CONFLICT DO NOTHING.
@@ -364,12 +377,16 @@ async function rescheduleFromTemplate(templateId, completedDueAt, userId) {
     // 1. Template laden
     const { data: tpl, error: tplError } = await supabase
       .from('task_templates')
-      .select('*')
+      .select('*, plant:plant_id(id, zone_id)')
       .eq('id', templateId)
       .eq('active', true)
       .single();
 
     if (tplError || !tpl) return; // Template nicht gefunden oder inaktiv
+    if (!tpl.plant?.zone_id) {
+      await deactivateTemplateRecord(templateId, userId);
+      return;
+    }
 
     // 2. Nächstes Due berechnen
     const nextDue = computeNextDueAt(completedDueAt, tpl.interval_days);
@@ -404,7 +421,7 @@ export async function archiveStaleDueTasks(userId) {
   const cutoffIso = getTaskRetentionCutoff().toISOString();
   const { data: staleTasks, error } = await supabase
     .from('tasks')
-    .select('id, user_id, plant_id, type, due_at, state, template_id')
+    .select('id, user_id, plant_id, type, due_at, state, template_id, plant:plant_id(id, zone_id)')
     .eq('user_id', userId)
     .in('state', ACTIVE_TASK_STATES)
     .lt('due_at', cutoffIso)
@@ -433,7 +450,11 @@ export async function archiveStaleDueTasks(userId) {
 
     archived += 1;
     if (task.template_id) {
-      await rescheduleFromTemplate(task.template_id, task.due_at, userId);
+      if (task.plant?.zone_id) {
+        await rescheduleFromTemplate(task.template_id, task.due_at, userId);
+      } else {
+        await deactivateTemplateRecord(task.template_id, userId);
+      }
     }
   }
 
@@ -452,7 +473,7 @@ export async function catchUpMissedTasks(userId) {
     // Aktive Templates, deren next_due_at in der Vergangenheit liegt
     const { data: templates, error } = await supabase
       .from('task_templates')
-      .select('*')
+      .select('*, plant:plant_id(id, zone_id)')
       .eq('user_id', userId)
       .eq('active', true)
       .lte('next_due_at', new Date().toISOString());
@@ -460,6 +481,11 @@ export async function catchUpMissedTasks(userId) {
     if (error || !templates?.length) return;
 
     for (const tpl of templates) {
+      if (!tpl.plant?.zone_id) {
+        await deactivateTemplateRecord(tpl.id, userId);
+        continue;
+      }
+
       // Prüfen ob bereits ein offener Task existiert
       const { data: openTasks } = await supabase
         .from('tasks')
@@ -502,9 +528,10 @@ export async function catchUpMissedTasks(userId) {
 export async function fetchTemplates(userId) {
   const { data, error } = await supabase
     .from('task_templates')
-    .select('*, plant:plant_id(id, name)')
+    .select('*, plant:plant_id!inner(id, name, zone_id)')
     .eq('user_id', userId)
     .eq('active', true)
+    .not('plant.zone_id', 'is', null)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
