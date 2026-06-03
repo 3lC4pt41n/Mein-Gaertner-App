@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Platform,
 } from 'react-native';
-import { KeyboardStickyView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -321,7 +322,11 @@ export default function AssistantScreen({ context }) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
       {/* Credit-Leiste — unified component */}
       <CreditBar style={{ marginHorizontal: spacing.md, marginTop: spacing.sm }} />
 
@@ -332,7 +337,10 @@ export default function AssistantScreen({ context }) {
         ref={flatListRef}
         keyExtractor={(_, i) => i.toString()}
         renderItem={renderItem}
-        contentContainerStyle={{ padding: spacing.md, flexGrow: 1 }}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.lg, flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         ListHeaderComponent={
           hasMore ? (
             <TouchableOpacity
@@ -434,55 +442,53 @@ export default function AssistantScreen({ context }) {
           style={{ margin: spacing.md }}
         />
       )}
-      <KeyboardStickyView>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            padding: spacing.sm,
-            backgroundColor: colors.background,
-            borderTopWidth: 1,
-            borderTopColor: colors.borderLight,
-          }}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: spacing.sm,
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.borderLight,
+        }}
+      >
+        <TouchableOpacity
+          onPress={takeAndSendPhoto}
+          accessibilityRole="button"
+          accessibilityLabel={t('assistant.takePhoto')}
         >
-          <TouchableOpacity
-            onPress={takeAndSendPhoto}
-            accessibilityRole="button"
-            accessibilityLabel={t('assistant.takePhoto')}
-          >
-            <Ionicons
-              name="camera"
-              size={28}
-              color={colors.primary}
-              style={{ marginRight: spacing.md }}
-            />
-          </TouchableOpacity>
-          <TextInput
-            value={input}
-            onChangeText={setInput}
-            placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
-            style={{
-              flex: 1,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: radius.pill,
-              padding: spacing.sm,
-              backgroundColor: colors.surface,
-            }}
-            onSubmitEditing={sendMessage}
-            returnKeyType="send"
+          <Ionicons
+            name="camera"
+            size={28}
+            color={colors.primary}
+            style={{ marginRight: spacing.md }}
           />
-          <DSButton
-            onPress={sendMessage}
-            disabled={loading || !input.trim()}
-            size="sm"
-            style={{ marginLeft: spacing.sm }}
-          >
-            {t('common.send')}
-          </DSButton>
-        </View>
-      </KeyboardStickyView>
-    </View>
+        </TouchableOpacity>
+        <TextInput
+          value={input}
+          onChangeText={setInput}
+          placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
+          style={{
+            flex: 1,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: radius.pill,
+            padding: spacing.sm,
+            backgroundColor: colors.surface,
+          }}
+          onSubmitEditing={sendMessage}
+          returnKeyType="send"
+        />
+        <DSButton
+          onPress={sendMessage}
+          disabled={loading || !input.trim()}
+          size="sm"
+          style={{ marginLeft: spacing.sm }}
+        >
+          {t('common.send')}
+        </DSButton>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -27,6 +27,16 @@ import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { getCorsHeaders, rejectDisallowedOrigin } from '../_shared/cors.ts';
 
 const MAX_VISION_IMAGES_IN_HISTORY = 2;
+const STALE_TASK_OVERDUE_DAYS = 7;
+const DAY_MS = 86400000;
+
+function taskRetentionCutoffIso(): string {
+  return new Date(Date.now() - STALE_TASK_OVERDUE_DAYS * DAY_MS).toISOString();
+}
+
+function activeTaskRetentionFilter(): string {
+  return `due_at.is.null,due_at.gte.${taskRetentionCutoffIso()}`;
+}
 
 type GardenerPersona = {
   key: 'ben' | 'rose';
@@ -302,6 +312,7 @@ async function loadGardenContext(
     .select('id, plant_id, type, due_at, state, note, template_id')
     .eq('user_id', userId)
     .in('state', ['DUE', 'OPEN'])
+    .or(activeTaskRetentionFilter())
     .order('due_at', { ascending: true })
     .limit(20);
 
@@ -700,6 +711,7 @@ async function findNextDueTaskForPlant(
     .eq('user_id', userId)
     .eq('plant_id', plant.id)
     .eq('state', 'DUE')
+    .or(activeTaskRetentionFilter())
     .order('due_at', { ascending: true });
 
   if (error) return { task: null, error: error.message };

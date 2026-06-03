@@ -2,10 +2,21 @@ import { supabase } from '../supabase';
 import { addAutoDiaryEntry } from './diaryService';
 import { getTaskWeight, computeNextDueAt } from './scoringHelpers';
 import { requestWithPolicy } from './networkPolicy';
+import {
+  ACTIVE_TASK_STATES,
+  filterAndSortVisibleTasks,
+  getTaskRetentionCutoff,
+} from './taskRetention';
 import { t } from '../i18n';
 
 // Re-export for backwards compatibility and tests
 export { getTaskWeight, calcTaskPoints, calcSkipPoints, computeNextDueAt } from './scoringHelpers';
+export {
+  filterAndSortVisibleTasks,
+  getTaskRetentionCutoff,
+  isTaskPastRetention,
+  STALE_TASK_OVERDUE_DAYS,
+} from './taskRetention';
 
 // ── Gardening-Event loggen (intern) ────────────────────────
 async function logGardeningEvent({ userId, eventType, plantId, taskId, points, meta = {} }) {
@@ -25,8 +36,10 @@ async function logGardeningEvent({ userId, eventType, plantId, taskId, points, m
 // ═══════════════════════════════════════════════════════════
 
 /**
- * Tasks für eingeloggten User abrufen (inkl. Pflanzendaten).
- * Sortiert nach due_at aufsteigend.
+ * Tasks fuer eingeloggten User abrufen (inkl. Pflanzendaten).
+ * Tasks mit Faelligkeitsdatum aelter als 7 Tage werden aus der
+ * aktiven Ansicht genommen. Fuer wiederkehrende offene Tasks erzeugt
+ * catchUpMissedTasks() anschliessend den naechsten sinnvollen Termin.
  */
 const PAGE_SIZE = 50;
 
@@ -91,19 +104,27 @@ function isMissingCompleteTaskRpcError(error) {
   );
 }
 
+function isCompleteTaskRpcSchemaDriftError(error) {
+  const msg = (error?.message || '').toLowerCase();
+  return msg.includes('updated_at') && msg.includes('tasks') && msg.includes('does not exist');
+}
+
 export async function fetchTasks(user_id, { page = 0 } = {}) {
   return requestWithPolicy(
     async () => {
       const from = page * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
+      const cutoffIso = getTaskRetentionCutoff().toISOString();
+      const retainedTaskFilter = ['due_at.is.null', `due_at.gte.${cutoffIso}`].join(',');
       const { data, error, count } = await supabase
         .from('tasks')
         .select('*, plant:plant_id(id, name, image_url)', { count: 'exact' })
         .eq('user_id', user_id)
+        .or(retainedTaskFilter)
         .order('due_at', { ascending: true })
         .range(from, to);
       if (error) throw error;
-      return { data, hasMore: count > to + 1, total: count };
+      return { data: filterAndSortVisibleTasks(data), hasMore: count > to + 1, total: count };
     },
     { label: 'tasks.fetch', timeout: 10000, retries: 1 }
   );
@@ -228,9 +249,11 @@ export async function completeTask(task, user_id) {
   const { data, error } = await supabase.rpc('complete_task_rpc', { p_task_id: task.id });
 
   if (!error) return data;
-  if (!isMissingCompleteTaskRpcError(error)) throw error;
+  if (!isMissingCompleteTaskRpcError(error) && !isCompleteTaskRpcSchemaDriftError(error)) {
+    throw error;
+  }
 
-  console.warn('[taskService] complete_task_rpc fehlt; verwende Legacy-Completion.');
+  console.warn('[taskService] complete_task_rpc nicht nutzbar; verwende Legacy-Completion.');
   return completeTaskLegacy(task, user_id);
 }
 
@@ -377,6 +400,46 @@ async function rescheduleFromTemplate(templateId, completedDueAt, userId) {
   }
 }
 
+export async function archiveStaleDueTasks(userId) {
+  const cutoffIso = getTaskRetentionCutoff().toISOString();
+  const { data: staleTasks, error } = await supabase
+    .from('tasks')
+    .select('id, user_id, plant_id, type, due_at, state, template_id')
+    .eq('user_id', userId)
+    .in('state', ACTIVE_TASK_STATES)
+    .lt('due_at', cutoffIso)
+    .limit(100);
+
+  if (error || !staleTasks?.length) {
+    if (error) console.warn('archiveStaleDueTasks fetch error:', error.message);
+    return 0;
+  }
+
+  let archived = 0;
+  for (const task of staleTasks) {
+    const { data: updated, error: updateError } = await supabase
+      .from('tasks')
+      .update({ state: 'EXPIRED' })
+      .eq('id', task.id)
+      .eq('user_id', userId)
+      .in('state', ACTIVE_TASK_STATES)
+      .select('id');
+
+    if (updateError) {
+      console.warn('archiveStaleDueTasks update error:', updateError.message);
+      continue;
+    }
+    if (!updated?.length) continue;
+
+    archived += 1;
+    if (task.template_id) {
+      await rescheduleFromTemplate(task.template_id, task.due_at, userId);
+    }
+  }
+
+  return archived;
+}
+
 /**
  * Catch-Up: Prüft beim App-Start, ob für aktive Templates
  * überfällige Tasks fehlen und legt sie nach.
@@ -384,6 +447,8 @@ async function rescheduleFromTemplate(templateId, completedDueAt, userId) {
  */
 export async function catchUpMissedTasks(userId) {
   try {
+    await archiveStaleDueTasks(userId);
+
     // Aktive Templates, deren next_due_at in der Vergangenheit liegt
     const { data: templates, error } = await supabase
       .from('task_templates')

@@ -6,7 +6,13 @@ import { View, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../supabase';
-import { completeTask, skipTask, createTask, createRecurringTask } from '../services/taskService';
+import {
+  completeTask,
+  skipTask,
+  createTask,
+  createRecurringTask,
+  filterAndSortVisibleTasks,
+} from '../services/taskService';
 import { resolveTaskType } from '../constants/taskTypes';
 import { colors, spacing, radius, shadows } from '../theme/tokens';
 import { t } from '../i18n';
@@ -23,7 +29,7 @@ async function fetchPlantTasks(plantId, userId) {
     .eq('user_id', userId)
     .order('due_at', { ascending: true });
   if (error) throw error;
-  return data || [];
+  return filterAndSortVisibleTasks(data || []);
 }
 
 function formatDueDate(dateStr) {
