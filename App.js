@@ -8,7 +8,6 @@ import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import HomeManager from './screens/HomeManager';
 import PlantListScreen from './screens/PlantListScreen';
@@ -456,13 +455,7 @@ function App() {
     <LanguageProvider>
       <AuthProvider>
         <ErrorBoundary>
-          <KeyboardProvider
-            statusBarTranslucent={Platform.OS === 'android'}
-            navigationBarTranslucent={Platform.OS === 'android'}
-            preserveEdgeToEdge={Platform.OS === 'android'}
-          >
-            <AppContent />
-          </KeyboardProvider>
+          <AppContent />
         </ErrorBoundary>
       </AuthProvider>
     </LanguageProvider>

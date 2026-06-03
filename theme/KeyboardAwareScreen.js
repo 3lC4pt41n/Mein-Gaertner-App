@@ -1,11 +1,10 @@
 import React, { forwardRef } from 'react';
-import { StyleSheet } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { spacing } from './tokens';
 
 // Zentraler Tastatur-Wrapper fuer scrollbare Screens und Modal-Inhalte.
-// Kapselt die Keyboard-Controller-Defaults, damit Eingabefelder auf iOS,
-// Android Edge-to-Edge und Web konsistent sichtbar bleiben.
+// OTA-sicher: nutzt nur React-Native-Core, damit installierte Binaries ohne
+// react-native-keyboard-controller-Native-Modul nicht beim Start crashen.
 const KeyboardAwareScreen = forwardRef(function KeyboardAwareScreen(
   {
     children,
@@ -15,26 +14,27 @@ const KeyboardAwareScreen = forwardRef(function KeyboardAwareScreen(
     extraKeyboardSpace = spacing.lg,
     keyboardShouldPersistTaps = 'handled',
     showsVerticalScrollIndicator = false,
-    disableScrollOnKeyboardHide = true,
     fill = true,
     ...props
   },
   ref
 ) {
   return (
-    <KeyboardAwareScrollView
-      ref={ref}
+    <KeyboardAvoidingView
       style={[fill && styles.screen, style]}
-      contentContainerStyle={contentContainerStyle}
-      bottomOffset={bottomOffset}
-      extraKeyboardSpace={extraKeyboardSpace}
-      keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-      showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-      disableScrollOnKeyboardHide={disableScrollOnKeyboardHide}
-      {...props}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={bottomOffset + extraKeyboardSpace}
     >
-      {children}
-    </KeyboardAwareScrollView>
+      <ScrollView
+        ref={ref}
+        contentContainerStyle={contentContainerStyle}
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+        showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+        {...props}
+      >
+        {children}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 });
 
