@@ -17,16 +17,17 @@ Beträge & Credits stehen im Code (`_shared/creditPackages.ts`). Die **Credits w
 serverseitig aus dem Code vergeben**, nicht aus Stripe — die Stripe-Preise bestimmen nur,
 was der Kunde **zahlt**. Beträge müssen daher übereinstimmen.
 
-| Package        | Typ        | Betrag   | Credits | Env-Variable (Price-ID)        |
-|----------------|------------|----------|---------|--------------------------------|
-| credits_starter| Einmalig   | 5,99 €   | 150     | `STRIPE_PRICE_CREDITS_STARTER` |
-| credits_standard| Einmalig  | 14,99 €  | 450     | `STRIPE_PRICE_CREDITS_STANDARD`|
-| credits_pro    | Einmalig   | 29,99 €  | 1000    | `STRIPE_PRICE_CREDITS_PRO`     |
-| sub_hobby      | Abo/Monat  | 3,59 €   | 200     | `STRIPE_PRICE_SUB_HOBBY`       |
-| sub_gaertner   | Abo/Monat  | 9,49 €   | 600     | `STRIPE_PRICE_SUB_GAERTNER`    |
-| sub_profi      | Abo/Monat  | 14,99 €  | 1200    | `STRIPE_PRICE_SUB_PROFI`       |
+| Package          | Typ       | Betrag  | Credits | Env-Variable (Price-ID)         |
+| ---------------- | --------- | ------- | ------- | ------------------------------- |
+| credits_starter  | Einmalig  | 5,99 €  | 150     | `STRIPE_PRICE_CREDITS_STARTER`  |
+| credits_standard | Einmalig  | 14,99 € | 450     | `STRIPE_PRICE_CREDITS_STANDARD` |
+| credits_pro      | Einmalig  | 29,99 € | 1000    | `STRIPE_PRICE_CREDITS_PRO`      |
+| sub_hobby        | Abo/Monat | 3,59 €  | 200     | `STRIPE_PRICE_SUB_HOBBY`        |
+| sub_gaertner     | Abo/Monat | 9,49 €  | 600     | `STRIPE_PRICE_SUB_GAERTNER`     |
+| sub_profi        | Abo/Monat | 14,99 € | 1200    | `STRIPE_PRICE_SUB_PROFI`        |
 
 Wichtig:
+
 - **Alle 6 brauchen echte Price-IDs.** Der Checkout setzt `managed_payments[enabled]=true`
   (Preview-API `2026-03-04.preview`); dadurch wird auch für Einmal-Credits eine Price-ID
   erzwungen. Falls dein Stripe-Account „Managed Payments" nicht hat und der Checkout
@@ -41,12 +42,13 @@ Wichtig:
 ## 1. Branding (Dashboard)
 
 Stripe-Dashboard → **Settings**:
+
 - **Business → Public details**: Public business name = `FloraPilot`,
   Support-E-Mail = `tim.mergenthaler@florapilot.app`, Support-URL/Website = `https://florapilot.app`.
 - **Branding** (Settings → Branding): Logo/Icon + Akzentfarbe; wird im Checkout & Portal genutzt.
 - Produkt-Namen prüfen (siehe unten, beginnen mit „FloraPilot …").
 - Sandbox/Test-Konto ggf. umbenennen → `FloraPilot Sandbox`.
-- Sicherstellen: nirgends mehr „FloraScout" sichtbar.
+- Sicherstellen: nirgends mehr „FloraPilot" sichtbar.
 
 ---
 
@@ -170,6 +172,7 @@ supabase secrets set --project-ref tsllrwaixvhuadrfsskt \
 ```
 
 Optional:
+
 - `STRIPE_API_VERSION=2026-03-04.preview` (Default ist bereits dieser Wert)
 - `STRIPE_MANAGED_PAYMENTS_ENABLED=false` (nur falls Managed Payments im Account fehlt)
 - `STRIPE_SUCCESS_URL` / `STRIPE_CANCEL_URL` (sonst sinnvolle Defaults auf app.florapilot.app)
@@ -182,6 +185,7 @@ Alternativ im Dashboard: Supabase → Edge Functions → **Secrets**.
 ## 5. Customer Portal aktivieren (Dashboard)
 
 Stripe → **Settings → Billing → Customer portal**, im Live-Mode aktivieren:
+
 - Zahlungsmethode aktualisieren: **an**
 - Abo kündigen: **an**
 - Rechnungs-/Zahlungshistorie: **an**
@@ -219,7 +223,7 @@ hier ansetzen.
 - [ ] Live-Webhook aktiv, alle 8 Events, Signing-Secret gesetzt
 - [ ] Customer Portal im Live-Mode aktiv, Return-URL gesetzt
 - [ ] Eine echte Mini-Transaktion getestet + ggf. erstattet
-- [ ] Branding final: kein „FloraScout" mehr sichtbar (Business-Name, Checkout, Portal, Mails)
+- [ ] Branding final: kein „FloraPilot" mehr sichtbar (Business-Name, Checkout, Portal, Mails)
 
 ---
 

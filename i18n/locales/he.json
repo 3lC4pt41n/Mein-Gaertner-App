@@ -65,7 +65,7 @@
     "more": "עוד"
   },
   "auth": {
-    "appTitle": "FloraScout",
+    "appTitle": "FloraPilot",
     "email": "דוא\"ל",
     "password": "סיסמה",
     "login": "התחבר",
@@ -535,7 +535,7 @@
     "rainTitle": "זוהה גשם",
     "rainBody": "צמחי חוץ כנראה צריכים פחות מים נוספים בימים אלה.",
     "activeTitle": "ההקשר פעיל",
-    "activeBody": "FloraScout לוקח בחשבון את מזג האוויר, העונה והשעה ביום לקבלת עצות טיפול טובות יותר.",
+    "activeBody": "FloraPilot לוקח בחשבון את מזג האוויר, העונה והשעה ביום לקבלת עצות טיפול טובות יותר.",
     "seasons": {
       "spring": "אביב",
       "summer": "קיץ",
@@ -722,7 +722,7 @@
     "termsOfService": "תנאי שימוש",
     "feedback": "תן משוב",
     "rtlRestartTitle": "לטעון מחדש את האפליקציה?",
-    "rtlRestartMessage": "השפה שנבחרה משתמשת בכיוון כתיבה שונה. FloraScout צריך לטעון מחדש כדי שהפריסה והניווט ישוקפו בצורה נכונה.",
+    "rtlRestartMessage": "השפה שנבחרה משתמשת בכיוון כתיבה שונה. FloraPilot צריך לטעון מחדש כדי שהפריסה והניווט ישוקפו בצורה נכונה.",
     "rtlRestartNow": "טען מחדש עכשיו",
     "rtlRestartLater": "מאוחר יותר"
   }

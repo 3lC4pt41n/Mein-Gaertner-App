@@ -65,7 +65,7 @@
     "more": "もっと見る"
   },
   "auth": {
-    "appTitle": "フローラスカウト",
+    "appTitle": "FloraPilot",
     "email": "電子メール",
     "password": "パスワード",
     "login": "ログイン",
@@ -535,7 +535,7 @@
     "rainTitle": "雨が検出されました",
     "rainBody": "屋外の植物はおそらく最近、追加の水の必要性が少なくなっていると思われます。",
     "activeTitle": "アクティブなコンテキスト",
-    "activeBody": "FloraScout は、天候、季節、時刻を考慮して、より良いケアのヒントを提供します。",
+    "activeBody": "FloraPilot は、天候、季節、時刻を考慮して、より良いケアのヒントを提供します。",
     "seasons": {
       "spring": "春",
       "summer": "夏",
@@ -722,7 +722,7 @@
     "termsOfService": "利用規約",
     "feedback": "フィードバックを送信する",
     "rtlRestartTitle": "アプリをリロードしますか?",
-    "rtlRestartMessage": "選択した言語では、異なる記述方向が使用されます。レイアウトとナビゲーションが正しくミラーリングされるように、FloraScout をリロードする必要があります。",
+    "rtlRestartMessage": "選択した言語では、異なる記述方向が使用されます。レイアウトとナビゲーションが正しくミラーリングされるように、FloraPilot をリロードする必要があります。",
     "rtlRestartNow": "今すぐリロード",
     "rtlRestartLater": "後で"
   }

@@ -8,7 +8,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const rawHookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET') as string;
 const hookSecret = rawHookSecret.replace(/^v1,/, '');
 
-const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraScout <noreply@florapilot.app>';
+const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraPilot <noreply@florapilot.app>';
 const SITE_URL = Deno.env.get('SITE_URL') || 'https://florapilot.app';
 const PROJECT_REF = 'tsllrwaixvhuadrfsskt';
 
@@ -289,11 +289,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     invite: {
       subtitle: 'Dein smarter Pflanzenbegleiter',
       title: 'Du wurdest eingeladen',
-      desc: 'Du kannst <strong>FloraScout</strong> nutzen – für einen übersichtlichen, gesunden und grünen Pflanzenalltag.',
+      desc: 'Du kannst <strong>FloraPilot</strong> nutzen – für einen übersichtlichen, gesunden und grünen Pflanzenalltag.',
       note: 'Richte dein Konto ein, um loszulegen.',
       cta: 'Einladung annehmen',
       fallback: 'Link manuell öffnen:',
-      footer: 'Du kennst FloraScout nicht? Dann ignoriere diese E-Mail.',
+      footer: 'Du kennst FloraPilot nicht? Dann ignoriere diese E-Mail.',
       outside: '',
     },
     magiclink: {
@@ -351,11 +351,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     invite: {
       subtitle: 'Your smart plant companion',
       title: "You've Been Invited",
-      desc: 'You can use <strong>FloraScout</strong> – for a clear, healthy, and green plant routine.',
+      desc: 'You can use <strong>FloraPilot</strong> – for a clear, healthy, and green plant routine.',
       note: 'Set up your account to get started.',
       cta: 'Accept Invitation',
       fallback: 'Open link manually:',
-      footer: "Don't know FloraScout? Just ignore this email.",
+      footer: "Don't know FloraPilot? Just ignore this email.",
       outside: '',
     },
     magiclink: {
@@ -413,11 +413,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     invite: {
       subtitle: 'Ton compagnon végétal intelligent',
       title: 'Tu as été invité(e)',
-      desc: 'Tu peux utiliser <strong>FloraScout</strong> – pour un quotidien végétal organisé, sain et verdoyant.',
+      desc: 'Tu peux utiliser <strong>FloraPilot</strong> – pour un quotidien végétal organisé, sain et verdoyant.',
       note: 'Configure ton compte pour commencer.',
       cta: "Accepter l'invitation",
       fallback: 'Ouvrir le lien manuellement :',
-      footer: 'Tu ne connais pas FloraScout ? Ignore cet e-mail.',
+      footer: 'Tu ne connais pas FloraPilot ? Ignore cet e-mail.',
       outside: '',
     },
     magiclink: {
@@ -475,11 +475,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     invite: {
       subtitle: 'Il tuo compagno verde intelligente',
       title: 'Sei stato invitato',
-      desc: 'Puoi usare <strong>FloraScout</strong> – per una routine verde, organizzata e salutare.',
+      desc: 'Puoi usare <strong>FloraPilot</strong> – per una routine verde, organizzata e salutare.',
       note: 'Configura il tuo account per iniziare.',
       cta: 'Accetta invito',
       fallback: 'Apri il link manualmente:',
-      footer: 'Non conosci FloraScout? Ignora questa e-mail.',
+      footer: 'Non conosci FloraPilot? Ignora questa e-mail.',
       outside: '',
     },
     magiclink: {
@@ -537,11 +537,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     invite: {
       subtitle: 'Tu compañero vegetal inteligente',
       title: 'Has sido invitado',
-      desc: 'Puedes usar <strong>FloraScout</strong> – para una rutina vegetal organizada, saludable y verde.',
+      desc: 'Puedes usar <strong>FloraPilot</strong> – para una rutina vegetal organizada, saludable y verde.',
       note: 'Configura tu cuenta para comenzar.',
       cta: 'Aceptar invitación',
       fallback: 'Abrir enlace manualmente:',
-      footer: '¿No conoces FloraScout? Ignora este correo.',
+      footer: '¿No conoces FloraPilot? Ignora este correo.',
       outside: '',
     },
     magiclink: {
@@ -599,11 +599,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     invite: {
       subtitle: 'Ваш умный помощник для растений',
       title: 'Вас пригласили',
-      desc: 'Вы можете использовать <strong>FloraScout</strong> – для организованного, здорового и зелёного ухода за растениями.',
+      desc: 'Вы можете использовать <strong>FloraPilot</strong> – для организованного, здорового и зелёного ухода за растениями.',
       note: 'Настройте свой аккаунт, чтобы начать.',
       cta: 'Принять приглашение',
       fallback: 'Открыть ссылку вручную:',
-      footer: 'Не знакомы с FloraScout? Просто проигнорируйте это письмо.',
+      footer: 'Не знакомы с FloraPilot? Просто проигнорируйте это письмо.',
       outside: '',
     },
     magiclink: {
@@ -661,11 +661,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     invite: {
       subtitle: 'Akıllı bitki yardımcınız',
       title: 'Davet Edildiniz',
-      desc: "<strong>FloraScout</strong>'u kullanabilirsiniz – düzenli, sağlıklı ve yeşil bir bitki bakımı için.",
+      desc: "<strong>FloraPilot</strong>'u kullanabilirsiniz – düzenli, sağlıklı ve yeşil bir bitki bakımı için.",
       note: 'Başlamak için hesabınızı ayarlayın.',
       cta: 'Daveti Kabul Et',
       fallback: 'Bağlantıyı manuel olarak açın:',
-      footer: "FloraScout'u tanımıyor musunuz? Bu e-postayı görmezden gelin.",
+      footer: "FloraPilot'u tanımıyor musunuz? Bu e-postayı görmezden gelin.",
       outside: '',
     },
     magiclink: {
@@ -720,11 +720,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'Je bent uitgenodigd',
-      desc: 'Je kunt <strong>FloraScout</strong> gebruiken – voor een overzichtelijke, gezonde en groene plantenroutine.',
+      desc: 'Je kunt <strong>FloraPilot</strong> gebruiken – voor een overzichtelijke, gezonde en groene plantenroutine.',
       note: 'Stel je account in om te beginnen.',
       cta: 'Uitnodiging accepteren',
       fallback: 'Link handmatig openen:',
-      footer: 'Ken je FloraScout niet? Negeer deze e-mail.',
+      footer: 'Ken je FloraPilot niet? Negeer deze e-mail.',
       outside: '',
     },
     magiclink: {
@@ -776,11 +776,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'Du er blevet inviteret',
-      desc: 'Du kan bruge <strong>FloraScout</strong> – til en overskuelig, sund og grøn planterutine.',
+      desc: 'Du kan bruge <strong>FloraPilot</strong> – til en overskuelig, sund og grøn planterutine.',
       note: 'Opret din konto for at komme i gang.',
       cta: 'Accepter invitation',
       fallback: 'Åbn linket manuelt:',
-      footer: 'Kender du ikke FloraScout? Ignorer denne e-mail.',
+      footer: 'Kender du ikke FloraPilot? Ignorer denne e-mail.',
       outside: '',
     },
     magiclink: {
@@ -832,11 +832,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'Masz zaproszenie',
-      desc: 'Możesz korzystać z <strong>FloraScout</strong> – dla uporządkowanej, zdrowej i zielonej rutyny pielęgnacji roślin.',
+      desc: 'Możesz korzystać z <strong>FloraPilot</strong> – dla uporządkowanej, zdrowej i zielonej rutyny pielęgnacji roślin.',
       note: 'Skonfiguruj konto, aby zacząć.',
       cta: 'Przyjmij zaproszenie',
       fallback: 'Otwórz link ręcznie:',
-      footer: 'Nie znasz FloraScout? Zignoruj tę wiadomość.',
+      footer: 'Nie znasz FloraPilot? Zignoruj tę wiadomość.',
       outside: '',
     },
     magiclink: {
@@ -888,11 +888,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'Вас запрошено',
-      desc: 'Ви можете користуватися <strong>FloraScout</strong> – для впорядкованого, здорового й зеленого догляду за рослинами.',
+      desc: 'Ви можете користуватися <strong>FloraPilot</strong> – для впорядкованого, здорового й зеленого догляду за рослинами.',
       note: 'Налаштуйте обліковий запис, щоб почати.',
       cta: 'Прийняти запрошення',
       fallback: 'Відкрити посилання вручну:',
-      footer: 'Не знаєте FloraScout? Проігноруйте цей лист.',
+      footer: 'Не знаєте FloraPilot? Проігноруйте цей лист.',
       outside: '',
     },
     magiclink: {
@@ -944,11 +944,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'Você recebeu um convite',
-      desc: 'Você pode usar <strong>FloraScout</strong> – para uma rotina de plantas organizada, saudável e verde.',
+      desc: 'Você pode usar <strong>FloraPilot</strong> – para uma rotina de plantas organizada, saudável e verde.',
       note: 'Configure sua conta para começar.',
       cta: 'Aceitar convite',
       fallback: 'Abrir link manualmente:',
-      footer: 'Não conhece o FloraScout? Ignore este e-mail.',
+      footer: 'Não conhece o FloraPilot? Ignore este e-mail.',
       outside: '',
     },
     magiclink: {
@@ -1000,11 +1000,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'Recebeu um convite',
-      desc: 'Pode usar o <strong>FloraScout</strong> – para uma rotina de plantas organizada, saudável e verde.',
+      desc: 'Pode usar o <strong>FloraPilot</strong> – para uma rotina de plantas organizada, saudável e verde.',
       note: 'Configure a sua conta para começar.',
       cta: 'Aceitar convite',
       fallback: 'Abrir ligação manualmente:',
-      footer: 'Não conhece o FloraScout? Ignore este e-mail.',
+      footer: 'Não conhece o FloraPilot? Ignore este e-mail.',
       outside: '',
     },
     magiclink: {
@@ -1056,11 +1056,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'आपको आमंत्रित किया गया है',
-      desc: 'आप <strong>FloraScout</strong> का उपयोग कर सकते हैं – साफ, स्वस्थ और हरी पौधा-देखभाल दिनचर्या के लिए।',
+      desc: 'आप <strong>FloraPilot</strong> का उपयोग कर सकते हैं – साफ, स्वस्थ और हरी पौधा-देखभाल दिनचर्या के लिए।',
       note: 'शुरू करने के लिए अपना खाता सेट करें।',
       cta: 'आमंत्रण स्वीकार करें',
       fallback: 'लिंक मैन्युअली खोलें:',
-      footer: 'FloraScout को नहीं जानते? इस ईमेल को अनदेखा करें।',
+      footer: 'FloraPilot को नहीं जानते? इस ईमेल को अनदेखा करें।',
       outside: '',
     },
     magiclink: {
@@ -1112,11 +1112,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'আপনাকে আমন্ত্রণ জানানো হয়েছে',
-      desc: 'আপনি <strong>FloraScout</strong> ব্যবহার করতে পারেন – একটি পরিষ্কার, স্বাস্থ্যকর ও সবুজ উদ্ভিদ রুটিনের জন্য।',
+      desc: 'আপনি <strong>FloraPilot</strong> ব্যবহার করতে পারেন – একটি পরিষ্কার, স্বাস্থ্যকর ও সবুজ উদ্ভিদ রুটিনের জন্য।',
       note: 'শুরু করতে আপনার অ্যাকাউন্ট সেট করুন।',
       cta: 'আমন্ত্রণ গ্রহণ করুন',
       fallback: 'লিংক ম্যানুয়ালি খুলুন:',
-      footer: 'FloraScout চেনেন না? এই ই-মেইল উপেক্ষা করুন।',
+      footer: 'FloraPilot চেনেন না? এই ই-মেইল উপেক্ষা করুন।',
       outside: '',
     },
     magiclink: {
@@ -1168,11 +1168,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: '招待されました',
-      desc: '<strong>FloraScout</strong> を利用できます – 整理された健康的な植物管理のために。',
+      desc: '<strong>FloraPilot</strong> を利用できます – 整理された健康的な植物管理のために。',
       note: '開始するにはアカウントを設定してください。',
       cta: '招待を承諾',
       fallback: 'リンクを手動で開く:',
-      footer: 'FloraScout に心当たりがない場合は、このメールを無視してください。',
+      footer: 'FloraPilot に心当たりがない場合は、このメールを無視してください。',
       outside: '',
     },
     magiclink: {
@@ -1224,11 +1224,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: '초대를 받았습니다',
-      desc: '<strong>FloraScout</strong>를 사용할 수 있습니다 – 체계적이고 건강한 식물 루틴을 위해.',
+      desc: '<strong>FloraPilot</strong>를 사용할 수 있습니다 – 체계적이고 건강한 식물 루틴을 위해.',
       note: '시작하려면 계정을 설정하세요.',
       cta: '초대 수락',
       fallback: '링크를 직접 열기:',
-      footer: 'FloraScout를 모른다면 이 이메일을 무시하세요.',
+      footer: 'FloraPilot를 모른다면 이 이메일을 무시하세요.',
       outside: '',
     },
     magiclink: {
@@ -1280,11 +1280,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: '你已收到邀请',
-      desc: '你可以使用 <strong>FloraScout</strong> – 打理清晰、健康、绿色的植物日常。',
+      desc: '你可以使用 <strong>FloraPilot</strong> – 打理清晰、健康、绿色的植物日常。',
       note: '设置账户即可开始。',
       cta: '接受邀请',
       fallback: '手动打开链接：',
-      footer: '不认识 FloraScout？请忽略这封邮件。',
+      footer: '不认识 FloraPilot？请忽略这封邮件。',
       outside: '',
     },
     magiclink: {
@@ -1336,11 +1336,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'Anda telah diundang',
-      desc: 'Anda dapat menggunakan <strong>FloraScout</strong> – untuk rutinitas tanaman yang rapi, sehat, dan hijau.',
+      desc: 'Anda dapat menggunakan <strong>FloraPilot</strong> – untuk rutinitas tanaman yang rapi, sehat, dan hijau.',
       note: 'Siapkan akun Anda untuk memulai.',
       cta: 'Terima undangan',
       fallback: 'Buka tautan secara manual:',
-      footer: 'Tidak mengenal FloraScout? Abaikan email ini.',
+      footer: 'Tidak mengenal FloraPilot? Abaikan email ini.',
       outside: '',
     },
     magiclink: {
@@ -1392,11 +1392,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'تمت دعوتك',
-      desc: 'يمكنك استخدام <strong>FloraScout</strong> – لروتين نباتات واضح وصحي وأخضر.',
+      desc: 'يمكنك استخدام <strong>FloraPilot</strong> – لروتين نباتات واضح وصحي وأخضر.',
       note: 'قم بإعداد حسابك للبدء.',
       cta: 'قبول الدعوة',
       fallback: 'افتح الرابط يدويًا:',
-      footer: 'لا تعرف FloraScout؟ تجاهل هذه الرسالة.',
+      footer: 'لا تعرف FloraPilot؟ تجاهل هذه الرسالة.',
       outside: '',
     },
     magiclink: {
@@ -1448,11 +1448,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'הוזמנת',
-      desc: 'אפשר להשתמש ב-<strong>FloraScout</strong> – לשגרת צמחים ברורה, בריאה וירוקה.',
+      desc: 'אפשר להשתמש ב-<strong>FloraPilot</strong> – לשגרת צמחים ברורה, בריאה וירוקה.',
       note: 'הגדר את החשבון כדי להתחיל.',
       cta: 'קבל הזמנה',
       fallback: 'פתח את הקישור ידנית:',
-      footer: 'לא מכיר את FloraScout? אפשר להתעלם מהאימייל.',
+      footer: 'לא מכיר את FloraPilot? אפשר להתעלם מהאימייל.',
       outside: '',
     },
     magiclink: {
@@ -1504,11 +1504,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'دعوت شده‌اید',
-      desc: 'می‌توانید از <strong>FloraScout</strong> استفاده کنید – برای یک روتین گیاهی منظم، سالم و سبز.',
+      desc: 'می‌توانید از <strong>FloraPilot</strong> استفاده کنید – برای یک روتین گیاهی منظم، سالم و سبز.',
       note: 'برای شروع، حساب خود را تنظیم کنید.',
       cta: 'پذیرش دعوت',
       fallback: 'باز کردن دستی پیوند:',
-      footer: 'FloraScout را نمی‌شناسید؟ این ایمیل را نادیده بگیرید.',
+      footer: 'FloraPilot را نمی‌شناسید؟ این ایمیل را نادیده بگیرید.',
       outside: '',
     },
     magiclink: {
@@ -1560,11 +1560,11 @@ const i18n: Record<SupportedLanguage, Record<EmailActionType, I18nStrings>> = {
     },
     invite: {
       title: 'آپ کو دعوت دی گئی ہے',
-      desc: 'آپ <strong>FloraScout</strong> استعمال کر سکتے ہیں – صاف، صحت مند اور سبز پودوں کی روٹین کے لیے۔',
+      desc: 'آپ <strong>FloraPilot</strong> استعمال کر سکتے ہیں – صاف، صحت مند اور سبز پودوں کی روٹین کے لیے۔',
       note: 'شروع کرنے کے لیے اپنا اکاؤنٹ سیٹ کریں۔',
       cta: 'دعوت قبول کریں',
       fallback: 'لنک دستی طور پر کھولیں:',
-      footer: 'FloraScout کو نہیں جانتے؟ اس ای میل کو نظر انداز کریں۔',
+      footer: 'FloraPilot کو نہیں جانتے؟ اس ای میل کو نظر انداز کریں۔',
       outside: '',
     },
     magiclink: {
@@ -1644,7 +1644,7 @@ function buildEmailHtml(
   if (actionType === 'reauthentication') {
     return `<!doctype html>
 <html lang="${lang}" dir="${direction}">
-  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>FloraScout</title></head>
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>FloraPilot</title></head>
   <body style="margin:0;padding:0;background-color:#f5f5f7;direction:${direction};text-align:${textAlign}">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f7;padding:32px 16px">
       <tr><td align="center">
@@ -1652,7 +1652,7 @@ function buildEmailHtml(
           <tr><td style="padding:28px 28px 18px;text-align:${textAlign}">
             <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1d1d1f;font-size:14px;letter-spacing:-0.01em">
               <span style="font-size:18px;vertical-align:-2px">🌱</span>
-              <span style="font-weight:600;${brandSpacing}">FloraScout</span>
+              <span style="font-weight:600;${brandSpacing}">FloraPilot</span>
             </div>
             <div style="margin-top:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6e6e73;font-size:13px">${strings.subtitle}</div>
           </td></tr>
@@ -1665,7 +1665,7 @@ function buildEmailHtml(
           <tr><td style="padding:18px 28px"><hr style="border:none;border-top:1px solid #e5e5ea;margin:0" /></td></tr>
           <tr><td style="padding:0 28px 26px">
             <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6e6e73;font-size:12px;line-height:1.6">${strings.footer}</p>
-            <p style="margin:10px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#9b9ba0;font-size:11px">&copy; 2026 FloraScout</p>
+            <p style="margin:10px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#9b9ba0;font-size:11px">&copy; 2026 FloraPilot</p>
           </td></tr>
         </table>
       </td></tr>
@@ -1685,7 +1685,7 @@ function buildEmailHtml(
 
   return `<!doctype html>
 <html lang="${lang}" dir="${direction}">
-  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>FloraScout</title></head>
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>FloraPilot</title></head>
   <body style="margin:0;padding:0;background-color:#f5f5f7;direction:${direction};text-align:${textAlign}">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f7;padding:32px 16px">
       <tr><td align="center">
@@ -1694,7 +1694,7 @@ function buildEmailHtml(
           <tr><td style="padding:28px 28px 18px;text-align:${textAlign}">
             <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1d1d1f;font-size:14px;letter-spacing:-0.01em">
               <span style="font-size:18px;vertical-align:-2px">🌱</span>
-              <span style="font-weight:600;${brandSpacing}">FloraScout</span>
+              <span style="font-weight:600;${brandSpacing}">FloraPilot</span>
             </div>
             <div style="margin-top:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6e6e73;font-size:13px">${strings.subtitle}</div>
           </td></tr>
@@ -1719,7 +1719,7 @@ function buildEmailHtml(
           <!-- Footer -->
           <tr><td style="padding:0 28px 26px">
             <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#6e6e73;font-size:12px;line-height:1.6">${strings.footer}</p>
-            <p style="margin:10px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#9b9ba0;font-size:11px">&copy; 2026 FloraScout</p>
+            <p style="margin:10px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#9b9ba0;font-size:11px">&copy; 2026 FloraPilot</p>
           </td></tr>
         </table>
         ${outsideHtml}
@@ -1758,7 +1758,7 @@ Deno.serve(async (req) => {
   const lang = normalizeLanguage(user.user_metadata?.language);
 
   // Get subject and build HTML
-  const subject = subjects[lang]?.[actionType] || subjects.de[actionType] || 'FloraScout';
+  const subject = subjects[lang]?.[actionType] || subjects.de[actionType] || 'FloraPilot';
   const html = buildEmailHtml(lang, actionType, email_data);
 
   console.log(`Sending ${actionType} email to ${user.email} in ${lang} — subject: "${subject}"`);

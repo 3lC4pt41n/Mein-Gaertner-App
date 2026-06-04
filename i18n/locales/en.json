@@ -65,7 +65,7 @@
     "more": "More"
   },
   "auth": {
-    "appTitle": "FloraScout",
+    "appTitle": "FloraPilot",
     "email": "Email",
     "password": "Password",
     "login": "Log in",
@@ -433,7 +433,7 @@
     "cameraRequired": "Camera access is required for the avatar.",
     "photoReadError": "Could not read the photo.",
     "saveProfileError": "Error saving",
-    "completeProfile": "Set up FloraScout",
+    "completeProfile": "Set up FloraPilot",
     "profileIntro": "Pick your language and username. You can add everything else later.",
     "retakeAvatar": "Change avatar",
     "usernamePlaceholder": "Your username",
@@ -535,7 +535,7 @@
     "rainTitle": "Rain detected",
     "rainBody": "Outdoor plants probably need less additional water today.",
     "activeTitle": "Context active",
-    "activeBody": "FloraScout uses weather, season and time of day for better care tips.",
+    "activeBody": "FloraPilot uses weather, season and time of day for better care tips.",
     "seasons": {
       "spring": "Spring",
       "summer": "Summer",
@@ -722,7 +722,7 @@
     "termsOfService": "Terms of Service",
     "feedback": "Give feedback",
     "rtlRestartTitle": "Reload app?",
-    "rtlRestartMessage": "The selected language uses a different writing direction. FloraScout needs to reload so that the layout and navigation are mirrored correctly.",
+    "rtlRestartMessage": "The selected language uses a different writing direction. FloraPilot needs to reload so that the layout and navigation are mirrored correctly.",
     "rtlRestartNow": "Reload now",
     "rtlRestartLater": "Later"
   }

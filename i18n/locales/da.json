@@ -65,7 +65,7 @@
     "more": "Mere"
   },
   "auth": {
-    "appTitle": "FloraScout",
+    "appTitle": "FloraPilot",
     "email": "E-mail",
     "password": "Adgangskode",
     "login": "Log ind",
@@ -535,7 +535,7 @@
     "rainTitle": "Regn registreret",
     "rainBody": "Udendørs planter har sandsynligvis brug for mindre ekstra vand i disse dage.",
     "activeTitle": "Kontekst aktiv",
-    "activeBody": "FloraScout tager højde for vejr, årstid og tidspunkt på dagen for bedre plejetips.",
+    "activeBody": "FloraPilot tager højde for vejr, årstid og tidspunkt på dagen for bedre plejetips.",
     "seasons": {
       "spring": "Forår",
       "summer": "Sommer",
@@ -722,7 +722,7 @@
     "termsOfService": "Vilkår for brug",
     "feedback": "Giv feedback",
     "rtlRestartTitle": "Genindlæse app?",
-    "rtlRestartMessage": "Det valgte sprog bruger en anden skriveretning. FloraScout skal genindlæses, så layout og navigation spejles korrekt.",
+    "rtlRestartMessage": "Det valgte sprog bruger en anden skriveretning. FloraPilot skal genindlæses, så layout og navigation spejles korrekt.",
     "rtlRestartNow": "Genindlæs nu",
     "rtlRestartLater": "Senere"
   }

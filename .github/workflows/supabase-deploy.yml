@@ -24,6 +24,11 @@ jobs:
       - name: Link Supabase project
         run: supabase link --project-ref $SUPABASE_PROJECT_REF
 
+      - name: Set public function configuration
+        run: |
+          supabase secrets set SEND_EMAIL_FROM='FloraPilot <noreply@florapilot.app>'
+          supabase secrets set SITE_URL='https://florapilot.app'
+
       - name: Repair already-applied migrations missing from tracking
         run: |
           supabase migration repair --status applied 20250101

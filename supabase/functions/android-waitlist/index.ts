@@ -11,7 +11,7 @@ type WaitlistPayload = {
 };
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') ?? '');
-const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraScout <noreply@florapilot.app>';
+const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraPilot <noreply@florapilot.app>';
 const WAITLIST_NOTIFY_TO = Deno.env.get('WAITLIST_NOTIFY_TO') || 'tim.mergenthaler@florapilot.app';
 const ANDROID_GOOGLE_GROUP_EMAIL =
   Deno.env.get('ANDROID_GOOGLE_GROUP_EMAIL') || Deno.env.get('GOOGLE_GROUP_EMAIL') || '';
@@ -45,7 +45,7 @@ const COPY: Record<
 > = {
   de: {
     adminSubject: 'Neue Android-Warteliste',
-    userSubject: 'Deine FloraScout Android-Einladung',
+    userSubject: 'Deine FloraPilot Android-Einladung',
     userTitle: 'Du bist fuer die Android-Beta freigeschaltet.',
     userBody:
       'Ich habe deine E-Mail zur Google-Testergruppe hinzugefuegt. Oeffne den Link unten mit demselben Google-Konto, um der Beta beizutreten.',
@@ -56,7 +56,7 @@ const COPY: Record<
   },
   en: {
     adminSubject: 'New Android waitlist signup',
-    userSubject: 'Your FloraScout Android invitation',
+    userSubject: 'Your FloraPilot Android invitation',
     userTitle: 'You are enabled for the Android beta.',
     userBody:
       'I added your email to the Google tester group. Open the link below with the same Google account to join the beta.',
@@ -66,7 +66,7 @@ const COPY: Record<
   },
   fr: {
     adminSubject: 'Nouvelle inscription liste Android',
-    userSubject: 'Votre invitation Android FloraScout',
+    userSubject: 'Votre invitation Android FloraPilot',
     userTitle: 'Vous avez acces a la beta Android.',
     userBody:
       'Votre e-mail a ete ajoute au groupe de test Google. Ouvrez le lien ci-dessous avec le meme compte Google pour rejoindre la beta.',
@@ -77,7 +77,7 @@ const COPY: Record<
   },
   it: {
     adminSubject: 'Nuova iscrizione lista Android',
-    userSubject: 'Il tuo invito Android FloraScout',
+    userSubject: 'Il tuo invito Android FloraPilot',
     userTitle: 'Hai accesso alla beta Android.',
     userBody:
       'Ho aggiunto la tua e-mail al gruppo tester di Google. Apri il link qui sotto con lo stesso account Google per entrare nella beta.',
@@ -87,7 +87,7 @@ const COPY: Record<
   },
   es: {
     adminSubject: 'Nuevo registro en lista Android',
-    userSubject: 'Tu invitacion Android de FloraScout',
+    userSubject: 'Tu invitacion Android de FloraPilot',
     userTitle: 'Ya tienes acceso a la beta de Android.',
     userBody:
       'He añadido tu correo al grupo de testers de Google. Abre el enlace de abajo con la misma cuenta de Google para unirte a la beta.',
@@ -98,7 +98,7 @@ const COPY: Record<
   },
   ru: {
     adminSubject: 'Новая заявка в лист ожидания Android',
-    userSubject: 'Ваше приглашение FloraScout Android',
+    userSubject: 'Ваше приглашение FloraPilot Android',
     userTitle: 'Вам открыт доступ к Android-бете.',
     userBody:
       'Я добавил ваш e-mail в Google-группу тестировщиков. Откройте ссылку ниже тем же Google-аккаунтом, чтобы присоединиться к бете.',
@@ -109,7 +109,7 @@ const COPY: Record<
   },
   tr: {
     adminSubject: 'Yeni Android bekleme listesi kaydi',
-    userSubject: 'FloraScout Android davetin',
+    userSubject: 'FloraPilot Android davetin',
     userTitle: 'Android betasi icin erisim actik.',
     userBody:
       'E-posta adresini Google tester grubuna ekledim. Betaya katilmak icin asagidaki baglantiyi ayni Google hesabi ile ac.',
@@ -119,7 +119,7 @@ const COPY: Record<
   },
   nl: {
     adminSubject: 'Nieuwe Android-wachtlijst',
-    userSubject: 'Je FloraScout Android-uitnodiging',
+    userSubject: 'Je FloraPilot Android-uitnodiging',
     userTitle: 'Je hebt toegang tot de Android-beta.',
     userBody:
       'Ik heb je e-mail toegevoegd aan de Google-testgroep. Open de link hieronder met hetzelfde Google-account om mee te doen aan de beta.',
@@ -129,7 +129,7 @@ const COPY: Record<
   },
   da: {
     adminSubject: 'Ny Android-venteliste',
-    userSubject: 'Din FloraScout Android-invitation',
+    userSubject: 'Din FloraPilot Android-invitation',
     userTitle: 'Du har adgang til Android-betaen.',
     userBody:
       'Jeg har tilfoejet din e-mail til Googles testgruppe. Aabn linket nedenfor med den samme Google-konto for at deltage i betaen.',
@@ -139,7 +139,7 @@ const COPY: Record<
   },
   pl: {
     adminSubject: 'Nowy zapis na liste Android',
-    userSubject: 'Twoje zaproszenie Android FloraScout',
+    userSubject: 'Twoje zaproszenie Android FloraPilot',
     userTitle: 'Masz dostep do bety Android.',
     userBody:
       'Dodalam Twoj e-mail do grupy testerow Google. Otworz link ponizej tym samym kontem Google, aby dolaczyc do bety.',
@@ -149,7 +149,7 @@ const COPY: Record<
   },
   uk: {
     adminSubject: 'Нова заявка Android',
-    userSubject: 'Ваше запрошення FloraScout Android',
+    userSubject: 'Ваше запрошення FloraPilot Android',
     userTitle: 'Вам відкрито доступ до Android-бети.',
     userBody:
       'Я додав вашу електронну адресу до Google-групи тестувальників. Відкрийте посилання нижче тим самим Google-акаунтом, щоб приєднатися до бети.',
@@ -159,7 +159,7 @@ const COPY: Record<
   },
   'pt-BR': {
     adminSubject: 'Novo cadastro na lista Android',
-    userSubject: 'Seu convite Android do FloraScout',
+    userSubject: 'Seu convite Android do FloraPilot',
     userTitle: 'Voce tem acesso ao beta para Android.',
     userBody:
       'Adicionei seu e-mail ao grupo de testadores do Google. Abra o link abaixo com a mesma Conta Google para participar do beta.',
@@ -170,7 +170,7 @@ const COPY: Record<
   },
   'pt-PT': {
     adminSubject: 'Novo registo na lista Android',
-    userSubject: 'O teu convite Android do FloraScout',
+    userSubject: 'O teu convite Android do FloraPilot',
     userTitle: 'Tens acesso ao beta para Android.',
     userBody:
       'Adicionei o teu e-mail ao grupo de testadores da Google. Abre o link abaixo com a mesma Conta Google para aderires ao beta.',
@@ -181,7 +181,7 @@ const COPY: Record<
   },
   hi: {
     adminSubject: 'नई Android प्रतीक्षा सूची',
-    userSubject: 'आपका FloraScout Android निमंत्रण',
+    userSubject: 'आपका FloraPilot Android निमंत्रण',
     userTitle: 'आपको Android beta के लिए सक्षम कर दिया गया है।',
     userBody:
       'आपका ईमेल Google tester group में जोड़ दिया गया है। beta में शामिल होने के लिए नीचे दिया गया लिंक उसी Google खाते से खोलें।',
@@ -191,7 +191,7 @@ const COPY: Record<
   },
   bn: {
     adminSubject: 'নতুন Android অপেক্ষা তালিকা',
-    userSubject: 'আপনার FloraScout Android আমন্ত্রণ',
+    userSubject: 'আপনার FloraPilot Android আমন্ত্রণ',
     userTitle: 'আপনাকে Android beta-এর জন্য সক্রিয় করা হয়েছে।',
     userBody:
       'আপনার ইমেল Google tester group-এ যোগ করা হয়েছে। beta-তে যোগ দিতে একই Google অ্যাকাউন্ট দিয়ে নিচের লিংকটি খুলুন।',
@@ -201,7 +201,7 @@ const COPY: Record<
   },
   ja: {
     adminSubject: '新しいAndroid待機リスト登録',
-    userSubject: 'FloraScout Androidへの招待',
+    userSubject: 'FloraPilot Androidへの招待',
     userTitle: 'Androidベータへのアクセスが有効になりました。',
     userBody:
       'あなたのメールアドレスをGoogleテスターグループに追加しました。下のリンクを同じGoogleアカウントで開いてベータに参加してください。',
@@ -211,7 +211,7 @@ const COPY: Record<
   },
   ko: {
     adminSubject: '새 Android 대기자 등록',
-    userSubject: 'FloraScout Android 초대장',
+    userSubject: 'FloraPilot Android 초대장',
     userTitle: 'Android 베타 접근 권한이 활성화되었습니다.',
     userBody:
       '이메일을 Google 테스터 그룹에 추가했습니다. 아래 링크를 같은 Google 계정으로 열어 베타에 참여하세요.',
@@ -221,7 +221,7 @@ const COPY: Record<
   },
   'zh-Hans': {
     adminSubject: '新的 Android 候补名单',
-    userSubject: '你的 FloraScout Android 邀请',
+    userSubject: '你的 FloraPilot Android 邀请',
     userTitle: '你已获得 Android beta 测试资格。',
     userBody:
       '我已将你的邮箱加入 Google 测试者群组。请使用同一个 Google 账号打开下面的链接加入 beta。',
@@ -231,7 +231,7 @@ const COPY: Record<
   },
   id: {
     adminSubject: 'Daftar tunggu Android baru',
-    userSubject: 'Undangan Android FloraScout Anda',
+    userSubject: 'Undangan Android FloraPilot Anda',
     userTitle: 'Anda sudah mendapatkan akses beta Android.',
     userBody:
       'Email Anda sudah ditambahkan ke grup tester Google. Buka tautan di bawah dengan akun Google yang sama untuk bergabung ke beta.',
@@ -241,7 +241,7 @@ const COPY: Record<
   },
   ar: {
     adminSubject: 'تسجيل جديد في قائمة Android',
-    userSubject: 'دعوتك إلى FloraScout Android',
+    userSubject: 'دعوتك إلى FloraPilot Android',
     userTitle: 'تم تفعيل وصولك إلى النسخة التجريبية على Android.',
     userBody:
       'تمت إضافة بريدك الإلكتروني إلى مجموعة مختبري Google. افتح الرابط أدناه باستخدام حساب Google نفسه للانضمام إلى النسخة التجريبية.',
@@ -251,7 +251,7 @@ const COPY: Record<
   },
   he: {
     adminSubject: 'הרשמה חדשה לרשימת Android',
-    userSubject: 'ההזמנה שלך ל-FloraScout Android',
+    userSubject: 'ההזמנה שלך ל-FloraPilot Android',
     userTitle: 'הגישה שלך לבטא של Android הופעלה.',
     userBody:
       'הוספתי את כתובת האימייל שלך לקבוצת הבודקים של Google. פתח את הקישור למטה עם אותו חשבון Google כדי להצטרף לבטא.',
@@ -261,7 +261,7 @@ const COPY: Record<
   },
   fa: {
     adminSubject: 'ثبت‌نام جدید فهرست Android',
-    userSubject: 'دعوت FloraScout Android شما',
+    userSubject: 'دعوت FloraPilot Android شما',
     userTitle: 'دسترسی شما به نسخه بتای Android فعال شد.',
     userBody:
       'ایمیل شما به گروه آزمایش‌کنندگان Google اضافه شد. برای پیوستن به نسخه بتا، لینک زیر را با همان حساب Google باز کنید.',
@@ -272,7 +272,7 @@ const COPY: Record<
   },
   ur: {
     adminSubject: 'نئی Android انتظار فہرست',
-    userSubject: 'آپ کی FloraScout Android دعوت',
+    userSubject: 'آپ کی FloraPilot Android دعوت',
     userTitle: 'آپ کو Android beta کے لیے فعال کر دیا گیا ہے۔',
     userBody:
       'آپ کا ای میل Google tester group میں شامل کر دیا گیا ہے۔ beta میں شامل ہونے کے لیے نیچے والا لنک اسی Google اکاؤنٹ سے کھولیں۔',
@@ -502,7 +502,7 @@ function buildUserHtml(copy: (typeof COPY)[SupportedLanguage]) {
   return `
     <div style="font-family:Arial,sans-serif;line-height:1.7;color:#173420;background:#f7fbf5;padding:24px;">
       <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:18px;padding:28px;border:1px solid #dbe8d7;">
-        <p style="margin:0 0 8px;color:#34863b;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">FloraScout</p>
+        <p style="margin:0 0 8px;color:#34863b;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">FloraPilot</p>
         <h1 style="margin:0 0 14px;font-size:28px;line-height:1.1;">${escapeHtml(
           copy.userTitle
         )}</h1>

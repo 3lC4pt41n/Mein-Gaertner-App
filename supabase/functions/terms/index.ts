@@ -5,7 +5,7 @@ const HTML = `<!doctype html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nutzungsbedingungen – FloraScout</title>
+    <title>Nutzungsbedingungen – FloraPilot</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
@@ -31,10 +31,10 @@ const HTML = `<!doctype html>
   <body>
     <div class="container">
       <h1>Nutzungsbedingungen</h1>
-      <p class="subtitle">FloraScout – Dein smarter Pflanzenbegleiter</p>
+      <p class="subtitle">FloraPilot – Dein smarter Pflanzenbegleiter</p>
 
       <h2>1. Geltungsbereich</h2>
-      <p>Diese Nutzungsbedingungen gelten für die Nutzung der App „FloraScout" (im Folgenden „App") von Tim Mergenthaler (im Folgenden „Anbieter"). Mit der Registrierung und Nutzung der App akzeptierst du diese Bedingungen.</p>
+      <p>Diese Nutzungsbedingungen gelten für die Nutzung der App „FloraPilot" (im Folgenden „App") von Tim Mergenthaler (im Folgenden „Anbieter"). Mit der Registrierung und Nutzung der App akzeptierst du diese Bedingungen.</p>
 
       <h2>2. Leistungsbeschreibung</h2>
       <p>Die App bietet Funktionen zur Pflanzenverwaltung, KI-gestützten Pflanzenerkennung, Pflegeplanung, ein Gamification-System und einen KI-Chat-Assistenten. Einige Funktionen erfordern Credits, die über In-App-Käufe erworben werden können.</p>
@@ -76,7 +76,7 @@ const HTML = `<!doctype html>
       <h2>11. Kontakt</h2>
       <p>Bei Fragen zu diesen Nutzungsbedingungen: <a href="mailto:tim.mergenthaler@florapilot.app">tim.mergenthaler@florapilot.app</a></p>
 
-      <div class="footer">Stand: März 2026 · © FloraScout – Tim Mergenthaler</div>
+      <div class="footer">Stand: März 2026 · © FloraPilot – Tim Mergenthaler</div>
     </div>
   </body>
 </html>`;

@@ -1,38 +1,37 @@
 {{ $lang := "de" }}{{ if .Data.language }}{{ $lang = .Data.language }}{{ end }} {{ $subtitle :=
 "Dein smarter Pflanzenbegleiter" }} {{ $title := "Du wurdest eingeladen" }} {{ $desc := "Du kannst
-<strong>FloraScout</strong> nutzen – für einen übersichtlichen, gesunden und grünen
-Pflanzenalltag." }} {{ $note := "Richte dein Konto ein, um loszulegen." }} {{ $cta := "Einladung
-annehmen" }} {{ $fallback := "Link manuell öffnen:" }} {{ $footer := "Du kennst FloraScout
-nicht? Dann ignoriere diese E-Mail." }} {{ if eq $lang "en" }} {{ $subtitle = "Your smart
-plant companion" }} {{ $title = "You've Been Invited" }} {{ $desc = "You can use
-<strong>FloraScout</strong> – for a clear, healthy, and green plant routine." }} {{ $note =
-"Set up your account to get started." }} {{ $cta = "Accept Invitation" }} {{ $fallback = "Open link
-manually:" }} {{ $footer = "Don't know FloraScout? Just ignore this email." }} {{ else if eq
-$lang "fr" }} {{ $subtitle = "Ton compagnon végétal intelligent" }} {{ $title = "Tu as été
-invité(e)" }} {{ $desc = "Tu peux utiliser <strong>FloraScout</strong> – pour un quotidien
-végétal organisé, sain et verdoyant." }} {{ $note = "Configure ton compte pour commencer." }} {{
-$cta = "Accepter l'invitation" }} {{ $fallback = "Ouvrir le lien manuellement :" }} {{ $footer = "Tu
-ne connais pas FloraScout ? Ignore cet e-mail." }} {{ else if eq $lang "it" }} {{ $subtitle =
-"Il tuo compagno verde intelligente" }} {{ $title = "Sei stato invitato" }} {{ $desc = "Puoi usare
-<strong>FloraScout</strong> – per una routine verde, organizzata e salutare." }} {{ $note =
-"Configura il tuo account per iniziare." }} {{ $cta = "Accetta invito" }} {{ $fallback = "Apri il
-link manualmente:" }} {{ $footer = "Non conosci FloraScout? Ignora questa e-mail." }} {{ else
-if eq $lang "es" }} {{ $subtitle = "Tu compañero vegetal inteligente" }} {{ $title = "Has sido
-invitado" }} {{ $desc = "Puedes usar <strong>FloraScout</strong> – para una rutina vegetal
-organizada, saludable y verde." }} {{ $note = "Configura tu cuenta para comenzar." }} {{ $cta =
-"Aceptar invitación" }} {{ $fallback = "Abrir enlace manualmente:" }} {{ $footer = "¿No conoces
-FloraScout? Ignora este correo." }} {{ else if eq $lang "ru" }} {{ $subtitle = "Ваш умный
-помощник для растений" }} {{ $title = "Вас пригласили" }} {{ $desc = "Вы можете использовать
-<strong>FloraScout</strong> – для организованного, здорового и зелёного ухода за растениями."
-}} {{ $note = "Настройте свой аккаунт, чтобы начать." }} {{ $cta = "Принять приглашение" }} {{
-$fallback = "Открыть ссылку вручную:" }} {{ $footer = "Не знакомы с FloraScout? Просто
-проигнорируйте это письмо." }} {{ end }}
+<strong>FloraPilot</strong> nutzen – für einen übersichtlichen, gesunden und grünen Pflanzenalltag."
+}} {{ $note := "Richte dein Konto ein, um loszulegen." }} {{ $cta := "Einladung annehmen" }} {{
+$fallback := "Link manuell öffnen:" }} {{ $footer := "Du kennst FloraPilot nicht? Dann ignoriere
+diese E-Mail." }} {{ if eq $lang "en" }} {{ $subtitle = "Your smart plant companion" }} {{ $title =
+"You've Been Invited" }} {{ $desc = "You can use <strong>FloraPilot</strong> – for a clear, healthy,
+and green plant routine." }} {{ $note = "Set up your account to get started." }} {{ $cta = "Accept
+Invitation" }} {{ $fallback = "Open link manually:" }} {{ $footer = "Don't know FloraPilot? Just
+ignore this email." }} {{ else if eq $lang "fr" }} {{ $subtitle = "Ton compagnon végétal
+intelligent" }} {{ $title = "Tu as été invité(e)" }} {{ $desc = "Tu peux utiliser
+<strong>FloraPilot</strong> – pour un quotidien végétal organisé, sain et verdoyant." }} {{ $note =
+"Configure ton compte pour commencer." }} {{ $cta = "Accepter l'invitation" }} {{ $fallback =
+"Ouvrir le lien manuellement :" }} {{ $footer = "Tu ne connais pas FloraPilot ? Ignore cet e-mail."
+}} {{ else if eq $lang "it" }} {{ $subtitle = "Il tuo compagno verde intelligente" }} {{ $title =
+"Sei stato invitato" }} {{ $desc = "Puoi usare <strong>FloraPilot</strong> – per una routine verde,
+organizzata e salutare." }} {{ $note = "Configura il tuo account per iniziare." }} {{ $cta =
+"Accetta invito" }} {{ $fallback = "Apri il link manualmente:" }} {{ $footer = "Non conosci
+FloraPilot? Ignora questa e-mail." }} {{ else if eq $lang "es" }} {{ $subtitle = "Tu compañero
+vegetal inteligente" }} {{ $title = "Has sido invitado" }} {{ $desc = "Puedes usar
+<strong>FloraPilot</strong> – para una rutina vegetal organizada, saludable y verde." }} {{ $note =
+"Configura tu cuenta para comenzar." }} {{ $cta = "Aceptar invitación" }} {{ $fallback = "Abrir
+enlace manualmente:" }} {{ $footer = "¿No conoces FloraPilot? Ignora este correo." }} {{ else if eq
+$lang "ru" }} {{ $subtitle = "Ваш умный помощник для растений" }} {{ $title = "Вас пригласили" }} {{
+$desc = "Вы можете использовать <strong>FloraPilot</strong> – для организованного, здорового и
+зелёного ухода за растениями." }} {{ $note = "Настройте свой аккаунт, чтобы начать." }} {{ $cta =
+"Принять приглашение" }} {{ $fallback = "Открыть ссылку вручную:" }} {{ $footer = "Не знакомы с
+FloraPilot? Просто проигнорируйте это письмо." }} {{ end }}
 <!doctype html>
 <html lang="{{ $lang }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>FloraScout</title>
+    <title>FloraPilot</title>
   </head>
   <body style="margin: 0; padding: 0; background-color: #f5f5f7">
     <table
@@ -70,7 +69,7 @@ $fallback = "Открыть ссылку вручную:" }} {{ $footer = "Не 
                   "
                 >
                   <span style="font-size: 18px; vertical-align: -2px">🌱</span>
-                  <span style="font-weight: 600; margin-left: 8px">FloraScout</span>
+                  <span style="font-weight: 600; margin-left: 8px">FloraPilot</span>
                 </div>
                 <div
                   style="
@@ -212,7 +211,7 @@ $fallback = "Открыть ссылку вручную:" }} {{ $footer = "Не 
                     font-size: 11px;
                   "
                 >
-                  &copy; 2026 FloraScout
+                  &copy; 2026 FloraPilot
                 </p>
               </td>
             </tr>

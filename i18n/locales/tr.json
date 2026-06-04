@@ -65,7 +65,7 @@
     "more": "Daha Fazla"
   },
   "auth": {
-    "appTitle": "FloraScout",
+    "appTitle": "FloraPilot",
     "email": "E-posta",
     "password": "Şifre",
     "login": "Giriş Yap",
@@ -433,7 +433,7 @@
     "cameraRequired": "Avatar için kamera erişimi gereklidir.",
     "photoReadError": "Fotoğraf okunamadı.",
     "saveProfileError": "Kaydedilmesi sırasında hata",
-    "completeProfile": "FloraScout'u kur",
+    "completeProfile": "FloraPilot'u kur",
     "profileIntro": "Dilini ve kullanıcı adını seç. Diğer her şeyi daha sonra ekleyebilirsin.",
     "retakeAvatar": "Avatar'ı değiştir",
     "usernamePlaceholder": "Kullanıcı adınız",
@@ -535,7 +535,7 @@
     "rainTitle": "Yağmur algılandı",
     "rainBody": "Dış mekan bitkileri bugün muhtemelen daha az ek suya ihtiyaç duyar.",
     "activeTitle": "Bağlam aktif",
-    "activeBody": "FloraScout daha iyi bakım önerileri için hava durumunu, mevsimi ve günün saatini kullanır.",
+    "activeBody": "FloraPilot daha iyi bakım önerileri için hava durumunu, mevsimi ve günün saatini kullanır.",
     "seasons": {
       "spring": "İlkbahar",
       "summer": "Yaz",
@@ -722,7 +722,7 @@
     "termsOfService": "Hizmet Şartları",
     "feedback": "Geribildirim gönder",
     "rtlRestartTitle": "Uygulama yeniden yüklensin mi?",
-    "rtlRestartMessage": "Seçilen dil farklı bir yazma yönü kullanıyor. Düzenin ve navigasyonun doğru şekilde yansıtılması için FloraScout'un yeniden yüklenmesi gerekiyor.",
+    "rtlRestartMessage": "Seçilen dil farklı bir yazma yönü kullanıyor. Düzenin ve navigasyonun doğru şekilde yansıtılması için FloraPilot'un yeniden yüklenmesi gerekiyor.",
     "rtlRestartNow": "Şimdi yeniden yükle",
     "rtlRestartLater": "Daha sonra"
   }

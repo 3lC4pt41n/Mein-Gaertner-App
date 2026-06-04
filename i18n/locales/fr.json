@@ -65,7 +65,7 @@
     "more": "Plus"
   },
   "auth": {
-    "appTitle": "FloraScout",
+    "appTitle": "FloraPilot",
     "email": "Email",
     "password": "Mot de passe",
     "login": "Se connecter",
@@ -433,7 +433,7 @@
     "cameraRequired": "L'accès à la caméra est nécessaire pour l'avatar.",
     "photoReadError": "Impossible de lire la photo.",
     "saveProfileError": "Erreur lors de l'enregistrement",
-    "completeProfile": "Configurer FloraScout",
+    "completeProfile": "Configurer FloraPilot",
     "profileIntro": "Choisissez votre langue et votre nom d'utilisateur. Vous pourrez compléter le reste plus tard.",
     "retakeAvatar": "Changer l'avatar",
     "usernamePlaceholder": "Votre nom d'utilisateur",
@@ -514,7 +514,7 @@
     "rainTitle": "Pluie détectée",
     "rainBody": "Les plantes d'extérieur ont probablement besoin de moins d'eau supplémentaire aujourd'hui.",
     "activeTitle": "Contexte actif",
-    "activeBody": "FloraScout utilise la météo, la saison et l'heure pour de meilleurs conseils d'entretien.",
+    "activeBody": "FloraPilot utilise la météo, la saison et l'heure pour de meilleurs conseils d'entretien.",
     "seasons": {
       "spring": "Printemps",
       "summer": "Été",
@@ -701,7 +701,7 @@
     "termsOfService": "Conditions d'utilisation",
     "feedback": "Donner un avis",
     "rtlRestartTitle": "Recharger l'application ?",
-    "rtlRestartMessage": "La langue sélectionnée utilise un sens d'écriture différent. FloraScout doit être rechargé pour que la mise en page et la navigation soient correctement reflétées.",
+    "rtlRestartMessage": "La langue sélectionnée utilise un sens d'écriture différent. FloraPilot doit être rechargé pour que la mise en page et la navigation soient correctement reflétées.",
     "rtlRestartNow": "Recharger maintenant",
     "rtlRestartLater": "Plus tard"
   },

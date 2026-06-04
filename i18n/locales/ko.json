@@ -65,7 +65,7 @@
     "more": "더보기"
   },
   "auth": {
-    "appTitle": "플로라스카우트",
+    "appTitle": "FloraPilot",
     "email": "이메일",
     "password": "비밀번호",
     "login": "로그인",
@@ -535,7 +535,7 @@
     "rainTitle": "비 감지됨",
     "rainBody": "요즘 야외 식물에는 추가로 물이 덜 필요할 것 같습니다.",
     "activeTitle": "컨텍스트 활성",
-    "activeBody": "FloraScout는 더 나은 관리 팁을 위해 날씨, 계절, 시간을 고려합니다.",
+    "activeBody": "FloraPilot는 더 나은 관리 팁을 위해 날씨, 계절, 시간을 고려합니다.",
     "seasons": {
       "spring": "봄",
       "summer": "여름",
@@ -722,7 +722,7 @@
     "termsOfService": "이용약관",
     "feedback": "피드백 보내기",
     "rtlRestartTitle": "앱을 새로고침하시겠습니까?",
-    "rtlRestartMessage": "선택한 언어는 다른 쓰기 방향을 사용합니다. FloraScout는 레이아웃과 탐색이 올바르게 미러링되도록 다시 로드해야 합니다.",
+    "rtlRestartMessage": "선택한 언어는 다른 쓰기 방향을 사용합니다. FloraPilot는 레이아웃과 탐색이 올바르게 미러링되도록 다시 로드해야 합니다.",
     "rtlRestartNow": "지금 새로고침",
     "rtlRestartLater": "나중에"
   }

@@ -65,7 +65,7 @@
     "more": "更多"
   },
   "auth": {
-    "appTitle": "弗洛拉侦察兵",
+    "appTitle": "FloraPilot",
     "email": "电子邮件",
     "password": "密码",
     "login": "登录",
@@ -535,7 +535,7 @@
     "rainTitle": "检测到有雨",
     "rainBody": "如今，户外植物可能需要更少的额外水。",
     "activeTitle": "上下文活跃",
-    "activeBody": "FloraScout 会考虑天气、季节和一天中的时间，以提供更好的护理建议。",
+    "activeBody": "FloraPilot 会考虑天气、季节和一天中的时间，以提供更好的护理建议。",
     "seasons": {
       "spring": "春天",
       "summer": "夏季",
@@ -722,7 +722,7 @@
     "termsOfService": "使用条款",
     "feedback": "提供反馈",
     "rtlRestartTitle": "重新加载应用程序？",
-    "rtlRestartMessage": "所选语言使用不同的书写方向。 FloraScout 需要重新加载，以便正确镜像布局和导航。",
+    "rtlRestartMessage": "所选语言使用不同的书写方向。 FloraPilot 需要重新加载，以便正确镜像布局和导航。",
     "rtlRestartNow": "立即重新加载",
     "rtlRestartLater": "后来"
   }

@@ -6,9 +6,6 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'https://florapilot.app',
   'https://www.florapilot.app',
   'https://app.florapilot.app',
-  'https://florascout.app',
-  'https://www.florascout.app',
-  'https://app.florascout.app',
   'https://florapilot-web.pages.dev',
 ];
 

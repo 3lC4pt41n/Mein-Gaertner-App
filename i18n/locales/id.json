@@ -65,7 +65,7 @@
     "more": "Lebih lanjut"
   },
   "auth": {
-    "appTitle": "FloraScout",
+    "appTitle": "FloraPilot",
     "email": "Surel",
     "password": "Kata sandi",
     "login": "Masuk",
@@ -535,7 +535,7 @@
     "rainTitle": "Hujan terdeteksi",
     "rainBody": "Tanaman di luar ruangan mungkin membutuhkan lebih sedikit air tambahan saat ini.",
     "activeTitle": "Konteks aktif",
-    "activeBody": "FloraScout memperhitungkan cuaca, musim, dan waktu untuk tip perawatan yang lebih baik.",
+    "activeBody": "FloraPilot memperhitungkan cuaca, musim, dan waktu untuk tip perawatan yang lebih baik.",
     "seasons": {
       "spring": "Musim semi",
       "summer": "Musim panas",
@@ -722,7 +722,7 @@
     "termsOfService": "Ketentuan Penggunaan",
     "feedback": "Berikan umpan balik",
     "rtlRestartTitle": "Muat ulang aplikasi?",
-    "rtlRestartMessage": "Bahasa yang dipilih menggunakan arah penulisan yang berbeda. FloraScout perlu memuat ulang agar tata letak dan navigasi dicerminkan dengan benar.",
+    "rtlRestartMessage": "Bahasa yang dipilih menggunakan arah penulisan yang berbeda. FloraPilot perlu memuat ulang agar tata letak dan navigasi dicerminkan dengan benar.",
     "rtlRestartNow": "Muat ulang sekarang",
     "rtlRestartLater": "Nanti"
   }

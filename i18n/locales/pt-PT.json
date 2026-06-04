@@ -65,7 +65,7 @@
     "more": "Mais"
   },
   "auth": {
-    "appTitle": "FloraScout",
+    "appTitle": "FloraPilot",
     "email": "E-mail",
     "password": "Senha",
     "login": "Faça login",
@@ -535,7 +535,7 @@
     "rainTitle": "Chuva detectada",
     "rainBody": "As plantas de exterior provavelmente precisam de menos água adicional atualmente.",
     "activeTitle": "Contexto ativo",
-    "activeBody": "O FloraScout tem em conta o clima, a estação do ano e a hora do dia para obter melhores dicas de cuidados.",
+    "activeBody": "O FloraPilot tem em conta o clima, a estação do ano e a hora do dia para obter melhores dicas de cuidados.",
     "seasons": {
       "spring": "Primavera",
       "summer": "Verão",
@@ -722,7 +722,7 @@
     "termsOfService": "Termos de Utilização",
     "feedback": "Dê feedback",
     "rtlRestartTitle": "Recarregar aplicação?",
-    "rtlRestartMessage": "O idioma selecionado utiliza uma direção de escrita diferente. O FloraScout precisa de ser recarregado para que o layout e a navegação sejam espelhados corretamente.",
+    "rtlRestartMessage": "O idioma selecionado utiliza uma direção de escrita diferente. O FloraPilot precisa de ser recarregado para que o layout e a navegação sejam espelhados corretamente.",
     "rtlRestartNow": "Recarregue agora",
     "rtlRestartLater": "Mais tarde"
   }

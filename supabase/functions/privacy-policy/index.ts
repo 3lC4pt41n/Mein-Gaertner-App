@@ -5,7 +5,7 @@ const HTML = `<!doctype html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Datenschutzerklärung – FloraScout</title>
+    <title>Datenschutzerklärung – FloraPilot</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
@@ -31,13 +31,13 @@ const HTML = `<!doctype html>
   <body>
     <div class="container">
       <h1>Datenschutzerklärung</h1>
-      <p class="subtitle">FloraScout – Dein smarter Pflanzenbegleiter</p>
+      <p class="subtitle">FloraPilot – Dein smarter Pflanzenbegleiter</p>
 
       <h2>1. Verantwortlicher</h2>
       <p>Tim Mergenthaler<br />E-Mail: <a href="mailto:tim.mergenthaler@florapilot.app">tim.mergenthaler@florapilot.app</a></p>
 
       <h2>2. Welche Daten wir erheben</h2>
-      <p>Wenn du „FloraScout" nutzt, verarbeiten wir folgende Daten:</p>
+      <p>Wenn du „FloraPilot" nutzt, verarbeiten wir folgende Daten:</p>
       <ul>
         <li><strong>Kontodaten:</strong> E-Mail-Adresse und Passwort (verschlüsselt gespeichert) bei der Registrierung.</li>
         <li><strong>Profildaten:</strong> Name, bevorzugte Sprache und optionales Profilbild.</li>
@@ -79,7 +79,7 @@ const HTML = `<!doctype html>
       <h2>9. Änderungen</h2>
       <p>Wir können diese Datenschutzerklärung aktualisieren. Die aktuelle Version ist immer unter dieser URL abrufbar.</p>
 
-      <div class="footer">Stand: März 2026 · © FloraScout – Tim Mergenthaler</div>
+      <div class="footer">Stand: März 2026 · © FloraPilot – Tim Mergenthaler</div>
     </div>
   </body>
 </html>`;
