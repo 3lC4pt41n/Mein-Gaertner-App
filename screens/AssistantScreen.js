@@ -38,6 +38,40 @@ import { supabase } from '../supabase';
 const USER_AVATAR = require('../assets/avatars/tim.png');
 const CHAT_AVATAR_SIZE = spacing.xxxl;
 
+function parseInlineMarkdown(value) {
+  const text = String(value || '');
+  const segments = [];
+  let buffer = '';
+  let bold = false;
+  let italic = false;
+
+  const flush = () => {
+    if (!buffer) return;
+    segments.push({ text: buffer, bold, italic });
+    buffer = '';
+  };
+
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] === '*' && text[index + 1] === '*') {
+      flush();
+      bold = !bold;
+      index += 1;
+      continue;
+    }
+
+    if (text[index] === '*') {
+      flush();
+      italic = !italic;
+      continue;
+    }
+
+    buffer += text[index];
+  }
+
+  flush();
+  return segments;
+}
+
 export default function AssistantScreen({ context }) {
   const { user, userId: user_id } = useAuth();
   const navigation = useNavigation();
@@ -330,7 +364,7 @@ export default function AssistantScreen({ context }) {
               transition={200}
             />
           )}
-          <Text style={{ flexWrap: 'wrap' }}>{item.content}</Text>
+          <ChatMessageText>{item.content}</ChatMessageText>
           <Text style={{ fontSize: 10, color: colors.textTertiary }}>{senderLabel}</Text>
         </View>
       </View>
@@ -511,6 +545,26 @@ export default function AssistantScreen({ context }) {
       </View>
       {keyboardSpacerHeight > 0 && <View style={{ height: keyboardSpacerHeight }} />}
     </View>
+  );
+}
+
+function ChatMessageText({ children }) {
+  const segments = parseInlineMarkdown(children);
+
+  return (
+    <Text style={{ flexWrap: 'wrap', color: colors.textPrimary, fontSize: 15, lineHeight: 21 }}>
+      {segments.map((segment, index) => (
+        <Text
+          key={`${index}-${segment.text}`}
+          style={{
+            fontWeight: segment.bold ? '700' : '400',
+            fontStyle: segment.italic ? 'italic' : 'normal',
+          }}
+        >
+          {segment.text}
+        </Text>
+      ))}
+    </Text>
   );
 }
 
