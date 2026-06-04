@@ -76,9 +76,13 @@ async function findStripeCustomerId(
   const customerId = customers?.data?.[0]?.id || null;
 
   if (customerId) {
+    // Best-effort cache. Only UPDATE an existing row — a plain upsert/insert
+    // would fail because subscriptions.plan is NOT NULL (credits-only users
+    // have no subscription row yet). If no row exists we still return the id.
     await serviceClient
       .from('subscriptions')
-      .upsert({ user_id: userId, stripe_customer_id: customerId }, { onConflict: 'user_id' });
+      .update({ stripe_customer_id: customerId })
+      .eq('user_id', userId);
   }
 
   return customerId;
