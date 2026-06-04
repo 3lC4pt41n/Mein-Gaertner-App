@@ -6,3 +6,6 @@ port = 54321
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.android-waitlist]
+verify_jwt = false
