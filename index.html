@@ -7758,7 +7758,7 @@
 
         try {
           const storedLanguage = getSupportedLanguageCode(
-            window.localStorage.getItem('florascout-landing-language')
+            window.localStorage.getItem('florapilot-landing-language')
           );
 
           if (storedLanguage) {
@@ -7773,7 +7773,7 @@
 
       const persistLanguage = (lang) => {
         try {
-          window.localStorage.setItem('florascout-landing-language', lang);
+          window.localStorage.setItem('florapilot-landing-language', lang);
         } catch (_error) {
           // localStorage may be unavailable in some embedded browsers.
         }

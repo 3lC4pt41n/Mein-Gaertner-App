@@ -1,4 +1,4 @@
-# FloraScout
+# FloraPilot
 
 **A real-world plant Pokédex for hobby gardeners.**
 
@@ -6,7 +6,7 @@ Scan plants with your camera, let PlantNet identify the species, use GPT-5.5 for
 
 <!-- Hero image: To add a screenshot or GIF, place the file at docs/hero.png and uncomment:
 <p align="center">
-  <img src="docs/hero.png" alt="FloraScout — Discovery Reveal + Plant Dex" width="320" />
+  <img src="docs/hero.png" alt="FloraPilot — Discovery Reveal + Plant Dex" width="320" />
 </p>
 -->
 
@@ -47,7 +47,7 @@ Bandwidth limited. Response when time allows. No support SLA.
 - **AI Health Check** — Get a plant health score (0-100) via image analysis
 - **Weather Integration** — Location-based weather data drives automatic care task suggestions
 - **Leaderboard** — Compete with other gardeners on weekly, monthly, and all-time rankings
-- **AI Gardener Assistant** — Chat with "Ben," your AI gardener with image analysis and function calling (main tab: "FloraScout")
+- **AI Gardener Assistant** — Chat with "Ben," your AI gardener with image analysis and function calling (main tab: "FloraPilot")
 - **Crash Monitoring** — Sentry integration with DSGVO-compliant PII filtering (no email/IP)
 - **Onboarding Carousel** — 3-step swipeable intro for new users (value prop, features, credits)
 - **In-App Feedback** — Users can submit bug reports and feature requests directly from the app

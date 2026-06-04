@@ -1,4 +1,4 @@
-# i18n Korrekturliste — neue Locales (FloraScout)
+# i18n Korrekturliste — neue Locales (FloraPilot)
 
 **Stand:** 2026-06-02 · **Betrifft:** die 16 neuen Sprachen aus Commit `459e972` / `f91551a`
 **Quelle:** Audit der `i18n/locales/*.json`. Key-Coverage ist vollständig (0 fehlend), die Fehler sind **inhaltlich** (rohe Maschinenübersetzung).

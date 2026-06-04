@@ -1,4 +1,4 @@
-# Store Submission Checklist — FloraScout
+# Store Submission Checklist — FloraPilot
 
 ## Apple App Store (iOS)
 - [x] Privacy Policy URL set in App Store Connect

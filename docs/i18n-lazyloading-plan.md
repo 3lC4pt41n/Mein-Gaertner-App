@@ -1,6 +1,6 @@
 # Lazy-Loading i18n + Multi-Language Onboarding — Plan
 
-**Repo:** FloraScout (`digitaler-gaertner`) · **Stand:** 2026-06-02 · **Status:** Umgesetzt
+**Repo:** FloraPilot (`digitaler-gaertner`) · **Stand:** 2026-06-02 · **Status:** Umgesetzt
 
 ## Umsetzungsstand
 
@@ -28,9 +28,9 @@ Die Locale-JSONs bleiben **im App-Bundle** (offline-sicher), werden aber **lazy*
 
 **Warum nicht Remote (Supabase)?** Der einzige echte Mehrwert von Remote — „neue Sprachen ohne Release" — liefert OTA bereits, ohne Netz-Abhängigkeit zur Laufzeit, ohne Cache-/Offline-/Race-Komplexität. UI-Strings sind klein (~34 KB/Sprache), die echten Startkosten kommen vom eager Parse, und das löst lazy bundled import vollständig offline. Remote-gegen-Supabase bliebe nur dann sinnvoll, wenn **Nicht-Entwickler Übersetzungen live editieren** sollen (CMS/Community) — das ist hier nicht das Ziel und kann später nachgerüstet werden.
 
-## Sprachen-Delta (Der Dritte → FloraScout)
+## Sprachen-Delta (Der Dritte → FloraPilot)
 
-FloraScout hat heute 7: `de, en, fr, it, es, ru, tr`.
+FloraPilot hat heute 7: `de, en, fr, it, es, ru, tr`.
 Der Dritte (derdritte.app) hat 22 (Portugiesisch hier in **BR + PT** gesplittet). Es kommen **16** dazu:
 
 | Neu                | Code      | Skript  | Hinweis                                    |

@@ -2,7 +2,7 @@
 
 ## Overview
 
-FloraScout is a mobile-first gardening system built around an Expo React Native client, a Supabase backend, and a server-side AI layer implemented as Supabase Edge Functions.
+FloraPilot is a mobile-first gardening system built around an Expo React Native client, a Supabase backend, and a server-side AI layer implemented as Supabase Edge Functions.
 
 Species recognition is intentionally hybrid: PlantNet provides the first-pass plant identification, while OpenAI GPT-5.5 adds care context, structured outputs, and fallback behavior when PlantNet is weak or unavailable.
 

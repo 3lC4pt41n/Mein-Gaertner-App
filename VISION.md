@@ -2,7 +2,7 @@
 
 ## North Star
 
-FloraScout turns everyday gardening into a compounding loop of noticing, understanding, and caring for living things.
+FloraPilot turns everyday gardening into a compounding loop of noticing, understanding, and caring for living things.
 
 It should feel like the product version of a great field notebook:
 
@@ -19,7 +19,7 @@ Most hobby gardeners do not fail because they do not care. They fail because the
 - they forget recurring care at the wrong moment
 - they cannot see whether they are getting better over time
 
-FloraScout solves this by combining three systems into one coherent product:
+FloraPilot solves this by combining three systems into one coherent product:
 
 1. `Recognition`  
    The app identifies plants, surfaces species context, and gives each discovery emotional weight.
@@ -51,7 +51,7 @@ FloraScout solves this by combining three systems into one coherent product:
 
 ## Product Promise
 
-FloraScout should answer five user questions extremely well:
+FloraPilot should answer five user questions extremely well:
 
 1. `What is this plant?`
 2. `What should I do next?`
@@ -69,7 +69,7 @@ Scanning a plant is not just data entry. It is the front door into the product. 
 
 ### 2. Care must collapse ambiguity into action
 
-Advice is only useful if it becomes a task, a decision, or a next step. FloraScout should prefer practical guidance over encyclopedic sprawl.
+Advice is only useful if it becomes a task, a decision, or a next step. FloraPilot should prefer practical guidance over encyclopedic sprawl.
 
 ### 3. Progress must be visible
 
@@ -118,7 +118,7 @@ Discovery status, first-finder moments, badges, credits, and leaderboards are no
 
 ## Business Intent
 
-FloraScout monetizes through credits and subscriptions, but monetization must stay subordinate to trust.
+FloraPilot monetizes through credits and subscriptions, but monetization must stay subordinate to trust.
 
 That means:
 
@@ -151,7 +151,7 @@ That means:
 
 ## Product Boundaries
 
-FloraScout should avoid becoming:
+FloraPilot should avoid becoming:
 
 - a generic plant content encyclopedia
 - a noisy social feed
@@ -194,4 +194,4 @@ If an idea does not improve one of those, it is probably not core.
 
 ## In One Sentence
 
-FloraScout exists to make plant care feel less uncertain, more actionable, and visibly rewarding over time.
+FloraPilot exists to make plant care feel less uncertain, more actionable, and visibly rewarding over time.

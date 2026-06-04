@@ -1,4 +1,4 @@
-# Sentry Error Logs — FloraScout
+# Sentry Error Logs — FloraPilot
 
 > Last updated: 2026-03-07 17:00 UTC
 > Organization: `digitaler-gaertner` | Project: `react-native`

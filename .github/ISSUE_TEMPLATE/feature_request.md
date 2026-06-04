@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea to improve FloraScout
+about: Suggest an idea to improve FloraPilot
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''

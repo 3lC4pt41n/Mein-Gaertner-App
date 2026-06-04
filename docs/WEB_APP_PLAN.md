@@ -1,4 +1,4 @@
-# Web-App Plan — FloraScout (digitaler-gaertner)
+# Web-App Plan — FloraPilot (digitaler-gaertner)
 
 **Stand:** 2026-06-02 · **Version:** 1.0
 **Ziel:** Eine Web-App neben iOS und Android, mit voller Feature-Parität. Bilder, die im Web hochgeladen werden, werden erkannt und wie Handy-Fotos zu Pflanzen hinzugefügt — **nehmen aber nicht an den (Erst-)Entdeckungen teil.**
