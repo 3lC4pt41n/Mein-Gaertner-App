@@ -9,7 +9,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'https://florascout.app',
   'https://www.florascout.app',
   'https://app.florascout.app',
-  'https://florascout-web.pages.dev',
+  'https://florapilot-web.pages.dev',
 ];
 
 const DEFAULT_ALLOWED_HEADERS = 'authorization, x-client-info, apikey, content-type';

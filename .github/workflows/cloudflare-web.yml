@@ -75,4 +75,6 @@ jobs:
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=florascout-web
+          preCommands: |
+            wrangler pages project create florapilot-web --production-branch=main || true
+          command: pages deploy dist --project-name=florapilot-web

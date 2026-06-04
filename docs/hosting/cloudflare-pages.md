@@ -6,7 +6,7 @@ Die Marketing- und Rechtsseiten bleiben auf GitHub Pages. Die Expo-Web-App wird 
 
 - Landing: `https://florapilot.app` und optional `https://www.florapilot.app`
 - Web-App: `https://app.florapilot.app`
-- Cloudflare Pages Preview/Default: `https://florascout-web.pages.dev`
+- Cloudflare Pages Preview/Default: `https://florapilot-web.pages.dev`
 
 Diese Trennung vermeidet Routing-Konflikte zwischen statischer Landingpage und der Expo-SPA.
 
@@ -16,7 +16,7 @@ Der Workflow `.github/workflows/cloudflare-web.yml` baut bei App-Aenderungen die
 
 Cloudflare Pages Projekt:
 
-- Project name: `florascout-web`
+- Project name: `florapilot-web`
 - Production branch: `main`
 - Build command: `npm run export:web`
 - Output directory: `dist`
@@ -53,13 +53,13 @@ Supabase Auth URL Configuration:
 - Redirect URLs:
   - `https://app.florapilot.app`
   - `https://app.florapilot.app/*`
-  - `https://florascout-web.pages.dev`
-  - `https://florascout-web.pages.dev/*`
+  - `https://florapilot-web.pages.dev`
+  - `https://florapilot-web.pages.dev/*`
 
 Supabase Edge Function Secrets:
 
 - `WEB_APP_URL=https://app.florapilot.app`
-- `ALLOWED_WEB_ORIGINS=http://localhost:19006,http://localhost:8081,http://localhost:3000,https://3lc4pt41n.github.io,https://florapilot.app,https://www.florapilot.app,https://app.florapilot.app,https://florascout.app,https://www.florascout.app,https://app.florascout.app,https://florascout-web.pages.dev`
+- `ALLOWED_WEB_ORIGINS=http://localhost:19006,http://localhost:8081,http://localhost:3000,https://3lc4pt41n.github.io,https://florapilot.app,https://www.florapilot.app,https://app.florapilot.app,https://florascout.app,https://www.florascout.app,https://app.florascout.app,https://florapilot-web.pages.dev`
 
 Stripe:
 
