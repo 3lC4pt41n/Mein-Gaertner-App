@@ -12,7 +12,7 @@ import {
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { KeyboardStickyView, useKeyboardState } from 'react-native-keyboard-controller';
+import { useKeyboardState } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { safeLaunchCamera } from '../services/imagePickerHelper';
 import { fetchMessages, saveMessage } from '../services/chatService';
@@ -43,13 +43,13 @@ export default function AssistantScreen({ context }) {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
+  const keyboardHeight = useKeyboardState((state) => state.height);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState('de');
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [composerHeight, setComposerHeight] = useState(0);
   const [userAvatarUrl, setUserAvatarUrl] = useState(null);
   const [gardenerPersonaKey, setGardenerPersonaKey] = useState(DEFAULT_GARDENER_PERSONA_KEY);
   const flatListRef = useRef();
@@ -57,9 +57,7 @@ export default function AssistantScreen({ context }) {
   const composerBottomPadding = isKeyboardVisible
     ? spacing.xs
     : Math.max(insets.bottom, spacing.xs);
-  const listBottomPadding = isKeyboardVisible
-    ? composerHeight + spacing.md
-    : spacing.xl + composerBottomPadding;
+  const keyboardSpacerHeight = isKeyboardVisible ? Math.max(0, keyboardHeight) : 0;
   const userAvatarSource = useMemo(
     () => (userAvatarUrl ? { uri: userAvatarUrl } : USER_AVATAR),
     [userAvatarUrl]
@@ -149,9 +147,9 @@ export default function AssistantScreen({ context }) {
     if (!isKeyboardVisible) return undefined;
     const timeout = setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
-    }, 120);
+    }, 180);
     return () => clearTimeout(timeout);
-  }, [composerHeight, isKeyboardVisible]);
+  }, [isKeyboardVisible, keyboardSpacerHeight]);
 
   // Aeltere Nachrichten nachladen
   const loadOlderMessages = async () => {
@@ -353,7 +351,7 @@ export default function AssistantScreen({ context }) {
         renderItem={renderItem}
         contentContainerStyle={{
           padding: spacing.md,
-          paddingBottom: listBottomPadding,
+          paddingBottom: spacing.md,
           flexGrow: 1,
         }}
         keyboardShouldPersistTaps="handled"
@@ -460,62 +458,58 @@ export default function AssistantScreen({ context }) {
           style={{ margin: spacing.md }}
         />
       )}
-      <KeyboardStickyView offset={{ closed: 0, opened: 0 }}>
-        <View
-          onLayout={({ nativeEvent }) => {
-            const nextHeight = Math.ceil(nativeEvent.layout.height);
-            setComposerHeight((currentHeight) =>
-              currentHeight === nextHeight ? currentHeight : nextHeight
-            );
-          }}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingTop: spacing.sm,
-            paddingHorizontal: spacing.sm,
-            paddingBottom: composerBottomPadding,
-            backgroundColor: colors.background,
-            borderTopWidth: 1,
-            borderTopColor: colors.borderLight,
-          }}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingTop: spacing.sm,
+          paddingHorizontal: spacing.sm,
+          paddingBottom: composerBottomPadding,
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.borderLight,
+        }}
+      >
+        <TouchableOpacity
+          onPress={takeAndSendPhoto}
+          accessibilityRole="button"
+          accessibilityLabel={t('assistant.takePhoto')}
         >
-          <TouchableOpacity
-            onPress={takeAndSendPhoto}
-            accessibilityRole="button"
-            accessibilityLabel={t('assistant.takePhoto')}
-          >
-            <Ionicons
-              name="camera"
-              size={28}
-              color={colors.primary}
-              style={{ marginRight: spacing.md }}
-            />
-          </TouchableOpacity>
-          <TextInput
-            value={input}
-            onChangeText={setInput}
-            placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
-            style={{
-              flex: 1,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: radius.pill,
-              padding: spacing.sm,
-              backgroundColor: colors.surface,
-            }}
-            onSubmitEditing={sendMessage}
-            returnKeyType="send"
+          <Ionicons
+            name="camera"
+            size={28}
+            color={colors.primary}
+            style={{ marginRight: spacing.md }}
           />
-          <DSButton
-            onPress={sendMessage}
-            disabled={loading || !input.trim()}
-            size="sm"
-            style={{ marginLeft: spacing.sm }}
-          >
-            {t('common.send')}
-          </DSButton>
-        </View>
-      </KeyboardStickyView>
+        </TouchableOpacity>
+        <TextInput
+          value={input}
+          onChangeText={setInput}
+          placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
+          style={{
+            flex: 1,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: radius.pill,
+            padding: spacing.sm,
+            backgroundColor: colors.surface,
+          }}
+          onFocus={() => {
+            setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 180);
+          }}
+          onSubmitEditing={sendMessage}
+          returnKeyType="send"
+        />
+        <DSButton
+          onPress={sendMessage}
+          disabled={loading || !input.trim()}
+          size="sm"
+          style={{ marginLeft: spacing.sm }}
+        >
+          {t('common.send')}
+        </DSButton>
+      </View>
+      {keyboardSpacerHeight > 0 && <View style={{ height: keyboardSpacerHeight }} />}
     </View>
   );
 }
