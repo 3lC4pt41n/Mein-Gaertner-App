@@ -34,14 +34,14 @@ function getWebAppUrl(): string {
 
 function packageDisplayName(packageId: string): string {
   const names: Record<string, string> = {
-    credits_starter: 'FloraScout Starter Credits',
-    credits_standard: 'FloraScout Standard Credits',
-    credits_pro: 'FloraScout Pro Credits',
-    sub_hobby: 'FloraScout Hobby Abo',
-    sub_gaertner: 'FloraScout Gärtner Abo',
-    sub_profi: 'FloraScout Profi Abo',
+    credits_starter: 'FloraPilot Starter Credits',
+    credits_standard: 'FloraPilot Standard Credits',
+    credits_pro: 'FloraPilot Pro Credits',
+    sub_hobby: 'FloraPilot Hobby Abo',
+    sub_gaertner: 'FloraPilot Gärtner Abo',
+    sub_profi: 'FloraPilot Profi Abo',
   };
-  return names[packageId] || 'FloraScout Credits';
+  return names[packageId] || 'FloraPilot Credits';
 }
 
 function isManagedPaymentsEnabled(): boolean {
@@ -130,7 +130,10 @@ serve(async (req) => {
       }
 
       form.set('line_items[0][price_data][currency]', 'eur');
-      form.set('line_items[0][price_data][unit_amount]', String(toStripeAmountCents(pkg.amountEur)));
+      form.set(
+        'line_items[0][price_data][unit_amount]',
+        String(toStripeAmountCents(pkg.amountEur))
+      );
       form.set('line_items[0][price_data][product_data][name]', packageDisplayName(packageId));
       form.set('line_items[0][price_data][product_data][metadata][package]', packageId);
     }
