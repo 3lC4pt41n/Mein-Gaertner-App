@@ -38,7 +38,7 @@ export const colors = {
   healthGood: '#8BC34A',
   completedSurface: '#B2DFDB',
 
-  chatUserBubble: '#DCF8C6',
+  chatUserBubble: '#E4F2DC',
   chatBotBubble: '#F1F0F0',
 
   // Removed aliases (white → surface, text → textPrimary, black → literal '#000000')
