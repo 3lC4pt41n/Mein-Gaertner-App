@@ -1,4 +1,4 @@
-# GitHub Pages fuer `florascout.app`
+# GitHub Pages fuer `florapilot.app`
 
 Dieses Repo ist so vorbereitet, dass die Landing Page ueber GitHub Pages aus `main` deployt werden
 kann. Der Workflow liegt in
@@ -16,13 +16,13 @@ und publiziert:
 
 1. Repo `Settings` -> `Pages`
 2. `Build and deployment`: `Source = GitHub Actions`
-3. Nach dem ersten erfolgreichen Lauf optional `Custom domain = florascout.app`
+3. Nach dem ersten erfolgreichen Lauf optional `Custom domain = florapilot.app`
 4. `Enforce HTTPS` aktivieren, sobald GitHub das Zertifikat ausgestellt hat
 
 ## Was du in Cloudflare einstellen musst
 
-Wenn `florascout.app` auf GitHub Pages zeigen soll, brauchst du fuer die Apex-Domain
-`florascout.app` A-Records auf die GitHub-Pages-IPs und fuer `www` einen CNAME.
+Wenn `florapilot.app` auf GitHub Pages zeigen soll, brauchst du fuer die Apex-Domain
+`florapilot.app` A-Records auf die GitHub-Pages-IPs und fuer `www` einen CNAME.
 
 Empfohlene Zielwerte laut GitHub Pages:
 

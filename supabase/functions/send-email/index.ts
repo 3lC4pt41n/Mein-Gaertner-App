@@ -8,8 +8,8 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const rawHookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET') as string;
 const hookSecret = rawHookSecret.replace(/^v1,/, '');
 
-const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraScout <noreply@florascout.app>';
-const SITE_URL = Deno.env.get('SITE_URL') || 'https://florascout.app';
+const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraScout <noreply@florapilot.app>';
+const SITE_URL = Deno.env.get('SITE_URL') || 'https://florapilot.app';
 const PROJECT_REF = 'tsllrwaixvhuadrfsskt';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

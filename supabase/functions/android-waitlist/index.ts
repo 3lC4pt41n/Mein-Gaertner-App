@@ -11,8 +11,8 @@ type WaitlistPayload = {
 };
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') ?? '');
-const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraScout <noreply@florascout.app>';
-const WAITLIST_NOTIFY_TO = Deno.env.get('WAITLIST_NOTIFY_TO') || 'tim.mergenthaler@florascout.app';
+const FROM_EMAIL = Deno.env.get('SEND_EMAIL_FROM') || 'FloraScout <noreply@florapilot.app>';
+const WAITLIST_NOTIFY_TO = Deno.env.get('WAITLIST_NOTIFY_TO') || 'tim.mergenthaler@florapilot.app';
 const ANDROID_GOOGLE_GROUP_EMAIL =
   Deno.env.get('ANDROID_GOOGLE_GROUP_EMAIL') || Deno.env.get('GOOGLE_GROUP_EMAIL') || '';
 const ANDROID_INVITE_URL = Deno.env.get('ANDROID_INVITE_URL') || '';

@@ -34,7 +34,7 @@ const HTML = `<!doctype html>
       <p class="subtitle">FloraScout – Dein smarter Pflanzenbegleiter</p>
 
       <h2>1. Verantwortlicher</h2>
-      <p>Tim Mergenthaler<br />E-Mail: <a href="mailto:tim.mergenthaler@florascout.app">tim.mergenthaler@florascout.app</a></p>
+      <p>Tim Mergenthaler<br />E-Mail: <a href="mailto:tim.mergenthaler@florapilot.app">tim.mergenthaler@florapilot.app</a></p>
 
       <h2>2. Welche Daten wir erheben</h2>
       <p>Wenn du „FloraScout" nutzt, verarbeiten wir folgende Daten:</p>
@@ -68,7 +68,7 @@ const HTML = `<!doctype html>
       <p>Deine Daten werden gespeichert, solange du ein aktives Konto hast. Nach Löschung deines Kontos werden alle personenbezogenen Daten innerhalb von 30 Tagen entfernt.</p>
 
       <h2>6. Deine Rechte</h2>
-      <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung und Datenübertragbarkeit. Kontaktiere uns unter <a href="mailto:tim.mergenthaler@florascout.app">tim.mergenthaler@florascout.app</a>.</p>
+      <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung und Datenübertragbarkeit. Kontaktiere uns unter <a href="mailto:tim.mergenthaler@florapilot.app">tim.mergenthaler@florapilot.app</a>.</p>
 
       <h2>7. Kinder</h2>
       <p>Die App richtet sich nicht an Kinder unter 16 Jahren. Wir erheben wissentlich keine Daten von Minderjährigen.</p>

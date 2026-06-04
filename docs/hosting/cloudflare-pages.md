@@ -4,8 +4,8 @@ Die Marketing- und Rechtsseiten bleiben auf GitHub Pages. Die Expo-Web-App wird 
 
 ## Domain-Strategie
 
-- Landing: `https://florascout.app` und optional `https://www.florascout.app`
-- Web-App: `https://app.florascout.app`
+- Landing: `https://florapilot.app` und optional `https://www.florapilot.app`
+- Web-App: `https://app.florapilot.app`
 - Cloudflare Pages Preview/Default: `https://florascout-web.pages.dev`
 
 Diese Trennung vermeidet Routing-Konflikte zwischen statischer Landingpage und der Expo-SPA.
@@ -28,7 +28,7 @@ Benoetigte GitHub Secrets:
 - `CLOUDFLARE_ACCOUNT_ID`
 - `EXPO_PUBLIC_SUPABASE_URL`
 - `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `EXPO_PUBLIC_WEB_APP_URL=https://app.florascout.app`
+- `EXPO_PUBLIC_WEB_APP_URL=https://app.florapilot.app`
 
 Optionaler Legacy-Fallback im Code:
 
@@ -49,17 +49,17 @@ Die GitHub-Action ist bevorzugt, weil der Build- und Deploy-Pfad versioniert im 
 
 Supabase Auth URL Configuration:
 
-- Site URL: `https://app.florascout.app`
+- Site URL: `https://app.florapilot.app`
 - Redirect URLs:
-  - `https://app.florascout.app`
-  - `https://app.florascout.app/*`
+  - `https://app.florapilot.app`
+  - `https://app.florapilot.app/*`
   - `https://florascout-web.pages.dev`
   - `https://florascout-web.pages.dev/*`
 
 Supabase Edge Function Secrets:
 
-- `WEB_APP_URL=https://app.florascout.app`
-- `ALLOWED_WEB_ORIGINS=http://localhost:19006,http://localhost:8081,http://localhost:3000,https://3lc4pt41n.github.io,https://florascout.app,https://www.florascout.app,https://app.florascout.app,https://florascout-web.pages.dev`
+- `WEB_APP_URL=https://app.florapilot.app`
+- `ALLOWED_WEB_ORIGINS=http://localhost:19006,http://localhost:8081,http://localhost:3000,https://3lc4pt41n.github.io,https://florapilot.app,https://www.florapilot.app,https://app.florapilot.app,https://florascout.app,https://www.florascout.app,https://app.florascout.app,https://florascout-web.pages.dev`
 
 Stripe:
 
@@ -68,7 +68,7 @@ Stripe:
 
 ## Smoke-Test
 
-Auf `https://app.florascout.app` pruefen:
+Auf `https://app.florapilot.app` pruefen:
 
 - Login per E-Mail und OAuth.
 - Reload/Deep-Link auf einer App-Unterseite fuehrt nicht zu 404.

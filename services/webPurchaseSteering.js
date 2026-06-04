@@ -33,7 +33,7 @@ const ALLOWED_REGIONS = new Set([
   'US',
 ]);
 
-export const WEB_PURCHASE_URL = process.env.EXPO_PUBLIC_WEB_APP_URL || 'https://florascout.app';
+export const WEB_PURCHASE_URL = process.env.EXPO_PUBLIC_WEB_APP_URL || 'https://florapilot.app';
 
 export function shouldShowWebPurchaseSteering() {
   if (!WEB_PURCHASE_STEERING || Platform.OS === 'web') return false;

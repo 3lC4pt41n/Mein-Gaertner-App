@@ -18,6 +18,7 @@ on:
       - docs/**
       - store-assets/**
       - assets/**
+      - CNAME
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -54,6 +55,7 @@ jobs:
           cp -R docs _site/docs
           cp -R store-assets _site/store-assets
           cp -R assets _site/assets
+          cp CNAME _site/CNAME
           touch _site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v4

@@ -23,8 +23,8 @@ const APP_SCHEME = 'digitalergaertner';
 const OAUTH_REDIRECT_PATH = 'auth/callback';
 const PASSWORD_RESET_PATH = 'auth/reset-password';
 const LEGAL_URLS = {
-  privacy: 'https://florascout.app/privacy-policy.html',
-  terms: 'https://florascout.app/terms.html',
+  privacy: 'https://florapilot.app/privacy-policy.html',
+  terms: 'https://florapilot.app/terms.html',
 };
 const RESEND_COOLDOWN_SECONDS = 60;
 
