@@ -80,6 +80,7 @@ serve(async (req) => {
 
     const serviceClient = getServiceClient();
     const userId = await getUserIdFromAuth(serviceClient, authHeader);
+    const { data: authUser } = await serviceClient.auth.admin.getUserById(userId);
     const body = await req.json().catch(() => ({}));
     const packageId = String(body.package || '');
     const pkg = getAnyCreditPackage(packageId);
@@ -107,6 +108,9 @@ serve(async (req) => {
     form.set('metadata[user_id]', userId);
     form.set('metadata[package]', packageId);
     form.set('metadata[purchase_id]', purchaseId);
+    if (authUser?.user?.email) {
+      form.set('customer_email', authUser.user.email);
+    }
     if (managedPaymentsEnabled) {
       form.set('managed_payments[enabled]', 'true');
     }

@@ -9,3 +9,6 @@ verify_jwt = false
 
 [functions.android-waitlist]
 verify_jwt = false
+
+[functions.stripe-create-portal]
+verify_jwt = false

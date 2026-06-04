@@ -12,6 +12,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
@@ -104,6 +105,31 @@ function LinkRow({ icon, label, onPress }) {
       />
     </TouchableOpacity>
   );
+}
+
+function confirmAction({
+  title,
+  message,
+  confirmLabel,
+  cancelLabel,
+  onConfirm,
+  confirmStyle = 'default',
+}) {
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.confirm) {
+    if (window.confirm(`${title}\n\n${message}`)) {
+      onConfirm();
+    }
+    return;
+  }
+
+  Alert.alert(title, message, [
+    { text: cancelLabel, style: 'cancel' },
+    {
+      text: confirmLabel,
+      style: confirmStyle,
+      onPress: onConfirm,
+    },
+  ]);
 }
 
 // =====================================================================
@@ -373,36 +399,36 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleLogout = () => {
-    Alert.alert(t('settings.logoutConfirmTitle'), t('settings.logoutConfirmMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('settings.logout'),
-        onPress: async () => {
-          try {
-            await signOut();
-          } catch (error) {
-            Alert.alert(t('common.error'), error.message);
-          }
-        },
+    confirmAction({
+      title: t('settings.logoutConfirmTitle'),
+      message: t('settings.logoutConfirmMessage'),
+      confirmLabel: t('settings.logout'),
+      cancelLabel: t('common.cancel'),
+      onConfirm: async () => {
+        try {
+          await signOut();
+        } catch (error) {
+          Alert.alert(t('common.error'), error.message);
+        }
       },
-    ]);
+    });
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(t('settings.deleteConfirmTitle'), t('settings.deleteConfirmMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('settings.deleteConfirmButton'),
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteAccount();
-          } catch (error) {
-            Alert.alert(t('common.error'), error.message);
-          }
-        },
+    confirmAction({
+      title: t('settings.deleteConfirmTitle'),
+      message: t('settings.deleteConfirmMessage'),
+      confirmLabel: t('settings.deleteConfirmButton'),
+      cancelLabel: t('common.cancel'),
+      confirmStyle: 'destructive',
+      onConfirm: async () => {
+        try {
+          await deleteAccount();
+        } catch (error) {
+          Alert.alert(t('common.error'), error.message);
+        }
       },
-    ]);
+    });
   };
 
   const handleManageSubscription = async () => {

@@ -59,7 +59,34 @@ export async function getActiveSubscription() {
 }
 
 export function openManageSubscriptions() {
-  throw unavailable();
+  return openCustomerPortal();
+}
+
+export async function openCustomerPortal() {
+  const returnUrl =
+    typeof window !== 'undefined' && window.location?.origin
+      ? `${window.location.origin}${window.location.pathname}`
+      : undefined;
+
+  const { data, error } = await supabase.functions.invoke('stripe-create-portal', {
+    body: returnUrl ? { return_url: returnUrl } : {},
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Stripe-Portal konnte nicht gestartet werden.');
+  }
+
+  if (!data?.url) {
+    throw new Error('Stripe-Portal-URL fehlt.');
+  }
+
+  if (typeof window !== 'undefined' && window.location?.assign) {
+    window.location.assign(data.url);
+  } else {
+    await Linking.openURL(data.url);
+  }
+
+  return { success: false, redirected: true };
 }
 
 export async function restorePurchases() {

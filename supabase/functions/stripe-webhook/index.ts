@@ -77,6 +77,14 @@ async function verifyStripeSignature(
   if (!matches) throw new Error('Stripe-Signatur passt nicht');
 }
 
+function stripeObjectId(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object' && 'id' in value && typeof value.id === 'string') {
+    return value.id;
+  }
+  return null;
+}
+
 function extractPurchasePayload(event: any): {
   providerTransactionId: string;
   userId: string;
@@ -139,8 +147,33 @@ function extractSubscriptionStatusPayload(event: any): {
   status: string;
   currentPeriodStart?: string | null;
   currentPeriodEnd?: string | null;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
 } | null {
-  if (event?.type !== 'customer.subscription.updated' && event?.type !== 'customer.subscription.deleted') {
+  if (event?.type === 'checkout.session.completed') {
+    const session = event.data?.object;
+    if (session?.mode !== 'subscription') return null;
+
+    const metadata = session?.metadata || {};
+    const packageId = metadata.package;
+    const plan = packageId ? SUB_PLANS[packageId as keyof typeof SUB_PLANS] : null;
+    const userId = metadata.user_id || session.client_reference_id;
+    if (!userId || !plan) return null;
+
+    return {
+      userId,
+      packageId,
+      status: 'active',
+      stripeCustomerId: stripeObjectId(session.customer),
+      stripeSubscriptionId: stripeObjectId(session.subscription),
+    };
+  }
+
+  if (
+    event?.type !== 'customer.subscription.created' &&
+    event?.type !== 'customer.subscription.updated' &&
+    event?.type !== 'customer.subscription.deleted'
+  ) {
     return null;
   }
 
@@ -160,6 +193,8 @@ function extractSubscriptionStatusPayload(event: any): {
     currentPeriodEnd: subscription?.current_period_end
       ? new Date(subscription.current_period_end * 1000).toISOString()
       : null,
+    stripeCustomerId: stripeObjectId(subscription?.customer),
+    stripeSubscriptionId: stripeObjectId(subscription?.id),
   };
 }
 
@@ -175,23 +210,32 @@ async function upsertStripeSubscription(
     status: string;
     currentPeriodStart?: string | null;
     currentPeriodEnd?: string | null;
+    stripeCustomerId?: string | null;
+    stripeSubscriptionId?: string | null;
   }
 ) {
   const plan = SUB_PLANS[payload.packageId as keyof typeof SUB_PLANS];
   if (!plan) return;
 
+  const updates: Record<string, unknown> = {
+    user_id: payload.userId,
+    plan,
+    status: payload.status,
+    current_period_start: payload.currentPeriodStart || null,
+    current_period_end: payload.currentPeriodEnd || null,
+  };
+
+  if (payload.stripeCustomerId) {
+    updates.stripe_customer_id = payload.stripeCustomerId;
+  }
+
+  if (payload.stripeSubscriptionId) {
+    updates.stripe_subscription_id = payload.stripeSubscriptionId;
+  }
+
   const { error } = await serviceClient
     .from('subscriptions')
-    .upsert(
-      {
-        user_id: payload.userId,
-        plan,
-        status: payload.status,
-        current_period_start: payload.currentPeriodStart || null,
-        current_period_end: payload.currentPeriodEnd || null,
-      },
-      { onConflict: 'user_id' }
-    );
+    .upsert(updates, { onConflict: 'user_id' });
 
   if (error) throw error;
 }
