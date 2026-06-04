@@ -8,6 +8,7 @@ import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import HomeManager from './screens/HomeManager';
 import PlantListScreen from './screens/PlantListScreen';
@@ -408,6 +409,7 @@ function AppContent() {
           },
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: 'gray',
+          tabBarHideOnKeyboard: true,
           headerShown: false,
         })}
       >
@@ -453,11 +455,13 @@ function App() {
 
   return (
     <LanguageProvider>
-      <AuthProvider>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
-      </AuthProvider>
+      <KeyboardProvider navigationBarTranslucent={Platform.OS === 'android'} preserveEdgeToEdge>
+        <AuthProvider>
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
+        </AuthProvider>
+      </KeyboardProvider>
     </LanguageProvider>
   );
 }

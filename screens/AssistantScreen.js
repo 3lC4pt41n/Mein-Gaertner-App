@@ -8,11 +8,12 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  KeyboardAvoidingView,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { safeLaunchCamera } from '../services/imagePickerHelper';
 import { fetchMessages, saveMessage } from '../services/chatService';
 import { uploadChatImage, getChatImageUrl } from '../services/uploadService';
@@ -40,6 +41,7 @@ const CHAT_AVATAR_SIZE = spacing.xxxl;
 export default function AssistantScreen({ context }) {
   const { user, userId: user_id } = useAuth();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,7 @@ export default function AssistantScreen({ context }) {
   const [gardenerPersonaKey, setGardenerPersonaKey] = useState(DEFAULT_GARDENER_PERSONA_KEY);
   const flatListRef = useRef();
   const gardenerPersona = getGardenerPersona(gardenerPersonaKey);
+  const composerBottomPadding = Math.max(insets.bottom, spacing.xs);
   const userAvatarSource = useMemo(
     () => (userAvatarUrl ? { uri: userAvatarUrl } : USER_AVATAR),
     [userAvatarUrl]
@@ -322,11 +325,7 @@ export default function AssistantScreen({ context }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
-    >
+    <View style={{ flex: 1, overflow: 'hidden' }}>
       {/* Credit-Leiste — unified component */}
       <CreditBar style={{ marginHorizontal: spacing.md, marginTop: spacing.sm }} />
 
@@ -337,7 +336,11 @@ export default function AssistantScreen({ context }) {
         ref={flatListRef}
         keyExtractor={(_, i) => i.toString()}
         renderItem={renderItem}
-        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.lg, flexGrow: 1 }}
+        contentContainerStyle={{
+          padding: spacing.md,
+          paddingBottom: spacing.xl + composerBottomPadding,
+          flexGrow: 1,
+        }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
@@ -442,53 +445,57 @@ export default function AssistantScreen({ context }) {
           style={{ margin: spacing.md }}
         />
       )}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          padding: spacing.sm,
-          backgroundColor: colors.background,
-          borderTopWidth: 1,
-          borderTopColor: colors.borderLight,
-        }}
-      >
-        <TouchableOpacity
-          onPress={takeAndSendPhoto}
-          accessibilityRole="button"
-          accessibilityLabel={t('assistant.takePhoto')}
-        >
-          <Ionicons
-            name="camera"
-            size={28}
-            color={colors.primary}
-            style={{ marginRight: spacing.md }}
-          />
-        </TouchableOpacity>
-        <TextInput
-          value={input}
-          onChangeText={setInput}
-          placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
+      <KeyboardStickyView offset={{ closed: 0, opened: spacing.xs }}>
+        <View
           style={{
-            flex: 1,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: radius.pill,
-            padding: spacing.sm,
-            backgroundColor: colors.surface,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingTop: spacing.sm,
+            paddingHorizontal: spacing.sm,
+            paddingBottom: composerBottomPadding,
+            backgroundColor: colors.background,
+            borderTopWidth: 1,
+            borderTopColor: colors.borderLight,
           }}
-          onSubmitEditing={sendMessage}
-          returnKeyType="send"
-        />
-        <DSButton
-          onPress={sendMessage}
-          disabled={loading || !input.trim()}
-          size="sm"
-          style={{ marginLeft: spacing.sm }}
         >
-          {t('common.send')}
-        </DSButton>
-      </View>
-    </KeyboardAvoidingView>
+          <TouchableOpacity
+            onPress={takeAndSendPhoto}
+            accessibilityRole="button"
+            accessibilityLabel={t('assistant.takePhoto')}
+          >
+            <Ionicons
+              name="camera"
+              size={28}
+              color={colors.primary}
+              style={{ marginRight: spacing.md }}
+            />
+          </TouchableOpacity>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
+            style={{
+              flex: 1,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: radius.pill,
+              padding: spacing.sm,
+              backgroundColor: colors.surface,
+            }}
+            onSubmitEditing={sendMessage}
+            returnKeyType="send"
+          />
+          <DSButton
+            onPress={sendMessage}
+            disabled={loading || !input.trim()}
+            size="sm"
+            style={{ marginLeft: spacing.sm }}
+          >
+            {t('common.send')}
+          </DSButton>
+        </View>
+      </KeyboardStickyView>
+    </View>
   );
 }
 
