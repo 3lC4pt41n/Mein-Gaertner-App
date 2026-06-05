@@ -29,6 +29,17 @@ const TIME_NAME_TO_KEY = {
   night: 'night',
 };
 
+const WEATHER_NAME_TO_KEY = {
+  drizzle: 'rain',
+  rain: 'rain',
+  rainy: 'rain',
+  thunderstorm: 'rain',
+  thunderstorms: 'rain',
+  snow: 'frost',
+  sleet: 'frost',
+  frost: 'frost',
+};
+
 function normalizedLookup(value) {
   return String(value || '')
     .trim()
@@ -70,6 +81,23 @@ export function getLocalizedTimeOfDayName(time, language) {
   const key = getTimeOfDayKey(time);
   if (!key) return typeof time === 'string' ? time : time?.name || '';
   return translate(`context.timeOfDay.${key}`, language);
+}
+
+export function getLocalizedWeatherName(weather, language) {
+  const code = weather?.weatherCode;
+  const rawName =
+    typeof weather === 'string'
+      ? weather
+      : weather?.weatherText || weather?.description || weather?.main || '';
+  let key = WEATHER_NAME_TO_KEY[normalizedLookup(rawName)] || null;
+
+  if (!key && typeof code === 'number') {
+    if ((code >= 200 && code < 600) || (code >= 300 && code < 600)) key = 'rain';
+    else if (code >= 600 && code < 700) key = 'frost';
+  }
+
+  if (key) return translate(`weather.${key}`, language);
+  return rawName || translate('context.weatherFallback', language);
 }
 
 export function getLocalizedContextText(key, language, options = {}) {

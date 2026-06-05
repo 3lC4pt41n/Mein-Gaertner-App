@@ -1,6 +1,6 @@
 // Edge Function: Chat mit der gewaehlten Garten-Persona
 // Hybrid: PlantNet API für Bildidentifikation + GPT-5.5 für Konversation
-// POST Body: { text?: string, image_url?: string, language?: string, gardener_persona?: 'ben'|'rose' }
+// POST Body: { text?: string, image_url?: string, language?: string, gardener_persona?: 'ben'|'rose', gardener_persona_name?: string }
 // History wird server-seitig aus der DB geladen (nicht mehr vom Client gesendet)
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { SupabaseClient } from 'npm:@supabase/supabase-js@2.50.2';
@@ -40,13 +40,20 @@ function activeTaskRetentionFilter(): string {
 
 type GardenerPersona = {
   key: 'ben' | 'rose';
-  name: 'Ben' | 'Rose';
+  canonicalName: 'Ben' | 'Rose';
+  name: string;
 };
 
-function resolveGardenerPersona(value: unknown): GardenerPersona {
-  return typeof value === 'string' && value.toLowerCase() === 'rose'
-    ? { key: 'rose', name: 'Rose' }
-    : { key: 'ben', name: 'Ben' };
+function resolveGardenerPersona(value: unknown, displayName: unknown): GardenerPersona {
+  const isRose = typeof value === 'string' && value.toLowerCase() === 'rose';
+  const canonicalName = isRose ? 'Rose' : 'Ben';
+  const name =
+    typeof displayName === 'string' && displayName.trim() && displayName.length <= 32
+      ? displayName.trim()
+      : canonicalName;
+  return isRose
+    ? { key: 'rose', canonicalName, name }
+    : { key: 'ben', canonicalName, name };
 }
 
 // ─── Garden Context: Pflanzen, Healthchecks, Tasks laden ────────────
@@ -410,12 +417,12 @@ function buildSystemPrompt(
   memorySummary: string | null,
   plantNetContext: string | null = null,
   externalContext: string | null = null,
-  gardenerPersona: GardenerPersona = { key: 'ben', name: 'Ben' }
+  gardenerPersona: GardenerPersona = { key: 'ben', canonicalName: 'Ben', name: 'Ben' }
 ): string {
   const personaLine =
     gardenerPersona.key === 'rose'
-      ? 'You are "Rose", a smart, warm, witty and charming female plant coach. Expert in plants and gardening.'
-      : 'You are "Ben", a smart, witty and charming male plant coach. Expert in plants and gardening.';
+      ? `You are "Rose", a smart, warm, witty and charming female plant coach. Expert in plants and gardening. Your localized display name for this user is "${gardenerPersona.name}".`
+      : `You are "Ben", a smart, witty and charming male plant coach. Expert in plants and gardening. Your localized display name for this user is "${gardenerPersona.name}".`;
 
   let prompt = `## ROLE
 ${personaLine}
@@ -1303,8 +1310,9 @@ serve(async (req) => {
       context,
       contextText,
       gardener_persona,
+      gardener_persona_name,
     } = await req.json();
-    const gardenerPersona = resolveGardenerPersona(gardener_persona);
+    const gardenerPersona = resolveGardenerPersona(gardener_persona, gardener_persona_name);
 
     // Input-Validierung
     const validationErr = validationErrorResponse(

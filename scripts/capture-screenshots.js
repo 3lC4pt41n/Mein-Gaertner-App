@@ -35,20 +35,38 @@
  *   --device <id>        pass-through to `maestro test --device` (optional)
  *   --login-lang <code>  language of the SIMULATOR (pre-login screen). default: de
  *   --plant <name>       override plant name (skips Supabase lookup; single-lang only)
+ *   --location <name>    override home/location name for the "home-zones" shot (single-lang only)
+ *   --zone <name>        override first-room name for the "plants-by-room" shot (single-lang only)
+ *   --flow <name>        full (default), home-zones, details, or assistant-chat
  *   --keep-png           keep the raw PNGs under .maestro/.out/<lang>/
  *   --dry-run            print the planned maestro commands without running them
  */
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { execFileSync, execSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
-const FLOW = path.join(ROOT, '.maestro', 'screenshots.yaml');
+const FLOWS = {
+  full: path.join(ROOT, '.maestro', 'screenshots.yaml'),
+  'home-zones': path.join(ROOT, '.maestro', 'screenshot-home-zones.yaml'),
+  details: path.join(ROOT, '.maestro', 'screenshot-details.yaml'),
+  'assistant-chat': path.join(ROOT, '.maestro', 'screenshot-assistant-chat.yaml'),
+};
 const ACCOUNTS = path.join(ROOT, 'scripts', 'screenshot-accounts.json');
 const LANDING = path.join(ROOT, 'store-assets', 'landing');
 const OUT_ROOT = path.join(ROOT, '.maestro', '.out');
+const APP_ID = 'com.elcaptain.digitalergaertner';
+const ASYNC_STORAGE_DIR = path.join(
+  'Library',
+  'Application Support',
+  APP_ID,
+  'RCTAsyncLocalStorage_V1'
+);
 const DEMO_EMAIL_RE = /@florascout\.app$/i;
+const ASYNC_STORAGE_INLINE_THRESHOLD = 1024;
+const RTL_LANGS = new Set(['ar', 'he', 'fa', 'ur']);
 
 const SHOTS = [
   'home-zones',
@@ -62,6 +80,12 @@ const SHOTS = [
   'shop-credits',
   'leaderboard',
 ];
+const SHOT_SETS = {
+  full: SHOTS,
+  'home-zones': ['home-zones'],
+  details: ['details-health', 'details-properties'],
+  'assistant-chat': ['assistant-chat'],
+};
 
 function loadEnv(file) {
   try {
@@ -100,6 +124,45 @@ function readLocale(lang) {
   return JSON.parse(fs.readFileSync(f, 'utf8'));
 }
 
+function regexEscape(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function exactRegex(value) {
+  return `^${regexEscape(value)}$`;
+}
+
+function containsRegex(value) {
+  return `.*${regexEscape(value)}.*`;
+}
+
+function tabRegex(value) {
+  return `^${regexEscape(value)}, tab, [1-5] of 5$`;
+}
+
+function getSupabaseConfig({ serviceRole = false } = {}) {
+  const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const key = serviceRole
+    ? process.env.SUPABASE_SECRET_KEY
+    : process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error(
+      serviceRole
+        ? 'Need EXPO_PUBLIC_SUPABASE_URL + SUPABASE_SECRET_KEY.'
+        : 'Need EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY.'
+    );
+  }
+  return { url, key };
+}
+
+function createSupabaseClient({ serviceRole = false } = {}) {
+  const { createClient } = require('@supabase/supabase-js');
+  const { url, key } = getSupabaseConfig({ serviceRole });
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
 // label with fallbacks across keys; throws if none resolve
 function label(loc, keys, lang) {
   for (const k of keys) {
@@ -110,12 +173,7 @@ function label(loc, keys, lang) {
 }
 
 async function fetchPlantName(email) {
-  const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key)
-    throw new Error('Need EXPO_PUBLIC_SUPABASE_URL + SUPABASE_SECRET_KEY (or pass --plant).');
-  const { createClient } = require('@supabase/supabase-js');
-  const sb = createClient(url, key, { auth: { persistSession: false } });
+  const sb = createSupabaseClient({ serviceRole: true });
   const { data: prof, error: e1 } = await sb
     .from('profiles')
     .select('id')
@@ -133,6 +191,143 @@ async function fetchPlantName(email) {
   if (e2) throw e2;
   if (!plant) throw new Error(`No plant for ${email} — recognise one in-app first.`);
   return plant.name;
+}
+
+async function fetchFirstLocationName(email) {
+  const sb = createSupabaseClient({ serviceRole: true });
+  const { data: prof, error: e1 } = await sb
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+  if (e1) throw e1;
+  if (!prof) throw new Error(`No profile for ${email}`);
+  const { data: loc, error: e2 } = await sb
+    .from('locations')
+    .select('name')
+    .eq('user_id', prof.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (e2) throw e2;
+  if (!loc) throw new Error(`No location for ${email} — seed homes first.`);
+  return loc.name;
+}
+
+async function fetchFirstZone(email) {
+  const sb = createSupabaseClient({ serviceRole: true });
+  const { data: prof, error: e1 } = await sb
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+  if (e1) throw e1;
+  if (!prof) throw new Error(`No profile for ${email}`);
+  const { data: locs, error: e2 } = await sb.from('locations').select('id').eq('user_id', prof.id);
+  if (e2) throw e2;
+  const locIds = (locs || []).map((l) => l.id);
+  if (!locIds.length) throw new Error(`No location for ${email} — seed rooms first.`);
+  const { data: zone, error: e3 } = await sb
+    .from('zones')
+    .select('name')
+    .in('location_id', locIds)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (e3) throw e3;
+  if (!zone) throw new Error(`No zone for ${email} — seed rooms first.`);
+  return zone.name;
+}
+
+function simctlTarget(device) {
+  return device || 'booted';
+}
+
+function getIosAppDataContainer(device) {
+  const target = simctlTarget(device);
+  try {
+    return execFileSync('xcrun', ['simctl', 'get_app_container', target, APP_ID, 'data'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch (e) {
+    const stderr = e.stderr ? String(e.stderr).trim() : '';
+    throw new Error(
+      `Cannot find iOS app data container for ${APP_ID}. Install and boot the simulator first.${
+        stderr ? ` ${stderr}` : ''
+      }`
+    );
+  }
+}
+
+function stopIosApp(device) {
+  try {
+    execFileSync('xcrun', ['simctl', 'terminate', simctlTarget(device), APP_ID], {
+      stdio: 'ignore',
+    });
+  } catch (_) {
+    // The app may not be running; seeding can continue.
+  }
+}
+
+function grantIosScreenshotPermissions(device) {
+  try {
+    execFileSync(
+      'xcrun',
+      ['simctl', 'privacy', simctlTarget(device), 'grant', 'location', APP_ID],
+      { stdio: 'ignore' }
+    );
+  } catch (_) {
+    // Older simulator runtimes or a missing app install can reject this. The
+    // Maestro flow still handles the visible prompt as a fallback.
+  }
+}
+
+function primeIosDirection(lang, opts) {
+  if (!RTL_LANGS.has(lang)) return;
+  console.log('  prime iOS RTL direction');
+  try {
+    execFileSync('xcrun', ['simctl', 'launch', simctlTarget(opts.device), APP_ID], {
+      stdio: 'ignore',
+    });
+  } catch (_) {
+    // The RTL switch may trigger a reload/termination; the next Maestro launch is what matters.
+  }
+  execFileSync('sleep', ['8'], { stdio: 'ignore' });
+  stopIosApp(opts.device);
+}
+
+function writeAsyncStorageValue(storageDir, manifest, key, value) {
+  if (value.length <= ASYNC_STORAGE_INLINE_THRESHOLD) {
+    manifest[key] = value;
+    return;
+  }
+  manifest[key] = null;
+  const fileName = crypto.createHash('md5').update(key).digest('hex');
+  fs.writeFileSync(path.join(storageDir, fileName), value);
+}
+
+async function seedIosSession(email, password, opts) {
+  const sb = createSupabaseClient();
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) throw new Error(`Supabase login failed for ${email}: ${error.message}`);
+  if (!data.session?.access_token || !data.user?.id) {
+    throw new Error(`Supabase login did not return a usable session for ${email}`);
+  }
+
+  stopIosApp(opts.device);
+
+  const { url } = getSupabaseConfig();
+  const storageKey = `sb-${new URL(url).hostname.split('.')[0]}-auth-token`;
+  const container = getIosAppDataContainer(opts.device);
+  const storageDir = path.join(container, ASYNC_STORAGE_DIR);
+  fs.rmSync(storageDir, { recursive: true, force: true });
+  fs.mkdirSync(storageDir, { recursive: true });
+
+  const manifest = {};
+  writeAsyncStorageValue(storageDir, manifest, storageKey, JSON.stringify(data.session));
+  writeAsyncStorageValue(storageDir, manifest, `beta_welcome_shown_${data.user.id}`, 'true');
+  fs.writeFileSync(path.join(storageDir, 'manifest.json'), JSON.stringify(manifest));
 }
 
 function ensureTool(bin, hint) {
@@ -167,6 +362,8 @@ async function captureLang(lang, email, password, opts) {
   const loc = readLocale(lang);
   const loginLoc = readLocale(opts.loginLang);
   const plantName = opts.plant || (await fetchPlantName(email));
+  const locationName = opts.location || (await fetchFirstLocationName(email));
+  const zoneName = opts.zone || (await fetchFirstZone(email));
 
   const shotDir = path.join(OUT_ROOT, lang);
   fs.mkdirSync(shotDir, { recursive: true });
@@ -175,6 +372,8 @@ async function captureLang(lang, email, password, opts) {
     EMAIL: email,
     PASSWORD: password,
     PLANT_NAME: plantName,
+    LOCATION_NAME: locationName,
+    ZONE_NAME: zoneName,
     SHOT_DIR: shotDir,
     // login-screen labels come from the SIMULATOR language (pre-login)
     LBL_EMAIL: label(loginLoc, ['auth.email'], opts.loginLang),
@@ -188,31 +387,63 @@ async function captureLang(lang, email, password, opts) {
     MENU_TASKS: label(loc, ['nav.tasks', 'tasks.title'], lang),
     MENU_SHOP: label(loc, ['nav.shop'], lang),
     MENU_LEADERBOARD: label(loc, ['nav.leaderboard', 'leaderboard.title'], lang),
-    TAB_HEALTH: label(loc, ['plants.tabHealth'], lang),
+    // Plants-tab segments: "All" (flat list) and "Homes" (rooms accordion)
+    TAB_PLANTS_ALL: label(loc, ['plants.tabAll'], lang),
+    TAB_PLANTS_HOMES: label(loc, ['plants.tabHomes'], lang),
+    TAB_HEALTH: label(loc, ['plants.healthLabel', 'plants.tabHealth'], lang),
     TAB_CARE: label(loc, ['plants.tabCare'], lang),
-    LBL_DEX: label(loc, ['nav.dex'], lang),
+    // Plant-Dex: opened via the CTA bar (dex.title); the Dex screen header is nav.dex
+    DEX_CTA: label(loc, ['dex.title', 'nav.dex'], lang),
+    LBL_DEX: label(loc, ['nav.dex', 'dex.title'], lang),
   };
+  Object.assign(env, {
+    PLANT_NAME_RE: containsRegex(plantName),
+    LOCATION_NAME_RE: containsRegex(locationName),
+    ZONE_NAME_RE: containsRegex(zoneName),
+    TAB_HOME_RE: tabRegex(env.TAB_HOME),
+    TAB_PLANTS_RE: tabRegex(env.TAB_PLANTS),
+    TAB_ASSISTANT_RE: tabRegex(env.TAB_ASSISTANT),
+    TAB_MORE_RE: tabRegex(env.TAB_MORE),
+    TAB_MORE_BACK_RE: exactRegex(env.TAB_MORE),
+    MENU_TASKS_RE: containsRegex(env.MENU_TASKS),
+    MENU_SHOP_RE: containsRegex(env.MENU_SHOP),
+    MENU_LEADERBOARD_RE: containsRegex(env.MENU_LEADERBOARD),
+    TAB_PLANTS_ALL_RE: exactRegex(env.TAB_PLANTS_ALL),
+    TAB_PLANTS_HOMES_RE: exactRegex(env.TAB_PLANTS_HOMES),
+    TAB_HEALTH_RE: containsRegex(env.TAB_HEALTH),
+    TAB_CARE_RE: containsRegex(env.TAB_CARE),
+    DEX_CTA_RE: containsRegex(env.DEX_CTA),
+    LBL_DEX_RE: containsRegex(env.LBL_DEX),
+  });
 
+  const flow = FLOWS[opts.flow];
+  const shots = SHOT_SETS[opts.flow];
   const args = ['test'];
   if (opts.device) args.push('--device', opts.device);
   for (const [k, v] of Object.entries(env)) args.push('-e', `${k}=${v}`);
-  args.push(FLOW);
+  args.push(flow);
 
-  console.log(`\n[${lang}] ${email} | plant "${plantName}" | login-lang ${opts.loginLang}`);
+  console.log(
+    `\n[${lang}] ${email} | plant "${plantName}" | location "${locationName}" | login-lang ${opts.loginLang}`
+  );
   if (opts.dryRun) {
+    console.log(`  seed iOS AsyncStorage session for ${email}`);
     console.log(
       `  maestro ${args.map((a) => (a.includes(' ') ? JSON.stringify(a) : a)).join(' ')}`
     );
     return;
   }
 
+  await seedIosSession(email, password, opts);
+  grantIosScreenshotPermissions(opts.device);
+  primeIosDirection(lang, opts);
   execFileSync('maestro', args, { stdio: 'inherit' });
 
   // export PNG -> JPG into the landing folder
   const destDir = path.join(LANDING, lang);
   fs.mkdirSync(destDir, { recursive: true });
   let ok = 0;
-  for (const name of SHOTS) {
+  for (const name of shots) {
     const png = path.join(shotDir, `${name}.png`);
     if (!fs.existsSync(png)) {
       console.warn(`  ⚠️  missing ${name}.png (navigation step may need a selector tweak)`);
@@ -222,13 +453,18 @@ async function captureLang(lang, email, password, opts) {
     ok++;
   }
   if (!opts.keepPng) fs.rmSync(shotDir, { recursive: true, force: true });
-  console.log(`  ✓ ${ok}/${SHOTS.length} → store-assets/landing/${lang}/`);
+  console.log(`  ✓ ${ok}/${shots.length} → store-assets/landing/${lang}/`);
 }
 
 async function main() {
   const a = parseArgs(process.argv.slice(2));
-  if (!fs.existsSync(FLOW)) {
-    console.error('Missing .maestro/screenshots.yaml');
+  const flow = a.flow || 'full';
+  if (!FLOWS[flow]) {
+    console.error(`Unknown --flow "${flow}". Use: ${Object.keys(FLOWS).join(', ')}`);
+    process.exit(1);
+  }
+  if (!fs.existsSync(FLOWS[flow])) {
+    console.error(`Missing ${path.relative(ROOT, FLOWS[flow])}`);
     process.exit(1);
   }
   const accounts = JSON.parse(fs.readFileSync(ACCOUNTS, 'utf8'));
@@ -246,6 +482,9 @@ async function main() {
     device: a.device,
     loginLang: a['login-lang'] || 'de',
     plant: a.plant,
+    location: a.location,
+    zone: a.zone,
+    flow,
     keepPng: !!a['keep-png'],
     dryRun: !!a['dry-run'],
   };
@@ -256,6 +495,14 @@ async function main() {
   }
   if (opts.plant && langs.length > 1) {
     console.error('--plant only valid for a single --langs entry.');
+    process.exit(1);
+  }
+  if (opts.location && langs.length > 1) {
+    console.error('--location only valid for a single --langs entry.');
+    process.exit(1);
+  }
+  if (opts.zone && langs.length > 1) {
+    console.error('--zone only valid for a single --langs entry.');
     process.exit(1);
   }
   if (!opts.dryRun)

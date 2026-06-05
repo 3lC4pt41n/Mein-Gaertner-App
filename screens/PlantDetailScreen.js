@@ -834,6 +834,8 @@ export default function PlantDetailScreen({ route }) {
       {tabNames.map((item) => (
         <TouchableOpacity
           key={item.key}
+          testID={`plant-detail-tab-${item.key}`}
+          accessibilityLabel={`plant-detail-tab-${item.key}`}
           onPress={() => setTab(item.key)}
           style={[styles.tabChip, tab === item.key && styles.tabChipActive]}
         >

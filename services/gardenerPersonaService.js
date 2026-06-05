@@ -6,12 +6,14 @@ export const GARDENER_PERSONAS = [
   {
     key: 'ben',
     name: 'Ben',
+    displayNameKey: 'assistant.ben',
     avatar: require('../assets/avatars/ben-chat.png'),
     welcomeTitleKey: 'assistant.welcomeTitleBen',
   },
   {
     key: 'rose',
     name: 'Rose',
+    displayNameKey: 'assistant.rose',
     avatar: require('../assets/avatars/rose-chat.png'),
     welcomeTitleKey: 'assistant.welcomeTitleRose',
   },
@@ -31,6 +33,15 @@ export function getGardenerPersonaForSender(sender, fallbackKey = DEFAULT_GARDEN
   if (sender === 'Rose') return getGardenerPersona('rose');
   if (sender === 'Ben') return getGardenerPersona('ben');
   return getGardenerPersona(fallbackKey);
+}
+
+export function getGardenerPersonaDisplayName(persona, translate) {
+  if (!persona) return '';
+  if (typeof translate === 'function' && persona.displayNameKey) {
+    const translated = translate(persona.displayNameKey);
+    if (translated && translated !== persona.displayNameKey) return translated;
+  }
+  return persona.name;
 }
 
 export async function loadGardenerPersonaKey(userId) {

@@ -269,6 +269,9 @@ export async function chatWithBen(text, imageUrl, language, context, gardenerPer
   if (gardenerPersona?.key) {
     body.gardener_persona = gardenerPersona.key;
   }
+  if (gardenerPersona?.name) {
+    body.gardener_persona_name = gardenerPersona.name;
+  }
 
   if (context) {
     body.context = context;

@@ -23,6 +23,7 @@ import {
   getLocalizedContextText,
   getLocalizedSeasonName,
   getLocalizedTimeOfDayName,
+  getLocalizedWeatherName,
 } from '../utils/contextLocalization';
 import DSButton from '../theme/DSButton';
 import DSCard from '../theme/DSCard';
@@ -30,16 +31,23 @@ import DSInput from '../theme/DSInput';
 import DSChipGroup from '../theme/DSChips';
 import { KeyboardAwareModalContent } from '../theme/KeyboardAwareScreen';
 
+const LRI = '\u2066';
+const PDI = '\u2069';
+
+const isolateLtr = (value) => `${LRI}${value}${PDI}`;
+
 function ContextSummary({ context, language }) {
   const season = context?.season;
   const time = context?.time;
   const weather = context?.weather;
   const city = context?.location?.city || weather?.city;
   const temperature = weather?.temperature ?? weather?.temp;
-  const weatherText =
-    weather?.weatherText ||
-    weather?.description ||
-    getLocalizedContextText('weatherFallback', language);
+  const weatherText = weather
+    ? getLocalizedWeatherName(weather, language)
+    : getLocalizedContextText('weatherFallback', language);
+  const temperatureText =
+    temperature !== null && temperature !== undefined ? isolateLtr(`${temperature}°C`) : null;
+  const cityText = city ? isolateLtr(city) : null;
 
   if (!season && !time && !weather) return null;
 
@@ -68,8 +76,8 @@ function ContextSummary({ context, language }) {
           <View style={styles.contextPill}>
             <Text style={styles.contextPillText}>
               🌦️ {weatherText}
-              {temperature !== null && temperature !== undefined ? ` · ${temperature}°C` : ''}
-              {city ? ` · ${city}` : ''}
+              {temperatureText ? ` · ${temperatureText}` : ''}
+              {cityText ? ` · ${cityText}` : ''}
             </Text>
           </View>
         )}
@@ -334,6 +342,7 @@ export default function HomeManager({ context }) {
   };
 
   const ZONE_TYPES = getZoneTypes();
+  const getZoneTypeLabel = (type) => ZONE_TYPES.find((z) => z.key === type)?.label || type;
 
   // ── Zone Row ────────────────────────────────────────
   const ZoneRow = ({ item, locationId }) => (
@@ -345,7 +354,7 @@ export default function HomeManager({ context }) {
           color={colors.primary}
         />
         <Text style={styles.zoneText}>{item.name}</Text>
-        <Text style={styles.zoneType}>({item.type})</Text>
+        <Text style={styles.zoneType}>({getZoneTypeLabel(item.type)})</Text>
       </View>
       <View style={styles.zoneActions}>
         <DSButton

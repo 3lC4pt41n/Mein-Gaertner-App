@@ -23,6 +23,7 @@ import {
   DEFAULT_GARDENER_PERSONA_KEY,
   GARDENER_PERSONAS,
   getGardenerPersona,
+  getGardenerPersonaDisplayName,
   getGardenerPersonaForSender,
   loadGardenerPersonaKey,
   saveGardenerPersonaKey,
@@ -88,6 +89,7 @@ export default function AssistantScreen({ context }) {
   const [gardenerPersonaKey, setGardenerPersonaKey] = useState(DEFAULT_GARDENER_PERSONA_KEY);
   const flatListRef = useRef();
   const gardenerPersona = getGardenerPersona(gardenerPersonaKey);
+  const gardenerPersonaDisplayName = getGardenerPersonaDisplayName(gardenerPersona, t);
   const composerBottomPadding = isKeyboardVisible
     ? spacing.xs
     : Math.max(insets.bottom, spacing.xs);
@@ -277,7 +279,7 @@ export default function AssistantScreen({ context }) {
     try {
       const data = await chatWithBen(text, image_url, language, context, {
         key: gardenerPersona.key,
-        name: gardenerPersona.name,
+        name: gardenerPersonaDisplayName,
       });
       const content = data?.content || t('assistant.noAnswer');
 
@@ -323,10 +325,11 @@ export default function AssistantScreen({ context }) {
   };
 
   const getAssistantPersona = (sender) => getGardenerPersonaForSender(sender, gardenerPersona.key);
+  const getPersonaDisplayName = (persona) => getGardenerPersonaDisplayName(persona, t);
 
   const getSenderLabel = (sender) => {
     if (sender === 'user') return t('assistant.you');
-    return getAssistantPersona(sender).name;
+    return getPersonaDisplayName(getAssistantPersona(sender));
   };
 
   // Avatar waehlen
@@ -376,7 +379,11 @@ export default function AssistantScreen({ context }) {
       {/* Credit-Leiste — unified component */}
       <CreditBar style={{ marginHorizontal: spacing.md, marginTop: spacing.sm }} />
 
-      <PersonaSelector selectedKey={gardenerPersona.key} onSelect={handlePersonaSelect} />
+      <PersonaSelector
+        selectedKey={gardenerPersona.key}
+        onSelect={handlePersonaSelect}
+        getDisplayName={getPersonaDisplayName}
+      />
 
       <FlatList
         data={messages}
@@ -519,7 +526,7 @@ export default function AssistantScreen({ context }) {
         <TextInput
           value={input}
           onChangeText={setInput}
-          placeholder={t('assistant.placeholder', { name: gardenerPersona.name })}
+          placeholder={t('assistant.placeholder', { name: gardenerPersonaDisplayName })}
           style={{
             flex: 1,
             borderWidth: 1,
@@ -568,7 +575,7 @@ function ChatMessageText({ children }) {
   );
 }
 
-function PersonaSelector({ selectedKey, onSelect }) {
+function PersonaSelector({ selectedKey, onSelect, getDisplayName }) {
   return (
     <View
       style={{
@@ -592,12 +599,14 @@ function PersonaSelector({ selectedKey, onSelect }) {
       </Text>
       {GARDENER_PERSONAS.map((persona) => {
         const active = persona.key === selectedKey;
+        const displayName =
+          typeof getDisplayName === 'function' ? getDisplayName(persona) : persona.name;
         return (
           <TouchableOpacity
             key={persona.key}
             onPress={() => onSelect(persona.key)}
             accessibilityRole="button"
-            accessibilityLabel={persona.name}
+            accessibilityLabel={displayName}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -627,7 +636,7 @@ function PersonaSelector({ selectedKey, onSelect }) {
                 fontWeight: '700',
               }}
             >
-              {persona.name}
+              {displayName}
             </Text>
           </TouchableOpacity>
         );

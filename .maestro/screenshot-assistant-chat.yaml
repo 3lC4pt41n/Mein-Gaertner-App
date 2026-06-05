@@ -1,0 +1,51 @@
+# FloraScout — focused assistant-chat screenshot recapture flow
+# Run via scripts/capture-screenshots.js --flow assistant-chat.
+appId: com.elcaptain.digitalergaertner
+---
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: "Nicht erlauben"
+    optional: true
+- tapOn:
+    text: "Don't Allow"
+    optional: true
+- tapOn:
+    text: "Ne pas autoriser"
+    optional: true
+
+- runFlow:
+    when:
+      visible:
+        text: "${LBL_EMAIL}"
+    commands:
+      - tapOn:
+          text: "${LBL_EMAIL}"
+      - inputText: "${EMAIL}"
+      - tapOn:
+          text: "${LBL_PASSWORD}"
+      - inputText: "${PASSWORD}"
+      - tapOn:
+          point: "50%,46%"
+
+- tapOn:
+    text: "Nicht erlauben"
+    optional: true
+- tapOn:
+    text: "Don't Allow"
+    optional: true
+- tapOn:
+    text: "Ne pas autoriser"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      text: "${TAB_HOME_RE}"
+    timeout: 60000
+
+- tapOn:
+    text: "${TAB_ASSISTANT_RE}"
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: "${SHOT_DIR}/assistant-chat"

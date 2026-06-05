@@ -13,6 +13,17 @@
         "simulator": true
       }
     },
+    "screenshots": {
+      "environment": "production",
+      "distribution": "internal",
+      "channel": "screenshots",
+      "env": {
+        "EXPO_PUBLIC_SCREENSHOT_DISABLE_NATIVE_RTL_RELOAD": "1"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
     "preview": {
       "environment": "preview",
       "distribution": "internal",

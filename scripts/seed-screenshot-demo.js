@@ -35,7 +35,32 @@ const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
-const SUPPORTED_DETAIL_LANGS = ['de', 'en', 'fr', 'it', 'es', 'ru', 'tr'];
+// plant_details now supports all 23 locales (migration 20260602170000, deployed).
+const SUPPORTED_DETAIL_LANGS = [
+  'de',
+  'en',
+  'fr',
+  'it',
+  'es',
+  'ru',
+  'tr',
+  'nl',
+  'da',
+  'pl',
+  'uk',
+  'pt-BR',
+  'pt-PT',
+  'hi',
+  'bn',
+  'ja',
+  'ko',
+  'zh-Hans',
+  'id',
+  'ar',
+  'he',
+  'fa',
+  'ur',
+];
 const DEMO_EMAIL_RE = /@florascout\.app$/i;
 
 // --- minimal .env.local loader (no extra deps) ---
@@ -262,10 +287,13 @@ async function main() {
 
   // 8) scripted chat (oldest first, ~1 min apart, ending "now")
   const baseTs = Date.now();
+  const personaDisplayName = fx.personas?.[persona] || persona;
   const msgs = fx.chat.map((m, i) => ({
     user_id: userId,
     sender: m.sender === 'assistant' ? persona : m.sender,
-    content: m.content.replace(/\{plant\}/g, plant.name),
+    content: m.content
+      .replace(/\{plant\}/g, plant.name)
+      .replace(/\{persona\}/g, personaDisplayName),
     created_at: new Date(baseTs - (fx.chat.length - i) * 60000).toISOString(),
   }));
   await sb.from('messages').insert(msgs);

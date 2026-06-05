@@ -1,94 +1,1245 @@
 {
-  "_readme": "Localized demo content for App Store screenshots, consumed by scripts/seed-screenshot-demo.js. One block per language. The plant, its care details and healthcheck are created in-app per account (image recognition) BEFORE seeding — this file only covers home, rooms, tasks and the Ben/Rose chat. {plant} in chat is replaced with the account's actual plant name. chat.sender 'assistant' is mapped to the --persona (Ben/Rose). NOTE: in-app plant care details only work for languages in the plant_details CHECK (de,en,fr,it,es,ru,tr) until that constraint is widened.",
+  "_readme": "Localized demo content for App Store and landing screenshots, consumed by scripts/seed-screenshot-demo.js. One block per language. The plant, its care details and healthcheck are created in-app per account before seeding. {plant} is replaced with the account plant name; {persona} is replaced with the localized Ben/Rose display name. chat.sender assistant is saved as canonical Ben/Rose for stable avatar mapping.",
   "de": {
-    "location": { "name": "Zuhause", "locality": "Berlin", "country": "DE" },
-    "zones": [ { "name": "Wohnzimmer", "type": "room" }, { "name": "Arbeitszimmer", "type": "room" }, { "name": "Balkon", "type": "balcony" } ],
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Zuhause",
+      "locality": "Berlin",
+      "country": "DE"
+    },
+    "zones": [
+      {
+        "name": "Wohnzimmer",
+        "type": "room"
+      },
+      {
+        "name": "Arbeitszimmer",
+        "type": "room"
+      },
+      {
+        "name": "Balkon",
+        "type": "balcony"
+      }
+    ],
     "assignPlantToZone": "Wohnzimmer",
-    "watering": { "interval_days": 14, "due_in_days": 0, "note": "Nur gießen, wenn das Substrat richtig trocken ist." },
-    "extraTask": { "type": "fertilizing", "due_in_days": 10, "note": "Leichter Grünpflanzendünger, verdünnt." },
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Nur gießen, wenn das Substrat richtig trocken ist."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Leichter Grünpflanzendünger, verdünnt."
+    },
     "chat": [
-      { "sender": "user", "content": "Hey Ben! Kannst du die Gießerinnerungen für meine {plant} übernehmen?" },
-      { "sender": "assistant", "content": "Sehr gerne 🌿 Ich erinnere dich alle 14 Tage ans Gießen deiner {plant} – und nur, wenn das Substrat richtig trocken ist. Kurz vor jedem Gießen bekommst du eine Erinnerung." },
-      { "sender": "user", "content": "Perfekt. Und erkennst du eine Pflanze auch anhand eines Fotos?" },
-      { "sender": "assistant", "content": "Ja! Mach einfach ein Foto deiner Pflanze: Ich bestimme die Art, erstelle einen kompletten Pflege-Steckbrief und einen ausführlichen Healthcheck. Probier's gleich aus 📸" }
+      {
+        "sender": "user",
+        "content": "Hey {persona}! Kannst du die Gießerinnerungen für meine {plant} übernehmen?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Sehr gerne 🌿 Ich erinnere dich alle 14 Tage ans Gießen deiner {plant} – und nur, wenn das Substrat richtig trocken ist. Kurz vor jedem Gießen bekommst du eine Erinnerung."
+      },
+      {
+        "sender": "user",
+        "content": "Perfekt. Und erkennst du eine Pflanze auch anhand eines Fotos?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Ja! Mach einfach ein Foto deiner Pflanze: Ich bestimme die Art, erstelle einen kompletten Pflege-Steckbrief und einen ausführlichen Healthcheck. Probier es gleich aus 📸"
+      }
     ]
   },
   "en": {
-    "location": { "name": "My Home", "locality": "London", "country": "GB" },
-    "zones": [ { "name": "Living Room", "type": "room" }, { "name": "Study", "type": "room" }, { "name": "Balcony", "type": "balcony" } ],
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "My Home",
+      "locality": "London",
+      "country": "GB"
+    },
+    "zones": [
+      {
+        "name": "Living Room",
+        "type": "room"
+      },
+      {
+        "name": "Study",
+        "type": "room"
+      },
+      {
+        "name": "Balcony",
+        "type": "balcony"
+      }
+    ],
     "assignPlantToZone": "Living Room",
-    "watering": { "interval_days": 14, "due_in_days": 0, "note": "Only water when the soil is properly dry." },
-    "extraTask": { "type": "fertilizing", "due_in_days": 10, "note": "Light foliage-plant fertiliser, diluted." },
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Only water when the soil is properly dry."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Light foliage-plant fertiliser, diluted."
+    },
     "chat": [
-      { "sender": "user", "content": "Hi Ben! Can you take over the watering reminders for my {plant}?" },
-      { "sender": "assistant", "content": "Happily 🌿 I'll remind you to water your {plant} every 14 days — and only when the soil is properly dry. You'll get an alert just before each watering." },
-      { "sender": "user", "content": "Perfect. And can you recognise a plant from a photo?" },
-      { "sender": "assistant", "content": "Yes! Just snap a photo of your plant: I'll identify the species, generate a full care sheet and a detailed health check. Try it now 📸" }
+      {
+        "sender": "user",
+        "content": "Hi {persona}! Can you take over the watering reminders for my {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Happily 🌿 I will remind you to water your {plant} every 14 days, and only when the soil is properly dry. You will get an alert just before each watering."
+      },
+      {
+        "sender": "user",
+        "content": "Perfect. And can you recognise a plant from a photo?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Yes. Send a clear plant photo and I will identify the species, create a care sheet and add a detailed health check 📸"
+      }
     ]
   },
   "fr": {
-    "location": { "name": "Chez moi", "locality": "Lyon", "country": "FR" },
-    "zones": [ { "name": "Salon", "type": "room" }, { "name": "Bureau", "type": "room" }, { "name": "Balcon", "type": "balcony" } ],
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Chez moi",
+      "locality": "Lyon",
+      "country": "FR"
+    },
+    "zones": [
+      {
+        "name": "Salon",
+        "type": "room"
+      },
+      {
+        "name": "Bureau",
+        "type": "room"
+      },
+      {
+        "name": "Balcon",
+        "type": "balcony"
+      }
+    ],
     "assignPlantToZone": "Salon",
-    "watering": { "interval_days": 14, "due_in_days": 0, "note": "Arroser uniquement lorsque le substrat est bien sec." },
-    "extraTask": { "type": "fertilizing", "due_in_days": 10, "note": "Engrais léger pour plantes vertes, dilué." },
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Arroser uniquement lorsque le substrat est bien sec."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Engrais léger pour plantes vertes, dilué."
+    },
     "chat": [
-      { "sender": "user", "content": "Salut Ben ! Peux-tu t'occuper des rappels d'arrosage pour ma {plant} ?" },
-      { "sender": "assistant", "content": "Avec plaisir 🌿 Je te rappellerai d'arroser ta {plant} tous les 14 jours — et seulement quand le substrat est bien sec. Tu recevras une alerte juste avant chaque arrosage." },
-      { "sender": "user", "content": "Parfait. Et tu sais reconnaître une plante à partir d'une photo ?" },
-      { "sender": "assistant", "content": "Oui ! Prends simplement une photo de ta plante : j'identifie l'espèce, je génère une fiche d'entretien complète et un bilan de santé détaillé. Essaie dès maintenant 📸" }
+      {
+        "sender": "user",
+        "content": "Salut {persona} ! Peux-tu gérer les rappels d’arrosage pour ma {plant} ?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Avec plaisir 🌿 Je te rappellerai d’arroser ta {plant} tous les 14 jours, seulement quand le substrat est bien sec. Tu recevras une alerte avant chaque arrosage."
+      },
+      {
+        "sender": "user",
+        "content": "Parfait. Et tu sais reconnaître une plante à partir d’une photo ?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Oui. Envoie une photo nette de la plante : j’identifie l’espèce, je prépare une fiche d’entretien et un bilan de santé détaillé 📸"
+      }
     ]
   },
   "it": {
-    "location": { "name": "Casa mia", "locality": "Roma", "country": "IT" },
-    "zones": [ { "name": "Soggiorno", "type": "room" }, { "name": "Studio", "type": "room" }, { "name": "Balcone", "type": "balcony" } ],
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Casa mia",
+      "locality": "Roma",
+      "country": "IT"
+    },
+    "zones": [
+      {
+        "name": "Soggiorno",
+        "type": "room"
+      },
+      {
+        "name": "Studio",
+        "type": "room"
+      },
+      {
+        "name": "Balcone",
+        "type": "balcony"
+      }
+    ],
     "assignPlantToZone": "Soggiorno",
-    "watering": { "interval_days": 14, "due_in_days": 0, "note": "Annaffiare solo quando il substrato è ben asciutto." },
-    "extraTask": { "type": "fertilizing", "due_in_days": 10, "note": "Concime leggero per piante verdi, diluito." },
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Annaffiare solo quando il substrato è ben asciutto."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Concime leggero per piante verdi, diluito."
+    },
     "chat": [
-      { "sender": "user", "content": "Ciao Ben! Puoi occuparti dei promemoria di annaffiatura per la mia {plant}?" },
-      { "sender": "assistant", "content": "Con piacere 🌿 Ti ricorderò di annaffiare la tua {plant} ogni 14 giorni — e solo quando il substrato è ben asciutto. Riceverai un avviso poco prima di ogni annaffiatura." },
-      { "sender": "user", "content": "Perfetto. E riesci a riconoscere una pianta da una foto?" },
-      { "sender": "assistant", "content": "Sì! Scatta una foto della tua pianta: identifico la specie, genero una scheda di cura completa e un check della salute dettagliato. Prova subito 📸" }
+      {
+        "sender": "user",
+        "content": "Ciao {persona}! Puoi gestire i promemoria di annaffiatura per la mia {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Certo 🌿 Ti ricorderò di annaffiare la tua {plant} ogni 14 giorni, solo quando il substrato è ben asciutto. Riceverai un avviso prima di ogni annaffiatura."
+      },
+      {
+        "sender": "user",
+        "content": "Perfetto. Riconosci anche una pianta da una foto?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Sì. Invia una foto nitida della pianta: identifico la specie, preparo una scheda di cura e un controllo salute dettagliato 📸"
+      }
     ]
   },
   "es": {
-    "location": { "name": "Mi casa", "locality": "Madrid", "country": "ES" },
-    "zones": [ { "name": "Salón", "type": "room" }, { "name": "Estudio", "type": "room" }, { "name": "Balcón", "type": "balcony" } ],
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Mi casa",
+      "locality": "Madrid",
+      "country": "ES"
+    },
+    "zones": [
+      {
+        "name": "Salón",
+        "type": "room"
+      },
+      {
+        "name": "Estudio",
+        "type": "room"
+      },
+      {
+        "name": "Balcón",
+        "type": "balcony"
+      }
+    ],
     "assignPlantToZone": "Salón",
-    "watering": { "interval_days": 14, "due_in_days": 0, "note": "Regar solo cuando el sustrato esté bien seco." },
-    "extraTask": { "type": "fertilizing", "due_in_days": 10, "note": "Abono ligero para plantas verdes, diluido." },
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Regar solo cuando el sustrato esté bien seco."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Abono ligero para plantas verdes, diluido."
+    },
     "chat": [
-      { "sender": "user", "content": "¡Hola Ben! ¿Puedes encargarte de los recordatorios de riego de mi {plant}?" },
-      { "sender": "assistant", "content": "Con mucho gusto 🌿 Te recordaré regar tu {plant} cada 14 días, y solo cuando el sustrato esté bien seco. Recibirás un aviso justo antes de cada riego." },
-      { "sender": "user", "content": "Perfecto. ¿Y puedes reconocer una planta a partir de una foto?" },
-      { "sender": "assistant", "content": "¡Sí! Solo haz una foto de tu planta: identifico la especie, genero una ficha de cuidados completa y un chequeo de salud detallado. Pruébalo ahora 📸" }
+      {
+        "sender": "user",
+        "content": "¡Hola {persona}! ¿Puedes encargarte de los recordatorios de riego de mi {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Claro 🌿 Te recordaré regar tu {plant} cada 14 días, solo cuando el sustrato esté bien seco. Recibirás un aviso antes de cada riego."
+      },
+      {
+        "sender": "user",
+        "content": "Perfecto. ¿También puedes reconocer una planta con una foto?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Sí. Envíame una foto clara de la planta: identificaré la especie, crearé una ficha de cuidados y un chequeo de salud detallado 📸"
+      }
     ]
   },
   "ru": {
-    "location": { "name": "Мой дом", "locality": "Москва", "country": "RU" },
-    "zones": [ { "name": "Гостиная", "type": "room" }, { "name": "Кабинет", "type": "room" }, { "name": "Балкон", "type": "balcony" } ],
+    "personas": {
+      "Ben": "Бен",
+      "Rose": "Роза"
+    },
+    "location": {
+      "name": "Мой дом",
+      "locality": "Москва",
+      "country": "RU"
+    },
+    "zones": [
+      {
+        "name": "Гостиная",
+        "type": "room"
+      },
+      {
+        "name": "Кабинет",
+        "type": "room"
+      },
+      {
+        "name": "Балкон",
+        "type": "balcony"
+      }
+    ],
     "assignPlantToZone": "Гостиная",
-    "watering": { "interval_days": 14, "due_in_days": 0, "note": "Поливать только когда субстрат как следует просох." },
-    "extraTask": { "type": "fertilizing", "due_in_days": 10, "note": "Лёгкое удобрение для зелёных растений, разбавленное." },
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Поливать только когда субстрат хорошо просох."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Лёгкое удобрение для зелёных растений, разбавленное."
+    },
     "chat": [
-      { "sender": "user", "content": "Привет, Бен! Можешь взять на себя напоминания о поливе моей {plant}?" },
-      { "sender": "assistant", "content": "С удовольствием 🌿 Буду напоминать поливать твою {plant} каждые 14 дней — и только когда субстрат как следует просохнет. Перед каждым поливом пришлю уведомление." },
-      { "sender": "user", "content": "Отлично. А ты можешь распознать растение по фотографии?" },
-      { "sender": "assistant", "content": "Да! Просто сделай фото растения: я определю вид, составлю полную карточку ухода и подробную проверку здоровья. Попробуй прямо сейчас 📸" }
+      {
+        "sender": "user",
+        "content": "Привет, {persona}! Можешь вести напоминания о поливе моей {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Конечно 🌿 Я буду напоминать поливать {plant} каждые 14 дней и только когда субстрат хорошо просохнет. Перед каждым поливом пришлю короткое уведомление."
+      },
+      {
+        "sender": "user",
+        "content": "Отлично. А растение можно распознать по фотографии?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Да. Пришли чёткое фото растения: я определю вид, составлю карточку ухода и подробную проверку здоровья 📸"
+      }
     ]
   },
   "tr": {
-    "location": { "name": "Evim", "locality": "İstanbul", "country": "TR" },
-    "zones": [ { "name": "Oturma Odası", "type": "room" }, { "name": "Çalışma Odası", "type": "room" }, { "name": "Balkon", "type": "balcony" } ],
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Evim",
+      "locality": "İstanbul",
+      "country": "TR"
+    },
+    "zones": [
+      {
+        "name": "Oturma Odası",
+        "type": "room"
+      },
+      {
+        "name": "Çalışma Odası",
+        "type": "room"
+      },
+      {
+        "name": "Balkon",
+        "type": "balcony"
+      }
+    ],
     "assignPlantToZone": "Oturma Odası",
-    "watering": { "interval_days": 14, "due_in_days": 0, "note": "Yalnızca toprak iyice kuruduğunda sula." },
-    "extraTask": { "type": "fertilizing", "due_in_days": 10, "note": "Hafif yeşil bitki gübresi, seyreltilmiş." },
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Yalnızca toprak iyice kuruduğunda sula."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Seyreltilmiş hafif yeşil bitki gübresi."
+    },
     "chat": [
-      { "sender": "user", "content": "Selam Ben! {plant} bitkimin sulama hatırlatıcılarını üstlenebilir misin?" },
-      { "sender": "assistant", "content": "Memnuniyetle 🌿 {plant} bitkini her 14 günde bir sulamanı hatırlatırım — ve yalnızca toprak iyice kuruduğunda. Her sulamadan hemen önce sana bildirim gönderirim." },
-      { "sender": "user", "content": "Harika. Peki bir bitkiyi fotoğraftan tanıyabiliyor musun?" },
-      { "sender": "assistant", "content": "Evet! Bitkinin bir fotoğrafını çek: türü belirlerim, eksiksiz bir bakım kartı ve ayrıntılı bir sağlık kontrolü oluştururum. Hemen dene 📸" }
+      {
+        "sender": "user",
+        "content": "Selam {persona}! {plant} için sulama hatırlatmalarını yönetir misin?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Tabii 🌿 {plant} için her 14 günde bir, sadece toprak iyice kuruduğunda sulama hatırlatırım. Her sulamadan önce kısa bir bildirim alırsın."
+      },
+      {
+        "sender": "user",
+        "content": "Harika. Bir bitkiyi fotoğraftan da tanıyabilir misin?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Evet. Bitkinin net bir fotoğrafını gönder: türünü belirler, bakım kartı ve ayrıntılı sağlık kontrolü oluştururum 📸"
+      }
+    ]
+  },
+  "nl": {
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Thuis",
+      "locality": "Amsterdam",
+      "country": "NL"
+    },
+    "zones": [
+      {
+        "name": "Woonkamer",
+        "type": "room"
+      },
+      {
+        "name": "Werkkamer",
+        "type": "room"
+      },
+      {
+        "name": "Balkon",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "Woonkamer",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Alleen water geven wanneer de potgrond goed droog is."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Lichte kamerplantenvoeding, verdund."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "Hoi {persona}! Kun jij de waterherinneringen voor mijn {plant} overnemen?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Graag 🌿 Ik herinner je elke 14 dagen aan je {plant}, maar alleen wanneer de potgrond goed droog is. Je krijgt kort voor elke gietbeurt een melding."
+      },
+      {
+        "sender": "user",
+        "content": "Perfect. Kun je ook een plant herkennen vanaf een foto?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Ja. Stuur een duidelijke foto van de plant: ik herken de soort, maak een verzorgingskaart en geef een gedetailleerde gezondheidscheck 📸"
+      }
+    ]
+  },
+  "da": {
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Hjemme",
+      "locality": "København",
+      "country": "DK"
+    },
+    "zones": [
+      {
+        "name": "Stue",
+        "type": "room"
+      },
+      {
+        "name": "Kontor",
+        "type": "room"
+      },
+      {
+        "name": "Altan",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "Stue",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Vand kun, når jorden er helt tør."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Let gødning til grønne planter, fortyndet."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "Hej {persona}! Kan du styre vandingspåmindelserne for min {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Selvfølgelig 🌿 Jeg minder dig om at vande din {plant} hver 14. dag, og kun når jorden er helt tør. Du får en kort besked før hver vanding."
+      },
+      {
+        "sender": "user",
+        "content": "Perfekt. Kan du også genkende en plante fra et foto?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Ja. Send et tydeligt plantefoto, så identificerer jeg arten og laver et plejekort med et detaljeret sundhedstjek 📸"
+      }
+    ]
+  },
+  "pl": {
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Dom",
+      "locality": "Warszawa",
+      "country": "PL"
+    },
+    "zones": [
+      {
+        "name": "Salon",
+        "type": "room"
+      },
+      {
+        "name": "Gabinet",
+        "type": "room"
+      },
+      {
+        "name": "Balkon",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "Salon",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Podlewaj tylko wtedy, gdy podłoże jest naprawdę suche."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Lekki nawóz do roślin zielonych, rozcieńczony."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "Cześć {persona}! Czy możesz pilnować podlewania mojej {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Jasne 🌿 Przypomnę o podlewaniu {plant} co 14 dni, ale tylko gdy podłoże będzie naprawdę suche. Przed każdym podlewaniem dostaniesz krótkie powiadomienie."
+      },
+      {
+        "sender": "user",
+        "content": "Super. A rozpoznasz roślinę ze zdjęcia?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Tak. Wyślij wyraźne zdjęcie rośliny: rozpoznam gatunek, przygotuję kartę pielęgnacji i szczegółowy healthcheck 📸"
+      }
+    ]
+  },
+  "uk": {
+    "personas": {
+      "Ben": "Бен",
+      "Rose": "Роза"
+    },
+    "location": {
+      "name": "Дім",
+      "locality": "Київ",
+      "country": "UA"
+    },
+    "zones": [
+      {
+        "name": "Вітальня",
+        "type": "room"
+      },
+      {
+        "name": "Кабінет",
+        "type": "room"
+      },
+      {
+        "name": "Балкон",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "Вітальня",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Поливати лише тоді, коли субстрат добре просох."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Легке добриво для зелених рослин, розведене."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "Привіт, {persona}! Можеш вести нагадування про полив моєї {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Звісно 🌿 Я нагадуватиму поливати {plant} кожні 14 днів і лише тоді, коли субстрат добре просохне. Перед поливом отримаєш коротке сповіщення."
+      },
+      {
+        "sender": "user",
+        "content": "Чудово. А можеш розпізнати рослину за фото?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Так. Надішли чітке фото рослини: я визначу вид, створю картку догляду й детальну перевірку здоров’я 📸"
+      }
+    ]
+  },
+  "pt-BR": {
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Minha casa",
+      "locality": "São Paulo",
+      "country": "BR"
+    },
+    "zones": [
+      {
+        "name": "Sala",
+        "type": "room"
+      },
+      {
+        "name": "Escritório",
+        "type": "room"
+      },
+      {
+        "name": "Varanda",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "Sala",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Regar somente quando o substrato estiver bem seco."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Adubo leve para folhagens, diluído."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "Oi {persona}! Você pode cuidar dos lembretes de rega da minha {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Claro 🌿 Vou lembrar você de regar a {plant} a cada 14 dias, só quando o substrato estiver bem seco. Antes de cada rega, você recebe um aviso curto."
+      },
+      {
+        "sender": "user",
+        "content": "Perfeito. Você também reconhece uma planta por foto?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Sim. Envie uma foto nítida da planta: eu identifico a espécie, crio uma ficha de cuidados e um healthcheck detalhado 📸"
+      }
+    ]
+  },
+  "pt-PT": {
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rosa"
+    },
+    "location": {
+      "name": "A minha casa",
+      "locality": "Lisboa",
+      "country": "PT"
+    },
+    "zones": [
+      {
+        "name": "Sala",
+        "type": "room"
+      },
+      {
+        "name": "Escritório",
+        "type": "room"
+      },
+      {
+        "name": "Varanda",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "Sala",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Regar apenas quando o substrato estiver bem seco."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Fertilizante leve para plantas verdes, diluído."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "Olá {persona}! Podes tratar dos lembretes de rega da minha {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Claro 🌿 Vou lembrar-te de regar a {plant} de 14 em 14 dias, apenas quando o substrato estiver bem seco. Recebes um aviso antes de cada rega."
+      },
+      {
+        "sender": "user",
+        "content": "Perfeito. Também reconheces uma planta através de uma fotografia?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Sim. Envia uma fotografia nítida da planta: identifico a espécie, crio uma ficha de cuidados e uma avaliação de saúde detalhada 📸"
+      }
+    ]
+  },
+  "hi": {
+    "personas": {
+      "Ben": "बेन",
+      "Rose": "रोज़"
+    },
+    "location": {
+      "name": "मेरा घर",
+      "locality": "दिल्ली",
+      "country": "IN"
+    },
+    "zones": [
+      {
+        "name": "बैठक",
+        "type": "room"
+      },
+      {
+        "name": "अध्ययन कक्ष",
+        "type": "room"
+      },
+      {
+        "name": "बालकनी",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "बैठक",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "मिट्टी पूरी तरह सूखी हो तभी पानी दें."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "हरी पौधों की हल्की खाद, पतली करके."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "नमस्ते {persona}! क्या तुम मेरी {plant} के पानी देने वाले रिमाइंडर संभाल सकते हो?"
+      },
+      {
+        "sender": "assistant",
+        "content": "ज़रूर 🌿 मैं हर 14 दिन में {plant} को पानी देने की याद दिलाऊँगा, और तभी जब मिट्टी सच में सूखी हो. हर बार पहले छोटा नोटिफिकेशन मिलेगा."
+      },
+      {
+        "sender": "user",
+        "content": "बढ़िया. क्या तुम फोटो से पौधा पहचान सकते हो?"
+      },
+      {
+        "sender": "assistant",
+        "content": "हाँ. पौधे की साफ़ फोटो भेजो: मैं प्रजाति पहचानूँगा, देखभाल कार्ड बनाऊँगा और विस्तृत हेल्थचेक दूँगा 📸"
+      }
+    ]
+  },
+  "bn": {
+    "personas": {
+      "Ben": "বেন",
+      "Rose": "রোজ"
+    },
+    "location": {
+      "name": "আমার বাড়ি",
+      "locality": "ঢাকা",
+      "country": "BD"
+    },
+    "zones": [
+      {
+        "name": "বসার ঘর",
+        "type": "room"
+      },
+      {
+        "name": "পড়ার ঘর",
+        "type": "room"
+      },
+      {
+        "name": "বারান্দা",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "বসার ঘর",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "মাটি ভালোভাবে শুকালে তবেই পানি দিন."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "পাতাযুক্ত গাছের হালকা সার, পাতলা করে."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "হ্যালো {persona}! আমার {plant} গাছের পানি দেওয়ার রিমাইন্ডারটা তুমি সামলাতে পারবে?"
+      },
+      {
+        "sender": "assistant",
+        "content": "অবশ্যই 🌿 প্রতি ১৪ দিনে {plant} গাছে পানি দেওয়ার কথা মনে করিয়ে দেব, তবে মাটি সত্যিই শুকালেই. প্রতিবার আগে ছোট একটি নোটিফিকেশন পাবে."
+      },
+      {
+        "sender": "user",
+        "content": "চমৎকার. ছবি দেখে গাছ চিনতে পারো?"
+      },
+      {
+        "sender": "assistant",
+        "content": "হ্যাঁ. গাছের পরিষ্কার ছবি পাঠাও: আমি প্রজাতি শনাক্ত করব, যত্নের কার্ড বানাব এবং বিস্তারিত হেলথচেক দেব 📸"
+      }
+    ]
+  },
+  "ja": {
+    "personas": {
+      "Ben": "ベン",
+      "Rose": "ローズ"
+    },
+    "location": {
+      "name": "自宅",
+      "locality": "東京",
+      "country": "JP"
+    },
+    "zones": [
+      {
+        "name": "リビング",
+        "type": "room"
+      },
+      {
+        "name": "書斎",
+        "type": "room"
+      },
+      {
+        "name": "バルコニー",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "リビング",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "土がしっかり乾いてから水やりします。"
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "観葉植物用の薄めた軽い肥料。"
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "{persona}、私の{plant}の水やりリマインダーを管理してくれる？"
+      },
+      {
+        "sender": "assistant",
+        "content": "もちろんです 🌿 {plant}は14日ごとに、土がしっかり乾いたときだけ水やりを思い出せるようにします。毎回、事前に短い通知を送ります。"
+      },
+      {
+        "sender": "user",
+        "content": "いいね。写真から植物を見分けることもできる？"
+      },
+      {
+        "sender": "assistant",
+        "content": "はい。植物のはっきりした写真を送ってください。種類を判定し、ケアカードと詳しい健康チェックを作成します 📸"
+      }
+    ]
+  },
+  "ko": {
+    "personas": {
+      "Ben": "벤",
+      "Rose": "로즈"
+    },
+    "location": {
+      "name": "우리 집",
+      "locality": "서울",
+      "country": "KR"
+    },
+    "zones": [
+      {
+        "name": "거실",
+        "type": "room"
+      },
+      {
+        "name": "서재",
+        "type": "room"
+      },
+      {
+        "name": "발코니",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "거실",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "흙이 충분히 말랐을 때만 물을 주세요."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "희석한 관엽식물용 순한 비료."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "{persona}, 내 {plant} 물주기 알림을 맡아줄 수 있어?"
+      },
+      {
+        "sender": "assistant",
+        "content": "물론이에요 🌿 {plant}은 14일마다, 흙이 충분히 말랐을 때만 물주기 알림을 드릴게요. 매번 물주기 전에 짧은 알림을 보내겠습니다."
+      },
+      {
+        "sender": "user",
+        "content": "좋아. 사진으로 식물도 알아볼 수 있어?"
+      },
+      {
+        "sender": "assistant",
+        "content": "네. 식물 사진을 선명하게 보내 주세요. 종류를 확인하고 관리 카드와 자세한 건강 체크를 만들어 드릴게요 📸"
+      }
+    ]
+  },
+  "zh-Hans": {
+    "personas": {
+      "Ben": "本",
+      "Rose": "罗丝"
+    },
+    "location": {
+      "name": "我的家",
+      "locality": "上海",
+      "country": "CN"
+    },
+    "zones": [
+      {
+        "name": "客厅",
+        "type": "room"
+      },
+      {
+        "name": "书房",
+        "type": "room"
+      },
+      {
+        "name": "阳台",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "客厅",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "只有在土壤充分干燥后才浇水。"
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "稀释后的轻量观叶植物肥料。"
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "你好，{persona}！你能帮我管理 {plant} 的浇水提醒吗？"
+      },
+      {
+        "sender": "assistant",
+        "content": "当然 🌿 我会每 14 天提醒你给 {plant} 浇水，而且只在土壤确实干燥时提醒。每次浇水前你都会收到一条简短通知。"
+      },
+      {
+        "sender": "user",
+        "content": "很好。你也能通过照片识别植物吗？"
+      },
+      {
+        "sender": "assistant",
+        "content": "可以。发一张清晰的植物照片，我会识别品种，生成养护卡片和详细的健康检查 📸"
+      }
+    ]
+  },
+  "id": {
+    "personas": {
+      "Ben": "Ben",
+      "Rose": "Rose"
+    },
+    "location": {
+      "name": "Rumahku",
+      "locality": "Jakarta",
+      "country": "ID"
+    },
+    "zones": [
+      {
+        "name": "Ruang Tamu",
+        "type": "room"
+      },
+      {
+        "name": "Ruang Kerja",
+        "type": "room"
+      },
+      {
+        "name": "Balkon",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "Ruang Tamu",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "Siram hanya saat media tanam benar-benar kering."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "Pupuk ringan untuk tanaman daun, diencerkan."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "Hai {persona}! Bisa bantu atur pengingat menyiram untuk {plant} saya?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Bisa 🌿 Saya akan mengingatkan penyiraman {plant} setiap 14 hari, hanya saat media tanam benar-benar kering. Kamu akan mendapat notifikasi singkat sebelum waktunya."
+      },
+      {
+        "sender": "user",
+        "content": "Bagus. Bisa juga mengenali tanaman dari foto?"
+      },
+      {
+        "sender": "assistant",
+        "content": "Bisa. Kirim foto tanaman yang jelas: saya identifikasi spesiesnya, buat kartu perawatan, dan berikan healthcheck rinci 📸"
+      }
+    ]
+  },
+  "ar": {
+    "personas": {
+      "Ben": "بن",
+      "Rose": "روز"
+    },
+    "location": {
+      "name": "منزلي",
+      "locality": "الرياض",
+      "country": "SA"
+    },
+    "zones": [
+      {
+        "name": "غرفة المعيشة",
+        "type": "room"
+      },
+      {
+        "name": "المكتب",
+        "type": "room"
+      },
+      {
+        "name": "الشرفة",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "غرفة المعيشة",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "اسقِ فقط عندما تكون التربة جافة تمامًا."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "سماد خفيف للنباتات الورقية، مخفف."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "مرحبًا {persona}! هل يمكنك تنظيم تذكيرات الري لنبات {plant}؟"
+      },
+      {
+        "sender": "assistant",
+        "content": "أكيد 🌿 سأذكّرك بريّ {plant} كل 14 يومًا، وفقط عندما تكون التربة جافة فعلًا. ستصلك رسالة قصيرة قبل كل موعد ري."
+      },
+      {
+        "sender": "user",
+        "content": "رائع. وهل يمكنك التعرّف على نبات من صورة؟"
+      },
+      {
+        "sender": "assistant",
+        "content": "نعم. أرسل صورة واضحة للنبات، وسأحاول تحديد النوع وإنشاء بطاقة عناية وفحص صحة مفصّل 📸"
+      }
+    ]
+  },
+  "he": {
+    "personas": {
+      "Ben": "בן",
+      "Rose": "רוז"
+    },
+    "location": {
+      "name": "הבית שלי",
+      "locality": "תל אביב",
+      "country": "IL"
+    },
+    "zones": [
+      {
+        "name": "סלון",
+        "type": "room"
+      },
+      {
+        "name": "חדר עבודה",
+        "type": "room"
+      },
+      {
+        "name": "מרפסת",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "סלון",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "להשקות רק כשהמצע יבש ממש."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "דשן קל לצמחי עלווה, מדולל."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "שלום {persona}! אפשר לנהל עבורי את תזכורות ההשקיה של {plant}?"
+      },
+      {
+        "sender": "assistant",
+        "content": "בטח 🌿 אזכיר לך להשקות את {plant} כל 14 יום, ורק כשהמצע באמת יבש. לפני כל השקיה תקבל/י התראה קצרה."
+      },
+      {
+        "sender": "user",
+        "content": "מעולה. אפשר לזהות צמח לפי תמונה?"
+      },
+      {
+        "sender": "assistant",
+        "content": "כן. שלח/י תמונה ברורה של הצמח: אזהה את המין, אכין כרטיס טיפול ובדיקת בריאות מפורטת 📸"
+      }
+    ]
+  },
+  "fa": {
+    "personas": {
+      "Ben": "بن",
+      "Rose": "رز"
+    },
+    "location": {
+      "name": "خانه من",
+      "locality": "تهران",
+      "country": "IR"
+    },
+    "zones": [
+      {
+        "name": "نشیمن",
+        "type": "room"
+      },
+      {
+        "name": "اتاق کار",
+        "type": "room"
+      },
+      {
+        "name": "بالکن",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "نشیمن",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "فقط وقتی خاک کاملاً خشک شد آبیاری کن."
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "کود سبک برای گیاهان برگ‌دار، رقیق‌شده."
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "سلام {persona}! می‌توانی یادآورهای آبیاری {plant} من را مدیریت کنی؟"
+      },
+      {
+        "sender": "assistant",
+        "content": "حتماً 🌿 هر ۱۴ روز برای آبیاری {plant} یادآوری می‌فرستم، آن هم فقط وقتی خاک واقعاً خشک باشد. قبل از هر آبیاری یک پیام کوتاه می‌گیری."
+      },
+      {
+        "sender": "user",
+        "content": "عالی. می‌توانی گیاه را از روی عکس هم بشناسی؟"
+      },
+      {
+        "sender": "assistant",
+        "content": "بله. یک عکس واضح از گیاه بفرست: گونه را تشخیص می‌دهم، کارت مراقبت و بررسی سلامت دقیق می‌سازم 📸"
+      }
+    ]
+  },
+  "ur": {
+    "personas": {
+      "Ben": "بین",
+      "Rose": "روز"
+    },
+    "location": {
+      "name": "میرا گھر",
+      "locality": "کراچی",
+      "country": "PK"
+    },
+    "zones": [
+      {
+        "name": "بیٹھک",
+        "type": "room"
+      },
+      {
+        "name": "مطالعہ کمرہ",
+        "type": "room"
+      },
+      {
+        "name": "بالکنی",
+        "type": "balcony"
+      }
+    ],
+    "assignPlantToZone": "بیٹھک",
+    "watering": {
+      "interval_days": 14,
+      "due_in_days": 0,
+      "note": "صرف تب پانی دیں جب مٹی اچھی طرح خشک ہو۔"
+    },
+    "extraTask": {
+      "type": "fertilizing",
+      "due_in_days": 10,
+      "note": "پتوں والے پودوں کے لیے ہلکی کھاد، پتلی کی ہوئی۔"
+    },
+    "chat": [
+      {
+        "sender": "user",
+        "content": "سلام {persona}! کیا تم میری {plant} کے پانی دینے کی یاد دہانیاں سنبھال سکتے ہو؟"
+      },
+      {
+        "sender": "assistant",
+        "content": "ضرور 🌿 میں ہر 14 دن بعد {plant} کو پانی دینے کی یاد دہانی دوں گا، اور صرف تب جب مٹی واقعی خشک ہو۔ ہر بار پہلے ایک مختصر اطلاع ملے گی۔"
+      },
+      {
+        "sender": "user",
+        "content": "زبردست۔ کیا تم تصویر سے پودا بھی پہچان سکتے ہو؟"
+      },
+      {
+        "sender": "assistant",
+        "content": "جی ہاں۔ پودے کی صاف تصویر بھیجیں: میں قسم پہچانوں گا، نگہداشت کارڈ بناؤں گا اور تفصیلی صحت چیک دوں گا 📸"
+      }
     ]
   }
 }

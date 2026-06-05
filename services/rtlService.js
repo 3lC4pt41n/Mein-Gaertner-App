@@ -2,6 +2,9 @@ import { I18nManager, Platform } from 'react-native';
 import * as Updates from 'expo-updates';
 import { getLanguageMeta } from '../i18n/registry';
 
+const DISABLE_NATIVE_RTL_RELOAD =
+  process.env.EXPO_PUBLIC_SCREENSHOT_DISABLE_NATIVE_RTL_RELOAD === '1';
+
 function getCurrentRTL() {
   return Boolean(I18nManager.isRTL);
 }
@@ -27,7 +30,7 @@ export function configureRTLForLanguage(input) {
     I18nManager.swapLeftAndRightInRTL(true);
   }
 
-  if (status.restartRequired) {
+  if (!DISABLE_NATIVE_RTL_RELOAD && status.restartRequired) {
     I18nManager.forceRTL(status.rtl);
   }
 
@@ -35,6 +38,8 @@ export function configureRTLForLanguage(input) {
 }
 
 export async function reloadAppForDirectionChange() {
+  if (DISABLE_NATIVE_RTL_RELOAD) return;
+
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined' && window.location?.reload) {
       window.location.reload();
